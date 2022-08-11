@@ -1,0 +1,215 @@
+import logging
+from typing import Dict, List
+
+from django.conf import settings
+from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.views import generic
+
+from racetrack_commons.urls import get_external_pub_url
+from racetrack_client.log.context_error import ContextError
+from racetrack_client.log.exception import log_exception
+from racetrack_client.utils.time import days_ago
+from racetrack_commons.auth.auth import UnauthorizedError
+from racetrack_commons.auth.token import decode_jwt
+from racetrack_commons.entities.audit import explain_audit_log_event
+from racetrack_commons.entities.audit_client import AuditClient
+from racetrack_commons.entities.dto import AuditLogEventDto, FatmanDto
+from racetrack_commons.entities.fatman_client import FatmanRegistryClient
+from racetrack_commons.entities.info_client import LifecycleInfoClient
+from dashboard.session import RT_SESSION_USER_AUTH_KEY
+from dashboard.purge import enrich_fatmen_purge_info
+from dashboard.utils import login_required, remove_ansi_sequences
+
+
+def get_auth_token(request) -> str:
+    token = request.session.get(RT_SESSION_USER_AUTH_KEY, '')
+    if not token and not settings.AUTH_REQUIRED:
+        return ''
+    try:
+        decode_jwt(token)
+        return token
+    except UnauthorizedError as e:
+        raise e
+
+
+class RacetrackUserCreationForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].help_text += ' Use your email as username.'
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if "@" not in username:
+            raise ValidationError("You have to pass email as username")
+        return username
+
+
+class RegisterView(generic.CreateView):
+    form_class = RacetrackUserCreationForm
+    success_url = reverse_lazy('dashboard:registered')
+    template_name = 'registration/register.html'
+
+
+def register(request):
+    request.session['registered'] = False
+    return RegisterView.as_view()(request)
+
+
+def registered(request):
+    if request.session.get('registered', False):
+        return redirect('login')
+    request.session['registered'] = True
+    return render(request, 'registration/registered.html')
+
+
+@login_required
+def list_fatmen(request):
+    context = {
+        'external_pub_url': get_external_pub_url(),
+        'fatmen': None,
+    }
+    try:
+        frc = FatmanRegistryClient(auth_token=get_auth_token(request))
+        fatmen: List[FatmanDto] = frc.list_deployed_fatmen()
+        context['fatmen'] = fatmen
+    except Exception as e:
+        log_exception(ContextError('Getting fatmen failed', e))
+        context['error'] = str(e)
+    return render(request, 'racetrack/list.html', context)
+
+
+@login_required
+def user_profile(request):
+    context = {
+        'user': request.user,
+    }
+    try:
+        context['user_auth'] = get_auth_token(request)
+        context['plugins'] = LifecycleInfoClient().get_plugins_info()
+    except Exception as e:
+        log_exception(ContextError('Getting user profile data failed', e))
+        context['error'] = str(e)
+
+    return render(request, 'racetrack/profile.html', context)
+
+
+@login_required
+def dependencies_graph(request):
+    context = {}
+    try:
+        frc = FatmanRegistryClient(auth_token=get_auth_token(request))
+        context['fatman_graph'] = frc.get_dependencies_graph()
+    except Exception as e:
+        logging.error(f'Building dependencies graph failed: {e}')
+        context['error'] = str(e)
+    return render(request, 'racetrack/graph.html', context)
+
+
+@login_required
+def view_fatman_portfolio(request):
+    context = {
+        'external_pub_url': get_external_pub_url(),
+        'fatmen': None,
+    }
+    try:
+        frc = FatmanRegistryClient(auth_token=get_auth_token(request))
+        fatmen: List[FatmanDto] = frc.list_deployed_fatmen()
+        fatmen_dicts: List[Dict] = enrich_fatmen_purge_info(fatmen)
+
+        for fatman_dict in fatmen_dicts:
+            fatman_dict['update_time_days_ago'] = days_ago(fatman_dict['update_time'])
+            fatman_dict['last_call_time_days_ago'] = days_ago(fatman_dict['last_call_time'])
+
+        context['fatmen'] = fatmen_dicts
+    except Exception as e:
+        log_exception(ContextError('Getting fatmen failed', e))
+        context['error'] = str(e)
+    return render(request, 'racetrack/portfolio.html', context)
+
+
+@login_required
+def view_fatman_activity(request):
+    filter_fatman_name = request.GET.get('fatman_name', '')
+    filter_fatman_version = request.GET.get('fatman_version', '')
+    filter_related_to_me = request.GET.get('related_to_me', '')
+    context = {
+        'filter_fatman_name': filter_fatman_name,
+        'filter_fatman_version': filter_fatman_version,
+        'filter_related_to_me': filter_related_to_me,
+    }
+    try:
+        audit_client = AuditClient(auth_token=get_auth_token(request))
+        events: List[AuditLogEventDto] = audit_client.filter_events(filter_related_to_me, filter_fatman_name, filter_fatman_version)
+
+        event_dicts = []
+        for event in events:
+            event_dict = event.dict()
+            event_dict['explanation'] = explain_audit_log_event(event)
+            event_dicts.append(event_dict)
+
+        context['events'] = event_dicts
+    except Exception as e:
+        log_exception(ContextError('Getting audit log events failed', e))
+        context['error'] = str(e)
+    return render(request, 'racetrack/activity.html', context)
+
+
+@login_required
+def delete_fatman(request, fatman_name: str, fatman_version: str):
+    try:
+        frc = _get_fatman_registry_client(request)
+        frc.delete_deployed_fatman(fatman_name, fatman_version)
+    except Exception as e:
+        log_exception(ContextError('Deleting fatman failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+    return HttpResponse(status=204)
+
+
+@login_required
+def redeploy_fatman(request, fatman_name: str, fatman_version: str):
+    try:
+        frc = _get_fatman_registry_client(request)
+        frc.redeploy_fatman(fatman_name, fatman_version)
+    except Exception as e:
+        log_exception(ContextError('Redeploying fatman failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+    return HttpResponse(status=204)
+
+
+@login_required
+def reprovision_fatman(request, fatman_name: str, fatman_version: str):
+    try:
+        frc = _get_fatman_registry_client(request)
+        frc.reprovision_fatman(fatman_name, fatman_version)
+    except Exception as e:
+        log_exception(ContextError('Reprovisioning fatman failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+    return HttpResponse(status=204)
+
+
+@login_required
+def fatman_runtime_logs(request, fatman_name: str, fatman_version: str):
+    tail = int(request.GET.get('tail', 0))
+    content = _get_fatman_registry_client(request).get_runtime_logs(fatman_name, fatman_version, tail)
+    content = remove_ansi_sequences(content)
+    return HttpResponse(content, content_type='text/plain; charset=utf-8')
+
+
+@login_required
+def fatman_build_logs(request, fatman_name: str, fatman_version: str):
+    tail = int(request.GET.get('tail', 0))
+    content = _get_fatman_registry_client(request).get_build_logs(fatman_name, fatman_version, tail)
+    content = remove_ansi_sequences(content)
+    return HttpResponse(content, content_type='text/plain; charset=utf-8')
+
+
+def _get_fatman_registry_client(request) -> FatmanRegistryClient:
+    if not request.user.is_authenticated:
+        return FatmanRegistryClient()
+    return FatmanRegistryClient(auth_token=get_auth_token(request))

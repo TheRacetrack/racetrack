@@ -1,0 +1,25 @@
+.idea
+*.iml
+.vscode
+
+/venv
+
+# Python leftovers
+__pycache__
+*.pyc
+*.egg-info
+.pytest_cache
+.coverage
+.mypy_cache
+
+/workspaces
+/.plugins
+log.out
+
+dashboard/db.sqlite3
+dashboard/dashboard/migrations/
+
+# SQLTools sessions
+*.session.sql
+
+/.local.env

@@ -1,0 +1,22 @@
+---
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: $CI_COMMIT_MESSAGE =~ /^WIP:$/
+      when: never
+
+.tags:
+  tags: &tags
+    - "cluster-set-ikp"
+
+stages:
+  - test
+
+test-unit:
+  stage: test
+  tags: *tags
+  image:
+    name: $DOCKER_IMAGE_NAME:2021-07-22
+  script:
+    - make setup
+    - . venv/bin/activate && make test-unit

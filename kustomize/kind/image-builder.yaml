@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: image-builder
+  labels:
+    app.kubernetes.io/name: image-builder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: image-builder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: image-builder
+    spec:
+      priorityClassName: high-priority
+      containers:
+        - name: image-builder
+          image: kind-registry:5000/racetrack/image-builder:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7001
+          tty: true
+          volumeMounts:
+            - name: image-builder-config
+              mountPath: /etc/racetrack/image-builder/
+            - name: git-root
+              mountPath: /src/.git
+          env:
+            - name: CONFIG_FILE
+              value: /etc/racetrack/image-builder/config.yaml
+            - name: DOCKER_TLS_CERTDIR
+              value: ''
+            - name: DOCKER_HOST
+              value: tcp://127.0.0.1:2375
+            - name: DEBUG
+              value: 'true'
+        - name: docker-engine
+          image: docker:dind
+          ports:
+            - containerPort: 2375
+          tty: true
+          args: ["--insecure-registry=kind-registry:5000", "--insecure-registry=http://kind-registry:5000"]
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ''
+      volumes:
+        - name: image-builder-config
+          configMap:
+            name: image-builder-config
+        - name: git-root
+          hostPath:
+            path: /src/.git
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: image-builder
+  labels:
+    app.kubernetes.io/name: image-builder
+spec:
+  selector:
+    app.kubernetes.io/name: image-builder
+  type: NodePort
+  ports:
+    - name: image-builder
+      nodePort: 30001
+      port: 7001
+      targetPort: 7001

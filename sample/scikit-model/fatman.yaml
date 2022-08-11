@@ -1,0 +1,15 @@
+name: scikit-sample
+owner_email: sample@example.com
+lang: python3
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/scikit-model
+
+python:
+  requirements_path: 'requirements.txt'
+  entrypoint_path: 'model.py'
+  entrypoint_class: 'ScikitDummyModel'
+
+labels:
+  model: linear-regression

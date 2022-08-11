@@ -1,0 +1,4 @@
+log_level: debug
+http_port: 7101
+docker_registry: kind-registry:5000
+build_logs_dir: /var/log/racetrack/image-builder/build-logs

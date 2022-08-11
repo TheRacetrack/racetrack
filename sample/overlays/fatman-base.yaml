@@ -1,0 +1,15 @@
+name: overlays-base
+owner_email: sample@example.com
+lang: python3
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/overlays
+
+python:
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'FatmanEntrypoint'
+
+resources:
+  cpu_min: 10m
+  cpu_max: 1000m

@@ -1,0 +1,39 @@
+version: '3.7'
+services:
+
+  lifecycle:
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - ./lifecycle/tests/sample/docker-daemon.yaml:/etc/racetrack/lifecycle/config.yaml
+      - ./utils/docker-daemon/certs:/certs
+    environment:
+      RK_MOCK: 'true'
+      DJANGO_DEBUG: 'True'
+      CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
+      DOCKER_HOST: tcp://host.docker.internal:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs
+      DOCKER_DAEMON_HOST_IP: 'host.docker.internal'
+
+  lifecycle-supervisor:
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - ./lifecycle/tests/sample/docker-daemon.yaml:/etc/racetrack/lifecycle/config.yaml
+      - ./utils/docker-daemon/certs:/certs
+    environment:
+      RK_MOCK: 'true'
+      DJANGO_DEBUG: 'True'
+      CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
+      DOCKER_HOST: tcp://host.docker.internal:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs
+      DOCKER_DAEMON_HOST_IP: 'host.docker.internal'
+
+
+networks:
+  racetrack_default:
+    driver: bridge
+    name: racetrack_default
+  registry:
+    external: true
+    name: kind

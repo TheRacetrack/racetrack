@@ -1,0 +1,107 @@
+{% extends "racetrack/base.html" %}
+
+{% load templatetags %}
+
+{% block content %}
+
+<div id="alerts-placeholder">
+{% if error %}
+<div class="alert alert-danger alert-dismissible" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+</div>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-header">
+            Audit Log
+        </div>
+        <div class="card-body">
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Fatman name:</span>
+                <input type="text" class="form-control" placeholder="Fatman name to filter by family" aria-label="Fatman name to filter by family" id="activity-fatman-name" value="{{filter_fatman_name}}">
+                <span class="input-group-text">Fatman version:</span>
+                <input type="text" class="form-control" placeholder="Fatman version to filter by" aria-label="Fatman version to filter by" id="activity-fatman-version" value="{{filter_fatman_version}}">
+
+                <div class="input-group-text">
+                    <label>
+                        <input class="form-check-input mt-0" type="checkbox" id="activity-related-to-me" {% if filter_related_to_me %}checked{% endif %}>
+                        Related to me
+                    </label>
+                </div>
+
+                <button class="btn btn-outline-secondary" type="button" id="button-filter-activity">Filter</button>
+            </div>
+
+            <div class="mt-3"></div>
+
+            <div class="list-group">
+                {% for event in events %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ event.event_type | title }}</h5>
+                        <small class="localize-datetime-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ event.timestamp | timestamp_to_iso8601 }}">
+                            {{ event.timestamp | timestamp_to_ago_str }}
+                        </small>
+                    </div>
+                    <p class="mb-1">
+                        {{ event.explanation }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(".localize-datetime-tooltip").attr("title", function(i, val) {
+    return new Date(val).toString();
+});
+
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
+$('#activity-fatman-name').keypress(function (e) {
+    if (e.which == 13) {
+        filterActivity();
+        return false;
+    }
+});
+$('#activity-fatman-version').keypress(function (e) {
+    if (e.which == 13) {
+        filterActivity();
+        return false;
+    }
+});
+$("#button-filter-activity").click(function () {
+    filterActivity();
+});
+
+function filterActivity() {
+    var fatman_name = $('#activity-fatman-name').val();
+    var fatman_version = $('#activity-fatman-version').val();
+    var related_to_me = document.getElementById('activity-related-to-me').checked;
+    var url = window.location.href.split("?")[0] + "?q=1";
+    if (fatman_name != "" && fatman_version != "") {
+        url = url + "&fatman_name=" + fatman_name + "&fatman_version=" + fatman_version;
+    } else if (fatman_name != "") {
+        url = url + "&fatman_name=" + fatman_name;
+    }
+    if (related_to_me) {
+        url = url + "&related_to_me=1";
+    }
+    window.location.href = url;
+}
+</script>
+{% endblock javascript %}

@@ -1,0 +1,12 @@
+name: adder-recordkeeper
+owner_email: sample@example.com
+lang: python3
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/python-recordkeeper
+
+python:
+  requirements_path: 'requirements.txt'
+  entrypoint_path: 'adder.py'
+  entrypoint_class: 'AdderModel'

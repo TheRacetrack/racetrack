@@ -1,0 +1,9 @@
+PyYAML==5.4.1
+kubernetes==12.0.1
+prometheus-client==0.10.1
+Django==3.2.13
+schedule==1.1.0
+psycopg2-binary==2.9.1
+python-socketio==5.4.1
+Jinja2==3.0.3
+a2wsgi==1.5.0

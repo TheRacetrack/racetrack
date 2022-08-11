@@ -1,0 +1,10 @@
+name: docker-python-flask
+owner_email: sample@example.com
+lang: docker-http
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/docker-python-flask
+
+docker:
+  dockerfile_path: Dockerfile

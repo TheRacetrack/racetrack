@@ -1,0 +1,34 @@
+commonLabels:
+  app: racetrack
+resources:
+  - namespace.yaml
+  - roles.yaml
+  - priorities.yaml
+  - lifecycle.yaml
+  - lifecycle-supervisor.yaml
+  - image-builder.yaml
+  - dashboard.yaml
+  - pub.yaml
+  - postgres.yaml
+
+configMapGenerator:
+  - name: postgres-env
+    envs:
+      - postgres.env
+    namespace: racetrack
+  - name: pgbouncer-env
+    envs:
+      - pgbouncer.env
+    namespace: racetrack
+  - name: lifecycle-env
+    envs:
+      - lifecycle.env
+    namespace: racetrack
+  - name: lifecycle-config
+    namespace: racetrack
+    files:
+      - config.yaml=lifecycle.config.yaml
+  - name: image-builder-config
+    namespace: racetrack
+    files:
+      - config.yaml=image-builder.config.yaml

@@ -1,0 +1,20 @@
+name: python-env-secret
+owner_email: sample@example.com
+lang: python3
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/python-env-secret
+
+python:
+  requirements_path: 'requirements.txt'
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'FatmanEntrypoint'
+
+secret_build_env_file: .env
+build_env:
+  DEBIAN_FRONTEND: noninteractive
+
+secret_runtime_env_file: .env
+runtime_env:
+  TORCH_MODEL_ZOO: zoo

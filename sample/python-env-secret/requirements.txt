@@ -1,0 +1,1 @@
+git+https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@github.com/TheRacetrack/racetrack

@@ -1,0 +1,137 @@
+{% extends "racetrack/base.html" %}
+
+{% load templatetags %}
+
+{% block content %}
+
+<div id="alerts-placeholder">
+{% if error %}
+<div class="alert alert-danger alert-dismissible" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+</div>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-body">
+
+            <h5 class="card-title">Fatmen Portfolio</h5>
+
+            <table id="table-filter-1">
+                <thead>
+                    <tr>
+                        <th>Family name</th>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>Deployed by</th>
+                        <th>Last updated ago [days]</th>
+                        <th>Last called ago [days]</th>
+                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Suggestions explaining why fatman is a candidate for removal">Purge reasons</th>
+                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assessed penalty points representing usability of a fatman. A higher value means a better candidate for removal">Purge score</th>
+                        <th>Newer versions</th>
+                        <th>Last calll time</th>
+                        <th>Update time</th>
+                        <th>Creation time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for fatman in fatmen %}
+                    <tr>
+                        <td>{{ fatman.name }}</td>
+                        <td>{{ fatman.version }}</td>
+                        <td>{{ fatman.status | upper }}</td>
+                        <td>{{ fatman.deployed_by | default_if_none:'' }}</td>
+                        <td>{{ fatman.update_time_days_ago | floatformat:"-2" }}</td>
+                        <td>{{ fatman.last_call_time_days_ago | floatformat:"-2" }}</td>
+                        <td>{{ fatman.purge_reasons }}</td>
+                        <td>{{ fatman.purge_score | floatformat:"-2" }}</td>
+                        <td>{{ fatman.purge_newer_versions }}</td>
+                        <td>{{ fatman.last_call_time | timestamp_to_iso8601 }}</td>
+                        <td>{{ fatman.update_time | timestamp_to_iso8601 }}</td>
+                        <td>{{ fatman.create_time | timestamp_to_iso8601 }}</td>
+                        <td>
+                            <button type="button" class="btn btn-danger button-delete-fatman" fatman-name="{{ fatman.name }}" fatman-version="{{ fatman.version }}">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(".button-delete-fatman").click(function () {
+    that = $(this)
+    showModal("Delete Fatman", "Are you sure you want to delete this fatman?", function () {
+        invokeFatmanAction('Deleting fatman', 'delete-fatman', that, '{{ csrf_token }}')
+    });
+});
+
+$(".localize-datetime").text(function(index, text) {
+    return new Date(text).toString();
+});
+
+// see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
+var tfConfig = {
+    base_path: '/dashboard/static/racetrack/tablefilter/',
+    paging: {
+        results_per_page: ['Rows: ', [10, 25, 50, 100]]
+    },
+    auto_filter: { delay: 500 }, // Delay for automatic filtering (milliseconds)
+    state: { // Enable state persistence
+        types: ['local_storage'], // Possible values: 'local_storage' 'hash' or 'cookie'  
+        filters: true, // Persist filters values, enabled by default  
+        columns_visibility: true, // Persist columns visibility  
+        filters_visibility: true, // Persist filters row visibility  
+    },
+    alternate_rows: true,
+    rows_counter: true,
+    toolbar: true,
+    btn_reset: {
+        text: 'Clear'
+    },
+    status_bar: true,
+    col_types: [
+        'string', // family name
+        'string', // version
+        'string', // status
+        'string', // deployed by
+        'number', // last updated ago
+        'number', // last called ago
+        'string', // purge reasons
+        'number', // purge score
+        'number', // newer versions
+        { type: 'date' }, // last call time
+        { type: 'date' }, // update time
+        { type: 'date' }, // creation time
+        'none', // actions
+    ],
+    col_12: 'none',
+    no_results_message: {
+        content: 'No results',
+    },
+    extensions: [{
+        name: 'colsVisibility',
+        at_start: [9, 10, 11],
+        text: 'Columns: ',
+        enable_tick_all: true,
+        tick_to_hide: false,
+    }, {
+        name: 'sort'
+    }],
+};
+var tf = new TableFilter('table-filter-1', tfConfig);
+tf.init();
+</script>
+{% endblock javascript %}

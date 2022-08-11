@@ -1,0 +1,240 @@
+version: '3.7'
+services:
+
+  lifecycle:
+    container_name: lifecycle
+    build:
+      context: .
+      dockerfile: lifecycle/Dockerfile
+    image: racetrack/lifecycle:latest
+    ports:
+      - "7102:7102"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - ./lifecycle/tests/sample/compose.yaml:/etc/racetrack/lifecycle/config.yaml
+    env_file:
+      - ./.env
+    environment:
+      RK_MOCK: 'true'
+      DJANGO_DEBUG: 'True'
+      CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
+    command: >
+      bash -c "
+      /src/lifecycle/wait-for-postgres.sh && 
+      /src/lifecycle/wait-for-migration.sh && 
+      python -u -m lifecycle serve"
+
+  lifecycle-supervisor:
+    container_name: lifecycle-supervisor
+    image: racetrack/lifecycle:latest
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - ./lifecycle/tests/sample/compose.yaml:/etc/racetrack/lifecycle/config.yaml
+    env_file:
+      - ./.env
+    environment:
+      RK_MOCK: 'true'
+      DJANGO_DEBUG: 'True'
+      CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
+    command: >
+      bash -c "
+      /src/lifecycle/wait-for-postgres.sh && 
+      /src/lifecycle/lifecycle/django/migrate.sh && 
+      python -u -m lifecycle supervisor"
+
+  image-builder:
+    container_name: image-builder
+    build:
+      context: .
+      dockerfile: image_builder/Dockerfile
+    image: racetrack/image-builder:latest
+    ports:
+      - "7101:7101"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    volumes:
+      - './.git:/src/.git:ro'
+      - ./image_builder/tests/sample/compose.yaml:/etc/racetrack/image-builder/compose.yaml
+    environment:
+      DOCKER_TLS_CERTDIR: ''
+      DOCKER_HOST: tcp://docker-engine:2375
+      CONFIG_FILE: /etc/racetrack/image-builder/compose.yaml
+
+  dashboard:
+    container_name: dashboard
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    image: racetrack/dashboard:latest
+    ports:
+      - "7103:7103"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    user: '100000:100000'
+    env_file:
+      - ./.env
+    environment:
+      DJANGO_DEBUG: 'True'
+      DASHBOARD_PORT: '7103'
+      LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
+      EXTERNAL_LIFECYCLE_URL: 'http://localhost:7102/lifecycle'
+      EXTERNAL_PUB_URL: 'http://localhost:7105/pub'
+      AUTH_REQUIRED: 'true'
+      LIFECYCLE_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4'
+    command: >
+      bash -c "
+      /src/dashboard/wait-for-postgres.sh && 
+      python -u main.py"
+
+  pub:
+    container_name: pub
+    build:
+      context: pub/
+      dockerfile: Dockerfile
+    image: racetrack/pub:latest
+    ports:
+      - "7105:7105"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    user: '100000:100000'
+    environment:
+      PUB_PORT: '7105'
+      FORWARD_TO_DOMAIN: 'localhost'
+      LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
+      AUTH_REQUIRED: 'true'
+      AUTH_DEBUG: 'true'
+      LIFECYCLE_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
+
+  postgres:
+    image: postgres:13.1
+    container_name: postgres
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - ./.env
+    command: -p 5532
+    restart: always
+    ports:
+      - "5532:5532"
+    networks:
+      - racetrack_default
+
+  pgbouncer:
+    image: racetrack/pgbouncer:latest
+    build:
+      context: postgres/pgbouncer
+      dockerfile: Dockerfile
+    container_name: pgbouncer
+    ports:
+      - "5533:5533"
+    restart: always
+    user: '100000:100000'
+    networks:
+      - racetrack_default
+    environment:
+      LISTEN_PORT: '5533'
+      DB_USER: 'racetrack'
+      DB_PASSWORD: 'dev-25ZjbUDJH6MzmUR'
+      DB_HOST: 'postgres'
+      DB_NAME: 'lifecycle_db'
+      DB_PORT: '5532'
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 30000
+      CLIENT_IDLE_TIMEOUT: 90
+      ADMIN_USERS: postgres,admin,racetrack
+    logging:
+      driver: none
+
+  docker-engine:
+    container_name: docker-engine
+    image: docker:dind
+    ports:
+      - "2375:2375"
+    networks:
+      - racetrack_default
+      - registry
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    privileged: true
+    command: ['--insecure-registry=kind-registry:5000', '--insecure-registry=http://kind-registry:5000']
+    environment:
+      DOCKER_TLS_CERTDIR: ''
+    logging:
+      driver: none
+  
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+    container_name: postgres-exporter
+    env_file:
+      - ./.env
+    ports:
+      - "9187:9187"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    logging:
+      driver: none
+    profiles: ["dev"]
+
+  prometheus:
+    image: prom/prometheus:v2.32.1
+    container_name: prometheus
+    ports:
+      - "9092:9090"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    command: --config.file=/etc/prometheus/prometheus.yaml
+    volumes:
+      - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    profiles: ["dev"]
+    logging:
+      driver: none
+
+  grafana:
+    image: grafana/grafana:8.3.3
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    user: 1000:1000
+    volumes:
+      - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
+      - ./utils/grafana/dashboards/:/var/lib/grafana/dashboards
+    environment:
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    profiles: ["dev"]
+    logging:
+      driver: none
+
+
+networks:
+  racetrack_default:
+    driver: bridge
+    name: racetrack_default
+  registry:
+    external: true
+    name: kind

@@ -1,0 +1,9 @@
+log_level: debug
+http_port: 7002
+deployer: kubernetes
+image_builder_url: http://image-builder:7001
+internal_pub_url: http://pub:7005/pub
+external_pub_url: http://localhost:7005/pub
+docker_registry: kind-registry:5000
+auth_required: true
+auth_debug: true

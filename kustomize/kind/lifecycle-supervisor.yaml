@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: lifecycle-supervisor
+  labels:
+    app.kubernetes.io/name: lifecycle-supervisor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lifecycle-supervisor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lifecycle-supervisor
+    spec:
+      serviceAccountName: null
+      priorityClassName: high-priority
+      initContainers:
+        - name: init-django-db
+          image: kind-registry:5000/racetrack/lifecycle:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: postgres-env
+            - configMapRef:
+                name: lifecycle-env
+          command:
+            - bash
+            - -c
+            - |
+              /src/lifecycle/wait-for-postgres.sh &&
+              /src/lifecycle/lifecycle/django/migrate.sh
+      containers:
+        - name: lifecycle-supervisor
+          image: kind-registry:5000/racetrack/lifecycle:latest
+          imagePullPolicy: Always
+          tty: true
+          volumeMounts:
+            - name: lifecycle-config
+              mountPath: /etc/racetrack/lifecycle/
+          envFrom:
+            - configMapRef:
+                name: postgres-env
+            - configMapRef:
+                name: lifecycle-env
+          env:
+            - name: CONFIG_FILE
+              value: /etc/racetrack/lifecycle/config.yaml
+            - name: RK_MOCK
+              value: 'true'
+            - name: RK_HOST
+              value: ''
+            - name: PUBLIC_IP
+              value: ''
+              valueFrom: null
+            - name: CLUSTER_FQDN
+              value: ''
+              valueFrom: null
+            - name: DEBUG
+              value: 'true'
+            - name: DJANGO_DEBUG
+              value: 'true'
+          command: ["python", "-u", "-m", "lifecycle", "supervisor"]
+      volumes:
+        - name: lifecycle-config
+          configMap:
+            name: lifecycle-config

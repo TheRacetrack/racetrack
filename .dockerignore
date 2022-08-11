@@ -1,0 +1,19 @@
+# Python residues
+**/venv
+**/.pytest_cache
+**/*.coverage
+**/__pycache__
+**/*.pyc
+**/*.egg-info
+
+# Dev residues
+**/*.iml
+**/.idea
+**/.vscode
+
+# Go leftovers
+**/go.sum
+
+.git
+**/.fatman.Dockerfile
+**/log.out

@@ -1,0 +1,11 @@
+name: python-static-endpoints
+owner_email: sample@example.com
+lang: python3
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/python-static-endpoints
+
+python:
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'FatmanEntrypoint'
