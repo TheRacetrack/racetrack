@@ -3,7 +3,7 @@
 Install:
 
 - Python 3.8+ (`sudo apt install python3.8 python3.8-dev python3.8-venv` on Ubuntu 18+)
-- [Docker](https://docs.docker.com/engine/install/ubuntu/)
+- [Docker v20.10+](https://docs.docker.com/engine/install/ubuntu/)
 - [kubectl v1.24.3+](https://kubernetes.io/docs/tasks/tools/#kubectl) - if you're going to deploy to Kind
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) - if you're going to deploy to Kind
 - [Go 1.16+](https://go.dev/doc/install) - if you're going to develop components in Go (PUB, go_wrapper)
@@ -21,7 +21,7 @@ make setup
 Components can be run in 3 different ways, every next way is more integrated and
 closer to target setup, but it boots up longer:
 - [Localhost](#localhost)
-- [Docker compose](#docker-compose)
+- [Local Docker Engine](#local-docker-engine)
 - [Kind](#kind)
 
 ## Quickstart
@@ -90,7 +90,7 @@ In case of errors, troubleshoot with `docker ps` and `docker logs -f <fatman-nam
 Fatman can be accessed through the PUB at http://localhost:7205/pub/fatman/adder/latest,
 where "adder" is a name of a job from `fatman.yaml`.
 
-## Docker compose
+## Local Docker Engine
 
 Fatmen can also run as local docker containers. 
 
@@ -132,7 +132,7 @@ Fatmen are deployed as k8s pods, and should be managed as such.
 
 ## Port numbers
 
-| service       | kind/Kubernetes (X) | docker-compose (X+100) | localhost (X+200) |
+| service       | kind/Kubernetes (X) | local docker (X+100)   | localhost (X+200) |
 | -------       | ---------------     | --------------         | ---------         |
 | Lifecycle     | 7002                | 7102                   | 7202              |
 | Image Builder | 7001                | 7101                   | 7201              |
