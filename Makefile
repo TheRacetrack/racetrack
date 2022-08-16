@@ -1,7 +1,7 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.1.2
+TAG ?= 2.2.0
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 

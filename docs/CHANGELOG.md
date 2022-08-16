@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.2.0] - 2022-08-16
 ### Added
 - Golang job types serve interactive Swagger UI with API documentation on the home page.
 
@@ -16,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See [plugins-job-types.md](development/plugins-job-types.md) for more details.
 - A namespace for docker images in a Docker Registry is configurable
   so that Racetrack can be released to any Docker Registry.
+- A namespace for fatman workloads running on Kubernetes is now configurable
+  by means of `FATMAN_K8S_NAMESPACE` environment variable,
+  by default it's set to `racetrack`.
+- Hostname subdomain of Racetrack services is now configurable by means of
+  `RACETRACK_SUBDOMAIN` environment variable, by default it's set to `racetrack`.
 - Golang job type has been moved to [Plugin - Go Job Type](https://github.com/TheRacetrack/plugin-go-job-type).
   Now it's not enabled by default in Racetrack.
 
