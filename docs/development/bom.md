@@ -14,6 +14,7 @@ changes and/or source) is:
 | Tool                                                                | Our version | Latest version |
 | ------------------------------------------------------------------- | ------------| ---------------|
 | [Python](https://www.python.org/downloads/)                         | 3.8         | 3.10           |
+| [Docker](https://docs.docker.com/engine/release-notes/)             | 20.10.17    | 20.10.17       |
 | [PostgreSQL](https://www.postgresql.org/docs/release/)              | 13.1        | 14             |
 | [Go](https://go.dev/)                                               | 1.16        | 1.18.3         |
 | [Django](https://pypi.org/project/Django//)                         | 3.2.6       | 4.0.5          |

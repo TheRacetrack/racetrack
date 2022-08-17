@@ -203,7 +203,7 @@ Racetrack, and to help you get used to the core Racetrack concepts.
 
 1. A workstation with a sane operating system (currently, Debian and -
    grudgingly - Ubuntu are considered sane)
-1. Docker
+1. Docker v20.10+
 1. bash
 1. python3 and python3-venv (Python 3.8+)
 1. [racetrack-client](https://pypi.org/project/racetrack-client/) (see section
