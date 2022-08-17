@@ -21,7 +21,7 @@ make setup
 Components can be run in 3 different ways, every next way is more integrated and
 closer to target setup, but it boots up longer:
 - [Localhost](#localhost)
-- [Local Docker Engine](#local-docker-engine)
+- [Docker compose](#docker-compose)
 - [Kind](#kind)
 
 ## Quickstart
@@ -90,7 +90,7 @@ In case of errors, troubleshoot with `docker ps` and `docker logs -f <fatman-nam
 Fatman can be accessed through the PUB at http://localhost:7205/pub/fatman/adder/latest,
 where "adder" is a name of a job from `fatman.yaml`.
 
-## Local Docker Engine
+## Docker compose
 
 Fatmen can also run as local docker containers. 
 
@@ -132,7 +132,7 @@ Fatmen are deployed as k8s pods, and should be managed as such.
 
 ## Port numbers
 
-| service       | kind/Kubernetes (X) | local docker (X+100)   | localhost (X+200) |
+| service       | kind/Kubernetes (X) | docker-compose (X+100) | localhost (X+200) |
 | -------       | ---------------     | --------------         | ---------         |
 | Lifecycle     | 7002                | 7102                   | 7202              |
 | Image Builder | 7001                | 7101                   | 7201              |
