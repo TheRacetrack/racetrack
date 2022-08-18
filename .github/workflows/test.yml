@@ -1,8 +1,9 @@
-name: ci 
+name: test
 on:
   push
 
 jobs:
+
   test-unit:
     runs-on: ubuntu-latest
     steps:
@@ -10,5 +11,21 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
+      - uses: actions/setup-go@v3
+      
       - run: make setup
       - run: . venv/bin/activate && make test-unit
+
+  test-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - run: make setup
+      - run: . venv/bin/activate && make compose-up
+      - run: . venv/bin/activate && make compose-test
