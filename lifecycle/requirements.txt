@@ -7,3 +7,5 @@ psycopg2-binary==2.9.1
 python-socketio==5.4.1
 Jinja2==3.0.3
 a2wsgi==1.5.0
+opentelemetry-exporter-otlp-proto-http==1.11.1
+protobuf==3.20.1

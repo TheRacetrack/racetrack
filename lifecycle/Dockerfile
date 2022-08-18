@@ -51,3 +51,5 @@ ARG DOCKER_TAG
 ENV GIT_VERSION ${GIT_VERSION}
 ENV DOCKER_TAG ${DOCKER_TAG}
 LABEL racetrack-component="lifecycle" git-version="${GIT_VERSION}"
+
+ENV SSLKEYLOGFILE /src/lifecycle/sslkeylogfile

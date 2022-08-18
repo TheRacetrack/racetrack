@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Request
+from opentelemetry import trace
 
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
@@ -84,11 +85,17 @@ def setup_fatman_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             example=1000000,
         )
 
+    tracer = trace.get_tracer(__name__)
+
     @api.get('/fatman')
     def _list_all_fatmen(request: Request):
         """Get list of deployed Fatman"""
-        auth_subject = check_auth(request, scope=AuthScope.READ_FATMAN)
-        return list_fatmen_registry(config, auth_subject)
+        with tracer.start_as_current_span("get-fatman-list") as span:
+            span.set_attribute("endpoint.method", 'GET')
+            span.set_attribute("endpoint.path", '/fatman')
+
+            auth_subject = check_auth(request, scope=AuthScope.READ_FATMAN)
+            return list_fatmen_registry(config, auth_subject)
 
     @api.get('/fatman_family')
     def _get_fatman_family(request: Request):

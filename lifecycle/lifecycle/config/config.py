@@ -57,6 +57,11 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     default_fatman_cpu_min: Quantity = Quantity('10m')
     default_fatman_cpu_max: Quantity = Quantity('1000m')
 
+    # OpenTelemetry
+    open_telemetry_enabled: bool = False
+    open_telemetry_endpoint: str = 'console'
+    open_telemetry_service_name: str = 'lifecycle'
+
     @validator(
         'max_fatman_memory_limit',
         'default_fatman_memory_min',
