@@ -17,7 +17,7 @@ changes and/or source) is:
 | [Docker](https://docs.docker.com/engine/release-notes/)             | 20.10.17    | 20.10.17       |
 | [PostgreSQL](https://www.postgresql.org/docs/release/)              | 13.1        | 14             |
 | [Go](https://go.dev/)                                               | 1.16        | 1.18.3         |
-| [Django](https://pypi.org/project/Django//)                         | 3.2.6       | 4.0.5          |
+| [Django](https://pypi.org/project/Django)                           | 3.2.6       | 4.0.5          |
 | [jQuery](https://github.com/jquery/jquery/releases)                 | 3.6.0       | 3.6.0          |
 | [Bootstrap](https://getbootstrap.com/docs/versions/)                | 5.0.1       | 5.2            |
 | [TableFilter](https://github.com/koalyptus/TableFilter/releases)    | 0.7.3       | 0.7.3          |
@@ -26,8 +26,7 @@ changes and/or source) is:
 | [Prism](https://github.com/PrismJS/prism/)                          | 1.28.0 | 1.28.0 |
 | [python-socketio](https://pypi.org/project/python-socketio/)        | 5.4.1 | 5.6.0 |
 | [backoff](https://pypi.org/project/backoff/)                        | 1.10.0 | 2.1.2 |
-| [requests](https://pypi.org/project/requests/)                      | 2.25.1 | 2.27.1 |
-| [Python client for kubernetes](https://pypi.org/project/kubernetes/) | 12.0.1 | 23.6.0 |
+| [Kubernetes Python Client](https://pypi.org/project/kubernetes/) | 12.0.1 | 23.6.0 |
 | [prometheus-client](https://pypi.org/project/prometheus-client/) | 0.10.1 | 0.14.1 |
 | [werkzeug](https://pypi.org/project/Werkzeug/) | 2.0.2 | 2.1.2 |
 | [GitPython](https://pypi.org/project/GitPython/) | 3.1.14 | 3.1.27 |
