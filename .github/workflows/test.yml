@@ -34,26 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: make setup-test-e2e
-      - name: Create services containers
+      - name: Build and Create Docker containers
         run: . venv/bin/activate && make compose-up
       - name: Run End-to-end tests
         run: . venv/bin/activate && make compose-test-e2e
-
-  test-e2e-kind:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      - name: Set up Kind
-        uses: engineerd/setup-kind@v0.5.0
-
-      - name: Install dependencies
-        run: make setup-test-e2e
-      - name: Create services containers
-        run: . venv/bin/activate && make kind-up
-      - name: Run End-to-end tests
-        run: . venv/bin/activate && make kind-test-e2e
