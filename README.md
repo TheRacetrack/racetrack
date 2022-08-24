@@ -93,7 +93,8 @@ please follow the [Tutorial](docs/user.md#tutorial).
 
 ## About
 
-Racetrack is copyright The Danish Business Authority 2022. It is published under
-the Apache 2.0 License.
+Racetrack is copyright The Danish Business Authority 2022.
+It is published under the [Apache 2.0 License](./LICENSE).
+See [Copyright Notices](./docs/license/copyright-notices.md).
 
 This project is a collaboration between [The Danish Business Authority](https://www.erhvervsstyrelsen.dk) and [deepsense.ai](https://deepsense.ai).
