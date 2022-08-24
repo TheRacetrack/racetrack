@@ -1,0 +1,40 @@
+name: test
+on:
+  push
+
+jobs:
+
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Set up Go
+        uses: actions/setup-go@v3
+
+      - name: Install dependencies
+        run: make setup
+      - run: . venv/bin/activate && make test-unit
+
+  test-e2e-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install dependencies
+        run: make setup-test-e2e
+      - name: Build and Create Docker containers
+        run: . venv/bin/activate && make compose-up
+      - name: Run End-to-end tests
+        run: . venv/bin/activate && make compose-test-e2e

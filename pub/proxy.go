@@ -64,8 +64,6 @@ func handleProxyRequest(
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	metricFatmanProxyRequests.WithLabelValues(fatmanName, fatmanVersion).Inc()
-
 	fatmanPath := vars["path"]
 
 	authToken := getAuthFromHeaderOrCookie(req)
@@ -80,8 +78,10 @@ func handleProxyRequest(
 		return http.StatusInternalServerError, errors.Wrap(err, "failed to get Fatman details")
 	}
 
+	metricFatmanProxyRequests.WithLabelValues(fatmanName, fatman.Version).Inc()
+
 	if cfg.AuthRequired {
-		err := lifecycleClient.AuthenticateCaller(req.URL.Path, fatmanName, fatmanVersion, fatmanPath, cfg.AuthDebug)
+		err := lifecycleClient.AuthenticateCaller(req.URL.Path, fatmanName, fatman.Version, fatmanPath, cfg.AuthDebug)
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
@@ -94,7 +94,7 @@ func handleProxyRequest(
 	}
 
 	targetUrl := TargetURL(cfg, fatman, req.URL.Path)
-	ServeReverseProxy(targetUrl, res, req, fatmanName, fatmanVersion, cfg, logger, requestId)
+	ServeReverseProxy(targetUrl, res, req, fatmanName, fatman.Version, cfg, logger, requestId)
 	return 200, nil
 }
 

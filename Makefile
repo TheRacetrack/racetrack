@@ -29,6 +29,14 @@ setup-racetrack-client:
 	pip install --upgrade pip setuptools &&\
 	( cd racetrack_client && make setup )
 
+setup-test-e2e:
+	python3 -m venv venv &&\
+	. venv/bin/activate &&\
+	pip install -r tests/e2e/requirements.txt &&\
+	( cd racetrack_client && make setup ) &&\
+	( cd racetrack_commons && make setup )
+	@echo Activate your venv: . venv/bin/activate
+
 lint:
 	-python -m mypy --ignore-missing-imports --exclude 'racetrack_client/build' racetrack_client
 	-python -m mypy --ignore-missing-imports racetrack_commons
@@ -133,7 +141,7 @@ compose-up-docker-daemon: registry docker-build local-registry-push-base
 		up -d
 
 compose-down: docker-clean-fatman
-	$(docker-compose) down
+	$(docker-compose) --profile dev down
 
 compose-deploy-sample:
 	LIFECYCLE_URL=http://localhost:7102 ./utils/wait-for-lifecycle.sh
