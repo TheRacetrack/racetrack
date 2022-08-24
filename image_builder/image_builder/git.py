@@ -3,6 +3,7 @@ from typing import Optional
 from urllib.parse import urlsplit, quote
 
 from git import Repo
+
 from racetrack_commons.dir import project_root
 from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.client_config.client_config import Credentials
