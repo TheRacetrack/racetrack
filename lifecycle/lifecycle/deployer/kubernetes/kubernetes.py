@@ -74,6 +74,9 @@ class KubernetesFatmanDeployer(FatmanDeployer):
         memory_max = resources.memory_max or config.default_fatman_memory_max
         cpu_min = resources.cpu_min or config.default_fatman_cpu_min
         cpu_max = resources.cpu_max or config.default_fatman_cpu_max
+        if memory_min.plain_number * 4 < memory_max.plain_number:
+            memory_min = memory_max / 4
+            logger.info(f'minimum memory increased to memory_max/4: {memory_min}')
 
         assert memory_max <= config.max_fatman_memory_limit, \
             f'given memory limit {memory_max} is greater than max allowed {config.max_fatman_memory_limit}'

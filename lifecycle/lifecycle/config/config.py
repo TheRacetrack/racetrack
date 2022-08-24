@@ -52,8 +52,8 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     max_fatman_memory_limit: Quantity = Quantity('8Gi')
 
     # default ranges of resources to allocate to Fatmen
-    default_fatman_memory_min: Quantity = Quantity('150Mi')
-    default_fatman_memory_max: Quantity = Quantity('600MiB')
+    default_fatman_memory_min: Quantity = Quantity('256Mi')
+    default_fatman_memory_max: Quantity = Quantity('1Gi')
     default_fatman_cpu_min: Quantity = Quantity('10m')
     default_fatman_cpu_max: Quantity = Quantity('1000m')
 

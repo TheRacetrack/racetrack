@@ -41,3 +41,9 @@ def test_quantity_compare():
     assert not Quantity('0.2') > Quantity('0.1G')
     assert Quantity('200m') == Quantity('0.2')
     assert Quantity('1Mi') == Quantity('1048.576k')
+
+
+def test_quantity_divide():
+    assert str(Quantity('2Gi') / 4) == '0.5Gi'
+    assert str(Quantity('2Gi') / 8) == '0.25Gi'
+    assert str(Quantity('800M') / 4) == '200M'
