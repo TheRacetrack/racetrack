@@ -9,4 +9,4 @@ auth_debug: true
 auth_required: true
 
 open_telemetry_enabled: true
-open_telemetry_endpoint: 'https://apm.erst.dk/'
+open_telemetry_endpoint: 'https://apm.erst.dk/v1/traces'
