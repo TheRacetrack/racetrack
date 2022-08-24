@@ -74,6 +74,10 @@ class KubernetesFatmanDeployer(FatmanDeployer):
         memory_max = resources.memory_max or config.default_fatman_memory_max
         cpu_min = resources.cpu_min or config.default_fatman_cpu_min
         cpu_max = resources.cpu_max or config.default_fatman_cpu_max
+        if resources.memory_max is None and memory_max < memory_min:
+            memory_max = memory_min
+        if resources.cpu_max is None and cpu_max < cpu_min:
+            cpu_max = cpu_min
         if memory_min.plain_number * 4 < memory_max.plain_number:
             memory_min = memory_max / 4
             logger.info(f'minimum memory increased to memory_max/4: {memory_min}')
