@@ -252,5 +252,5 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
 1. Commit and push all changes from previous points: `git commit -am "Release version $VERSION"`
 1. Merge `release-x.y.z` branch to `master`: `git checkout master && git merge release-$VERSION && git push`
 1. Tag the resulting commit and push tag: `git tag $VERSION && git push origin $VERSION`
-1. Build & push docker images by running: `make version-release`
+1. Build & push docker images by running: `make version-release` and `make version-release-github`
 1. Release racetrack client (if needed) with `(cd racetrack_client && make release-pypi)`

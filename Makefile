@@ -265,6 +265,12 @@ version-release: TAG = $(shell ./utils/version_bumper.py --current)
 version-release: docker-push
 	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
 
+version-release-github: TAG = $(shell ./utils/version_bumper.py --current)
+version-release-github: DOCKER_REGISTRY = ghcr.io
+version-release-github: DOCKER_REGISTRY_NAMESPACE = theracetrack/racetrack
+version-release-github: docker-push
+	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
+
 template-local-env:
 	cp -n utils/.local.env.template .local.env
 	@echo "Now fill in the .local.env file with your local settings"
