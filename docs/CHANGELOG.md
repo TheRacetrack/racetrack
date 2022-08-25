@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2022-08-25
 ### Changed
 - Maximum amount of memory for a fatman is reduced to `1GiB` by default
   (if not set explicitly in a manifest).
