@@ -8,18 +8,18 @@ repository. Some fields are required, while optional ones will be assigned a
 default value if not provided. The YAML manifest file can have the following
 fields:
 
-- `name` (required) - name of the current service to be deployed by means of
+- `name` (**required**) - name of the current service to be deployed by means of
   this mainfest file. It cannot contain underscores (but can contain dashes).
-- `lang` (required) - Language wrapper used to embed model. This should be one
+- `lang` (**required**) - Language wrapper used to embed model. This should be one
   of the supported wrapper names: `python3`, `golang` or `docker-http`
-- `git` (required) - the object describes the place where the source code can be
+- `git` (**required**) - the object describes the place where the source code can be
   found using git VCS.
-    - `remote` (required) - **HTTPS** URL of git remote. This is also root of your
+    - `remote` (**required**) - **HTTPS** URL of git remote. This is also root of your
       git repo, which will become the "current working directory" at runtime of Fatman.
       SSH remote URLs are NOT supported.
     - `branch` - name of the branch (if other than master)
     - `directory` - subdirectory relative to git repo root where the project is
-- `owner_email` (required) - email address of the Fatman's owner to reach out
+- `owner_email` (**required**) - email address of the Fatman's owner to reach out
 - `extends` - relative path to base manifest file, which will be extended by this manifest
 - `version` - Version of the Fatman. It should adhere to Semantic Versioning standard.
 - `python` - Manifest for Python projects
