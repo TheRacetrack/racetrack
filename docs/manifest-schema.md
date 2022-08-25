@@ -45,3 +45,46 @@ fields:
 - `secret_runtime_env_file` - path to a secret file (on a client machine) with runtime environment variables
 - `system_dependencies` - list of system-wide packages that should be installed with package manager
   (apt or apk depending on base image type)
+
+## Example
+It doesn't really make sense, but it contains all fields with exemplary values:
+```yaml
+name: skynet
+lang: python3
+git:
+  remote: https://github.com/racetrack/supersmart-model
+  branch: master
+  directory: 'examples/skynet'
+owner_email: arnold@skynet.com
+extends: './base/fatman.yaml'
+version: '1.2.3-alpha'
+python:
+  requirements_path: 'python/requirements.txt'
+  entrypoint_path: 'python/entrypoint.py'
+  entrypoint_class: 'FatmanClazz'
+golang:
+  gomod: 'golang/go.mod'
+docker:
+  dockerfile_path: 'docker/Dockerfile'
+build_env:
+  DEBIAN_FRONTEND: 'noninteractive'
+image_type: docker
+labels:
+  model: linear-regression
+public_endpoints:
+  - '/api/v1/perform'
+  - '/api/v1/webview'
+replicas: 1
+resources:
+  memory_min: 256Mi
+  memory_max: 1Gi
+  cpu_min: 10m
+  cpu_max: 1000m
+runtime_env:
+  DJANGO_DEBUG: 'true'
+  TORCH_MODEL_ZOO: zoo
+secret_build_env_file: '.secrets/build.env'
+secret_runtime_env_file: .secrets/runtime.env'
+system_dependencies:
+  - 'libgomp1'
+```
