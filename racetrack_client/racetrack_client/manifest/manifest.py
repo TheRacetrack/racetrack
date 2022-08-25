@@ -31,9 +31,9 @@ class DockerManifest(BaseModel, extra=Extra.forbid):
 
 
 class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
-    # minimum memory amount in bytes, eg. 100Mi
+    # minimum memory amount in bytes, eg. 256Mi
     memory_min: Optional[Quantity] = None
-    # maximum memory amount in bytes, eg. 4Gi
+    # maximum memory amount in bytes, eg. 1Gi
     memory_max: Optional[Quantity] = None
     # minimum CPU consumption in cores, eg. 10m
     cpu_min: Optional[Quantity] = None
