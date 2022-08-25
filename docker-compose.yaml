@@ -65,6 +65,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    user: '100000:100000'
     volumes:
       - './.git:/src/.git:ro'
       - ./image_builder/tests/sample/compose.yaml:/etc/racetrack/image-builder/compose.yaml

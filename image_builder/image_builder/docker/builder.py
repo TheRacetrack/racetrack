@@ -75,6 +75,7 @@ class DockerBuilder(ImageBuilder):
             metric_images_built.inc()
         except CommandError as e:
             metric_images_building_errors.inc()
+            logger.error(f'building Fatman image: {e}')
             return full_image, e.stdout, f'building Fatman image: {e}'
         except Exception as e:
             metric_images_building_errors.inc()

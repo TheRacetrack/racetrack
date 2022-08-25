@@ -14,7 +14,7 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
     apt-get update -y && apt-get install -y docker-ce-cli
 
-RUN mkdir -p -m 777 /var/log/racetrack/image-builder/build-logs
+RUN mkdir -p -m 777 /var/log/racetrack/image-builder/build-logs /src/workspaces /.docker
 
 WORKDIR /src/
 COPY .dockerignore /src/

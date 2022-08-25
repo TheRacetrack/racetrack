@@ -68,6 +68,15 @@ class Quantity:
     def __to_json__(self) -> str:
         return self.quantity_str
 
+    def __truediv__(self, other) -> 'Quantity':
+        if isinstance(other, (int, float)):
+            result_base_number = self.base_number / other
+            if result_base_number.is_integer():
+                result_base_number = int(result_base_number)
+            return Quantity(f'{result_base_number}{self.suffix}')
+        else:
+            raise NotImplementedError()
+
     @property
     def plain_number(self) -> float:
         """Convert quantity to a plain number without any suffixes"""

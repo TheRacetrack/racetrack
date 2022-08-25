@@ -154,6 +154,9 @@ git:
 python:
   requirements_path: 'supersmart/requirements.txt'
   entrypoint_path: 'fatman_entrypoint.py'
+
+resources:
+  memory_max: 2Gi
 ```
 
 So in a way, the Manifest is to Racetrack what the Dockerfile is to Docker.
@@ -161,8 +164,14 @@ So in a way, the Manifest is to Racetrack what the Dockerfile is to Docker.
 Some clever things that can be controlled using the Manifest is installing extra
 packages, or processing a Python `requirements.txt` file.
 
-Please refer to the more comprehensive section [The Fatman Manifest
-File](#manifest-deep) for more detail.
+It is recommended to declare maximum memory amount explicitly by defining
+```yaml
+resources:
+  memory_max: 1Gi
+```
+
+Please refer to the more comprehensive section
+[The Fatman Manifest File](manifest-schema.md) for more detail.
 
 ## Submitting a Job<a name="submitting"></a>
 
