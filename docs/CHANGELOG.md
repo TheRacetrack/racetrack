@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Maximum amount of memory for a fatman is reduced to `1GiB` by default
   (if not set explicitly in a manifest).
-  In general the memory limit can't be more than 4 times higher than the request.
+  In general the maximum memory can't be more than 4 times higher than the minimum memory.
   Racetrack keeps an eye on this rule by automatically adjusting minimum memory amount, if needed.
   It is recommended to declare maximum memory amount explicitly
   in a manifest by defining `resources.memory_max` field.
