@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM python:3.9-slim-bullseye
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
@@ -40,7 +40,7 @@ RUN cd /src/racetrack_client && python setup.py develop &&\
 # give permissions to modify sqlite db and download plugins
 RUN mkdir -p -m 777 /src/.plugins /.cache /.local /src/lifecycle/lifecycle/django && \
     chmod 777 -R /src/lifecycle/lifecycle/django && \
-    chmod 777 /usr/local/lib/python3.8/site-packages
+    chmod 777 /usr/local/lib/python3.9/site-packages
 
 ENV DJANGO_SETTINGS_MODULE "lifecycle.django.app.settings"
 CMD python -u -m lifecycle serve
