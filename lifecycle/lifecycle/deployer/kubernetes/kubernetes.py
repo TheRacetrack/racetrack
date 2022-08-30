@@ -16,6 +16,7 @@ from lifecycle.config import Config
 from lifecycle.deployer.base import FatmanDeployer
 from lifecycle.deployer.secrets import FatmanSecrets
 from lifecycle.fatman.models_registry import read_fatman_family_model
+from lifecycle.monitor.kubernetes.utils import K8S_NAMESPACE
 from racetrack_client.client.env import merge_env_vars
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.log.logs import get_logger
@@ -101,7 +102,7 @@ class KubernetesFatmanDeployer(FatmanDeployer):
             'memory_max': memory_max,
             'cpu_min': cpu_min,
             'cpu_max': cpu_max,
-            'fatman_k8s_namespace': os.environ.get('FATMAN_K8S_NAMESPACE', 'racetrack'),
+            'fatman_k8s_namespace': K8S_NAMESPACE,
         }
         if manifest.docker and manifest.docker.dockerfile_path:  # Dockerfile job type
             render_vars['user_module_image'] = get_fatman_user_module_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
@@ -126,15 +127,15 @@ class KubernetesFatmanDeployer(FatmanDeployer):
         resource_name = fatman_resource_name(fatman_name, fatman_version)
 
         apps_api = client.AppsV1Api(k8s_client)
-        apps_api.delete_namespaced_deployment(resource_name, namespace='racetrack')
+        apps_api.delete_namespaced_deployment(resource_name, namespace=K8S_NAMESPACE)
         logger.info(f'deleted k8s deployment: {resource_name}')
 
         core_api = client.CoreV1Api(k8s_client)
-        core_api.delete_namespaced_service(resource_name, namespace='racetrack')
+        core_api.delete_namespaced_service(resource_name, namespace=K8S_NAMESPACE)
         logger.info(f'deleted k8s service: {resource_name}')
 
         try:
-            core_api.delete_namespaced_secret(resource_name, namespace='racetrack')
+            core_api.delete_namespaced_secret(resource_name, namespace=K8S_NAMESPACE)
             logger.info(f'deleted k8s secret: {resource_name}')
         except ApiException as e:
             if e.reason == 'Not Found':
@@ -144,7 +145,7 @@ class KubernetesFatmanDeployer(FatmanDeployer):
 
         try:
             custom_objects_api = client.CustomObjectsApi(k8s_client)
-            custom_objects_api.delete_namespaced_custom_object('monitoring.coreos.com', 'v1', 'racetrack', 'servicemonitors',
+            custom_objects_api.delete_namespaced_custom_object('monitoring.coreos.com', 'v1', K8S_NAMESPACE, 'servicemonitors',
                                                                resource_name)
             logger.info(f'deleted k8s servicemonitor: {resource_name}')
         except ApiException as e:
@@ -158,7 +159,7 @@ class KubernetesFatmanDeployer(FatmanDeployer):
         apps_api = client.AppsV1Api(k8s_client)
         try:
             resource_name = fatman_resource_name(fatman_name, fatman_version)
-            apps_api.read_namespaced_deployment(resource_name, namespace='racetrack')
+            apps_api.read_namespaced_deployment(resource_name, namespace=K8S_NAMESPACE)
             return True
         except ApiException as e:
             if e.reason == 'Not Found':
@@ -184,7 +185,7 @@ class KubernetesFatmanDeployer(FatmanDeployer):
             'git_credentials': _encode_secret_key(fatman_secrets.git_credentials),
             'secret_build_env': _encode_secret_key(fatman_secrets.secret_build_env),
             'secret_runtime_env': _encode_secret_key(fatman_secrets.secret_runtime_env),
-            'fatman_k8s_namespace': os.environ.get('FATMAN_K8S_NAMESPACE', 'racetrack'),
+            'fatman_k8s_namespace': K8S_NAMESPACE,
         }
         _apply_templated_resource('secret_template.yaml', render_vars)
 
@@ -198,7 +199,7 @@ class KubernetesFatmanDeployer(FatmanDeployer):
 
         resource_name = fatman_resource_name(fatman_name, fatman_version)
         try:
-            secret: V1Secret = core_api.read_namespaced_secret(resource_name, namespace='racetrack')
+            secret: V1Secret = core_api.read_namespaced_secret(resource_name, namespace=K8S_NAMESPACE)
         except ApiException as e:
             if e.reason == 'Not Found':
                 raise RuntimeError(f"Can't find secrets associated with fatman {fatman_name} v{fatman_version}")
