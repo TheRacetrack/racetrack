@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	log "github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 const baseIngressPath = "/pub"
@@ -33,6 +35,38 @@ func ListenAndServe(cfg *Config) error {
 		router.HandleFunc(baseUrl+"/ready", handlerWithConfig(readyEndpoint, cfg))
 		router.HandleFunc(baseUrl+"/health", handlerWithConfig(healthEndpoint, cfg))
 		router.Handle(baseUrl+"/metrics", promhttp.Handler())
+	}
+
+	if cfg.OpenTelemetryEndpoint != "" {
+		tp := setupOpenTelemetry(cfg.OpenTelemetryEndpoint)
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Error("Shutting down Open Telemetry", log.Ctx{"error": err})
+			}
+		}()
+
+		telemetryMiddleware := func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+				_, span := tracer.Start(context.Background(), "pub-trace")
+				span.SetAttributes(
+					attribute.String("endpoint.method", r.Method),
+					attribute.String("endpoint.path", r.URL.Path),
+				)
+				defer span.End()
+
+				// var err error
+				// if err != nil {
+				// 	span.RecordError(err)
+				// 	span.SetStatus(codes.Error, err.Error())
+				// }
+
+				next.ServeHTTP(w, r)
+			})
+		}
+
+		router.Use(telemetryMiddleware)
+		log.Info("OpenTelemetry traces configured", log.Ctx{"endpoint": cfg.OpenTelemetryEndpoint})
 	}
 
 	listenAddress := "0.0.0.0:" + cfg.ListenPort

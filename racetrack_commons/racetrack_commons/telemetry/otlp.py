@@ -41,7 +41,8 @@ def setup_opentelemetry(fastapi_app: FastAPI, open_telemetry_endpoint: str, attr
 
     @fastapi_app.middleware('http')
     async def otlp_tracer(request: Request, call_next) -> Response:
-        with tracer.start_as_current_span("lifecycle-span") as span:
+        span_name = f'{request.method} {request.url.path}'
+        with tracer.start_as_current_span(span_name) as span:
             tracing_id = request.headers.get(tracing_header)
             span.set_attribute('endpoint.method', request.method)
             span.set_attribute('endpoint.path', request.url.path)
