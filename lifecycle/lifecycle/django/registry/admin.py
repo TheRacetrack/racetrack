@@ -125,9 +125,9 @@ class AuthResourcePermissionTypeFilter(SimpleListFilter):
 
 
 class AuthResourcePermissionAdmin(admin.ModelAdmin):
-    list_display = ('auth_subject', 'scope', 'all_resources', 'fatman_family', 'fatman')
-    list_filter = [AuthResourcePermissionTypeFilter, 'scope', 'all_resources', 'fatman_family', 'fatman']
-    search_fields = ['auth_subject__user__username', 'auth_subject__esc__name', 'auth_subject__fatman_family__name', 'scope']
+    list_display = ('auth_subject', 'scope', 'fatman_family', 'fatman', 'endpoint')
+    list_filter = [AuthResourcePermissionTypeFilter, 'scope', 'fatman_family', 'fatman', 'endpoint']
+    search_fields = ['auth_subject__user__username', 'auth_subject__esc__name', 'auth_subject__fatman_family__name', 'scope', 'endpoint']
     autocomplete_fields = ['auth_subject', 'fatman_family', 'fatman']
 
 
