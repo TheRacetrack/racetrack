@@ -59,7 +59,7 @@ def build_fatman_image(
             workspaces_path.mkdir(parents=True, exist_ok=True)
             assert workspaces_path.is_dir(), 'workspaces directory doesn\'t exist'
 
-            workspace, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
+            workspace, repo_dir, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
 
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
 
@@ -70,8 +70,8 @@ def build_fatman_image(
 
         if config.clean_up_workspaces:
             with wrap_context('cleaning up the workspace'):
-                if workspace.exists():
-                    shutil.rmtree(workspace)
+                if repo_dir.exists():
+                    shutil.rmtree(repo_dir)
 
         return image_name, logs, error
 
@@ -87,12 +87,12 @@ def prepare_workspace(
         git_credentials: Optional[Credentials],
         build_context: Optional[str],
         deployment_id: str,
-) -> Tuple[Path, str]:
+) -> Tuple[Path, Path, str]:
     """
     Prepare workspace with source files from a git repository or extracted build context.
     Return project path and project version
     """
-    workspace = workspaces_path / deployment_id
+    repo_dir = workspaces_path / deployment_id
 
     if build_context:
         with wrap_context('extracting build context'):
@@ -100,10 +100,10 @@ def prepare_workspace(
             bytes_decoded = b64decode(build_context)
             tar_stream = io.BytesIO(bytes_decoded)
             with tarfile.open(fileobj=tar_stream, mode='r:gz') as tar:
-                tar.extractall(path=workspace)
-            return workspace, 'tar'
+                tar.extractall(path=repo_dir)
+            return repo_dir, repo_dir, 'tar'
 
     with wrap_context('fetching job repo'):
-        workspace = fetch_repository(workspace, manifest, git_credentials)
+        workspace = fetch_repository(repo_dir, manifest, git_credentials)
         git_version = read_fatman_git_version(workspace)
-        return workspace, git_version
+        return workspace, repo_dir, git_version

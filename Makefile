@@ -1,11 +1,11 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.2.0
+TAG ?= 2.2.1
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 
-docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose
+docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose
 docker = DOCKER_BUILDKIT=1 docker
 
 -include .local.env
@@ -263,6 +263,12 @@ version-current:
 # First line is needed to reload newest TAG value
 version-release: TAG = $(shell ./utils/version_bumper.py --current)
 version-release: docker-push
+	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
+
+version-release-github: TAG = $(shell ./utils/version_bumper.py --current)
+version-release-github: DOCKER_REGISTRY = ghcr.io
+version-release-github: DOCKER_REGISTRY_NAMESPACE = theracetrack/racetrack
+version-release-github: docker-push
 	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
 
 template-local-env:
