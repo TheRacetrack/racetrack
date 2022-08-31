@@ -60,7 +60,6 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # OpenTelemetry
     open_telemetry_enabled: bool = False
     open_telemetry_endpoint: str = 'console'
-    open_telemetry_service_name: str = 'lifecycle'
 
     @validator(
         'max_fatman_memory_limit',

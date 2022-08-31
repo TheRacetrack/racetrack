@@ -51,6 +51,9 @@ class DockerFatmanDeployer(FatmanDeployer):
             'FATMAN_DEPLOYMENT_TIMESTAMP': deployment_timestamp,
             'REQUEST_TRACING_HEADER': get_tracing_header_name(),
         }
+        if config.open_telemetry_enabled:
+            common_env_vars['OPENTELEMETRY_ENDPOINT'] = config.open_telemetry_endpoint
+
         conflicts = common_env_vars.keys() & runtime_env_vars.keys()
         if conflicts:
             raise RuntimeError(f'found illegal runtime env vars, which conflict with reserved names: {conflicts}')
