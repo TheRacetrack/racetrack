@@ -178,7 +178,7 @@ class AuthResourcePermission(models.Model):
     auth_subject = models.ForeignKey(AuthSubject, on_delete=models.CASCADE)
     # operation permitted to the subject
     scope = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in AuthScope])
-    # resource-scope: anything, fatman-family, fatman
-    all_resources = models.BooleanField(default=False)
+    # resource-scope: anything, fatman-family, fatman, endpoint
     fatman_family = models.ForeignKey(FatmanFamily, on_delete=models.CASCADE, null=True, blank=True)
     fatman = models.ForeignKey(Fatman, on_delete=models.CASCADE, null=True, blank=True)
+    endpoint = models.CharField(max_length=256, null=True, blank=True)

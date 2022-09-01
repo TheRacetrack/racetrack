@@ -33,6 +33,7 @@ def authorize_resource_access(
     fatman_name: str,
     fatman_version: str,
     scope: str,
+    endpoint: Optional[str] = None,
 ):
     """
     Check if auth subject has permissions to access the resource
@@ -46,12 +47,20 @@ def authorize_resource_access(
     except EntityNotFound:
         resolved_version = ''
 
-    if not has_resource_permission(auth_subject, fatman_name, resolved_version, scope):
-        raise UnauthorizedError(
-            'no permission to do this operation',
-            f'auth subject "{auth_subject}" does not have permission to access '
-            f'resource "{fatman_name} v{resolved_version}" with scope "{scope}"'
-        )
+    if endpoint:
+        if not has_endpoint_permission(auth_subject, fatman_name, resolved_version, endpoint, scope):
+            raise UnauthorizedError(
+                'no permission to do this operation',
+                f'auth subject "{auth_subject}" does not have permission to access '
+                f'endpoint {endpoint} at resource "{fatman_name} v{resolved_version}" with scope "{scope}"'
+            )
+    else:
+        if not has_resource_permission(auth_subject, fatman_name, resolved_version, scope):
+            raise UnauthorizedError(
+                'no permission to do this operation',
+                f'auth subject "{auth_subject}" does not have permission to access '
+                f'resource "{fatman_name} v{resolved_version}" with scope "{scope}"'
+            )
 
 
 def authorize_scope_access(
@@ -74,6 +83,7 @@ def authorize_internal_token(
     scope: Optional[str] = None,
     fatman_name: Optional[str] = None,
     fatman_version: Optional[str] = None,
+    endpoint: Optional[str] = None,
 ):
     if token_payload.scopes:
         if AuthScope.FULL_ACCESS.value in token_payload.scopes:
@@ -86,6 +96,26 @@ def authorize_internal_token(
 
 
 @db_access
+def has_endpoint_permission(
+    auth_subject: models.AuthSubject,
+    fatman_name: str,
+    fatman_version: str,
+    endpoint: str,
+    scope: str,
+) -> bool:
+    subject_filter = Q(auth_subject=auth_subject)
+    fatman_name_filter = Q(fatman_family__name=fatman_name) | Q(fatman_family__isnull=True)
+    fatman_version_filter = Q(fatman__version=fatman_version) | Q(fatman__isnull=True)
+    endpoint_filter = Q(endpoint=endpoint) | Q(endpoint__isnull=True)
+    resource_filter = fatman_name_filter & fatman_version_filter & endpoint_filter
+    scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
+    queryset = models.AuthResourcePermission.objects.filter(
+        subject_filter & resource_filter & scope_filter
+    )
+    return queryset.exists()
+
+
+@db_access
 def has_resource_permission(
     auth_subject: models.AuthSubject,
     fatman_name: str,
@@ -93,8 +123,9 @@ def has_resource_permission(
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    resource_filter = Q(all_resources=True) | Q(fatman_family__name=fatman_name) \
-        | Q(fatman__name=fatman_name, fatman__version=fatman_version)
+    fatman_name_filter = Q(fatman_family__name=fatman_name) | Q(fatman_family__isnull=True)
+    fatman_version_filter = Q(fatman__version=fatman_version) | Q(fatman__isnull=True)
+    resource_filter = fatman_name_filter & fatman_version_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
     queryset = models.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter
@@ -123,7 +154,7 @@ def list_permitted_fatmen(
 ) -> List[FatmanDto]:
     """
     List fatmen that auth subject has permissions to access.
-    Expand all_resources and `all_resources` and `fatman_family` fields,
+    Expand permissions for all resources and whole fatman families,
     map them to list of individual fatmen from a database.
     :param scope: Scope of the access (see AuthScope)
     :return: List of fatmen that auth subject has permissions to access (with no duplicates)
@@ -141,7 +172,7 @@ def list_permitted_fatmen(
 
     fatman_ids = set()
     for permission in queryset:
-        if permission.all_resources:
+        if permission.fatman_family is None and permission.fatman is None:
             return all_fatmen
 
         if permission.fatman is not None:
@@ -172,7 +203,7 @@ def list_permitted_families(
     name_to_family = {f.name: f for f in all_families}
     family_names = set()
     for permission in queryset:
-        if permission.all_resources:
+        if permission.fatman_family is None and permission.fatman is None:
             return all_families
 
         if permission.fatman_family is not None:
@@ -197,9 +228,9 @@ def grant_permission(
     if fatman_name and fatman_version:
         resource_filter = Q(fatman__name=fatman_name, fatman__version=fatman_version)
     elif fatman_name:
-        resource_filter = Q(fatman_family__name=fatman_name)
+        resource_filter = Q(fatman_family__name=fatman_name, fatman__isnull=True)
     else:
-        resource_filter = Q(all_resources=True)
+        resource_filter = Q(fatman_family__isnull=True, fatman__isnull=True)
 
     queryset = models.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter
@@ -227,7 +258,6 @@ def grant_permission(
     else:
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            all_resources=True,
             scope=scope,
         )
         resource_description = 'all fatmen'

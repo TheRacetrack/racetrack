@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Fatman access can be narrowed down to single endpoints.
+  When adding Auth Resource Permission (in Admin panel), there is a new `endpoint` field,
+  which narrows down the permission only to this particular Fatman's endpoint.
+  If not set, it covers all endpoints (just as other resource filters do).
+  For instance, ESC can have a permission with `call_fatman` scope to only call one endpoint.
+
 ## [2.2.1] - 2022-08-25
 ### Changed
 - Maximum amount of memory for a fatman is reduced to `1GiB` by default

@@ -68,7 +68,6 @@ def grant_permission(
 ):
     permission = models.AuthResourcePermission(
         auth_subject=auth_subject,
-        all_resources=True,
         scope=scope,
     )
     permission.save()
