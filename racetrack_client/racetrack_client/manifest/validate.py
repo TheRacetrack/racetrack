@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 from urllib.parse import urlsplit
 
 from racetrack_client.log.context_error import wrap_context
@@ -31,11 +30,6 @@ def load_validated_manifest(path: str) -> Manifest:
 
 def validate_manifest(manifest: Manifest):
     """Check whether manifest is valid. Raise exception in case of error"""
-    if manifest.lang != 'python3':
-        assert manifest.python is None, f'"python" configuration should be filled only for python jobs'
-    if manifest.lang != 'golang':
-        assert manifest.golang is None, f'"golang" configuration should be filled only for golang jobs'
-
     assert re.match(r"[^@]+@[^@]+\.[^@]+", manifest.owner_email), '"owner_email" is not a valid email'
 
     with wrap_context('parsing Fatman version'):
