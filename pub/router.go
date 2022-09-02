@@ -55,12 +55,6 @@ func ListenAndServe(cfg *Config) error {
 				)
 				defer span.End()
 
-				// var err error
-				// if err != nil {
-				// 	span.RecordError(err)
-				// 	span.SetStatus(codes.Error, err.Error())
-				// }
-
 				next.ServeHTTP(w, r)
 			})
 		}
