@@ -20,13 +20,34 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
 
     @api.get('/auth/allowed/fatman/{fatman_name}/{fatman_version}/scope/{scope}')
     def _auth_allowed_fatman(fatman_name: str, fatman_version: str, scope: str, request: Request):
-        """Check if auth subject (read from token) has access to the fatman family"""
+        """Check if auth subject (read from token) has access to the fatman"""
         try:
             token_payload, auth_subject = authenticate_token(request)
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
                 authorize_internal_token(token_payload, scope, fatman_name, fatman_version)
             else:
                 authorize_resource_access(auth_subject, fatman_name, fatman_version, scope)
+
+        except UnauthorizedError as e:
+            msg = e.describe(debug=config.auth_debug)
+            log_exception(e)
+            return JSONResponse(content={'error': msg}, status_code=401)
+
+        return Response(content='', status_code=202)
+
+    @api.get('/auth/allowed/fatman_endpoint/{fatman_name}/{fatman_version}/scope/{scope}/endpoint/{endpoint:path}')
+    def _auth_allowed_fatman_endpoint(fatman_name: str, fatman_version: str, scope: str, endpoint: str, request: Request):
+        """Check if auth subject (read from token) has access to the fatman endpoint"""
+        if endpoint.endswith('/'):
+            endpoint = endpoint[:-1]
+        if not endpoint.startswith('/'):
+            endpoint = '/' + endpoint
+        try:
+            token_payload, auth_subject = authenticate_token(request)
+            if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
+                authorize_internal_token(token_payload, scope, fatman_name, fatman_version, endpoint)
+            else:
+                authorize_resource_access(auth_subject, fatman_name, fatman_version, scope, endpoint)
 
         except UnauthorizedError as e:
             msg = e.describe(debug=config.auth_debug)

@@ -84,6 +84,15 @@ func (l *LifecycleClient) HasAccessToFatman(fatmanName, fatmanVersion string, sc
 	return true, nil
 }
 
+func (l *LifecycleClient) HasAccessToFatmanEndpoint(fatmanName, fatmanVersion, endpoint string) (bool, error) {
+	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/fatman_endpoint/", fatmanName, "/", fatmanVersion, "/scope/", AuthScopeCallFatman, "/endpoint/", endpoint)
+	err := l.getRequest(url, false, "checking access to call Fatman endpoint", false, nil)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (l *LifecycleClient) GetFatmanPublicEndpoints(fatmanName, fatmanVersion string) ([]string, error) {
 	url := JoinURL(l.lifecycleUrl, "/api/v1/fatman/", fatmanName, "/", fatmanVersion, "/public-endpoints")
 	result := []*PublicEndpointRequestDto{}
@@ -140,7 +149,7 @@ func (l *LifecycleClient) AuthenticateCaller(path, fatmanName, fatmanVersion, fa
 		)
 	}
 
-	ok, err := l.HasAccessToFatman(fatmanName, fatmanVersion, AuthScopeCallFatman)
+	ok, err := l.HasAccessToFatmanEndpoint(fatmanName, fatmanVersion, fatmanPath)
 	if err != nil {
 		return errors.Wrap(err, "Auth error")
 	}

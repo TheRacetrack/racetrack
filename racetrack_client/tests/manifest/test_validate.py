@@ -107,23 +107,6 @@ git:
     assert '"owner_email" is not a valid email' in str(excinfo.value)
 
 
-def test_menifest_fields_inconsistency():
-    with pytest.raises(RuntimeError) as excinfo:
-        validate_tmp_manifest("""
-name: golang-function
-owner_email: nobody@example.com
-lang: golang
-
-git:
-  remote: https://github.com/TheRacetrack/racetrack
-  directory: sample/golang-function
-
-python:
-  entrypoint_path: you-shouldnt-be-here
-""")
-    assert '"python" configuration should be filled only for python jobs' in str(excinfo.value)
-
-
 def test_missing_file():
     with pytest.raises(RuntimeError) as excinfo:
         load_validated_manifest('not-existing-path')
