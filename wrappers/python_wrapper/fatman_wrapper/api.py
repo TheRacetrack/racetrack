@@ -89,8 +89,7 @@ def create_api_app(
     fastapi_app.include_router(api_router, prefix="/api/v1")
 
     if os.environ.get('OPENTELEMETRY_ENDPOINT'):
-        setup_opentelemetry(fastapi_app, os.environ.get('OPENTELEMETRY_ENDPOINT'), {
-            'service.name': 'fatman',
+        setup_opentelemetry(fastapi_app, os.environ.get('OPENTELEMETRY_ENDPOINT'), 'fatman', {
             'fatman_name': fatman_name,
             'fatman_version': fatman_version,
         })

@@ -75,6 +75,7 @@ class DockerFatmanDeployer(FatmanDeployer):
                 f' {env_vars_cmd}'
                 f' --pull always'
                 f' --network="racetrack_default"'
+                f' --add-host=host.docker.internal:host-gateway'
                 f' {user_module_image}'
             )
 
@@ -85,6 +86,7 @@ class DockerFatmanDeployer(FatmanDeployer):
             f' {env_vars_cmd}'
             f' --pull always'
             f' --network="racetrack_default"'
+            f' --add-host=host.docker.internal:host-gateway'
             f' --label fatman-name={manifest.name}'
             f' --label fatman-version={manifest.version}'
             f' {entrypoint_image_name}'

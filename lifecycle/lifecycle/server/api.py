@@ -60,9 +60,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine) -> ASGIApp:
     sio_wsgi_app = setup_socket_io_server(config, plugin_engine)
 
     if config.open_telemetry_enabled:
-        setup_opentelemetry(fastapi_app, config.open_telemetry_endpoint, {
-            'service.name': 'lifecycle',
-        })
+        setup_opentelemetry(fastapi_app, config.open_telemetry_endpoint, 'lifecycle', {})
 
     register_error_handlers(fastapi_app)
 

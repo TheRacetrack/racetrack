@@ -37,7 +37,10 @@ func ListenAndServe(cfg *Config) error {
 	}
 
 	if cfg.OpenTelemetryEndpoint != "" {
-		tp := SetupOpenTelemetry(router, cfg)
+		tp, err := SetupOpenTelemetry(router, cfg)
+		if err != nil {
+			return errors.Wrap(err, "Failed to setup OpenTelemetry")
+		}
 		defer func() {
 			if err := tp.Shutdown(context.Background()); err != nil {
 				log.Error("Shutting down Open Telemetry", log.Ctx{"error": err})

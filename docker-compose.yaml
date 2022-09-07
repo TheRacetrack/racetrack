@@ -231,6 +231,21 @@ services:
     logging:
       driver: none
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.37
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    profiles: ["dev"]
+    logging:
+      driver: none
+
 
 networks:
   racetrack_default:
