@@ -235,8 +235,8 @@ services:
     image: jaegertracing/all-in-one:1.37
     container_name: jaeger
     ports:
-      - "16686:16686"
-      - "4318:4318"
+      - "16686:16686" # UI
+      - "4318:4318" # OpenTelemetry Protocol collector over HTTP
     networks:
       - racetrack_default
     restart: unless-stopped
