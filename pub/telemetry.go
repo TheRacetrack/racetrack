@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"os"
 
+	"github.com/gorilla/mux"
 	log "github.com/inconshreveable/log15"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -14,24 +17,12 @@ import (
 
 var tracer = otel.Tracer("github.com/TheRacetrack/racetrack/pub")
 
-func newResource() *resource.Resource {
-	r, _ := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("pub"),
-			semconv.ServiceVersionKey.String("0.0.0"),
-			attribute.String("environment", "local"),
-		),
-	)
-	return r
-}
-
-func setupOpenTelemetry(openTelemetryEndpoint string) *trace.TracerProvider {
+func SetupOpenTelemetry(router *mux.Router, cfg *Config) *trace.TracerProvider {
 	exporter, err := otlptracehttp.New(
 		context.Background(),
-		otlptracehttp.WithEndpoint("apm.erst.dk"),
+		otlptracehttp.WithEndpoint("host.docker.internal:4318"), // TODO split
 		otlptracehttp.WithURLPath("/v1/traces"),
+		otlptracehttp.WithInsecure(),
 	)
 	if err != nil {
 		log.Error("Creating Open Telemetry exporter", log.Ctx{"error": err})
@@ -39,8 +30,45 @@ func setupOpenTelemetry(openTelemetryEndpoint string) *trace.TracerProvider {
 
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
-		trace.WithResource(newResource()),
+		trace.WithResource(newResource(cfg)),
 	)
 	otel.SetTracerProvider(tp)
+
+	telemetryMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			requestId := getRequestTracingId(r, cfg.RequestTracingHeader)
+			_, span := tracer.Start(context.Background(), "pub-trace")
+			span.SetAttributes(
+				attribute.String("endpoint.method", r.Method),
+				attribute.String("endpoint.path", r.URL.Path),
+				attribute.String("request_tracing_id", requestId),
+			)
+			defer span.End()
+
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	router.Use(telemetryMiddleware)
+	log.Info("OpenTelemetry traces configured", log.Ctx{"endpoint": cfg.OpenTelemetryEndpoint})
+
 	return tp
+}
+
+func newResource(cfg *Config) *resource.Resource {
+	deploymentEnvironment := os.Getenv("SITE_NAME")
+	clusterHostname := os.Getenv("CLUSTER_FQDN")
+
+	r, _ := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("pub"),
+			semconv.ServiceVersionKey.String(cfg.GitVersion),
+			semconv.DeploymentEnvironmentKey.String(deploymentEnvironment),
+			attribute.String("cluster_hostname", clusterHostname),
+		),
+	)
+	return r
 }

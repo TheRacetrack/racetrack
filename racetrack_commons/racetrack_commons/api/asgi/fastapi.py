@@ -18,6 +18,7 @@ def create_fastapi(
     authorizations: Dict = None,
     request_access_log: bool = False,
     response_access_log: bool = True,
+    handle_errors: bool = True,
 ) -> FastAPI:
 
     fastapi_app = create_fastapi_docs(
@@ -32,9 +33,10 @@ def create_fastapi(
         allow_headers=["*"],
     )
 
-    register_error_handlers(fastapi_app)
     register_response_json_encoder()
 
+    if handle_errors:
+        register_error_handlers(fastapi_app)
     if request_access_log:
         enable_request_access_log(fastapi_app)
     if response_access_log:

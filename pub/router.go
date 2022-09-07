@@ -8,7 +8,6 @@ import (
 	log "github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 const baseIngressPath = "/pub"
@@ -38,29 +37,12 @@ func ListenAndServe(cfg *Config) error {
 	}
 
 	if cfg.OpenTelemetryEndpoint != "" {
-		tp := setupOpenTelemetry(cfg.OpenTelemetryEndpoint)
+		tp := SetupOpenTelemetry(router, cfg)
 		defer func() {
 			if err := tp.Shutdown(context.Background()); err != nil {
 				log.Error("Shutting down Open Telemetry", log.Ctx{"error": err})
 			}
 		}()
-
-		telemetryMiddleware := func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-				_, span := tracer.Start(context.Background(), "pub-trace")
-				span.SetAttributes(
-					attribute.String("endpoint.method", r.Method),
-					attribute.String("endpoint.path", r.URL.Path),
-				)
-				defer span.End()
-
-				next.ServeHTTP(w, r)
-			})
-		}
-
-		router.Use(telemetryMiddleware)
-		log.Info("OpenTelemetry traces configured", log.Ctx{"endpoint": cfg.OpenTelemetryEndpoint})
 	}
 
 	listenAddress := "0.0.0.0:" + cfg.ListenPort

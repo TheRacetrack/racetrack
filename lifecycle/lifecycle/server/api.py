@@ -20,6 +20,7 @@ from lifecycle.server.socketio import SocketIOServer
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.asgi.dispatcher import AsgiDispatcher
+from racetrack_commons.api.asgi.error_handler import register_error_handlers
 from racetrack_commons.api.asgi.fastapi import create_fastapi
 from racetrack_commons.api.asgi.proxy import mount_at_base_path
 from racetrack_commons.api.metrics import setup_metrics_endpoint
@@ -46,6 +47,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine) -> ASGIApp:
         authorizations=get_racetrack_authorizations_methods(),
         request_access_log=True,
         response_access_log=True,
+        handle_errors=False,
     )
 
     setup_health_endpoint(fastapi_app, config)
@@ -61,6 +63,8 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine) -> ASGIApp:
         setup_opentelemetry(fastapi_app, config.open_telemetry_endpoint, {
             'service.name': 'lifecycle',
         })
+
+    register_error_handlers(fastapi_app)
 
     os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
     django.setup()
