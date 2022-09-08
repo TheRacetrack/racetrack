@@ -43,7 +43,7 @@ func ListenAndServe(cfg *Config) error {
 		}
 		defer func() {
 			if err := tp.Shutdown(context.Background()); err != nil {
-				log.Error("Shutting down Open Telemetry", log.Ctx{"error": err})
+				log.Error("Shutting down OpenTelemetry", log.Ctx{"error": err})
 			}
 		}()
 	}

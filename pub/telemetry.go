@@ -85,7 +85,7 @@ func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider,
 	}
 
 	router.Use(telemetryMiddleware)
-	log.Info("OpenTelemetry traces configured", log.Ctx{"endpoint": cfg.OpenTelemetryEndpoint})
+	log.Info("OpenTelemetry traces are enabled", log.Ctx{"endpoint": cfg.OpenTelemetryEndpoint})
 
 	return tp, nil
 }
