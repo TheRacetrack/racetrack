@@ -17,14 +17,12 @@ func proxyEndpoint(res http.ResponseWriter, req *http.Request, cfg *Config) {
 	startTime := time.Now()
 
 	requestId := getRequestTracingId(req, cfg.RequestTracingHeader)
-	traceId := req.Header.Get(cfg.RequestTracingHeader + "-trace-id")
-	spanId := req.Header.Get(cfg.RequestTracingHeader + "-span-id")
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
 
 	logger.Info("Incoming Proxy request", log.Ctx{"method": req.Method, "path": req.URL.Path})
-	statusCode, err := handleProxyRequest(res, req, cfg, logger, requestId, traceId, spanId)
+	statusCode, err := handleProxyRequest(res, req, cfg, logger, requestId)
 	if err != nil {
 		metricFatmanProxyRequestErrors.Inc()
 		errorStr := err.Error()
@@ -43,7 +41,7 @@ func handleProxyRequest(
 	req *http.Request,
 	cfg *Config,
 	logger log.Logger,
-	requestId, traceId, spanId string,
+	requestId string,
 ) (int, error) {
 	if req.Method != "POST" && req.Method != "GET" {
 		res.Header().Set("Allow", "GET, POST")
@@ -70,7 +68,7 @@ func handleProxyRequest(
 
 	authToken := getAuthFromHeaderOrCookie(req)
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
-		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId, traceId, spanId)
+		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 
 	fatman, err := lifecycleClient.GetFatmanDetails(fatmanName, fatmanVersion)
 	if err != nil {

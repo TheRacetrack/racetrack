@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, Request, Response
@@ -21,6 +22,8 @@ EXCLUDED_ENDPOINTS = {
 	"GET /live",
 	"GET /ready",
 }
+
+traceparent_pattern = re.compile(r'00-(?P<trace_id>[0-9a-f]+)-(?P<span_id>[0-9a-f]+)-(?P<trace_flags>[0-9a-f]+)')
 
 
 def setup_opentelemetry(
@@ -60,17 +63,15 @@ def setup_opentelemetry(
         if endpoint_name in EXCLUDED_ENDPOINTS:
             return await call_next(request)
         else:
-            tracing_id = request.headers.get(tracing_header)
-            parent_trace_id = request.headers.get(tracing_header+"-trace-id")
-            parent_span_id = request.headers.get(tracing_header+"-span-id")
+            traceparent = request.headers.get(tracing_header)
 
-            span_parent_ctx = _get_span_parent_context(parent_trace_id, parent_span_id)
-            span_links = [trace.Link(span_parent_ctx)] if span_parent_ctx is not None else []
+            parent_ctx = _get_span_parent_context(traceparent)
+            span_links = [trace.Link(parent_ctx)] if parent_ctx is not None else []
 
             with tracer.start_as_current_span(endpoint_name, links=span_links) as span:
                 span.set_attribute('endpoint.method', request.method)
                 span.set_attribute('endpoint.path', request.url.path)
-                span.set_attribute('traceparent', tracing_id)
+                span.set_attribute('traceparent', traceparent)
                 try:
                     response: Response = await call_next(request)
                     span.set_attribute('response_code', response.status_code)
@@ -84,15 +85,14 @@ def setup_opentelemetry(
     logger.info(f'OpenTelemetry traces will be sent to {open_telemetry_endpoint}')
 
 
-def _get_span_parent_context(parent_trace_id: str, parent_span_id: str) -> Optional[SpanContext]:
-    if not parent_trace_id or not parent_span_id:
+def _get_span_parent_context(traceparent: str) -> Optional[SpanContext]:
+    if not traceparent:
         return None
-    trace_id_int = _parse_hex_id(parent_trace_id)
-    span_id_int = _parse_hex_id(parent_span_id)
+
+    match = traceparent_pattern.fullmatch(traceparent)
+    if not match:
+        return None
+    
+    trace_id_int = int(match.group('trace_id'), 16)
+    span_id_int = int(match.group('span_id'), 16)
     return SpanContext(trace_id=trace_id_int, span_id=span_id_int, is_remote=True)
-
-
-def _parse_hex_id(hex: str) -> int:
-    if hex.startswith('0x'):
-        return int(hex[2:], 16)
-    return int(hex)

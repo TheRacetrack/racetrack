@@ -63,19 +63,21 @@ func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider,
 
 			if !isExcluded {
 				_, span := tracer.Start(context.Background(), endpointName)
-				requestId := getRequestTracingId(req, cfg.RequestTracingHeader)
-				req.Header.Set(cfg.RequestTracingHeader, requestId)
+
+				traceparent := req.Header.Get(cfg.RequestTracingHeader)
+				if traceparent == "" {
+					traceId := span.SpanContext().TraceID().String()
+					spanId := span.SpanContext().SpanID().String()
+					traceparent = fmt.Sprintf("00-%s-%s-01", traceId, spanId)
+					req.Header.Set(cfg.RequestTracingHeader, traceparent)
+				}
+
 				span.SetAttributes(
 					attribute.String("endpoint.method", req.Method),
 					attribute.String("endpoint.path", req.URL.Path),
-					attribute.String("traceparent", requestId),
+					attribute.String("traceparent", traceparent),
 				)
 				defer span.End()
-
-				spanCtx := span.SpanContext()
-
-				req.Header.Set(cfg.RequestTracingHeader+"-trace-id", "0x"+spanCtx.TraceID().String())
-				req.Header.Set(cfg.RequestTracingHeader+"-span-id", "0x"+spanCtx.SpanID().String())
 			}
 
 			next.ServeHTTP(w, req)
