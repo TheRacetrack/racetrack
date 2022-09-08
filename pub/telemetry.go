@@ -56,23 +56,32 @@ func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider,
 	otel.SetTracerProvider(tp)
 
 	telemetryMiddleware := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 
-			endpointName := fmt.Sprintf("%s %s", r.Method, r.URL.Path)
+			endpointName := fmt.Sprintf("%s %s", req.Method, req.URL.Path)
 			_, isExcluded := telemetryExcludedEndpoints[endpointName]
 
 			if !isExcluded {
 				_, span := tracer.Start(context.Background(), endpointName)
-				requestId := getRequestTracingId(r, cfg.RequestTracingHeader)
+				requestId := getRequestTracingId(req, cfg.RequestTracingHeader)
+				req.Header.Set(cfg.RequestTracingHeader, requestId)
 				span.SetAttributes(
-					attribute.String("endpoint.method", r.Method),
-					attribute.String("endpoint.path", r.URL.Path),
-					attribute.String("request_tracing_id", requestId),
+					attribute.String("endpoint.method", req.Method),
+					attribute.String("endpoint.path", req.URL.Path),
+					attribute.String("traceparent", requestId),
 				)
 				defer span.End()
+
+				spanCtx := span.SpanContext()
+
+				req.Header.Set(cfg.RequestTracingHeader+"-trace-id", "0x"+spanCtx.TraceID().String())
+				req.Header.Set(cfg.RequestTracingHeader+"-span-id", "0x"+spanCtx.SpanID().String())
+
+				log.Debug("headers set", log.Ctx{"name": cfg.RequestTracingHeader + "-trace-id", "value": "0x" + spanCtx.TraceID().String()})
+
 			}
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, req)
 		})
 	}
 

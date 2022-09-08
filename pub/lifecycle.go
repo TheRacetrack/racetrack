@@ -42,6 +42,8 @@ type LifecycleClient struct {
 	httpClient           *http.Client
 	requestTracingHeader string
 	requestId            string
+	traceId              string
+	spanId               string
 }
 
 const AuthScopeCallFatman = "call_fatman"
@@ -52,6 +54,8 @@ func NewLifecycleClient(
 	internalToken string,
 	requestTracingHeader string,
 	requestId string,
+	traceId string,
+	spanId string,
 ) *LifecycleClient {
 	return &LifecycleClient{
 		lifecycleUrl:  lifecycleUrl,
@@ -62,6 +66,8 @@ func NewLifecycleClient(
 		},
 		requestTracingHeader: requestTracingHeader,
 		requestId:            requestId,
+		traceId:              traceId,
+		spanId:               spanId,
 	}
 }
 
@@ -176,6 +182,8 @@ func (l *LifecycleClient) getRequest(
 
 	if l.requestTracingHeader != "" {
 		req.Header.Set(l.requestTracingHeader, l.requestId)
+		req.Header.Set(l.requestTracingHeader+"-trace-id", l.traceId)
+		req.Header.Set(l.requestTracingHeader+"-span-id", l.spanId)
 	}
 	if internalAuth {
 		req.Header.Set(AuthHeader, l.internalToken)

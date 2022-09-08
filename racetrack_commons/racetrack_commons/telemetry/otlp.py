@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, Request, Response
 from opentelemetry import trace
@@ -8,6 +8,7 @@ from opentelemetry.sdk.resources import DEPLOYMENT_ENVIRONMENT, SERVICE_NAMESPAC
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.trace import Status, StatusCode
+from opentelemetry.trace.span import SpanContext
 
 from racetrack_commons.api.tracing import get_tracing_header_name
 from racetrack_client.log.logs import get_logger
@@ -59,11 +60,21 @@ def setup_opentelemetry(
         if endpoint_name in EXCLUDED_ENDPOINTS:
             return await call_next(request)
         else:
-            with tracer.start_as_current_span(endpoint_name) as span:
-                tracing_id = request.headers.get(tracing_header)
+            tracing_id = request.headers.get(tracing_header)
+            parent_trace_id = request.headers.get(tracing_header+"-trace-id")
+            parent_span_id = request.headers.get(tracing_header+"-span-id")
+
+            logger.debug(f'{parent_trace_id=}, {parent_span_id=}, header name: {tracing_header+"-trace-id"}')
+
+            span_parent_ctx = _get_span_parent_context(parent_trace_id, parent_span_id)
+            span_links = [trace.Link(span_parent_ctx)] if span_parent_ctx is not None else []
+
+            with tracer.start_as_current_span(endpoint_name, links=span_links) as span:
+                if span_parent_ctx is not None:
+                    span._parent = span_parent_ctx
                 span.set_attribute('endpoint.method', request.method)
                 span.set_attribute('endpoint.path', request.url.path)
-                span.set_attribute('request_tracing_id', tracing_id)
+                span.set_attribute('traceparent', tracing_id)
                 try:
                     response: Response = await call_next(request)
                     span.set_attribute('response_code', response.status_code)
@@ -75,3 +86,17 @@ def setup_opentelemetry(
                     raise ex
 
     logger.info(f'OpenTelemetry traces will be sent to {open_telemetry_endpoint}')
+
+
+def _get_span_parent_context(parent_trace_id: str, parent_span_id: str) -> Optional[SpanContext]:
+    if not parent_trace_id or not parent_span_id:
+        return None
+    trace_id_int = _parse_hex_id(parent_trace_id)
+    span_id_int = _parse_hex_id(parent_span_id)
+    return SpanContext(trace_id=trace_id_int, span_id=span_id_int, is_remote=True)
+
+
+def _parse_hex_id(hex: str) -> int:
+    if hex.startswith('0x'):
+        return int(hex[2:], 16)
+    return int(hex)
