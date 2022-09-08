@@ -64,14 +64,10 @@ def setup_opentelemetry(
             parent_trace_id = request.headers.get(tracing_header+"-trace-id")
             parent_span_id = request.headers.get(tracing_header+"-span-id")
 
-            logger.debug(f'{parent_trace_id=}, {parent_span_id=}, header name: {tracing_header+"-trace-id"}')
-
             span_parent_ctx = _get_span_parent_context(parent_trace_id, parent_span_id)
             span_links = [trace.Link(span_parent_ctx)] if span_parent_ctx is not None else []
 
             with tracer.start_as_current_span(endpoint_name, links=span_links) as span:
-                if span_parent_ctx is not None:
-                    span._parent = span_parent_ctx
                 span.set_attribute('endpoint.method', request.method)
                 span.set_attribute('endpoint.path', request.url.path)
                 span.set_attribute('traceparent', tracing_id)

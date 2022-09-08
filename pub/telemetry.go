@@ -76,9 +76,6 @@ func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider,
 
 				req.Header.Set(cfg.RequestTracingHeader+"-trace-id", "0x"+spanCtx.TraceID().String())
 				req.Header.Set(cfg.RequestTracingHeader+"-span-id", "0x"+spanCtx.SpanID().String())
-
-				log.Debug("headers set", log.Ctx{"name": cfg.RequestTracingHeader + "-trace-id", "value": "0x" + spanCtx.TraceID().String()})
-
 			}
 
 			next.ServeHTTP(w, req)
