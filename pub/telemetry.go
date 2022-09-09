@@ -66,6 +66,7 @@ func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider,
 
 				traceparent := req.Header.Get(cfg.RequestTracingHeader)
 				if traceparent == "" {
+					// parse traceparent fields (https://www.w3.org/TR/trace-context/#traceparent-header)
 					traceId := span.SpanContext().TraceID().String()
 					spanId := span.SpanContext().SpanID().String()
 					traceparent = fmt.Sprintf("00-%s-%s-01", traceId, spanId)
