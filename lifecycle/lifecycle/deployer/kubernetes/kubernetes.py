@@ -59,6 +59,8 @@ class KubernetesFatmanDeployer(FatmanDeployer):
             'FATMAN_DEPLOYMENT_TIMESTAMP': deployment_timestamp,
             'REQUEST_TRACING_HEADER': get_tracing_header_name(),
         }
+        if config.open_telemetry_enabled:
+            common_env_vars['OPENTELEMETRY_ENDPOINT'] = config.open_telemetry_endpoint
 
         plugin_vars_list = plugin_engine.invoke_plugin_hook(PluginCore.fatman_runtime_env_vars)
         for plugin_vars in plugin_vars_list:

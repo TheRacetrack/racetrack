@@ -33,6 +33,7 @@ from racetrack_commons.api.asgi.fastapi import create_fastapi
 from racetrack_commons.api.asgi.proxy import mount_at_base_path
 from racetrack_commons.api.metrics import setup_metrics_endpoint
 from racetrack_commons.auth.methods import get_racetrack_authorizations_methods
+from racetrack_commons.telemetry.otlp import setup_opentelemetry
 
 logger = get_logger(__name__)
 
@@ -86,6 +87,12 @@ def create_api_app(
     _setup_api_endpoints(api_router, entrypoint, fastapi_app, base_url)
     _setup_request_context(entrypoint, fastapi_app)
     fastapi_app.include_router(api_router, prefix="/api/v1")
+
+    if os.environ.get('OPENTELEMETRY_ENDPOINT'):
+        setup_opentelemetry(fastapi_app, os.environ.get('OPENTELEMETRY_ENDPOINT'), 'fatman', {
+            'fatman_name': fatman_name,
+            'fatman_version': fatman_version,
+        })
 
     return mount_at_base_path(fastapi_app, '/pub/fatman/{fatman_name}/{version}')
 

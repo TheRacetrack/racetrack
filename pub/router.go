@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -33,6 +34,18 @@ func ListenAndServe(cfg *Config) error {
 		router.HandleFunc(baseUrl+"/ready", handlerWithConfig(readyEndpoint, cfg))
 		router.HandleFunc(baseUrl+"/health", handlerWithConfig(healthEndpoint, cfg))
 		router.Handle(baseUrl+"/metrics", promhttp.Handler())
+	}
+
+	if cfg.OpenTelemetryEndpoint != "" {
+		tp, err := SetupOpenTelemetry(router, cfg)
+		if err != nil {
+			return errors.Wrap(err, "Failed to setup OpenTelemetry")
+		}
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Error("Shutting down OpenTelemetry", log.Ctx{"error": err})
+			}
+		}()
 	}
 
 	listenAddress := "0.0.0.0:" + cfg.ListenPort

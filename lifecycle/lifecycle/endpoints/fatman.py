@@ -42,7 +42,8 @@ def setup_fatman_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             description='username of the last deployer',
             example='nobody',
         )
-        manifest: Dict[str, Any] = Field(
+        manifest: Optional[Dict[str, Any]] = Field(
+            default=None,
             description='Manifest - build recipe for a Fatman',
             example={
                 'name': 'adder',
