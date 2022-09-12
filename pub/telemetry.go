@@ -18,7 +18,9 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
-var tracer = otel.Tracer("github.com/TheRacetrack/racetrack/pub")
+const providerId = "github.com/TheRacetrack/racetrack/pub"
+
+var tracer = otel.Tracer(providerId)
 
 var telemetryExcludedEndpoints = map[string]bool{
 	"GET /metrics": true,
