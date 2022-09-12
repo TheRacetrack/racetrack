@@ -27,4 +27,16 @@ class FatmanEntrypoint:
         def postme():
             return jsonify({"hello": request.json})
 
+        @app.route(base_url + '/describe', methods=['GET', 'POST'])
+        def describe():
+            return jsonify({
+                "request.method": request.method,
+                "request.path": request.path,
+                "request.full_path": request.full_path,
+                "request.headers": {h: request.headers.get(h) for h in request.headers.keys()},
+                "request.data": request.data.decode(),
+                "request.remote_addr": request.remote_addr,
+                "request.host": request.host,
+            })
+
         return app.wsgi_app
