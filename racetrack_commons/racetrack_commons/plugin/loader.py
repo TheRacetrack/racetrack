@@ -38,10 +38,11 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> Tuple[PluginManifest, PluginC
     logger.debug(f'extracting plugin from {plugin_zip_path}')
 
     extracted_plugin_path = plugin_zip_path.parent / 'extracted' / plugin_zip_path.stem
-    extracted_plugin_path.mkdir(parents=True, exist_ok=True)
-
-    with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
-        zip_ref.extractall(extracted_plugin_path)
+    
+    if not extracted_plugin_path.is_dir():
+        extracted_plugin_path.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
+            zip_ref.extractall(extracted_plugin_path)
 
     return load_plugin_from_dir(extracted_plugin_path)
 

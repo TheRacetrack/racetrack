@@ -18,6 +18,7 @@ class PluginEngine:
         self.plugins: List[Tuple[PluginManifest, PluginCore]] = []
         if plugins_dir:
             self._load_plugins(plugins_dir)
+            self._watch_plugins_changes(plugins_dir)
 
     def _load_plugins(self, plugins_dir: str):
         start_time = time.time()
@@ -68,3 +69,12 @@ class PluginEngine:
             if plugin_manifest.name == name:
                 return plugin_manifest, plugin
         raise EntityNotFound(f'plugin named "{name}" was not found')
+
+    def _watch_plugins_changes(self, plugins_dir: str):
+        pass
+
+    def delete_plugin(self, name: str):
+        pass
+
+    def upload_plugin(self, filename: str, file_bytes: bytes):
+        pass

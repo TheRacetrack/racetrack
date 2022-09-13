@@ -74,13 +74,15 @@
             <p>
                 Racetrack: {{ racetrack_version }}
             </p>
+
+            {% if plugins|length > 0 %}
             Active plugins:
             <ul>
-                {% for plugin in plugins %}
-                    <li>{{ plugin.name }} (version {{ plugin.version }})</li>
-                {% endfor %}
+            {% for plugin in plugins %}
+                <li>{{ plugin.name }} (version {{ plugin.version }})</li>
+            {% endfor %}
             </ul>
-
+            {% endif %}
         </div>
     </div>
 </div>
