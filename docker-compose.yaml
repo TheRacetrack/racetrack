@@ -17,6 +17,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - ./lifecycle/tests/sample/compose.yaml:/etc/racetrack/lifecycle/config.yaml
+      - ./.plugins:/etc/racetrack/lifecycle/.plugins
     env_file:
       - ./.env
     environment:
@@ -40,6 +41,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - ./lifecycle/tests/sample/compose.yaml:/etc/racetrack/lifecycle/config.yaml
+      - ./.plugins:/etc/racetrack/lifecycle/.plugins
     env_file:
       - ./.env
     environment:
@@ -69,6 +71,7 @@ services:
     volumes:
       - './.git:/src/.git:ro'
       - ./image_builder/tests/sample/compose.yaml:/etc/racetrack/image-builder/compose.yaml
+      - ./.plugins:/etc/racetrack/image-builder/.plugins
     environment:
       DOCKER_TLS_CERTDIR: ''
       DOCKER_HOST: tcp://docker-engine:2375

@@ -9,6 +9,8 @@ class PluginManifest(BaseModel):
     name: str
 
     version: str
+
+    build_date: Optional[str] = None
     
     # URL of the plugin homepage
     url: Optional[str] = None

@@ -40,6 +40,8 @@ def parse_yaml_datamodel(
     :param clazz: pydantic.BaseModel type
     """
     data = yaml.load(yaml_obj, Loader=yaml.FullLoader)
+    if data is None:
+        data = {}
     return parse_dict_datamodel(data, clazz)
 
 
