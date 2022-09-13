@@ -7,3 +7,4 @@ external_pub_url: http://localhost:7005/pub
 docker_registry: kind-registry:5000
 auth_required: true
 auth_debug: true
+plugins_dir: /etc/racetrack/lifecycle/.plugins

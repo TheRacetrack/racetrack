@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - roles.yaml
   - priorities.yaml
+  - plugins.yaml
   - lifecycle.yaml
   - lifecycle-supervisor.yaml
   - image-builder.yaml

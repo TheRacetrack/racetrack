@@ -37,13 +37,13 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> Tuple[PluginManifest, PluginC
     assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
     logger.debug(f'extracting plugin from {plugin_zip_path}')
 
-    extracted_plugin_path = plugin_zip_path / 'extracted' / plugin_zip_path.stem
+    extracted_plugin_path = plugin_zip_path.parent / 'extracted' / plugin_zip_path.stem
     extracted_plugin_path.mkdir(parents=True, exist_ok=True)
 
     with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
         zip_ref.extractall(extracted_plugin_path)
 
-    return load_plugin_from_dir(plugin_zip_path)
+    return load_plugin_from_dir(extracted_plugin_path)
 
 
 def load_plugin_from_dir(plugin_dir: Path) -> Tuple[PluginManifest, PluginCore]:
@@ -60,7 +60,7 @@ def load_plugin_from_dir(plugin_dir: Path) -> Tuple[PluginManifest, PluginCore]:
 
 def load_plugin_manifest(plugin_dir: Path) -> PluginManifest:
     manifest_file = plugin_dir / PLUGIN_MANIFEST_FILENAME
-    assert manifest_file.is_file(), f'plugin doesn\'t have manifest file'
+    assert manifest_file.is_file(), f'plugin manifest file was not found in {manifest_file}'
     yaml_str = manifest_file.read_text()
     return parse_yaml_datamodel(yaml_str, PluginManifest)
 

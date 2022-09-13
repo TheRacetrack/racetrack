@@ -16,6 +16,7 @@ IGNORED_FILE_PATTERNS = [
     r'^\.git/',
     r'/\.git/',
     r'\.pyc$',
+    r'__pycache__',
 ]
 
 PLUGIN_FILENAME = 'plugin.py'

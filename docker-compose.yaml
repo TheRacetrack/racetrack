@@ -14,6 +14,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    user: '100000:${DOCKER_GID}'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - ./lifecycle/tests/sample/compose.yaml:/etc/racetrack/lifecycle/config.yaml
@@ -38,6 +39,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    user: '100000:${DOCKER_GID}'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - ./lifecycle/tests/sample/compose.yaml:/etc/racetrack/lifecycle/config.yaml

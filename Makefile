@@ -5,7 +5,8 @@ TAG ?= 2.2.1
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 
-docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose
+docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false \
+	DOCKER_GID=$(shell getent group docker | cut -d: -f3) docker compose
 docker = DOCKER_BUILDKIT=1 docker
 
 -include .local.env

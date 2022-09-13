@@ -42,6 +42,8 @@ spec:
           volumeMounts:
             - name: lifecycle-config
               mountPath: /etc/racetrack/lifecycle/
+            - name: racetrack-plugins
+              mountPath: /etc/racetrack/lifecycle/.plugins
           envFrom:
             - configMapRef:
                 name: postgres-env
@@ -78,6 +80,9 @@ spec:
         - name: lifecycle-config
           configMap:
             name: lifecycle-config
+        - name: racetrack-plugins
+          persistentVolumeClaim:
+            claimName: racetrack-plugins-pvc
 
 ---
 apiVersion: v1
