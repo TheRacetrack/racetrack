@@ -1,8 +1,5 @@
-from typing import Optional, List
-
 from pydantic import BaseModel, Extra, validator
 
-from racetrack_commons.plugin.plugin_config import PluginConfig
 from racetrack_commons.deploy.type import DeployerType
 from racetrack_client.utils.quantity import Quantity
 
@@ -44,8 +41,8 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # Adds meaningful details to auth errors
     auth_debug: bool = False
 
-    # List of plugins to load that change behavior of Lifecycle
-    plugins: Optional[List[PluginConfig]] = None
+    # Path to a directory with plugins to be loaded from
+    plugins_dir: str = '.plugins'
 
     # Max allowed memory of a Fatman that can ever be requested in a cluster.
     # Hard limit of "memory_max" value demanded by Fatman in bytes

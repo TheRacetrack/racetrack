@@ -1,8 +1,6 @@
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, Extra
-
-from racetrack_commons.plugin.plugin_config import PluginConfig
 
 
 class Config(BaseModel, extra=Extra.forbid):
@@ -31,8 +29,8 @@ class Config(BaseModel, extra=Extra.forbid):
     # Interval (in minutes) between tasks pruning build cache
     build_cache_prune_interval_m: float = 60
 
-    # List of plugins to load that change behavior of Lifecycle
-    plugins: Optional[List[PluginConfig]] = None
+    # Path to a directory with plugins to be loaded from
+    plugins_dir: str = '.plugins'
 
     # Remove workspace directories after building
     clean_up_workspaces: bool = True

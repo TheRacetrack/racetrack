@@ -12,7 +12,7 @@ class PluginCore(ABC):
     
     Additional attributes can be used:
     - self.plugin_dir: pathlib.Path - path to a plugin directory
-    - self.plugin_config: PluginConfig - Configuration of Racetrack plugin used to load this
+    - self.plugin_manifest: PluginManifest - Details of the contents of the plugin
     """
 
     def post_fatman_deploy(self, manifest: Manifest, fatman: FatmanDto, image_name: str, deployer_username: str = None):

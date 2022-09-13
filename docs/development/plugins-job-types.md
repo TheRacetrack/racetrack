@@ -385,10 +385,8 @@ while the fatman template will be loaded from the plugin directory.
 from typing import Dict, Tuple
 from pathlib import Path
 
-from racetrack_commons.plugin.core import PluginCore
 
-
-class Plugin(PluginCore):
+class Plugin:
     def fatman_job_types(self, docker_registry_prefix: str) -> Dict[str, Tuple[str, Path]]:
         """
         Job types supported by this plugin

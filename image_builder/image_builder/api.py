@@ -26,7 +26,7 @@ def run_api_server():
 
     schedule_tasks_async(config)
 
-    plugin_engine = PluginEngine(config.plugins)
+    plugin_engine = PluginEngine(config.plugins_dir)
     fastapi_app = configure_api(config, plugin_engine)
 
     serve_asgi_app(

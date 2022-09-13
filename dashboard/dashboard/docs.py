@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import markdown
 
-from racetrack_commons.entities.dto import PluginConfigDto
+from racetrack_commons.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.entities.info_client import LifecycleInfoClient
 
 
@@ -20,13 +20,13 @@ def view_docs_index(request):
         })
 
     info_client = LifecycleInfoClient()
-    plugins_info: List[PluginConfigDto] = info_client.get_plugins_info()
-    for plugin_info in plugins_info:
-        markdown_content = info_client.get_plugin_docs(plugin_info.name)
+    plugin_manifests: List[PluginManifest] = info_client.get_plugins_info()
+    for plugin_manifest in plugin_manifests:
+        markdown_content = info_client.get_plugin_docs(plugin_manifest.name)
         if markdown_content:
             docs.append({
-                'url': f'/dashboard/docs/plugin/{plugin_info.name}',
-                'title': f'Plugin: {plugin_info.name}',
+                'url': f'/dashboard/docs/plugin/{plugin_manifest.name}',
+                'title': f'Plugin: {plugin_manifest.name}',
             })
 
     context = {

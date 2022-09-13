@@ -77,7 +77,7 @@
             Active plugins:
             <ul>
                 {% for plugin in plugins %}
-                    <li>{{ plugin.name }} (version {{ plugin.git_ref }}) - <a href="{{ plugin.git_remote }}" target="_blank">{{ plugin.git_remote }}</a> </li>
+                    <li>{{ plugin.name }} (version {{ plugin.version }})</li>
                 {% endfor %}
             </ul>
 
