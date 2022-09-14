@@ -71,6 +71,7 @@
                 Racetrack: {{ racetrack_version }}
             </p>
 
+            <h5 class="card-title">Plugins</h5>
             {% if plugins|length > 0 %}
             Active plugins:
             <ul>
@@ -79,6 +80,15 @@
             {% endfor %}
             </ul>
             {% endif %}
+
+            <form action="{% url "dashboard:upload-plugin" %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <input type="file" name="plugin-file" class="form-control">
+                    <button type="submit" class="btn btn-outline-secondary">Upload plugin</button>
+                </div>
+            </form>
+
         </div>
     </div>
 </div>
@@ -89,15 +99,24 @@
 {% block javascript %}
 
 <script>
-    function copyToClipboard(e, btn, elementId) {
-        e.preventDefault(); // prevent submit
-        let str = document.getElementById(elementId);
-        str.select();
-        document.execCommand('copy');
-        btn.innerHTML = "Copied!";
-        return false; // prevent submit
-    }
+function copyToClipboard(e, btn, elementId) {
+    e.preventDefault(); // prevent submit
+    let str = document.getElementById(elementId);
+    str.select();
+    document.execCommand('copy');
+    btn.innerHTML = "Copied!";
+    return false; // prevent submit
+}
 
+let searchParams = new URLSearchParams(window.location.search);
+if (searchParams.has('success')) {
+    showAlert(searchParams.get('success'), 'success');
+    window.history.replaceState(null, null, window.location.pathname);
+}
+if (searchParams.has('error')) {
+    showAlert(searchParams.get('error'), 'danger');
+    window.history.replaceState(null, null, window.location.pathname);
+}
 </script>
 
 {% endblock javascript %}

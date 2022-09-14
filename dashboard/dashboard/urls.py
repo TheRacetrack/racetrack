@@ -21,4 +21,5 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('registered', views.registered, name='registered'),
     path('profile', views.user_profile, name='profile'),
+    path('plugin/upload', views.upload_plugin, name='upload-plugin'),
 ]

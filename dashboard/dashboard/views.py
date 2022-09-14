@@ -6,8 +6,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views import generic
+from django.utils.http import urlencode
 
 from racetrack_commons.urls import get_external_pub_url
 from racetrack_client.log.context_error import ContextError
@@ -97,6 +98,24 @@ def user_profile(request):
         context['error'] = str(e)
 
     return render(request, 'racetrack/profile.html', context)
+
+
+@login_required
+def upload_plugin(request):
+    if request.method == 'POST' and 'plugin-file' in request.FILES and request.FILES['plugin-file']:
+        plugin_file = request.FILES['plugin-file']
+        file_bytes = plugin_file.read()
+        filename = plugin_file.name
+        print(filename)
+        parameters = urlencode({
+            'success': 'Plugin file uploaded',
+        })
+    else:
+        parameters = urlencode({
+            'error': 'No file to upload',
+        })
+    redirect_url = reverse('dashboard:profile')
+    return redirect(f'{redirect_url}?{parameters}')
 
 
 @login_required
