@@ -39,7 +39,7 @@ def setup_info_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
     def _delete_plugin(plugin_name: str, request: Request):
         """Deactivate plugin"""
         check_auth(request, subject_types=[AuthSubjectType.USER])
-        plugin_engine.delete_plugin(plugin_name)
+        plugin_engine.delete_plugin_by_name(plugin_name)
 
     @api.get('/plugin/{plugin_name}/docs', response_model=Optional[str])
     def _info_plugin_docs(plugin_name: str):

@@ -10,7 +10,7 @@ from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.shell import shell
 from racetrack_client.utils.datamodel import parse_yaml_datamodel
-from racetrack_commons.plugin.plugin_manifest import PluginManifest
+from racetrack_commons.plugin.plugin_manifest import PluginData, PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 
 logger = get_logger(__name__)
@@ -18,36 +18,37 @@ logger = get_logger(__name__)
 PLUGIN_CLASS_NAME = 'Plugin'
 PLUGIN_FILENAME = 'plugin.py'
 PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
+EXTRACTED_PLUGINS_DIR = 'extracted'
 
 
-def load_plugins_from_dir(plugins_dir: str) -> List[Tuple[PluginManifest, PluginCore]]:
+def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
     plugins_path = Path(plugins_dir)
     plugins_path.mkdir(parents=True, exist_ok=True)
-    plugins_data: List[Tuple[PluginManifest, PluginCore]] = []
+    plugins_data: List[PluginData] = []
 
     for plugin_zip_path in sorted(plugins_path.glob('*.zip')):
-        with wrap_context(f'extracting plugin from {plugin_zip_path}'):
-            plugin_manifest, plugin = load_plugin_from_zip(plugin_zip_path)
-            plugins_data.append((plugin_manifest, plugin))
+        with wrap_context(f'extracting plugin from {plugin_zip_path.name}'):
+            plugin_data = load_plugin_from_zip(plugin_zip_path)
+            plugins_data.append(plugin_data)
 
-    return sorted(plugins_data, key=lambda plugin: plugin[0].priority)
+    return sorted(plugins_data, key=lambda p: p.plugin_manifest.priority)
 
 
-def load_plugin_from_zip(plugin_zip_path: Path) -> Tuple[PluginManifest, PluginCore]:
+def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
     assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
     logger.debug(f'extracting plugin from {plugin_zip_path}')
 
-    extracted_plugin_path = plugin_zip_path.parent / 'extracted' / plugin_zip_path.stem
+    extracted_plugin_path = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR / plugin_zip_path.stem
     
     if not extracted_plugin_path.is_dir():
         extracted_plugin_path.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
             zip_ref.extractall(extracted_plugin_path)
 
-    return load_plugin_from_dir(extracted_plugin_path)
+    return load_plugin_from_dir(extracted_plugin_path, plugin_zip_path)
 
 
-def load_plugin_from_dir(plugin_dir: Path) -> Tuple[PluginManifest, PluginCore]:
+def load_plugin_from_dir(plugin_dir: Path, zip_path: Path) -> PluginData:
     plugin_manifest = load_plugin_manifest(plugin_dir)
 
     _install_plugin_dependencies(plugin_dir)
@@ -55,8 +56,8 @@ def load_plugin_from_dir(plugin_dir: Path) -> Tuple[PluginManifest, PluginCore]:
     setattr(plugin, 'plugin_manifest', plugin_manifest)
     setattr(plugin, 'plugin_dir', plugin_dir)
     
-    logger.info(f'loaded plugin: {plugin_manifest.name} (version {plugin_manifest.version})')
-    return plugin_manifest, plugin
+    logger.info(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
+    return PluginData(zip_path=zip_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)
 
 
 def load_plugin_manifest(plugin_dir: Path) -> PluginManifest:

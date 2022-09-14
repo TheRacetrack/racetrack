@@ -1,9 +1,13 @@
+from pathlib import Path
 from typing import Optional
+from dataclasses import dataclass
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
+
+from racetrack_commons.plugin.core import PluginCore
 
 
-class PluginManifest(BaseModel):
+class PluginManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     """Details of the contents of the plugin"""
 
     name: str
@@ -17,3 +21,10 @@ class PluginManifest(BaseModel):
 
     # order in plugins sequence, lowest priority gets executed first
     priority: int = 0
+
+
+@dataclass
+class PluginData:
+    zip_path: Path
+    plugin_manifest: PluginManifest
+    plugin_instance: PluginCore
