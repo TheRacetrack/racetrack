@@ -77,13 +77,16 @@
             <ul>
             {% for plugin in plugins %}
                 <li>
-                    {{ plugin.name }} (version {{ plugin.version }})
+                    <span>{{ plugin.name }} (version {{ plugin.version }})</span>
+                    {% if user.is_staff %}
                     <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}">Delete</button>
+                    {% endif %}
                 </li>
             {% endfor %}
             </ul>
             {% endif %}
 
+            {% if user.is_staff %}
             <form action="{% url "dashboard:upload_plugin" %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-group mb-3">
@@ -91,6 +94,7 @@
                     <button type="submit" class="btn btn-outline-secondary">Upload plugin</button>
                 </div>
             </form>
+            {% endif %}
 
         </div>
     </div>
