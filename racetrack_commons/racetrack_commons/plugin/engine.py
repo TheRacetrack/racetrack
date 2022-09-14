@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+import threading
 from typing import Callable, List, Optional
 import time
 
@@ -94,22 +95,22 @@ class PluginEngine:
             def on_created(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file creation notified on {event.src_path}')
-                    compare_changes()
+                    threading.Thread(target=compare_changes, daemon=True).start()
 
             def on_deleted(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file deletion notified on {event.src_path}')
-                    compare_changes()
+                    threading.Thread(target=compare_changes, daemon=True).start()
 
             def on_modified(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file modification notified on {event.src_path}')
-                    compare_changes()
+                    threading.Thread(target=compare_changes, daemon=True).start()
 
             def on_moved(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file moving notified on {event.src_path}')
-                    compare_changes()
+                    threading.Thread(target=compare_changes, daemon=True).start()
 
         event_handler = ChangesHandler()
         observer = Observer()
@@ -117,19 +118,24 @@ class PluginEngine:
         observer.start()
 
     def upload_plugin(self, filename: str, file_bytes: bytes):
-        zip_file = Path(self.plugins_dir) / filename
-        assert zip_file.suffix == '.zip', '.zip plugins are only supported'
+        target_zip = Path(self.plugins_dir) / filename
+        assert target_zip.suffix == '.zip', '.zip plugins are only supported'
 
-        zip_file.write_bytes(file_bytes)
-        plugin_data = load_plugin_from_zip(zip_file)
+        # save to tmp.zip to avoid overwriting current plugins
+        tmp_zip = Path(self.plugins_dir) / 'tmp.zip'
+        tmp_zip.write_bytes(file_bytes)
+        plugin_data = load_plugin_from_zip(tmp_zip)
         plugin_name = plugin_data.plugin_manifest.name
 
-        self._delete_older_plugin_version(plugin_name, zip_file)
-        
+        tmp_extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / tmp_zip.stem
+        shutil.rmtree(tmp_extracted_dir)
+
+        self._delete_older_plugin_version(plugin_name)
+        tmp_zip.rename(target_zip)
         logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
 
-        self._record_last_change()
         self._load_plugins()
+        self._record_last_change()
         
     def delete_plugin_by_name(self, name: str):
         plugin_data = self.find_plugin(name)
@@ -138,21 +144,22 @@ class PluginEngine:
         self._record_last_change()
         self._load_plugins()
 
-    def _delete_older_plugin_version(self, plugin_name: str, new_file: Path):
+    def _delete_older_plugin_version(self, plugin_name: str):
         try:
             plugin_data = self.find_plugin(plugin_name)
-            if plugin_data.zip_path != new_file:
-                self._delete_plugin(plugin_data)
-            logger.info(f'Older plugin version {plugin_data.zip_path.name} has been replaced with {new_file.name}')
+            self._delete_plugin(plugin_data)
+            logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
         except EntityNotFound:
             return
 
     def _delete_plugin(self, plugin_data: PluginData):
-        assert plugin_data.zip_path.is_file(), 'ZIP plugin was not found'
+        if not plugin_data.zip_path.is_file():
+            logger.warning(f'ZIP plugin was not found: {plugin_data.zip_path}')
         plugin_data.zip_path.unlink()
 
         extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / plugin_data.zip_path.stem
-        assert extracted_dir.is_dir(), 'extracted plugin directory was not found'
+        if not extracted_dir.is_dir():
+            logger.warning(f'extracted plugin directory was not found: {extracted_dir}')
         shutil.rmtree(extracted_dir)
 
     def _read_last_change_timestamp(self) -> int:
