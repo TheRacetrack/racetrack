@@ -143,7 +143,7 @@ class PluginEngine:
             plugin_data = self.find_plugin(plugin_name)
             if plugin_data.zip_path != new_file:
                 self._delete_plugin(plugin_data)
-            logger.info(f'Older plugin version {plugin_data.zip_path} has been replaced with {new_file}')
+            logger.info(f'Older plugin version {plugin_data.zip_path.name} has been replaced with {new_file.name}')
         except EntityNotFound:
             return
 

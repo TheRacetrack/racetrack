@@ -36,8 +36,6 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
 
 def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
     assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
-    logger.debug(f'extracting plugin from {plugin_zip_path}')
-
     extracted_plugin_path = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR / plugin_zip_path.stem
     
     if not extracted_plugin_path.is_dir():
