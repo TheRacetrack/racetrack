@@ -21,5 +21,6 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('registered', views.registered, name='registered'),
     path('profile', views.user_profile, name='profile'),
-    path('plugin/upload', views.upload_plugin, name='upload-plugin'),
+    path('plugin/upload', views.upload_plugin, name='upload_plugin'),
+    path('api/plugin/delete/<plugin_name>', views.delete_plugin, name='delete_plugin'),
 ]

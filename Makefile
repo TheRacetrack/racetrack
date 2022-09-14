@@ -150,7 +150,7 @@ compose-deploy-sample:
 	racetrack deploy sample/python-class/ http://localhost:7102 --force
 
 compose-logs:
-	$(docker-compose) logs -f
+	$(docker-compose) logs lifecycle lifecycle-supervisor image-builder dashboard pub -f
 
 docker-build:
 	$(docker-compose) build \

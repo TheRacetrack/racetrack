@@ -76,12 +76,15 @@
             Active plugins:
             <ul>
             {% for plugin in plugins %}
-                <li>{{ plugin.name }} (version {{ plugin.version }})</li>
+                <li>
+                    {{ plugin.name }} (version {{ plugin.version }})
+                    <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}">Delete</button>
+                </li>
             {% endfor %}
             </ul>
             {% endif %}
 
-            <form action="{% url "dashboard:upload-plugin" %}" method="post" enctype="multipart/form-data">
+            <form action="{% url "dashboard:upload_plugin" %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-group mb-3">
                     <input type="file" name="plugin-file" class="form-control">
@@ -107,6 +110,48 @@ function copyToClipboard(e, btn, elementId) {
     btn.innerHTML = "Copied!";
     return false; // prevent submit
 }
+
+function invokePluginAction(actionName, endpoint, that, csrf_token) {
+    let pluginName = that.attr('plugin-name');
+    var actionPrefix = actionName + ' ' + pluginName
+    console.log(actionPrefix + '...');
+    var previousHtml = that.html();
+    that.prop("disabled", true);
+    that.html(
+        `<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>`
+    );
+    $.ajax({
+        url: '/dashboard/api/' + endpoint + '/' + pluginName,
+        type: 'post',
+        data: {
+            csrfmiddlewaretoken: csrf_token,
+        },
+        cache: false,
+        success: function(data) {
+            that.prop("disabled", false);
+            that.html(previousHtml);
+            var message = 'Success: ' + actionPrefix;
+            showAlert(message, 'success');
+        },
+        error: function (xhr, status, error) {
+            if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) { 
+                message = xhr.responseJSON.error;
+            } else {
+                message = xhr.statusText;
+            }
+            that.prop("disabled", false);
+            that.html(previousHtml);
+            showAlert('Error: ' + actionPrefix + ': ' + message, 'danger');
+        }
+    });
+}
+
+$(".button-delete-plugin").click(function () {
+    that = $(this)
+    showModal("Delete Plugin", "Are you sure you want to delete this plugin?", function () {
+        invokePluginAction('Deleting plugin', `plugin/delete`, that, '{{ csrf_token }}')
+    });
+});
 
 let searchParams = new URLSearchParams(window.location.search);
 if (searchParams.has('success')) {

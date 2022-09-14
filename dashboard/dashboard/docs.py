@@ -6,7 +6,7 @@ from django.http import HttpResponse
 import markdown
 
 from racetrack_commons.plugin.plugin_manifest import PluginManifest
-from racetrack_commons.entities.info_client import LifecycleInfoClient
+from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 
 
 def view_docs_index(request):
@@ -19,10 +19,10 @@ def view_docs_index(request):
             'title': _humanize_path_title(doc_path_str),
         })
 
-    info_client = LifecycleInfoClient()
-    plugin_manifests: List[PluginManifest] = info_client.get_plugins_info()
+    plugin_client = LifecyclePluginClient()
+    plugin_manifests: List[PluginManifest] = plugin_client.get_plugins_info()
     for plugin_manifest in plugin_manifests:
-        markdown_content = info_client.get_plugin_docs(plugin_manifest.name)
+        markdown_content = plugin_client.get_plugin_docs(plugin_manifest.name)
         if markdown_content:
             docs.append({
                 'url': f'/dashboard/docs/plugin/{plugin_manifest.name}',
@@ -54,8 +54,8 @@ def view_doc_page(request, doc_path: str):
 
 
 def view_doc_plugin(request, plugin_name: str):
-    info_client = LifecycleInfoClient()
-    markdown_content = info_client.get_plugin_docs(plugin_name)
+    plugin_client = LifecyclePluginClient()
+    markdown_content = plugin_client.get_plugin_docs(plugin_name)
     if markdown_content is None:
         return HttpResponse('plugin docs not found', status=500)
 

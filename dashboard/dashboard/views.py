@@ -20,7 +20,7 @@ from racetrack_commons.entities.audit import explain_audit_log_event
 from racetrack_commons.entities.audit_client import AuditClient
 from racetrack_commons.entities.dto import AuditLogEventDto, FatmanDto
 from racetrack_commons.entities.fatman_client import FatmanRegistryClient
-from racetrack_commons.entities.info_client import LifecycleInfoClient
+from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 from dashboard.purge import enrich_fatmen_purge_info
 from dashboard.utils import login_required, remove_ansi_sequences
@@ -92,7 +92,7 @@ def user_profile(request):
     }
     try:
         context['user_auth'] = get_auth_token(request)
-        context['plugins'] = LifecycleInfoClient().get_plugins_info()
+        context['plugins'] = LifecyclePluginClient().get_plugins_info()
     except Exception as e:
         log_exception(ContextError('Getting user profile data failed', e))
         context['error'] = str(e)
@@ -106,9 +106,10 @@ def upload_plugin(request):
         plugin_file = request.FILES['plugin-file']
         file_bytes = plugin_file.read()
         filename = plugin_file.name
-        print(filename)
+        client = LifecyclePluginClient(auth_token=get_auth_token(request))
+        client.upload_plugin(filename, file_bytes)
         parameters = urlencode({
-            'success': 'Plugin file uploaded',
+            'success': f'Plugin file uploaded: {filename}',
         })
     else:
         parameters = urlencode({
@@ -116,6 +117,17 @@ def upload_plugin(request):
         })
     redirect_url = reverse('dashboard:profile')
     return redirect(f'{redirect_url}?{parameters}')
+
+
+@login_required
+def delete_plugin(request, plugin_name: str):
+    try:
+        client = LifecyclePluginClient(auth_token=get_auth_token(request))
+        client.delete_plugin(plugin_name)
+    except Exception as e:
+        log_exception(ContextError('Deleting plugin failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+    return HttpResponse(status=204)
 
 
 @login_required

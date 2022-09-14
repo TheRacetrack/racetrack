@@ -3,7 +3,7 @@ import ssl
 from email.message import Message
 from http.client import HTTPResponse
 from http.client import responses
-from typing import Any, List, Optional, Dict
+from typing import Any, Optional, Dict
 from urllib import request
 from urllib.error import HTTPError, URLError
 import urllib.parse as urlparse
@@ -95,54 +95,59 @@ class Requests:
             headers: Optional[Dict[str, str]] = None,
             timeout: float = None,
         ) -> Response:
-        return cls._make_request('GET', url, None, params, headers, timeout)
+        return cls._make_request('GET', url, None, None, params, headers, timeout)
 
     @classmethod
     def post(cls,
             url: str,
             json: Optional[Any] = None,
+            data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: float = None,
         ) -> Response:
-        return cls._make_request('POST', url, json, params, headers, timeout)
+        return cls._make_request('POST', url, json, data, params, headers, timeout)
 
     @classmethod
     def put(cls,
             url: str,
             json: Optional[Any] = None,
+            data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: float = None,
         ) -> Response:
-        return cls._make_request('PUT', url, json, params, headers, timeout)
+        return cls._make_request('PUT', url, json, data, params, headers, timeout)
 
     @classmethod
     def delete(cls,
             url: str,
             json: Optional[Any] = None,
+            data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: float = None,
         ) -> Response:
-        return cls._make_request('DELETE', url, json, params, headers, timeout)
+        return cls._make_request('DELETE', url, json, data, params, headers, timeout)
 
     @classmethod
     def request(cls,
             method: str,
             url: str,
             json: Optional[Any] = None,
+            data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: float = None,
         ) -> Response:
-        return cls._make_request(method.upper(), url, json, params, headers, timeout)
+        return cls._make_request(method.upper(), url, json, data, params, headers, timeout)
 
     @classmethod
     def _make_request(cls, 
             method: str,
             url: str,
             jsondata: Optional[Any] = None,
+            data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: float = None,
@@ -174,6 +179,9 @@ class Requests:
             req.add_header('Content-Type', 'application/json; charset=utf-8')
             req.add_header('Content-Length', str(len(jsondataasbytes)))
             kwargs['data'] = jsondataasbytes
+        elif data is not None:
+            req.add_header('Content-Length', str(len(data)))
+            kwargs['data'] = data
         
         if not req.has_header('Accept'):
             req.add_header('Accept', 'application/json, */*')
