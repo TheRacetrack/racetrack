@@ -1,7 +1,6 @@
 import io
 from pathlib import Path
 import zipfile
-import re
 
 from racetrack_client.log.logs import get_logger
 from racetrack_client.log.context_error import wrap_context
@@ -9,15 +8,9 @@ from racetrack_client.utils.datamodel import parse_yaml_datamodel, datamodel_to_
 from racetrack_client.utils.time import now
 from racetrack_commons.plugin.plugin_manifest import PluginManifest
 
-logger = get_logger(__name__)
+from plugin_bundler.ignore import FilenameMatcher
 
-IGNORED_FILE_PATTERNS = [
-    r'\.zip$',
-    r'^\.git/',
-    r'/\.git/',
-    r'\.pyc$',
-    r'__pycache__',
-]
+logger = get_logger(__name__)
 
 PLUGIN_FILENAME = 'plugin.py'
 PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
@@ -33,21 +26,26 @@ def bundle_plugin(workdir: str):
 
     out_path = plugin_dir / f'{plugin_manifest.name}-{plugin_manifest.version}.zip'
 
-    ignored_patterns = [re.compile(pattern) for pattern in IGNORED_FILE_PATTERNS]
+    gitignore_file = plugin_dir / '.gitignore'
+    if gitignore_file.is_file():
+        logger.debug(f'ignoring file patterns found in {gitignore_file}')
+        ignore_matcher = FilenameMatcher(gitignore_file)
+    else:
+        ignore_matcher = FilenameMatcher()
 
     with zipfile.ZipFile(out_path.as_posix(), mode="w", compression=zipfile.ZIP_STORED) as zip:
         for file in plugin_dir.rglob('*'):
 
             if file.is_dir():
                 continue
-            relative_path = file.relative_to(plugin_dir).as_posix()
-            if any(pattern.search(relative_path) for pattern in ignored_patterns):
+            relative_path = file.relative_to(plugin_dir)
+            if ignore_matcher.match_ignore_patterns(relative_path):
                 continue
-            if relative_path == PLUGIN_MANIFEST_FILENAME:
+            if relative_path.as_posix() == PLUGIN_MANIFEST_FILENAME:
                 continue
 
             logger.debug(f'writing file to zip: {relative_path}')
-            zip.write(file.as_posix(), arcname=relative_path)
+            zip.write(file.as_posix(), arcname=relative_path.as_posix())
 
         _write_plugin_manifest(zip, plugin_manifest)
 
