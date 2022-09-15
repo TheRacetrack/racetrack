@@ -92,12 +92,23 @@ def user_profile(request):
     }
     try:
         context['user_auth'] = get_auth_token(request)
-        context['plugins'] = LifecyclePluginClient().get_plugins_info()
     except Exception as e:
         log_exception(ContextError('Getting user profile data failed', e))
         context['error'] = str(e)
 
     return render(request, 'racetrack/profile.html', context)
+
+
+@login_required
+def view_administration(request):
+    context = {}
+    try:
+        context['plugins'] = LifecyclePluginClient().get_plugins_info()
+    except Exception as e:
+        log_exception(ContextError('Getting plugins data failed', e))
+        context['error'] = str(e)
+
+    return render(request, 'racetrack/administration.html', context)
 
 
 @login_required
@@ -115,7 +126,7 @@ def upload_plugin(request):
         parameters = urlencode({
             'error': 'No file to upload',
         })
-    redirect_url = reverse('dashboard:profile')
+    redirect_url = reverse('dashboard:administration')
     return redirect(f'{redirect_url}?{parameters}')
 
 
