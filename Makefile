@@ -114,33 +114,36 @@ up: compose-up
 
 down: compose-down
 
-compose-run: registry docker-build local-registry-push-base
+compose-run: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) up
 
-compose-run-dev: registry docker-build local-registry-push-base
+compose-run-dev: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) --profile dev up
 
 compose-run-stress: registry docker-build docker-build-stress local-registry-push-base
 	$(docker-compose) -f docker-compose.yaml -f tests/stress/docker-compose.stress.yaml up
 
-compose-up: registry docker-build local-registry-push-base
+compose-up: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) up -d
 
-compose-up-dev: registry docker-build local-registry-push-base
+compose-up-dev: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) --profile dev up -d
 
-compose-up-service:
+compose-up-service: compose-volumes
 	$(docker-compose) build \
 		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
 		--build-arg DOCKER_TAG="$(TAG)" \
 		$(service)
 	$(docker-compose) up -d $(service)
 		
-compose-up-docker-daemon: registry docker-build local-registry-push-base
+compose-up-docker-daemon: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) -f docker-compose.yaml \
 		-f ./utils/docker-daemon/docker-compose.docker-daemon.yaml \
 		--project-directory . \
 		up -d
+
+compose-volumes:
+	mkdir -p .plugins && chmod o+rw .plugins
 
 compose-down: docker-clean-fatman
 	$(docker-compose) --profile dev down
