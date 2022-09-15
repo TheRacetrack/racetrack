@@ -8,6 +8,8 @@ DEFAULT_IGNORE_PATTERNS = {
     '*.pyc',
     '__pycache__',
     '.gitignore',
+    '/.racetrackignore',
+    '/plugin-manifest.yaml',
 }
 
 

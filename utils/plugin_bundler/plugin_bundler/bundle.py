@@ -26,10 +26,10 @@ def bundle_plugin(workdir: str):
 
     out_path = plugin_dir / f'{plugin_manifest.name}-{plugin_manifest.version}.zip'
 
-    gitignore_file = plugin_dir / '.gitignore'
-    if gitignore_file.is_file():
-        logger.debug(f'ignoring file patterns found in {gitignore_file}')
-        ignore_matcher = FilenameMatcher(gitignore_file)
+    ignore_file = plugin_dir / '.racetrackignore'
+    if ignore_file.is_file():
+        logger.info(f'ignoring file patterns found in {ignore_file}')
+        ignore_matcher = FilenameMatcher(ignore_file)
     else:
         ignore_matcher = FilenameMatcher()
 
