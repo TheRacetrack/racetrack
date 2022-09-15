@@ -51,7 +51,7 @@ def bundle_plugin(workdir: str):
 
         _write_plugin_manifest(zip, plugin_manifest)
 
-    logger.info(f'plugin {plugin_manifest.name} has been exported to: {out_path}')
+    logger.info(f'plugin {plugin_manifest.name} has been exported to: {out_path.absolute()}')
 
 
 def _load_plugin_manifest(manifest_file: Path) -> PluginManifest:

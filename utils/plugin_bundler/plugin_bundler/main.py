@@ -4,7 +4,7 @@ import argparse
 
 from racetrack_client.log.logs import configure_logs, get_logger
 
-from bundle import bundle_plugin
+from plugin_bundler.bundle import bundle_plugin
 
 logger = get_logger(__name__)
 
