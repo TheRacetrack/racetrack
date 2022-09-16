@@ -2,46 +2,20 @@
 Racetrack instance might be enriched by plugins that add 
 customized, tailored functionality to a generic Racetrack.
 
-## Installing plugin
-Plugins are installed by adding them to the `plugins` list in the
-Lifecycle and/or Image-builder configuration file.
+## Installing / Uninstalling plugin
+To activate the plugin in Racetrack, you need the ZIP plugin file.
+Go to the Dashboard Administration page
+(you need to be privileged, staff user to see this tab)
+and upload the zipped plugin there.
 
-Each plugin may have following fields:
-
-- `name` - required, string, Name of the plugin
-- `git_remote` - required, string, git remote url to the plugin module (with credentials if needed)
-- `git_ref` - optional, string, git branch or commit hash describing plugin version
-- `git_directory` - optional, string, path to the plugin module in the git repository
-- `priority` - optional, integer, order in plugins sequence, lowest priority gets executed first
-
-Plugin should be kept in an individual git repository and referenced by its remote URL,
-git ref (branch, tag or commit hash) and a subdirectory where the plugin is.
-If the repository is private, remote URL address should contain the username and token to access it, eg.:
-```yaml
-  git_remote: https://plugin-malbolge:pa55w0rd@github.com/theracetrack/plugin-malbolge
-```
-
-## Example
-To activate the plugin in Racetrack, 
-add the following to your Lifecycle or Image-builder configuration
-(directly in local YAML or in kustomize ConfigMap):
-```yaml
-plugins:
-- name: eradication
-  git_remote: https://racetrack:token@github.com/theracetrack/racetrack
-  git_ref: master
-  git_directory: docs/development/plugin_sample
-  priority: 0
-```
-
-See [plugin_sample](plugin_sample) for an example of a plugin.
+To disable a plugin, click "Delete" button next to a plugin.
 
 ## How does plugin work?
 Loading a plugin happens in Racetrack in a following manner:
 
 1. At startup of racetrack components,
-  the plugin is cloned from the remote repository.
-1. If plugin directory contains `requirements.txt` file, it is installed using pip.
+  the plugin code is extracted from the zipped file.
+1. If plugin contains `requirements.txt` file, it is installed using pip.
 1. `plugin.py` Python file is loaded. Class `Plugin` is expected to be defined in it. 
   It is then instantiated and kept in internal plugins list.
 
@@ -54,11 +28,42 @@ the plugin engine is notified and all plugin hooks are called in the order accor
   they are executed in the order they were added in the configuration file.
 
 ## Creating a plugin
-Create a git repo, copy plugin_sample to it and modify the hooks implementation as you like.
-Use same virtualenv from racetrack repository (your plugin can use the same dependencies as Lifecycle does).
+Create a git repo, copy [plugin_sample](plugin_sample) to it
+and modify the hooks implementation as you like.
+Use same virtualenv from racetrack repository 
+(your plugin can use the same dependencies as Lifecycle does).
 
 Check out [plugins-job-types.md](./plugins-job-types.md)
 to see how to create a job-type plugin.
+
+### Create a plugin manifest
+Create `plugin-manifest.yaml` file in a plugin directory.
+Basically, it contains the metadata of the plugin.
+It can have the following fields in YAML format:
+- `name` (**required**) - name of the plugin
+- `version` (**required**) - version of the plugin
+- `url` (optional) - a link to the plugin page
+- `priority` (optional) - order in plugins sequence, lowest priority gets executed first. Integer field, 0 by default.
+
+Example:
+```yaml
+name: skynet-watcher
+version: 1.2.3
+url: https://github.com/TheRacetrack/racetrack
+priority: -1
+```
+
+### Building a plugin
+Source code of the plugin can be bundled into a ZIP file
+by means of a `racetrack-plugin-bundler` tool.
+Here's [how to install racetrack-plugin-bundler](../../utils/plugin_bundler/README.md).
+
+Make sure the plugin version inside `plugin-manifest.yaml` is up-to-date.
+
+Then, you can run `racetrack-plugin-bundler bundle` to turn a plugin into a ZIP file.
+Zipped plugin will be generated in a plugin directory.
+
+See [plugin_sample](plugin_sample) for an example of a plugin.
 
 ## Supported hooks
 Supported hooks (events) that can be overriden in the plugin class:
