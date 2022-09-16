@@ -1,8 +1,8 @@
 from pathlib import Path
-from plugin_bundler.ignore import match_file_pattern
+from plugin_bundler.filename_matcher import match_file_pattern
 
 
-def test_match_file_pattern():
+def test_match_file_patterns():
     assert match_file_pattern(Path('dir/folder/plugin-1.1.0.zip'), '*.zip')
     assert not match_file_pattern(Path('dir/f.zipper.txt'), '*.zip')
 

@@ -23,7 +23,7 @@ class FilenameMatcher:
             file_patterns = list(filter(None, file_patterns))  # filter non-empty
             self.patterns.update(file_patterns)
 
-    def match_ignore_patterns(self, relative_path: Path) -> bool:
+    def match_path(self, relative_path: Path) -> bool:
         return any(match_file_pattern(relative_path, pattern) for pattern in self.patterns)
 
 

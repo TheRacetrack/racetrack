@@ -8,4 +8,4 @@ A tool for generating Racetrack plugins from a source code.
     2. Run `make setup` inside Racetrack repository
     3. Activate Ractrack venv: `. venv/bin/activate`
 2. Go to the directory where your plugin is located.
-3. Run `racetrack-plugin-bundler bundle` to bundle a plugin into ZIP file.
+3. Run `racetrack-plugin-bundler bundle` to bundle a plugin into a ZIP file.

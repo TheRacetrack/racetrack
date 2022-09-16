@@ -8,7 +8,7 @@ from racetrack_client.utils.datamodel import parse_yaml_datamodel, datamodel_to_
 from racetrack_client.utils.time import now
 from racetrack_commons.plugin.plugin_manifest import PluginManifest
 
-from plugin_bundler.ignore import FilenameMatcher
+from plugin_bundler.filename_matcher import FilenameMatcher
 
 logger = get_logger(__name__)
 
@@ -29,9 +29,9 @@ def bundle_plugin(workdir: str):
     ignore_file = plugin_dir / '.racetrackignore'
     if ignore_file.is_file():
         logger.info(f'ignoring file patterns found in {ignore_file}')
-        ignore_matcher = FilenameMatcher(ignore_file)
+        ignored_files_matcher = FilenameMatcher(ignore_file)
     else:
-        ignore_matcher = FilenameMatcher()
+        ignored_files_matcher = FilenameMatcher()
 
     with zipfile.ZipFile(out_path.as_posix(), mode="w", compression=zipfile.ZIP_STORED) as zip:
         for file in plugin_dir.rglob('*'):
@@ -39,9 +39,7 @@ def bundle_plugin(workdir: str):
             if file.is_dir():
                 continue
             relative_path = file.relative_to(plugin_dir)
-            if ignore_matcher.match_ignore_patterns(relative_path):
-                continue
-            if relative_path.as_posix() == PLUGIN_MANIFEST_FILENAME:
+            if ignored_files_matcher.match_path(relative_path):
                 continue
 
             logger.debug(f'writing file to zip: {relative_path}')
