@@ -43,7 +43,7 @@ spec:
             - name: lifecycle-config
               mountPath: /etc/racetrack/lifecycle/
             - name: racetrack-plugins
-              mountPath: /etc/racetrack/lifecycle/.plugins
+              mountPath: /etc/racetrack/lifecycle/plugins
           envFrom:
             - configMapRef:
                 name: postgres-env
