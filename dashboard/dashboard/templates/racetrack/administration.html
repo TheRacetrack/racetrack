@@ -35,6 +35,9 @@
             {% for plugin in plugins %}
                 <li>
                     <span>{{ plugin.name }} (version {{ plugin.version }})</span>
+                    {% if plugin.url %}
+                    <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
+                    {% endif %}
                     {% if user.is_staff %}
                     <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}">Delete</button>
                     {% endif %}
