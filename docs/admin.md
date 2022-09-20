@@ -112,3 +112,65 @@ If something's malfunctioning, check out the following places to find more infor
     - through Django Admin Panel: Deployments model, "Build logs" field,
 - Django Admin panel: browse stored models,
 - Racetrack component logs: dashboard, lifecycle, lifecycle-supervisor, image-builder, pub, postgres, pgbouncer
+
+
+# Backup & Restore
+
+Here's the overview of the places where Racetrack data are stored:
+- **Postgres Database** - keeps information about fatmen
+  (that are expected to be running), deployments, users, permissions, etc.
+- **Plugins Volume** - a persistent volume containing plugins 
+  currently installed in the Racetrack instance.
+- **Docker Registry** - a registry for keeping built fatman images.
+  If a fatman gets killed somehow, it will be recreated from the image taken from here.
+
+Usually Postgres Database and Docker Registry are running outside kubernetes.
+So in case of a cluster wipeout, there's only Plugins Volume that needs to be restored then.
+
+## Postgres Database
+### Backing up
+If Postgres database runs outside kubernetes on an external server,
+use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html)
+tool to make a backup of the database.
+
+Otherwise, if your database runs inside kubernetes, 
+exec to `postgres` pod, dump the db:
+```
+pg_dump -U racetrack -d lifecycle_db -F t > rt_backup1.tar
+```
+
+Copy it to your localhost. If the tables are in `public` schema, and you want to restore them to some `foobar` schema,
+then because pg_restore doesn't support specifying schema, you'll need to:
+1. run postgres in docker
+2. restore tables from rt_backup1.tar to public schema
+3. `ALTER SCHEMA public RENAME TO foobar;`
+4. pg_dump the tables again (to rt_backup2.tar)
+
+### Restoring
+If Postgres database runs outside kubernetes,
+use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html)
+tool to restore the database.
+
+Otherwise, if your database runs inside kubernetes, 
+exec to `postgres` pod and run: 
+```
+pg_restore -p <port> -U racetrack --no-owner -d lifecycle_db rt_backup2.tar
+```
+No-owner flag is to make the alter table statements be run as the user running pg_restore.
+
+## Plugins Volume
+Plugins are stored in a Persistent Volume called `racetrack-plugins-pvc`.
+Copy all of its contents with the help of your Kubernetes Admin.
+
+To do a restore, copy saved files back to `racetrack-plugins-pvc` 
+volume and restart all the Racetrack pods.
+
+## Docker Registry
+To do a backup of the Docker Registry, you can pull the images you're interested in (eg. to your local registry).
+When restoring, just push the images back.
+
+Check out `image-builder` config to see what's the URL of the registry configured with your Racetrack instance:
+```yaml
+docker_registry: ghcr.io
+docker_registry_namespace: theracetrack/racetrack
+```
