@@ -20,13 +20,13 @@ setuptools.setup(
     classifiers=[
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+        'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Information Technology',
     ],
     python_requires='>=3.8.0',
     install_requires=install_requires,
     dependency_links=[],
-    license='GPLv3+',
+    license='Apache License 2.0',
     entry_points={
         "console_scripts": [
             "racetrack = racetrack_client.main:main",
