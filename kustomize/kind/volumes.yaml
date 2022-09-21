@@ -5,7 +5,7 @@ metadata:
   name: racetrack-plugins-pvc
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 500Mi
