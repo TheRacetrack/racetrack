@@ -123,9 +123,15 @@ Here's the overview of the places where Racetrack data are stored:
   currently installed in the Racetrack instance.
 - **Docker Registry** - a registry for keeping built fatman images.
   If a fatman gets killed somehow, it will be recreated from the image taken from here.
-
-Usually Postgres Database and Docker Registry are running outside kubernetes.
-So in case of a cluster wipeout, there's only Plugins Volume that needs to be restored then.
+  Backing up the Docker Registry is not always an obligatory step,
+  if it's fine for you to have a cluster with all fatmen glowing red (requiring to redeploy) after a wipeout.
+  If you want the fatmen to be brought back to life after a wipeout,
+  make sure to back up the Docker Registry.
+- **Fatman Secrets** - Fatman secrets (git credentials and secret vars) 
+  are kept by Racetrack inside Kubernetes Secrets.
+  If you skip to back it up, the fatmen making use of secret vars 
+  won't be reproduced (the others should work fine),
+  unless you redeploy them manually later on.
 
 ## Postgres Database
 ### Backing up
@@ -134,17 +140,7 @@ use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_resto
 tool to make a backup of the database.
 
 Otherwise, if your database runs inside kubernetes, 
-exec to `postgres` pod, dump the db:
-```
-pg_dump -U racetrack -d lifecycle_db -F t > rt_backup1.tar
-```
-
-Copy it to your localhost. If the tables are in `public` schema, and you want to restore them to some `foobar` schema,
-then because pg_restore doesn't support specifying schema, you'll need to:
-1. run postgres in docker
-2. restore tables from rt_backup1.tar to public schema
-3. `ALTER SCHEMA public RENAME TO foobar;`
-4. pg_dump the tables again (to rt_backup2.tar)
+exec to `postgres` pod and use [pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html)
 
 ### Restoring
 If Postgres database runs outside kubernetes,
@@ -152,11 +148,7 @@ use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_resto
 tool to restore the database.
 
 Otherwise, if your database runs inside kubernetes, 
-exec to `postgres` pod and run: 
-```
-pg_restore -p <port> -U racetrack --no-owner -d lifecycle_db rt_backup2.tar
-```
-No-owner flag is to make the alter table statements be run as the user running pg_restore.
+exec to `postgres` pod and use [pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html). 
 
 ## Plugins Volume
 Plugins are stored in a Persistent Volume called `racetrack-plugins-pvc`.
@@ -174,3 +166,7 @@ Check out `image-builder` config to see what's the URL of the registry configure
 docker_registry: ghcr.io
 docker_registry_namespace: theracetrack/racetrack
 ```
+
+## Fatman Secrets
+Contact your Kubernetes administrator to back up all the `Secret` resources
+associated with the `racetrack/fatman` label.
