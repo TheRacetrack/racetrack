@@ -112,3 +112,61 @@ If something's malfunctioning, check out the following places to find more infor
     - through Django Admin Panel: Deployments model, "Build logs" field,
 - Django Admin panel: browse stored models,
 - Racetrack component logs: dashboard, lifecycle, lifecycle-supervisor, image-builder, pub, postgres, pgbouncer
+
+
+# Backup & Restore
+
+Here's the overview of the places where Racetrack data are stored:
+- **Postgres Database** - keeps information about fatmen
+  (that are expected to be running), deployments, users, permissions, etc.
+- **Plugins Volume** - a persistent volume containing plugins 
+  currently installed in the Racetrack instance.
+- **Docker Registry** - a registry for keeping built fatman images.
+  If a fatman gets killed somehow, it will be recreated from the image taken from here.
+  Backing up the Docker Registry is not always an obligatory step,
+  if it's fine for you to have a cluster with all fatmen glowing red (requiring to redeploy) after a wipeout.
+  If you want the fatmen to be brought back to life after a wipeout,
+  make sure to back up the Docker Registry.
+- **Fatman Secrets** - Fatman secrets (git credentials and secret vars) 
+  are kept by Racetrack inside Kubernetes Secrets.
+  If you skip to back it up, the fatmen making use of secret vars 
+  won't be reproduced (the others should work fine),
+  unless you redeploy them manually later on.
+
+## Postgres Database
+### Backing up
+If Postgres database runs outside kubernetes on an external server,
+use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html)
+tool to make a backup of the database.
+
+Otherwise, if your database runs inside kubernetes, 
+exec to `postgres` pod and use [pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html)
+
+### Restoring
+If Postgres database runs outside kubernetes,
+use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html)
+tool to restore the database.
+
+Otherwise, if your database runs inside kubernetes, 
+exec to `postgres` pod and use [pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html). 
+
+## Plugins Volume
+Plugins are stored in a Persistent Volume called `racetrack-plugins-pvc`.
+Copy all of its contents with the help of your Kubernetes Admin.
+
+To do a restore, copy saved files back to `racetrack-plugins-pvc` 
+volume and restart all the Racetrack pods.
+
+## Docker Registry
+To do a backup of the Docker Registry, you can pull the images you're interested in (eg. to your local registry).
+When restoring, just push the images back.
+
+Check out `image-builder` config to see what's the URL of the registry configured with your Racetrack instance:
+```yaml
+docker_registry: ghcr.io
+docker_registry_namespace: theracetrack/racetrack
+```
+
+## Fatman Secrets
+Contact your Kubernetes administrator to back up all the `Secret` resources
+associated with the `racetrack/fatman` label.
