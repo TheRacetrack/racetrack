@@ -14,6 +14,12 @@ DEFAULT_IGNORE_PATTERNS = {
 
 
 class FilenameMatcher:
+    """
+    A matcher checking if the file path matches one of the given wildcard patterns.
+    This is especially useful for checking if the file should be ignored due to gitignore-alike patterns.
+    Filename patterns should be given in Unix shell-style wildcards syntax
+    (very similar to well-known .gitignore syntax).
+    """
     def __init__(self, patterns_file: Optional[Path] = None) -> None:
         self.patterns = set()
         self.patterns.update(DEFAULT_IGNORE_PATTERNS)

@@ -113,18 +113,24 @@ def view_administration(request):
 
 @login_required
 def upload_plugin(request):
-    if request.method == 'POST' and 'plugin-file' in request.FILES and request.FILES['plugin-file']:
-        plugin_file = request.FILES['plugin-file']
-        file_bytes = plugin_file.read()
-        filename = plugin_file.name
-        client = LifecyclePluginClient(auth_token=get_auth_token(request))
-        client.upload_plugin(filename, file_bytes)
+    try:
+        if request.method == 'POST' and 'plugin-file' in request.FILES and request.FILES['plugin-file']:
+            plugin_file = request.FILES['plugin-file']
+            file_bytes = plugin_file.read()
+            filename = plugin_file.name
+            client = LifecyclePluginClient(auth_token=get_auth_token(request))
+            client.upload_plugin(filename, file_bytes)
+            parameters = urlencode({
+                'success': f'Plugin file uploaded: {filename}',
+            })
+        else:
+            parameters = urlencode({
+                'error': 'No file to upload',
+            })
+    except Exception as e:
+        log_exception(ContextError('Uploading a plugin', e))
         parameters = urlencode({
-            'success': f'Plugin file uploaded: {filename}',
-        })
-    else:
-        parameters = urlencode({
-            'error': 'No file to upload',
+            'error': str(e),
         })
     redirect_url = reverse('dashboard:administration')
     return redirect(f'{redirect_url}?{parameters}')

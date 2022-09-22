@@ -435,7 +435,7 @@ The outcome is `rust-job-type-1.0.0.zip`.
 Now, we can make use of the plugin by installing it to Racetrack.
 
 Let's go to the Dashboard Administration page
-(you need to be privileged, staff user to see this tab)
+(you need to be staff user to see this tab)
 and upload the zipped plugin there.
 
 ## Deploying sample fatman

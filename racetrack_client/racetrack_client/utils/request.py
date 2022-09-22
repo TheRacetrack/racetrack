@@ -157,6 +157,7 @@ class Requests:
         :param method: HTTP method: GET, POST, PUT, DELETE
         :param url: URL starting with http(s)://
         :param jsondata: payload object to be serialized as JSON content
+        :param data: raw payload bytes to be sent as HTTP content
         :param params: query params (at the end of path)
         :param headers: request headers
         :param timeout: timeout in seconds for blocking operations like the connection attempt

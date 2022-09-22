@@ -36,6 +36,11 @@ Use same virtualenv from racetrack repository
 Check out [plugins-job-types.md](./plugins-job-types.md)
 to see how to create a job-type plugin.
 
+### Using additional dependencies
+Plugins can use additional dependencies (Python packages).
+You can include them in a `requirements.txt` file.
+It will be installed using pip so you can use these dependencies in your plugin's code.
+
 ### Create a plugin manifest
 Create `plugin-manifest.yaml` file in a plugin directory.
 Basically, it contains the metadata of the plugin.
