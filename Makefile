@@ -1,7 +1,7 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.2.1
+TAG ?= 2.3.0
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 DOCKER_GID=$(shell (getent group docker || echo 'docker:x:0') | cut -d: -f3 )

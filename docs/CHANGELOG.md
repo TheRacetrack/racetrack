@@ -6,14 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2022-09-23
 ### Added
 - Fatman access can be narrowed down to single endpoints.
   When adding Auth Resource Permission (in Admin panel), there is a new `endpoint` field,
   which narrows down the permission only to this particular Fatman's endpoint.
   If not set, it covers all endpoints (just as other resource filters do).
   For instance, ESC can have a permission with `call_fatman` scope to only call one endpoint.
+- OpenTelemetry can be turned on in Racetrack.
+  Given the OTLP collector endpoint,
+  the traces from lifecycle, pub and fatman will be sent there.
 
 ### Changed
+- `python3` job type is now based on `3.9-slim-bullseye` image
+  instead of `3.8-slim-buster`.
 - Plugins are distributed as ZIP files.
   They can be installed and uninstalled in a Dashboard's Administration page.
   See [plugins.md](development/plugins.md).
