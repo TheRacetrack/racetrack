@@ -38,3 +38,9 @@ jobs:
         run: . venv/bin/activate && make compose-up
       - name: Run End-to-end tests
         run: . venv/bin/activate && make compose-test-e2e
+
+      - name: Collect docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+        with:
+          tail: '1000'

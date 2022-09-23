@@ -4,8 +4,10 @@
 TAG ?= 2.2.1
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
+DOCKER_GID=$(shell (getent group docker || echo 'docker:x:0') | cut -d: -f3 )
 
-docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose
+docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false DOCKER_GID=${DOCKER_GID} \
+	docker compose
 docker = DOCKER_BUILDKIT=1 docker
 
 -include .local.env
@@ -20,7 +22,8 @@ setup:
 	( cd lifecycle && make setup ) &&\
 	( cd image_builder && make setup ) &&\
 	( cd dashboard && make setup ) &&\
-	( cd wrappers/python_wrapper && make setup )
+	( cd wrappers/python_wrapper && make setup ) &&\
+	( cd utils/plugin_bundler && make setup )
 	@echo Activate your venv: . venv/bin/activate
 
 setup-racetrack-client:
@@ -112,33 +115,36 @@ up: compose-up
 
 down: compose-down
 
-compose-run: registry docker-build local-registry-push-base
+compose-run: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) up
 
-compose-run-dev: registry docker-build local-registry-push-base
+compose-run-dev: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) --profile dev up
 
 compose-run-stress: registry docker-build docker-build-stress local-registry-push-base
 	$(docker-compose) -f docker-compose.yaml -f tests/stress/docker-compose.stress.yaml up
 
-compose-up: registry docker-build local-registry-push-base
+compose-up: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) up -d
 
-compose-up-dev: registry docker-build local-registry-push-base
+compose-up-dev: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) --profile dev up -d
 
-compose-up-service:
+compose-up-service: compose-volumes
 	$(docker-compose) build \
 		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
 		--build-arg DOCKER_TAG="$(TAG)" \
 		$(service)
 	$(docker-compose) up -d $(service)
 		
-compose-up-docker-daemon: registry docker-build local-registry-push-base
+compose-up-docker-daemon: registry docker-build local-registry-push-base compose-volumes
 	$(docker-compose) -f docker-compose.yaml \
 		-f ./utils/docker-daemon/docker-compose.docker-daemon.yaml \
 		--project-directory . \
 		up -d
+
+compose-volumes:
+	mkdir -p .plugins && chmod o+rw .plugins
 
 compose-down: docker-clean-fatman
 	$(docker-compose) --profile dev down
@@ -148,7 +154,7 @@ compose-deploy-sample:
 	racetrack deploy sample/python-class/ http://localhost:7102 --force
 
 compose-logs:
-	$(docker-compose) logs -f
+	$(docker-compose) logs lifecycle lifecycle-supervisor image-builder dashboard pub -f
 
 docker-build:
 	$(docker-compose) build \

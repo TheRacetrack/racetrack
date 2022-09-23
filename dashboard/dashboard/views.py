@@ -6,8 +6,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views import generic
+from django.utils.http import urlencode
 
 from racetrack_commons.urls import get_external_pub_url
 from racetrack_client.log.context_error import ContextError
@@ -19,7 +20,7 @@ from racetrack_commons.entities.audit import explain_audit_log_event
 from racetrack_commons.entities.audit_client import AuditClient
 from racetrack_commons.entities.dto import AuditLogEventDto, FatmanDto
 from racetrack_commons.entities.fatman_client import FatmanRegistryClient
-from racetrack_commons.entities.info_client import LifecycleInfoClient
+from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 from dashboard.purge import enrich_fatmen_purge_info
 from dashboard.utils import login_required, remove_ansi_sequences
@@ -91,12 +92,59 @@ def user_profile(request):
     }
     try:
         context['user_auth'] = get_auth_token(request)
-        context['plugins'] = LifecycleInfoClient().get_plugins_info()
     except Exception as e:
         log_exception(ContextError('Getting user profile data failed', e))
         context['error'] = str(e)
 
     return render(request, 'racetrack/profile.html', context)
+
+
+@login_required
+def view_administration(request):
+    context = {}
+    try:
+        context['plugins'] = LifecyclePluginClient().get_plugins_info()
+    except Exception as e:
+        log_exception(ContextError('Getting plugins data failed', e))
+        context['error'] = str(e)
+
+    return render(request, 'racetrack/administration.html', context)
+
+
+@login_required
+def upload_plugin(request):
+    try:
+        if request.method == 'POST' and 'plugin-file' in request.FILES and request.FILES['plugin-file']:
+            plugin_file = request.FILES['plugin-file']
+            file_bytes = plugin_file.read()
+            filename = plugin_file.name
+            client = LifecyclePluginClient(auth_token=get_auth_token(request))
+            client.upload_plugin(filename, file_bytes)
+            parameters = urlencode({
+                'success': f'Plugin file uploaded: {filename}',
+            })
+        else:
+            parameters = urlencode({
+                'error': 'No file to upload',
+            })
+    except Exception as e:
+        log_exception(ContextError('Uploading a plugin', e))
+        parameters = urlencode({
+            'error': str(e),
+        })
+    redirect_url = reverse('dashboard:administration')
+    return redirect(f'{redirect_url}?{parameters}')
+
+
+@login_required
+def delete_plugin(request, plugin_name: str):
+    try:
+        client = LifecyclePluginClient(auth_token=get_auth_token(request))
+        client.delete_plugin(plugin_name)
+    except Exception as e:
+        log_exception(ContextError('Deleting plugin failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+    return HttpResponse(status=204)
 
 
 @login_required

@@ -14,10 +14,16 @@ Create a git repository (or use existing one) to keep the source code of the plu
 We're going to use https://github.com/TheRacetrack/plugin-rust-job-type 
 repository and we'll place the plugin inside `rust-job-type` subdirectory.
 
-### 2. Get git credentials
-Create Project Access Token allowing to clone your repository.
-This is needed for Racetrack instance to fetch your plugin without compromising your password.
-We'll make use of this token later on.
+### 2. Initialize plugin manifest
+Create `plugin-manifest.yaml` file in a `rust-job-type` subdirectory.
+It contains the metadata of the plugin, including name, version
+and the URL of the plugin home page.
+
+```yaml
+name: rust-job-type
+version: 1.0.0
+url: https://github.com/TheRacetrack/plugin-rust-job-type
+```
 
 ### 3. Write the wrapper
 Let's create the "wrapper" written in the language of choice.
@@ -385,10 +391,8 @@ while the fatman template will be loaded from the plugin directory.
 from typing import Dict, Tuple
 from pathlib import Path
 
-from racetrack_commons.plugin.core import PluginCore
 
-
-class Plugin(PluginCore):
+class Plugin:
     def fatman_job_types(self, docker_registry_prefix: str) -> Dict[str, Tuple[str, Path]]:
         """
         Job types supported by this plugin
@@ -397,39 +401,42 @@ class Plugin(PluginCore):
         """
         return {
             'rust': (
-                f'{docker_registry_prefix}/rust:1.0.0', 
+                f'{docker_registry_prefix}/rust:{self.plugin_manifest.version}', 
                 self.plugin_dir / 'fatman-template.Dockerfile',
             ),
         }
 ```
 
-### 7. Push to git
+Notice that `f'{docker_registry_prefix}/rust:{self.plugin_manifest.version}'`
+will be resolved to `ghcr.io/theracetrack/racetrack/fatman-base/rust:1.0.0`,
+pointing to our base docker image.
 
-Afterwards, you need to commit all the changes and push it to the git repository.
-Push it to the specific branch or make a git tag.
+### 7. Create `.racetrackignore` file
+Notice that we don't need to incorporate wrapper code and `base.Dockerfile` into a plugin ZIP file,
+cause it's already pushed to a docker registry and it will be referred by image name.
+We can instruct `racetrack-plugin-bundler` to ignore these files by adding `.racetrackignore` file:
+```
+rust_wrapper
+base.Dockerfile
+*.zip
+```
 
-Then you'll be able to refer to the specific version of the plugin by using branch name or tag (git ref).
-We'll use tag `1.0.0`.
+### 8. Bundle plugin into a ZIP file
+Source code of the plugin can be bundled into a ZIP file
+by means of a `racetrack-plugin-bundler` tool.
+Here's [how to install racetrack-plugin-bundler](../../utils/plugin_bundler/README.md).
 
+Let's run `racetrack-plugin-bundler bundle` in a directory where the plugin is located (`rust-job-type` dir)
+to turn a plugin into a ZIP file.
+The outcome is `rust-job-type-1.0.0.zip`.
 
 ## Installing plugin to Racetrack
 
 Now, we can make use of the plugin by installing it to Racetrack.
 
-To enable this plugin, you must include it in the Image Builder configuration (in kustomize yaml):
-```yaml
-plugins:
-- name: rust-job-type
-  git_remote: https://github.com/TheRacetrack/plugin-rust-job-type
-  git_ref: '1.0.0'
-  git_directory: rust-job-type
-```
-
-`git_ref` is the name of the git tag we pushed.
-
-`git_remote` is the HTTPS url to the repository with your access token as a password.
-
-`git_directory` is the optional subdirectory in the repository where the plugin is located.
+Let's go to the Dashboard Administration page
+(you need to be staff user to see this tab)
+and upload the zipped plugin there.
 
 ## Deploying sample fatman
 
@@ -459,10 +466,10 @@ lang: rust
 
 git:
   remote: https://github.com/TheRacetrack/plugin-rust-job-type
-  directory: rust-job-type/sample-rust-function
+  directory: sample-rust-function
 ```
 
-Don't forget to push these changes to some other git repository (the one with the fatman, not the plugin).
+Don't forget to push the fatman code to a git repository.
 
 Finally, we can deploy this fatman to Racetrack:
 ```bash

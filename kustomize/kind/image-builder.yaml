@@ -28,6 +28,8 @@ spec:
               mountPath: /etc/racetrack/image-builder/
             - name: git-root
               mountPath: /src/.git
+            - name: racetrack-plugins
+              mountPath: /etc/racetrack/image-builder/plugins
           env:
             - name: CONFIG_FILE
               value: /etc/racetrack/image-builder/config.yaml
@@ -55,6 +57,9 @@ spec:
         - name: git-root
           hostPath:
             path: /src/.git
+        - name: racetrack-plugins
+          persistentVolumeClaim:
+            claimName: racetrack-plugins-pvc
 
 ---
 apiVersion: v1

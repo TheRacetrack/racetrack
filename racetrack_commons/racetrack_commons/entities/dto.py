@@ -75,13 +75,6 @@ class PublicEndpointRequestDto(BaseModel):
     active: bool
 
 
-class PluginConfigDto(BaseModel):
-    name: str
-    git_remote: str
-    git_ref: Optional[str] = None
-    git_directory: Optional[str] = None
-
-
 class AuditLogEventDto(BaseModel):
     id: str
     version: int

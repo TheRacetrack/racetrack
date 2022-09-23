@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Dict, Optional
-from racetrack_client.utils.quantity import Quantity
 
 import yaml
 from racetrack_client.log.context_error import wrap_context

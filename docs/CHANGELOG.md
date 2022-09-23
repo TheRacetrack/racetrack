@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   If not set, it covers all endpoints (just as other resource filters do).
   For instance, ESC can have a permission with `call_fatman` scope to only call one endpoint.
 
+### Changed
+- Plugins are distributed as ZIP files.
+  They can be installed and uninstalled in a Dashboard's Administration page.
+  See [plugins.md](development/plugins.md).
+
 ## [2.2.1] - 2022-08-25
 ### Changed
 - Maximum amount of memory for a fatman is reduced to `1GiB` by default

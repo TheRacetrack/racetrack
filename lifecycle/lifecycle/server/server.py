@@ -32,5 +32,5 @@ def _init_lifecycle() -> Tuple[Config, PluginEngine]:
     init_logs()
     config: Config = load_config(Config)
     configure_logs(log_level=config.log_level)
-    plugin_engine = PluginEngine(config.plugins)
+    plugin_engine = PluginEngine(config.plugins_dir)
     return config, plugin_engine

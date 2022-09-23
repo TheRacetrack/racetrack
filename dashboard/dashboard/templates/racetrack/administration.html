@@ -1,0 +1,119 @@
+{% extends "racetrack/base.html" %}
+
+{% load templatetags %}
+
+{% block content %}
+
+{% if error %}
+<div class="alert alert-danger" role="alert">{{ error }}</div>
+{% endif %}
+
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Links</h5>
+            <p>
+                Lifecycle API server address: <a href="{{ lifecycle_url }}" target="_blank">{{ lifecycle_url }}</a>
+            </p>
+            <p>
+                Lifecycle Admin panel: <a href="{{ lifecycle_url }}/admin" target="_blank">{{ lifecycle_url }}/admin</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Versions</h5>
+            <p>
+                Racetrack: {{ racetrack_version }}
+            </p>
+
+            <h5 class="card-title">Plugins</h5>
+            {% if plugins|length > 0 %}
+            Active plugins:
+            <ul>
+            {% for plugin in plugins %}
+                <li>
+                    <span>{{ plugin.name }} (version {{ plugin.version }})</span>
+                    {% if plugin.url %}
+                    <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
+                    {% endif %}
+                    {% if user.is_staff %}
+                    <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}">Delete</button>
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if user.is_staff %}
+            <form action="{% url "dashboard:upload_plugin" %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <input type="file" name="plugin-file" class="form-control">
+                    <button type="submit" class="btn btn-outline-secondary">Upload plugin</button>
+                </div>
+            </form>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+function invokePluginAction(actionName, endpoint, that, csrf_token) {
+    let pluginName = that.attr('plugin-name');
+    var actionPrefix = actionName + ' ' + pluginName
+    console.log(actionPrefix + '...');
+    var previousHtml = that.html();
+    that.prop("disabled", true);
+    that.html(
+        `<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>`
+    );
+    $.ajax({
+        url: '/dashboard/api/' + endpoint + '/' + pluginName,
+        type: 'post',
+        data: {
+            csrfmiddlewaretoken: csrf_token,
+        },
+        cache: false,
+        success: function(data) {
+            that.prop("disabled", false);
+            that.html(previousHtml);
+            var message = 'Success: ' + actionPrefix;
+            showAlert(message, 'success');
+        },
+        error: function (xhr, status, error) {
+            if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) { 
+                message = xhr.responseJSON.error;
+            } else {
+                message = xhr.statusText;
+            }
+            that.prop("disabled", false);
+            that.html(previousHtml);
+            showAlert('Error: ' + actionPrefix + ': ' + message, 'danger');
+        }
+    });
+}
+
+$(".button-delete-plugin").click(function () {
+    that = $(this)
+    showModal("Delete Plugin", "Are you sure you want to delete this plugin?", function () {
+        invokePluginAction('Deleting plugin', `plugin/delete`, that, '{{ csrf_token }}')
+    });
+});
+
+let searchParams = new URLSearchParams(window.location.search);
+if (searchParams.has('success')) {
+    showAlert(searchParams.get('success'), 'success');
+    window.history.replaceState(null, null, window.location.pathname);
+}
+if (searchParams.has('error')) {
+    showAlert(searchParams.get('error'), 'danger');
+    window.history.replaceState(null, null, window.location.pathname);
+}
+</script>
+{% endblock javascript %}

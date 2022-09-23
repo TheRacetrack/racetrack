@@ -47,15 +47,15 @@
                 </li>
 
             {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ lifecycle_url }}/admin" target="_blank">Admin panel</a>
-                </li>
-                {% endif %}
-
                 <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Hi {{ user.username }}!">
                     <a class="nav-link" href="{% url 'dashboard:profile' %}">Profile</a>
                 </li>
+
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard:administration' %}">Administration</a>
+                </li>
+                {% endif %}
 
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
@@ -69,8 +69,6 @@
 
         </div>
     </nav>
-
-    <div class="mt-3"></div>
 
     <!-- Modal -->
     <div class="modal fade" id="modalTemplate" tabindex="-1" aria-labelledby="modalTemplateTitle" aria-hidden="true">
@@ -89,6 +87,10 @@
             </div>
         </div>
     </div>
+
+    <div id="alerts-placeholder"></div>
+
+    <div class="mt-3"></div>
 
     {% block content %}
     {% endblock content %}

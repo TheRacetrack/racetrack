@@ -27,24 +27,20 @@
                     </div>
 
                     <div class="form-group row">
-                        <label for="user-auth" class="form-label">Racetrack Auth Token - keep it secret</label>
-                        <div class="col-8">
-                            <input type="text" id="user-auth" class="form-control form-control-sm" value="{{ user_auth }}" readonly>
-                        </div>
-                        <div class="col-auto">
+                        <label for="user-auth" class="form-label">Racetrack Auth Token (X-Racetrack-Auth) - keep it secret</label>
+                        <div class="d-flex">
+                            <input type="text" id="user-auth" class="form-control form-control-sm flex-fill" value="{{ user_auth }}" readonly>
                             <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'user-auth')">Copy</button>
                         </div>
                     </div>
 
                     <br/>
                     <div class="form-group row">
-                            <label for="racetrack-cli-login" class="form-label">Run this in CLI to deploy Fatmen to this Racetrack: </label>
-                            <div class="col-5">
-                                <input type="text" class="form-control form-control-sm" value="racetrack login {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
-                            </div>
-                            <div class="col-auto">
-                                <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'racetrack-cli-login')">Copy</button>
-                            </div>
+                        <label for="racetrack-cli-login" class="form-label">Run this in CLI to deploy Fatmen to this Racetrack: </label>
+                        <div class="d-flex">
+                            <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
+                            <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'racetrack-cli-login')">Copy</button>
+                        </div>
                     </div>
 
                 </fieldset>
@@ -67,39 +63,19 @@
             </p>
         </div>
     </div>
-
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Versions</h5>
-            <p>
-                Racetrack: {{ racetrack_version }}
-            </p>
-            Active plugins:
-            <ul>
-                {% for plugin in plugins %}
-                    <li>{{ plugin.name }} (version {{ plugin.git_ref }}) - <a href="{{ plugin.git_remote }}" target="_blank">{{ plugin.git_remote }}</a> </li>
-                {% endfor %}
-            </ul>
-
-        </div>
-    </div>
 </div>
 
 {% endblock content %}
 
-
 {% block javascript %}
-
 <script>
-    function copyToClipboard(e, btn, elementId) {
-        e.preventDefault(); // prevent submit
-        let str = document.getElementById(elementId);
-        str.select();
-        document.execCommand('copy');
-        btn.innerHTML = "Copied!";
-        return false; // prevent submit
-    }
-
+function copyToClipboard(e, btn, elementId) {
+    e.preventDefault(); // prevent submit
+    let str = document.getElementById(elementId);
+    str.select();
+    document.execCommand('copy');
+    btn.innerHTML = "Copied!";
+    return false; // prevent submit
+}
 </script>
-
 {% endblock javascript %}
