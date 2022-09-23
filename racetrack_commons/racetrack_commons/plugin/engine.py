@@ -79,7 +79,11 @@ class PluginEngine:
         raise EntityNotFound(f'plugin named "{name}" was not found')
 
     def _watch_plugins_changes(self):
-        """Watch for changes in plugins dir and reload plugins if change happens"""
+        """
+        Watch for changes in plugins dir and reload plugins if change happens.
+        It monitors the flag file last-change.txt which is updated AFTER
+        uploading and extraction is completed to prevent from loading inconsistent files.
+        """
         self.last_change_timestamp = self._read_last_change_timestamp()
         if self.last_change_timestamp == 0:
             self._record_last_change()
