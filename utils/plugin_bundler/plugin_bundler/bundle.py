@@ -1,5 +1,6 @@
 import io
 from pathlib import Path
+from typing import Optional
 import zipfile
 
 from racetrack_client.log.logs import get_logger
@@ -16,7 +17,7 @@ PLUGIN_FILENAME = 'plugin.py'
 PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
 
 
-def bundle_plugin(workdir: str):
+def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional[str]):
     plugin_dir = Path(workdir)
     assert (plugin_dir / PLUGIN_FILENAME).is_file(), f'plugin directory should contain {PLUGIN_FILENAME} file'
 
@@ -24,7 +25,12 @@ def bundle_plugin(workdir: str):
     assert plugin_manifest_file.is_file(), f'plugin directory should contain {PLUGIN_MANIFEST_FILENAME} file'
     plugin_manifest = _load_plugin_manifest(plugin_manifest_file)
 
-    out_path = plugin_dir / f'{plugin_manifest.name}-{plugin_manifest.version}.zip'
+    if plugin_version:
+        plugin_manifest.version = plugin_version
+
+    out_dir_path = Path(out_dir) if out_dir else plugin_dir
+    assert out_dir_path.is_dir(), f'out directory {out_dir_path} doesn\'t exist'
+    out_path = out_dir_path / f'{plugin_manifest.name}-{plugin_manifest.version}.zip'
 
     ignore_file = plugin_dir / '.racetrackignore'
     if ignore_file.is_file():
@@ -47,7 +53,7 @@ def bundle_plugin(workdir: str):
 
         _write_plugin_manifest(zip, plugin_manifest)
 
-    logger.info(f'plugin {plugin_manifest.name} has been exported to: {out_path.absolute()}')
+    logger.info(f'plugin {plugin_manifest.name} has been exported to: {out_path.resolve().absolute()}')
 
 
 def _load_plugin_manifest(manifest_file: Path) -> PluginManifest:

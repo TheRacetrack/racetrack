@@ -21,6 +21,8 @@ def main():
 
     subparser = subparsers.add_parser('bundle', help='Bundle plugin into ZIP files')
     subparser.add_argument('workdir', default='.', nargs='?', help='path to a plugin directory')
+    subparser.add_argument('--out', help='output directory where to save ZIP files')
+    subparser.add_argument('--plugin-version', help='override plugin version')
     subparser.set_defaults(func=_bundle)
 
     args: argparse.Namespace = parser.parse_args()
@@ -32,7 +34,7 @@ def main():
 
 
 def _bundle(args: argparse.Namespace):
-    bundle_plugin(args.workdir)
+    bundle_plugin(args.workdir, args.out, args.plugin_version)
 
 
 if __name__ == '__main__':
