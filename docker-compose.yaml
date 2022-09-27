@@ -33,6 +33,9 @@ services:
 
   lifecycle-supervisor:
     container_name: lifecycle-supervisor
+    build:
+      context: .
+      dockerfile: lifecycle/Dockerfile
     image: racetrack/lifecycle:latest
     networks:
       - racetrack_default
