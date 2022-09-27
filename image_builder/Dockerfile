@@ -13,6 +13,7 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
   "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
     apt-get update -y && apt-get install -y docker-ce-cli
+# apt cache is cleaned automatically, see /etc/apt/apt.conf.d/docker-clean
 
 RUN mkdir -p -m 777 /var/log/racetrack/image-builder/build-logs /src/workspaces /.docker
 

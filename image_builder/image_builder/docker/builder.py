@@ -41,7 +41,8 @@ class DockerBuilder(ImageBuilder):
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
         job_templates = _gather_job_templates(config, plugin_engine)
-        assert manifest.lang in job_templates, f'language {manifest.lang} is not supported, supported are {list(job_templates.keys())}'
+        assert job_templates, f'language {manifest.lang} is not supported, extend Racetrack with job type plugins'
+        assert manifest.lang in job_templates, f'language {manifest.lang} is not supported, supported are: {list(job_templates.keys())}'
 
         base_image, template_path = job_templates[manifest.lang]
 
@@ -121,19 +122,8 @@ def _gather_job_templates(
 ) -> Dict[str, Tuple[str, Path]]:
     """Return job name -> (base image name, dockerfile template path)"""
     job_templates: Dict[str, Tuple[str, Path]] = {}
-    racetrack_tag = os.environ.get('DOCKER_TAG', 'latest')
-    # Standard job types
-    jobs_path = project_root() / 'wrappers' / 'docker'
-    for job_path in jobs_path.iterdir():
-        job_name = job_path.name
 
-        base_image = get_fatman_base_image(config.docker_registry, config.docker_registry_namespace, job_name, racetrack_tag)
-        template_path = job_path / 'fatman-template.Dockerfile'
-        assert template_path.is_file(), f'cannot find Dockerfile template for {job_name} language wrapper: {template_path}'
-
-        job_templates[job_name] = (base_image, template_path)
-
-    # Plugin job types
+    # job types from plugins
     docker_registry_prefix = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base')
     plugin_results = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types, docker_registry_prefix)
     for plugin_job_types in plugin_results:
