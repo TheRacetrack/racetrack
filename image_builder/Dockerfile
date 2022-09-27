@@ -19,7 +19,6 @@ RUN mkdir -p -m 777 /var/log/racetrack/image-builder/build-logs /src/workspaces 
 
 WORKDIR /src/
 COPY .dockerignore /src/
-COPY wrappers/docker/. /src/wrappers/docker/
 
 COPY racetrack_client/setup.py racetrack_client/requirements.txt racetrack_client/README.md /src/racetrack_client/
 COPY racetrack_commons/setup.py racetrack_commons/requirements.txt /src/racetrack_commons/

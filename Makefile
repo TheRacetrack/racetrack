@@ -22,7 +22,6 @@ setup:
 	( cd lifecycle && make setup ) &&\
 	( cd image_builder && make setup ) &&\
 	( cd dashboard && make setup ) &&\
-	( cd wrappers/python_wrapper && make setup ) &&\
 	( cd utils/plugin_bundler && make setup )
 	@echo Activate your venv: . venv/bin/activate
 
@@ -46,27 +45,23 @@ lint:
 	-python -m mypy --ignore-missing-imports --exclude 'lifecycle/lifecycle/django/registry/migrations' lifecycle
 	-python -m mypy --ignore-missing-imports image_builder
 	-python -m mypy --ignore-missing-imports dashboard
-	-python -m mypy --ignore-missing-imports wrappers/python_wrapper
 	-python -m flake8 --ignore E501 --per-file-ignores="__init__.py:F401" \
-		lifecycle image_builder dashboard wrappers/python_wrapper
+		lifecycle image_builder dashboard
 	-python -m pylint --disable=R,C,W \
-		lifecycle/lifecycle image_builder/image_builder dashboard/dashboard wrappers/python_wrapper/fatman_wrapper
+		lifecycle/lifecycle image_builder/image_builder dashboard/dashboard
 
 format:
 	python -m black -S --diff --color -l 120 \
-		racetrack_client racetrack_commons lifecycle image_builder dashboard wrappers/python_wrapper
+		racetrack_client racetrack_commons lifecycle image_builder dashboard
 
 format-apply:
 	python -m black -S -l 120 \
-		racetrack_client racetrack_commons lifecycle image_builder dashboard wrappers/python_wrapper
+		racetrack_client racetrack_commons lifecycle image_builder dashboard
 
 
 test: compose-test
 
-test-unit: test-python-wrapper test-racetrack-client test-lifecycle test-image-builder test-dashboard test-pub test-utils
-
-test-python-wrapper:
-	cd wrappers/python_wrapper && make test
+test-unit: test-racetrack-client test-lifecycle test-image-builder test-dashboard test-pub test-utils
 
 test-racetrack-client:
 	cd racetrack_client && make test
@@ -115,19 +110,19 @@ up: compose-up
 
 down: compose-down
 
-compose-run: registry docker-build local-registry-push-base compose-volumes
+compose-run: registry docker-build compose-volumes
 	$(docker-compose) up
 
-compose-run-dev: registry docker-build local-registry-push-base compose-volumes
+compose-run-dev: registry docker-build compose-volumes
 	$(docker-compose) --profile dev up
 
-compose-run-stress: registry docker-build docker-build-stress local-registry-push-base
+compose-run-stress: registry docker-build docker-build-stress
 	$(docker-compose) -f docker-compose.yaml -f tests/stress/docker-compose.stress.yaml up
 
-compose-up: registry docker-build local-registry-push-base compose-volumes
+compose-up: registry docker-build compose-volumes
 	$(docker-compose) up -d
 
-compose-up-dev: registry docker-build local-registry-push-base compose-volumes
+compose-up-dev: registry docker-build compose-volumes
 	$(docker-compose) --profile dev up -d
 
 compose-up-service: compose-volumes
@@ -137,7 +132,7 @@ compose-up-service: compose-volumes
 		$(service)
 	$(docker-compose) up -d $(service)
 		
-compose-up-docker-daemon: registry docker-build local-registry-push-base compose-volumes
+compose-up-docker-daemon: registry docker-build compose-volumes
 	$(docker-compose) -f docker-compose.yaml \
 		-f ./utils/docker-daemon/docker-compose.docker-daemon.yaml \
 		--project-directory . \
@@ -160,9 +155,6 @@ docker-build:
 	$(docker-compose) build \
 		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
 		--build-arg DOCKER_TAG="$(TAG)"
-	@echo "Building base fatman images"
-	$(docker) build -t racetrack/fatman-base/docker-http:latest -f wrappers/docker/docker-http/base.Dockerfile .
-	$(docker) build -t racetrack/fatman-base/python3:latest -f wrappers/docker/python3/base.Dockerfile .
 
 docker-build-stress:
 	$(docker-compose) -f tests/stress/docker-compose.stress.yaml build
@@ -180,13 +172,8 @@ docker-push: docker-build
 	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pub:$(TAG)
 	docker tag racetrack/pgbouncer:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:$(TAG)
 	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:$(TAG)
-	
-	docker tag racetrack/fatman-base/docker-http:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/fatman-base/docker-http:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/fatman-base/docker-http:$(TAG)
-	docker tag racetrack/fatman-base/python3:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/fatman-base/python3:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/fatman-base/python3:$(TAG)
 
-local-registry-push: docker-build local-registry-push-base
+local-registry-push: docker-build
 	docker tag racetrack/lifecycle:latest localhost:5000/racetrack/lifecycle:latest
 	docker push localhost:5000/racetrack/lifecycle:latest
 	docker tag racetrack/image-builder:latest localhost:5000/racetrack/image-builder:latest
@@ -197,13 +184,6 @@ local-registry-push: docker-build local-registry-push-base
 	docker push localhost:5000/racetrack/pub:latest
 	docker tag racetrack/pgbouncer:latest localhost:5000/racetrack/pgbouncer:latest
 	docker push localhost:5000/racetrack/pgbouncer:latest
-
-# push base fatman images to local registry
-local-registry-push-base:
-	docker tag racetrack/fatman-base/docker-http:latest localhost:5000/racetrack/fatman-base/docker-http:$(TAG)
-	docker push localhost:5000/racetrack/fatman-base/docker-http:$(TAG)
-	docker tag racetrack/fatman-base/python3:latest localhost:5000/racetrack/fatman-base/python3:$(TAG)
-	docker push localhost:5000/racetrack/fatman-base/python3:$(TAG)
 
 docker-clean-fatman:
 	./utils/cleanup-fatmen-docker.sh
