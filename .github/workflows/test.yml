@@ -41,7 +41,7 @@ jobs:
 
       - name: Collect docker logs on failure
         if: failure()
-        uses: jwalton/gh-docker-logs@v1
+        uses: jwalton/gh-docker-logs@v2.2.0
         with:
           images: 'lifecycle,lifecycle-supervisor,image-builder,dashboard,pub,postgres'
           tail: '1000'
