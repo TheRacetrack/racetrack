@@ -3,6 +3,25 @@
 This tutorial shows  how to create a plugin extending Racetrack with your own job types.
 Job types allow you to run applications written in specific programming languages.
 
+## Overall flow
+
+Here's the overall flow which describes how job types are created
+and used by others to deploy fatmen workloads:
+
+![Job Type Plugins](../assets/job-type-plugins.png)
+
+1. **Plugin Developer** writes the source code of a wrapper + base.Dockerfile,
+  and builds the base image.
+2. He pushes the base image to the Docker registry.
+3. He creates plugin code, fatman template Dockerfile and plugin Manifest.
+  Next, he turn it into a ZIP plugin using racetrack-plugin-bundler.
+4. He uploads the plugin to the Racetrack.
+5. **Data Scientist** writes the source code of his Job and pushes it to a Git repo.
+6. He creates fatman.yaml Manifest (including job type name and reference to a git repository)
+  and starts a deployment using racetrack client.
+7. Racetrack builds the Fatman image made of templated fatman Dockerfile,
+  pulled base image (referred to by a plugin) and pulled Job source code.
+8. Racetrack creates Kubernetes resources for the Fatman workload.
 
 ## How to create a job-type plugin
 
