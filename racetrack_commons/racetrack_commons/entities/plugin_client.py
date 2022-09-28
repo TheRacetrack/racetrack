@@ -17,8 +17,8 @@ class LifecyclePluginClient:
     def get_plugin_docs(self, plugin_name: str) -> Optional[str]:
         return self.lc_client.request_dict('get', f'/api/v1/plugin/{plugin_name}/docs')
 
-    def delete_plugin(self, plugin_name: str):
-        self.lc_client.request('delete', f'/api/v1/plugin/{plugin_name}')
+    def delete_plugin(self, plugin_name: str, plugin_version: str):
+        self.lc_client.request('delete', f'/api/v1/plugin/{plugin_name}/{plugin_version}')
 
     def upload_plugin(self, filename: str, file_bytes: bytes):
         r = Requests.post(f'{self.lc_client._lifecycle_api_url}/api/v1/plugin/upload/{filename}',

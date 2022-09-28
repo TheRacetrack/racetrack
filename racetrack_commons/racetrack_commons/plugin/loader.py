@@ -8,6 +8,7 @@ import zipfile
 
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
+from racetrack_client.utils.semver import SemanticVersion
 from racetrack_client.utils.shell import shell
 from racetrack_client.utils.datamodel import parse_yaml_datamodel
 from racetrack_commons.plugin.plugin_manifest import PluginData, PluginManifest
@@ -31,7 +32,9 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
             plugin_data = load_plugin_from_zip(plugin_zip_path)
             plugins_data.append(plugin_data)
 
-    return sorted(plugins_data, key=lambda p: p.plugin_manifest.priority)
+    # sort by priority, then by version ascending
+    plugins_data.sort(key=lambda p: (p.plugin_manifest.priority, SemanticVersion(p.plugin_manifest.version)))
+    return plugins_data
 
 
 def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:

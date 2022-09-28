@@ -72,11 +72,19 @@ class PluginEngine:
             logger.warning(f'Plugin {plugin_name} does not have hook {function_name}')
             return None
 
-    def find_plugin(self, name: str) -> PluginData:
-        for plugin_data in self.plugins_data:
-            if plugin_data.plugin_manifest.name == name:
-                return plugin_data
-        raise EntityNotFound(f'plugin named "{name}" was not found')
+    def find_plugin(self, name: str, version: Optional[str] = None) -> PluginData:
+        if version:
+            for plugin_data in self.plugins_data:
+                if plugin_data.plugin_manifest.name == name and plugin_data.plugin_manifest.version == version:
+                    return plugin_data
+            raise EntityNotFound(f'plugin named "{name}" {version} was not found')
+
+        else:
+            plugin_versions = [plugin_data for plugin_data in self.plugins_data
+                               if plugin_data.plugin_manifest.name == name]
+            if not plugin_versions:
+                raise EntityNotFound(f'plugin named "{name}" was not found')
+            return plugin_versions[-1]
 
     def _watch_plugins_changes(self):
         """
@@ -130,27 +138,28 @@ class PluginEngine:
         tmp_zip.write_bytes(file_bytes)
         plugin_data = load_plugin_from_zip(tmp_zip)
         plugin_name = plugin_data.plugin_manifest.name
+        plugin_version = plugin_data.plugin_manifest.version
 
         tmp_extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / tmp_zip.stem
         shutil.rmtree(tmp_extracted_dir)
 
-        self._delete_older_plugin_version(plugin_name)
+        self._delete_older_plugin_version(plugin_name, plugin_version)
         tmp_zip.rename(target_zip)
         logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
 
         self._load_plugins()
         self._record_last_change()
         
-    def delete_plugin_by_name(self, name: str):
-        plugin_data = self.find_plugin(name)
+    def delete_plugin_by_version(self, name: str, version: str):
+        plugin_data = self.find_plugin(name, version)
         self._delete_plugin(plugin_data)
-        logger.info(f'Plugin {plugin_data.plugin_manifest.name} ({plugin_data.zip_path}) has been deleted')
+        logger.info(f'Plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version} ({plugin_data.zip_path}) has been deleted')
         self._record_last_change()
         self._load_plugins()
 
-    def _delete_older_plugin_version(self, plugin_name: str):
+    def _delete_older_plugin_version(self, plugin_name: str, plugin_version: str):
         try:
-            plugin_data = self.find_plugin(plugin_name)
+            plugin_data = self.find_plugin(plugin_name, plugin_version)
             self._delete_plugin(plugin_data)
             logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
         except EntityNotFound:
