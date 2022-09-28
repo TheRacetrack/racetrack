@@ -14,13 +14,13 @@ and used by others to deploy fatmen workloads:
   and builds the base image.
 2. He pushes the base image to the Docker registry.
 3. He creates plugin code, fatman template Dockerfile and plugin Manifest.
-  Next, he turn it into a ZIP plugin using racetrack-plugin-bundler.
+  Next, he turns it into a ZIP plugin using `racetrack-plugin-bundler`.
 4. He uploads the plugin to the Racetrack.
-5. **Data Scientist** writes the source code of his Job and pushes it to a Git repo.
+5. **Data Scientist** writes the source code of his Job and pushes it to a Git repository.
 6. He creates fatman.yaml Manifest (including job type name and reference to a git repository)
   and starts a deployment using racetrack client.
 7. Racetrack builds the Fatman image made of templated fatman Dockerfile,
-  pulled base image (referred to by a plugin) and pulled Job source code.
+  pulled base image (referred to by a plugin) and Job source code pulled from git.
 8. Racetrack creates Kubernetes resources for the Fatman workload.
 
 ## How to create a job-type plugin
