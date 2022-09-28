@@ -43,4 +43,5 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v1
         with:
+          images: 'lifecycle,lifecycle-supervisor,image-builder,dashboard,pub,postgres'
           tail: '1000'
