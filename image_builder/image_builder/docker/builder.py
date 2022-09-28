@@ -41,7 +41,7 @@ class DockerBuilder(ImageBuilder):
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
         job_templates = _gather_job_templates(config, plugin_engine)
-        assert job_templates, f'language {manifest.lang} is not supported, extend Racetrack with job type plugins'
+        assert job_templates, f'language {manifest.lang} is not supported. Extend Racetrack with job type plugins'
         assert manifest.lang in job_templates, f'language {manifest.lang} is not supported, supported are: {list(job_templates.keys())}'
 
         base_image, template_path = job_templates[manifest.lang]
