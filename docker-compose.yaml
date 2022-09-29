@@ -69,6 +69,7 @@ services:
       - "7101:7101"
     networks:
       - racetrack_default
+      - registry
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

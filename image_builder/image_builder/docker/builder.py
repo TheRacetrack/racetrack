@@ -1,13 +1,12 @@
 import os
 from pathlib import Path
 import time
-from typing import Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple
 
 import backoff
 
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
-from racetrack_commons.dir import project_root
 from image_builder.docker.template import template_dockerfile
 from image_builder.metrics import (
     metric_images_built,
@@ -20,7 +19,7 @@ from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, CommandError, shell_output
 from racetrack_client.utils.url import join_paths
-from racetrack_commons.deploy.image import get_fatman_base_image, get_fatman_image, get_fatman_user_module_image
+from racetrack_commons.deploy.image import get_fatman_image, get_fatman_user_module_image
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 
@@ -40,16 +39,31 @@ class DockerBuilder(ImageBuilder):
             plugin_engine: PluginEngine,
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
-        job_templates = _gather_job_templates(config, plugin_engine)
+        job_templates = _gather_job_templates(plugin_engine)
         assert job_templates, f'language {manifest.lang} is not supported. Extend Racetrack with job type plugins'
         assert manifest.lang in job_templates, f'language {manifest.lang} is not supported, supported are: {list(job_templates.keys())}'
 
-        base_image, template_path = job_templates[manifest.lang]
+        base_image_path, template_path, job_type_version = job_templates[manifest.lang]
 
         _wait_for_docker_engine_ready()
 
-        dockerfile_path = workspace / '.fatman.Dockerfile'
+        Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
+
+        with wrap_context('building base image'):
+            base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{manifest.lang}:{job_type_version}')
+            if not _image_exists_in_registry(base_image):
+                logger.info(f'base image not found in a registry, rebuilding {base_image}, deployment ID: {deployment_id}')
+                logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
+                build_container_image(
+                    base_image,
+                    base_image_path,
+                    base_image_path.parent,
+                    logs_filename=logs_filename,
+                )
+                logger.info(f'base Fatman image has been built and pushed: {base_image}')
+
         with wrap_context('templating Dockerfile'):
+            dockerfile_path = workspace / '.fatman.Dockerfile'
             racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
             template_dockerfile(manifest, template_path, dockerfile_path, base_image,
                                 git_version, racetrack_version, env_vars)
@@ -59,7 +73,6 @@ class DockerBuilder(ImageBuilder):
             'fatman_name': manifest.name,
             'fatman_version': manifest.version,
         }
-        Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
 
         try:
@@ -117,19 +130,34 @@ def _wait_for_docker_engine_ready():
 
 
 def _gather_job_templates(
-    config: Config,
     plugin_engine: PluginEngine,
-) -> Dict[str, Tuple[str, Path]]:
-    """Return job name -> (base image name, dockerfile template path)"""
-    job_templates: Dict[str, Tuple[str, Path]] = {}
+) -> Dict[str, Tuple[Path, Path, str]]:
+    """
+    Load job types from plugins.
+    Return job name -> (base image name, dockerfile template path)
+    """
+    job_templates: Dict[str, Tuple[Path, Path, str]] = {}
 
-    # job types from plugins
-    docker_registry_prefix = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base')
-    plugin_results = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types, docker_registry_prefix)
+    plugin_results: List[Dict[str, Tuple[Path, Path]]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
     for plugin_job_types in plugin_results:
-        for job_name, job_data in plugin_job_types.items():
-            base_image, template_path = job_data
-            assert template_path.is_file(), f'cannot find Dockerfile template for {job_name} language wrapper: {template_path}'
-            job_templates[job_name] = (base_image, template_path)
+        if plugin_job_types:
+            for job_full_name, job_data in plugin_job_types.items():
+                base_image_path, template_path = job_data
+                assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
+                assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
+                name_parts = job_full_name.split(':')
+                job_name = name_parts[0]
+                job_version = name_parts[1] if len(name_parts) > 1 else 'latest'
+                job_templates[job_name] = (base_image_path, template_path, job_version)
 
     return job_templates
+
+
+def _image_exists_in_registry(image_name: str):
+    try:
+        shell(f'docker manifest inspect --insecure {image_name}')
+        return True
+    except CommandError as e:
+        if e.returncode == 1 and "manifest unknown" in e.stdout:
+            return False
+        raise e

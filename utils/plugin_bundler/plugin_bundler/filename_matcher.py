@@ -54,8 +54,6 @@ class FilenameMatcher:
             if match_file_pattern(relative_path, pattern):
                 result = pattern_result
 
-        print(f'file {relative_path}, {result}')
-
         return result
 
 
