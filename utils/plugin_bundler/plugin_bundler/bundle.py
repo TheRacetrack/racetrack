@@ -35,9 +35,9 @@ def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional
     ignore_file = plugin_dir / '.racetrackignore'
     if ignore_file.is_file():
         logger.info(f'ignoring file patterns found in {ignore_file}')
-        ignored_files_matcher = FilenameMatcher(ignore_file)
+        inclusion_matcher = FilenameMatcher(ignore_file.read_text().splitlines())
     else:
-        ignored_files_matcher = FilenameMatcher()
+        inclusion_matcher = FilenameMatcher()
 
     with zipfile.ZipFile(out_path.as_posix(), mode="w", compression=zipfile.ZIP_STORED) as zip:
         for file in plugin_dir.rglob('*'):
@@ -45,7 +45,7 @@ def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional
             if file.is_dir():
                 continue
             relative_path = file.relative_to(plugin_dir)
-            if ignored_files_matcher.match_path(relative_path):
+            if not inclusion_matcher.match_path(relative_path):
                 continue
 
             logger.debug(f'writing file to zip: {relative_path}')
