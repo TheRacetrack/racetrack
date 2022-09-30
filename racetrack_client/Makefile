@@ -5,8 +5,7 @@ setup:
 		python setup.py develop
 
 test:
-		cd tests && python -m coverage run --source=racetrack_client -m pytest -vv --tb=short -ra $(test) &&\
-		python -m coverage report --show-missing --skip-empty --skip-covered
+		cd tests && python -m pytest -vv --tb=short -ra $(test)
 
 deploy-sample:
 		racetrack deploy ../sample/python-class/ http://localhost:7202
