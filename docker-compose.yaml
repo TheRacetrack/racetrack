@@ -33,6 +33,9 @@ services:
 
   lifecycle-supervisor:
     container_name: lifecycle-supervisor
+    build:
+      context: .
+      dockerfile: lifecycle/Dockerfile
     image: racetrack/lifecycle:latest
     networks:
       - racetrack_default
@@ -66,6 +69,7 @@ services:
       - "7101:7101"
     networks:
       - racetrack_default
+      - registry
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

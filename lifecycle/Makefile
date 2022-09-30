@@ -5,8 +5,7 @@ setup:
 		python setup.py develop
 
 test:
-		cd tests && SECRET_KEY=dev python -m coverage run --source=lifecycle -m pytest -vv --tb=short -ra $(test) &&\
-		python -m coverage report --show-missing --skip-empty --skip-covered
+		cd tests && SECRET_KEY=dev python -m pytest -vv --tb=short -ra $(test)
 
 run:
 		-docker network create racetrack_default
