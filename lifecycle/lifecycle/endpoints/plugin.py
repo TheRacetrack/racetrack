@@ -6,8 +6,7 @@ from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
 from racetrack_commons.plugin.plugin_manifest import PluginManifest
-from lifecycle.auth.check import check_auth
-from racetrack_commons.auth.auth import AuthSubjectType
+from lifecycle.auth.check import check_staff_user
 
 
 def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
@@ -20,22 +19,22 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     @api.post('/plugin/upload')
     def _upload_plugin(file: UploadFile, request: Request):
         """Upload plugin from ZIP file using multipart/form-data"""
-        check_auth(request, subject_types=[AuthSubjectType.USER])
+        check_staff_user(request)
         file_bytes = file.file.read()
         plugin_engine.upload_plugin(file.filename, file_bytes)
 
     @api.post('/plugin/upload/{filename}')
     async def _upload_plugin_bytes(filename: str, request: Request):
         """Upload plugin from ZIP file sending raw bytes in body"""
-        check_auth(request, subject_types=[AuthSubjectType.USER])
+        check_staff_user(request)
         file_bytes: bytes = await request.body()
         plugin_engine.upload_plugin(filename, file_bytes)
     
-    @api.delete('/plugin/{plugin_name}')
-    def _delete_plugin(plugin_name: str, request: Request):
-        """Deactivate and remove plugin"""
-        check_auth(request, subject_types=[AuthSubjectType.USER])
-        plugin_engine.delete_plugin_by_name(plugin_name)
+    @api.delete('/plugin/{plugin_name}/{plugin_version}')
+    def _delete_plugin_by_version(plugin_name: str, plugin_version: str, request: Request):
+        """Deactivate and remove plugin with given name and version"""
+        check_staff_user(request)
+        plugin_engine.delete_plugin_by_version(plugin_name, plugin_version)
 
     @api.get('/plugin/{plugin_name}/docs', response_model=Optional[str])
     def _info_plugin_docs(plugin_name: str):
