@@ -39,23 +39,39 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
 
 def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
     assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
-    extracted_plugin_path = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR / plugin_zip_path.stem
     
+    extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
+    if not extracted_plugins_dir.is_dir():
+        extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
+        extracted_plugins_dir.chmod(mode=0o777)  # mkdir(mode=0o777) doesn't work
+
+    extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
+    
+    init_dir = False
     if not extracted_plugin_path.is_dir():
         extracted_plugin_path.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
             zip_ref.extractall(extracted_plugin_path)
+        init_dir = True
 
-    return load_plugin_from_dir(extracted_plugin_path, plugin_zip_path)
+    return load_plugin_from_dir(extracted_plugin_path, plugin_zip_path, init_dir)
 
 
-def load_plugin_from_dir(plugin_dir: Path, zip_path: Path) -> PluginData:
+def load_plugin_from_dir(plugin_dir: Path, zip_path: Path, init_dir: bool) -> PluginData:
     plugin_manifest = load_plugin_manifest(plugin_dir)
 
     _install_plugin_dependencies(plugin_dir)
     plugin = _load_plugin_class(plugin_dir)
     setattr(plugin, 'plugin_manifest', plugin_manifest)
     setattr(plugin, 'plugin_dir', plugin_dir)
+
+    if init_dir:  # set permissions after loading a class due to *.pyc created after all
+        plugin_dir.chmod(mode=0o777)
+        for p in plugin_dir.rglob("*"):
+            if p.is_dir():
+                p.chmod(mode=0o777)
+            else:
+                p.chmod(mode=0o666)
     
     logger.info(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
     return PluginData(zip_path=zip_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)

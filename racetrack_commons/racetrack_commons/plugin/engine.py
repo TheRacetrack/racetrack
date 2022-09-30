@@ -136,6 +136,7 @@ class PluginEngine:
         # save to tmp.zip to avoid overwriting current plugins
         tmp_zip = Path(self.plugins_dir) / 'tmp.zip'
         tmp_zip.write_bytes(file_bytes)
+        tmp_zip.chmod(mode=0o666)
         plugin_data = load_plugin_from_zip(tmp_zip)
         plugin_name = plugin_data.plugin_manifest.name
         plugin_version = plugin_data.plugin_manifest.version
@@ -166,14 +167,16 @@ class PluginEngine:
             return
 
     def _delete_plugin(self, plugin_data: PluginData):
-        if not plugin_data.zip_path.is_file():
+        if plugin_data.zip_path.is_file():
+            plugin_data.zip_path.unlink()
+        else:
             logger.warning(f'ZIP plugin was not found: {plugin_data.zip_path}')
-        plugin_data.zip_path.unlink()
 
         extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / plugin_data.zip_path.stem
-        if not extracted_dir.is_dir():
+        if extracted_dir.is_dir():
+            shutil.rmtree(extracted_dir)
+        else:
             logger.warning(f'extracted plugin directory was not found: {extracted_dir}')
-        shutil.rmtree(extracted_dir)
 
     def _read_last_change_timestamp(self) -> int:
         change_file = Path(self.plugins_dir) / LAST_CHANGE_FILE
@@ -187,6 +190,9 @@ class PluginEngine:
     def _record_last_change(self):
         self.last_change_timestamp = datetime_to_timestamp(now())
         change_file = Path(self.plugins_dir) / LAST_CHANGE_FILE
+        if not change_file.is_file():
+            change_file.touch()
+            change_file.chmod(mode=0o666)
         change_file.write_text(f'{self.last_change_timestamp}')
 
     @property

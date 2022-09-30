@@ -143,6 +143,7 @@ compose-volumes:
 
 compose-down: docker-clean-fatman
 	$(docker-compose) --profile dev down
+	rm -rf .plugins
 
 compose-deploy-sample:
 	LIFECYCLE_URL=http://localhost:7102 ./utils/wait-for-lifecycle.sh
