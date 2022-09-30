@@ -1,8 +1,8 @@
 from pathlib import Path
 import fnmatch
-from typing import Optional
+from typing import List, Optional
 
-DEFAULT_IGNORE_PATTERNS = {
+DEFAULT_IGNORE_PATTERNS = [
     '*.zip',
     '.git',
     '*.pyc',
@@ -10,7 +10,7 @@ DEFAULT_IGNORE_PATTERNS = {
     '.gitignore',
     '/.racetrackignore',
     '/plugin-manifest.yaml',
-}
+]
 
 
 class FilenameMatcher:
@@ -19,18 +19,42 @@ class FilenameMatcher:
     This is especially useful for checking if the file should be ignored due to gitignore-alike patterns.
     Filename patterns should be given in Unix shell-style wildcards syntax
     (very similar to well-known .gitignore syntax).
-    """
-    def __init__(self, patterns_file: Optional[Path] = None) -> None:
-        self.patterns = set()
-        self.patterns.update(DEFAULT_IGNORE_PATTERNS)
 
-        if patterns_file:
-            file_patterns = patterns_file.read_text().splitlines()
+    Besides, if you want to include or exclude specific files,
+    you can prepend the patterns with "+" (to include) or "-" (to exclude).
+    Rules are evaluated in order of occurrence. For instance:
+        -whole_dir
+        +whole_dir/but_this
+        -whole_dir/but_this/without_that
+    """
+    def __init__(self, file_patterns: List[str] = None, apply_defaults: bool = True) -> None:
+        self.patterns: List[str] = []
+
+        if file_patterns:
             file_patterns = list(filter(None, file_patterns))  # filter non-empty
-            self.patterns.update(file_patterns)
+            self.patterns.extend(file_patterns)
+
+        if apply_defaults:
+            self.patterns.extend(DEFAULT_IGNORE_PATTERNS)
 
     def match_path(self, relative_path: Path) -> bool:
-        return any(match_file_pattern(relative_path, pattern) for pattern in self.patterns)
+        """Check whether the file path should be included (True) or excluded (False)"""
+        result = True
+
+        for pattern in self.patterns:
+
+            # result that should be applied if a file matches the pattern
+            pattern_result = False
+            if pattern.startswith('-'):
+                pattern = pattern[1:]
+            elif pattern.startswith('+'):
+                pattern_result = True
+                pattern = pattern[1:]
+
+            if match_file_pattern(relative_path, pattern):
+                result = pattern_result
+
+        return result
 
 
 def match_file_pattern(relative_path: Path, pattern: str) -> bool:
@@ -60,7 +84,11 @@ def _match_file_pattern_beginning(relative_path: Path, pattern: str) -> bool:
     path_parts = relative_path.parts
     pattern_parts = Path(pattern).parts
 
+    if len(path_parts) < len(pattern_parts):
+            return False
+
     for path_part, pattern_part in zip(path_parts, pattern_parts):
         if not fnmatch.fnmatchcase(path_part, pattern_part):
             return False
+
     return True
