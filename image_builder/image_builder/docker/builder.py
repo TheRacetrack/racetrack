@@ -57,8 +57,9 @@ class DockerBuilder(ImageBuilder):
         with wrap_context('building base image'):
             base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{manifest.lang}:{job_type_version}')
             if not _image_exists_in_registry(base_image):
-                logger.info(f'base image not found in a registry, rebuilding {base_image}, deployment ID: {deployment_id}')
                 base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
+                logger.info(f'base image not found in a registry, rebuilding {base_image}, '
+                            f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
                 build_container_image(
                     base_image,
                     base_image_path,
