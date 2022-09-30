@@ -278,8 +278,7 @@ Building of the fatman docker image is split into two steps, having performance 
 1. **Building base image** - 
   Base image contains files common to every fatman (wrapper code).
   Base image doesn't depend on any particular fatman or manifest.
-  You build the base image and you push it to the registry.
-  Building image is done once, it is done on your local computer.
+  The image is built by Racetrack once on first use.
 2. **Building fatman from template** - 
   Fatman Dockerfile is the outcome of the Dockerfile template and the manifest of the fatman that is about to be deployed.
   The fatman image extends the base image.
@@ -310,19 +309,11 @@ RUN rm -rf /src/rust_wrapper/src/handler
 LABEL racetrack-component="fatman"
 ```
 
-Let's build the base image of the wrapper:
+We can test it if it builds without errors:
 ```bash
 DOCKER_BUILDKIT=1 docker build \
-    -t ghcr.io/theracetrack/racetrack/fatman-base/rust:1.0.0 \
+    -t racetrack/fatman-base/rust:1.0.0 \
     -f base.Dockerfile .
-```
-
-and let's push it to the registry reachable from the Racetrack instance.
-Since our Racetrack is configured to use Docker registry `ghcr.io` with `theracetrack/racetrack` namespace,
-we push it to `ghcr.io/theracetrack/racetrack/fatman-base/rust:1.0.0`
-(Notice we need to append `fatman-base` to the image name):
-```bash
-docker push ghcr.io/theracetrack/racetrack/fatman-base/rust:1.0.0
 ```
 
 ### 5. Prepare fatman template Dockerfile
@@ -382,10 +373,8 @@ See [plugins.md](./plugins.md) for the list of all supported hooks.
 We want to provide job types with this plugin,
 so let's implement `fatman_job_types` method.
 It defines what's the name of our new job type (`'rust'`).
-Also it has the reference to the base image 
+Also it has the reference to the base Dockerfile path
 and the dockerfile template path we created earlier.
-Base image will be pulled from the registry, 
-while the fatman template will be loaded from the plugin directory.
 
 ```python
 from typing import Dict, Tuple
@@ -393,32 +382,27 @@ from pathlib import Path
 
 
 class Plugin:
-    def fatman_job_types(self, docker_registry_prefix: str) -> Dict[str, Tuple[str, Path]]:
+    def fatman_job_types(self) -> Dict[str, Tuple[Path, Path]]:
         """
-        Job types supported by this plugin
-        :param docker_registry_prefix: prefix for the image names (docker registry + namespace)
-        :return dict of job name -> (base image name, dockerfile template path)
+        Job types provided by this plugin
+        :return dict of job type name (with version) -> (base image path, dockerfile template path)
         """
         return {
-            'rust': (
-                f'{docker_registry_prefix}/rust:{self.plugin_manifest.version}', 
+            f'rust:{self.plugin_manifest.version}': (
+                self.plugin_dir / 'base.Dockerfile',
                 self.plugin_dir / 'fatman-template.Dockerfile',
             ),
         }
 ```
 
-Notice that `f'{docker_registry_prefix}/rust:{self.plugin_manifest.version}'`
-will be resolved to `ghcr.io/theracetrack/racetrack/fatman-base/rust:1.0.0`,
-pointing to our base docker image.
-
 ### 7. Create `.racetrackignore` file
-Notice that we don't need to incorporate wrapper code and `base.Dockerfile` into a plugin ZIP file,
-cause it's already pushed to a docker registry and it will be referred by image name.
+We don't need to incorporate all the local files into a plugin ZIP file.
 We can instruct `racetrack-plugin-bundler` to ignore these files by adding `.racetrackignore` file:
 ```
-rust_wrapper
-base.Dockerfile
-*.zip
+Cargo.lock
+target
+.gitignore
+
 ```
 
 ### 8. Bundle plugin into a ZIP file
