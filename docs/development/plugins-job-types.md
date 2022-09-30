@@ -278,7 +278,7 @@ Building of the fatman docker image is split into two steps, having performance 
 1. **Building base image** - 
   Base image contains files common to every fatman (wrapper code).
   Base image doesn't depend on any particular fatman or manifest.
-  Building image is done by Racetrack once for the first time it is about to be used.
+  The image is built by Racetrack once on first use.
 2. **Building fatman from template** - 
   Fatman Dockerfile is the outcome of the Dockerfile template and the manifest of the fatman that is about to be deployed.
   The fatman image extends the base image.
@@ -396,10 +396,13 @@ class Plugin:
 ```
 
 ### 7. Create `.racetrackignore` file
-Notice that we don't need to incorporate all the files into a plugin ZIP file.
+We don't need to incorporate all the local files into a plugin ZIP file.
 We can instruct `racetrack-plugin-bundler` to ignore these files by adding `.racetrackignore` file:
 ```
 Cargo.lock
+target
+.gitignore
+
 ```
 
 ### 8. Bundle plugin into a ZIP file

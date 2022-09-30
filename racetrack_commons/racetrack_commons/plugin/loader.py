@@ -43,7 +43,7 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
     extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
     if not extracted_plugins_dir.is_dir():
         extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
-        extracted_plugins_dir.chmod(mode=0o777)  # mkdir(mode=0o777) doesn't work
+        extracted_plugins_dir.chmod(mode=0o777)  # mkdir(mode=0o777) doesn't really work
 
     extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
     
