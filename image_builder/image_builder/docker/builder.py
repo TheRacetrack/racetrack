@@ -47,18 +47,24 @@ class DockerBuilder(ImageBuilder):
 
         _wait_for_docker_engine_ready()
 
+        metric_labels = {
+            'fatman_name': manifest.name,
+            'fatman_version': manifest.version,
+        }
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
+        logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
 
         with wrap_context('building base image'):
             base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{manifest.lang}:{job_type_version}')
             if not _image_exists_in_registry(base_image):
                 logger.info(f'base image not found in a registry, rebuilding {base_image}, deployment ID: {deployment_id}')
-                logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
+                base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
                 build_container_image(
                     base_image,
                     base_image_path,
                     base_image_path.parent,
-                    logs_filename=logs_filename,
+                    metric_labels,
+                    base_logs_filename,
                 )
                 logger.info(f'base Fatman image has been built and pushed: {base_image}')
 
@@ -69,11 +75,6 @@ class DockerBuilder(ImageBuilder):
                                 git_version, racetrack_version, env_vars)
 
         full_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
-        metric_labels = {
-            'fatman_name': manifest.name,
-            'fatman_version': manifest.version,
-        }
-        logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
 
         try:
             logger.info(f'building Fatman image: {full_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
@@ -114,12 +115,12 @@ def build_container_image(
     )
 
     push_start_time = time.time()
-    metric_labels = metric_labels or {}
 
     shell(f'docker push {image_name}', print_stdout=False, output_filename=logs_filename)
 
-    metric_images_pushed.labels(**metric_labels).inc()
-    metric_images_pushed_duration.labels(**metric_labels).inc(time.time() - push_start_time)
+    if metric_labels:
+        metric_images_pushed.labels(**metric_labels).inc()
+        metric_images_pushed_duration.labels(**metric_labels).inc(time.time() - push_start_time)
 
     return logs
 
@@ -158,6 +159,6 @@ def _image_exists_in_registry(image_name: str):
         shell(f'docker manifest inspect --insecure {image_name}')
         return True
     except CommandError as e:
-        if e.returncode == 1 and "manifest unknown" in e.stdout:
+        if e.returncode == 1 and ("manifest unknown" in e.stdout or "no such manifest" in e.stdout):
             return False
         raise e
