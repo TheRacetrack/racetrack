@@ -54,20 +54,7 @@ class DockerBuilder(ImageBuilder):
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
 
-        with wrap_context('building base image'):
-            base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{manifest.lang}:{job_type_version}')
-            if not _image_exists_in_registry(base_image):
-                base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
-                logger.info(f'base image not found in a registry, rebuilding {base_image}, '
-                            f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
-                build_container_image(
-                    base_image,
-                    base_image_path,
-                    base_image_path.parent,
-                    metric_labels,
-                    base_logs_filename,
-                )
-                logger.info(f'base Fatman image has been built and pushed: {base_image}')
+        base_image = _build_base_image(config, manifest, base_image_path, job_type_version, deployment_id, metric_labels)
 
         with wrap_context('templating Dockerfile'):
             dockerfile_path = workspace / '.fatman.Dockerfile'
@@ -98,6 +85,31 @@ class DockerBuilder(ImageBuilder):
             raise ContextError('building Fatman image') from e
 
         return full_image, logs, None
+
+
+def _build_base_image(
+    config: Config,
+    manifest: Manifest,
+    base_image_path: Path,
+    job_type_version: str,
+    deployment_id: str,
+    metric_labels: Dict[str, str],
+) -> str:
+    with wrap_context('building base image'):
+        base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{manifest.lang}:{job_type_version}')
+        if not _image_exists_in_registry(base_image):
+            base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
+            logger.info(f'base image not found in a registry, rebuilding {base_image}, '
+                        f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
+            build_container_image(
+                base_image,
+                base_image_path,
+                base_image_path.parent,
+                metric_labels,
+                base_logs_filename,
+            )
+            logger.info(f'base Fatman image has been built and pushed: {base_image}')
+        return base_image
 
 
 def build_container_image(
@@ -156,6 +168,7 @@ def _gather_job_templates(
 
 
 def _image_exists_in_registry(image_name: str):
+    """Check if an image (with tag) exists in a remote Docker registry (local, private or public)"""
     try:
         shell(f'docker manifest inspect --insecure {image_name}')
         return True
