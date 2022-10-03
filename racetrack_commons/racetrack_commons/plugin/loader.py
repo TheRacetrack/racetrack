@@ -23,6 +23,10 @@ EXTRACTED_PLUGINS_DIR = 'extracted'
 
 
 def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
+    """
+    Loads Racetrack plugins from a directory containing the ZIP files.
+    Loaded plugins will be sorted by priority, then by plugin version ascending.
+    """
     plugins_path = Path(plugins_dir)
     plugins_path.mkdir(parents=True, exist_ok=True)
     plugins_data: List[PluginData] = []
@@ -32,7 +36,6 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
             plugin_data = load_plugin_from_zip(plugin_zip_path)
             plugins_data.append(plugin_data)
 
-    # sort by priority, then by version ascending
     plugins_data.sort(key=lambda p: (p.plugin_manifest.priority, SemanticVersion(p.plugin_manifest.version)))
     return plugins_data
 
@@ -43,7 +46,7 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
     extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
     if not extracted_plugins_dir.is_dir():
         extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
-        extracted_plugins_dir.chmod(mode=0o777)  # mkdir(mode=0o777) doesn't really work
+        extracted_plugins_dir.chmod(mode=0o777)
 
     extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
     
