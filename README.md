@@ -69,7 +69,7 @@ For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.i
 please follow the [Tutorial](docs/user.md#tutorial).
 
 * [Using Racetrack](docs/user.md)
-* [Deploying Racetrack](docs/develop.md)
+* [Deploying Racetrack](docs/development/develop.md)
 * [Administering Racetrack](docs/admin.md)
 * [Developing plugins](docs/development/plugins.md)
 * [Developing a new job type](docs/development/plugins-job-types.md)

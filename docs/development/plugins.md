@@ -45,6 +45,7 @@ It will be installed using pip so you can use these dependencies in your plugin'
 Create `plugin-manifest.yaml` file in a plugin directory.
 Basically, it contains the metadata of the plugin.
 It can have the following fields in YAML format:
+
 - `name` (**required**) - name of the plugin
 - `version` (**required**) - version of the plugin
 - `url` (optional) - a link to the plugin page

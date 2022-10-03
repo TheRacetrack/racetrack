@@ -31,11 +31,11 @@
 1. [FAQ](#faq)
 
 
-# Introduction<a name="intro"></a>
+## Introduction<a name="intro"></a>
 
 ![Racetrack architecture for civilians](assets/arch-00.png)
 
-## What is Racetrack?<a name="whatisrt"></a>
+### What is Racetrack?<a name="whatisrt"></a>
 
 Racetrack is a system which transforms your code to in-operation workloads, e.g.
 Kubernetes workloads.
@@ -52,7 +52,7 @@ Out of the box, Racetrack allows you to use several languages and frameworks:
 
 Racetrack can be extended to introduce new languages and frameworks.
 
-## Architecture and Terminology<a name="archterm"></a>
+### Architecture and Terminology<a name="archterm"></a>
 
 The following terms recur through this document and describe the elements and
 actions involved in using Racetrack:
@@ -77,7 +77,7 @@ To tie all of these terms together:
 > tweaked a few specific parameters for this Job Type. I **submitted** the job
 > to Racetrack, after which it was deployed as a **Fatman**.
 
-## Conventions<a name="conventions"></a>
+### Conventions<a name="conventions"></a>
 
 For Racetrack to convert your Job to a Fatman, you have to follow a specific
 style for your Job Type: a Convention. Broadly speaking, the purpose of this
@@ -130,7 +130,7 @@ def AddEmUp(x, y):
 	return z
 ```
 
-## The Manifest<a name="manifest"></a>
+### The Manifest<a name="manifest"></a>
 
 Having picked our Job Type and followed its Convention, the only thing we're
 missing is to inform Racetrack what Job Type we're submitting, and apply any
@@ -173,7 +173,7 @@ resources:
 Please refer to the more comprehensive section
 [The Fatman Manifest File](manifest-schema.md) for more detail.
 
-## Submitting a Job<a name="submitting"></a>
+### Submitting a Job<a name="submitting"></a>
 
 Racetrack Jobs are deployed to operation; that means, they are sent off from
 your development computer to run on a server somewhere. This sending is in
@@ -185,7 +185,7 @@ command line client you can install, and which handles this Submission for you.
 When operating with Racetrack (either local instance or production server), the
 Racetrack command line client will need authentication.
 
-# The Racetrack Workflow<a name="workflow"></a>
+## The Racetrack Workflow<a name="workflow"></a>
 
 As a Racetrack user, your workflow will typically look similar to this:
 
@@ -201,14 +201,14 @@ As a Racetrack user, your workflow will typically look similar to this:
 1. Check it by either `curl`'ing to it, looking at it in the Racetrack
    dashboard, or asking your friendly Racetrack admin.
 
-# Tutorial<a name="tut"></a>
+## Tutorial<a name="tut"></a>
 
 This tutorial deploys Racetrack locally on your computer in a
 [KinD](https://kind.sigs.k8s.io/) (a baby Kubernetes for testing) cluster. It is
 intended to give you the muscle memory for using a production instance of
 Racetrack, and to help you get used to the core Racetrack concepts.
 
-## Prerequisites<a name="tut-prereq"></a>
+### Prerequisites<a name="tut-prereq"></a>
 
 1. A workstation with a sane operating system (currently, Debian and -
    grudgingly - Ubuntu are considered sane)
@@ -223,7 +223,7 @@ Racetrack, and to help you get used to the core Racetrack concepts.
 1. [Kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
 1. (optional) [k9s](https://github.com/derailed/k9s)
 
-## Installing Racetrack Locally<a name="tut-install"></a>
+### Installing Racetrack Locally<a name="tut-install"></a>
 
 Fetch the Racetrack sources:
 
@@ -249,7 +249,7 @@ Racetrack will be deployed inside it.
 
 You are ready to deploy a sample application to it.
 
-## Submitting a Python Class<a name="tut-submit"></a>
+### Submitting a Python Class<a name="tut-submit"></a>
 
 The source code ships with a range of sample Jobs; you can find them in the path
 `sample/`. In this tutorial, we will be Submitting the `sample/python-class`
@@ -277,7 +277,7 @@ fully functional and well-formed Kubernetes micro-service; our Fatman. Please
 examine this file [sample/python-class/adder.py](../sample/python-class/adder.py) 
 in order to understand what to expect.
 
-## Testing the Resulting Fatman<a name="tut-test"></a>
+### Testing the Resulting Fatman<a name="tut-test"></a>
 
 You now have the following running on your developer workstation:
 
@@ -287,7 +287,7 @@ You now have the following running on your developer workstation:
 
 There are several ways you can interact with Racetrack and this Fatman:
 
-### Using the Fatman<a name="tut-test-foo"></a>
+#### Using the Fatman<a name="tut-test-foo"></a>
 
 The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this (as described in the [Job Type documentation](../sample/python-class/README.md):
@@ -300,7 +300,7 @@ curl -X POST "http://localhost:7005/pub/fatman/adder/latest/api/v1/perform" \
 # Expect: 42
 ```
 
-### Checking the Fatman Swagger<a name="tut-test-swagger"></a>
+#### Checking the Fatman Swagger<a name="tut-test-swagger"></a>
 
 Racetrack generates free [Swagger API documentation](https://swagger.io/). You
 can access it in your web browser
@@ -309,7 +309,7 @@ but first you need to authenticate in order to make requests through your browse
 Open [Dashboard page](http://localhost:7003/dashboard/) and log in with default `admin` username and `admin` password.
 That will set up a session allowing you to call fatmen.
 
-### Checking the Fatman Health<a name="tut-test-health"></a>
+#### Checking the Fatman Health<a name="tut-test-health"></a>
 
 You also get a free [service health
 endpoint](https://kubernetes.io/docs/reference/using-api/health-checks/):
@@ -320,7 +320,7 @@ curl "http://localhost:7005/pub/fatman/adder/latest/health"
 # {"service": "fatman", "fatman_name": "adder", "status": "pass"}
 ```
 
-### Checking Fatman logs<a name="tut-logs"></a>
+#### Checking Fatman logs<a name="tut-logs"></a>
 
 To see recent logs from your Fatman output, run `racetrack logs` command:
 ```bash
@@ -328,22 +328,23 @@ racetrack logs . http://localhost:7002
 ```
 
 `racetrack logs [WORKDIR] [RACETRACK_URL]` has 2 arguments:
+
 - `WORKDIR` - a place where the `fatman.yaml` is, by default it's current directory
 - `RACETRACK_URL` - URL address to Racetrack server, where the Fatman is deployed.
 
-### Inspecting the Fatman in the Racetrack Dashboard<a name="tut-test-dashb"></a>
+#### Inspecting the Fatman in the Racetrack Dashboard<a name="tut-test-dashb"></a>
 
 Racetrack ships with a dashboard. In production, it will be the admin who has
 access to this, but you're testing locally so you can see it
 [here](http://localhost:7003/dashboard) and you can see your adder job.
 
-### (optional) Inspecting the Fatman inside KinD Using k9s<a name="tut-test-k9s"></a>
+#### (optional) Inspecting the Fatman inside KinD Using k9s<a name="tut-test-k9s"></a>
 
 Invoke k9s on your command line and navigate to the pods view using `:pods`. Hit
 `0` to display all Kubernetes namespaces. Under the `racetrack` namespace, you
 should see `fatman-adder-blabla-bla`.
 
-## Authentication<a name="tut-auth"></a>
+### Authentication<a name="tut-auth"></a>
 
 Racetrack requires you to authenticate with a token.
 To manage users and tokens, visit Racetrack dashboard page: http://localhost:7003/dashboard/.
@@ -353,6 +354,7 @@ Once the Racetrack is started, it is recommended to create other users, and deac
 Then visit your Profile page to see your auth token.
 
 Authentication applies to both deploying a fatman and calling it:
+
 - In order to deploy a fatman (or use other management commands), run `racetrack login` command with your token in first place. For instance:
   ```bash
   racetrack login http://localhost:7002 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0._XIg7ainazrLnU6-4pJ1BW63vPpgtX41O2RhxshW-E0
@@ -365,7 +367,7 @@ Authentication applies to both deploying a fatman and calling it:
     -d '{"numbers": [40, 2]}'
   ```
 
-## Tearing it Down<a name="tut-teardown"></a>
+### Tearing it Down<a name="tut-teardown"></a>
 
 Assuming you are standing in the root directory of the Racetrack source code:
 
@@ -380,7 +382,7 @@ deactivate
 git clean -fxd
 ```
 
-# Developing Your Own Jobs<a name="developing"></a>
+## Developing Your Own Jobs<a name="developing"></a>
 
 These instructions will work against the local test version described in the
 [Tutorial](#tutorial) section, but are also explained such that they make sense
@@ -389,7 +391,7 @@ against a production instance of Racetrack on a real Kubernetes cluster.
 You will follow the workflow described in the section [The Racetrack
 Workflow](#workflow) in both cases.
 
-## Using a Production Racetrack<a name="in-prod"></a>
+### Using a Production Racetrack<a name="in-prod"></a>
 
 As was the case in the tutorial, you need the
 [racetrack-client](https://pypi.org/project/racetrack-client/) CLI tool
@@ -421,7 +423,7 @@ Other endpoints described in the tutorial will also change away from
 `https://racetrack-lifecycle.platform.example.com/`. You will need to check with
 your local Racetrack admin to get these endpoints.
 
-### Authentication<a name="racetrack-authentication"></a>
+#### Authentication<a name="racetrack-authentication"></a>
 
 Before you can deploy a job to production Racetrack server or even view the list
 of Fatmen on RT Dashboard, you need to create user there.
@@ -464,12 +466,13 @@ X-Racetrack-Auth: not logged in`
 You will need to include it in curl using `-H 'X-Racetrack-Auth: <token>`.
 
 
-## Jobs in Private or Protected git Repositories<a name="repo-tokens"></a>
+### Jobs in Private or Protected git Repositories<a name="repo-tokens"></a>
 
 As you noticed earlier, Racetrack requires in the `fatman.yaml` a git URL from
 which to fetch the Job source code. If this repo is private or protected, you
 will need to issue a token for the `racetrack` CLI tool to work. In GitLab, there
 are two kinds of tokens (either of them can be used):
+
 - Personal Access Token - allows to operate on all user projects. Instructions
   to create it are [here](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) 
 - Project Access Token - needs to be issued per project. User has to be Maintainer
@@ -484,13 +487,14 @@ Once you have this token, you need to register it with the `racetrack` CLI tool:
 racetrack config credentials set repo_url username token
 ```
 where:
+
 - `repo_url`: url to git repository, ie. `https://github.com/theracetrack/racetrack`
   You can also set this to root domain ie. `https://github.com` to make this token
   handle all projects.
 - `username`: it's your gitlab account name, usually in the form of email
 - `token`: as above. Keep it secret.
 
-## Setting aliases for Racetrack servers<a name="config-aliases"></a>
+### Setting aliases for Racetrack servers<a name="config-aliases"></a>
 
 You can set up aliases for Racetrack server URL addresses by issuing command:
 ```bash
@@ -508,11 +512,11 @@ racetrack config alias set docker http://localhost:7102
 
 and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy . dev`.
 
-## The Fatman Manifest File Schema<a name="manifest-deep"></a>
+### The Fatman Manifest File Schema<a name="manifest-deep"></a>
 
 See [manifest-schema.md](manifest-schema.md)
 
-## The Default Job Types<a name="job-types"></a>
+### The Default Job Types<a name="job-types"></a>
 
 See documentation for particular job types:
 
@@ -522,7 +526,7 @@ See documentation for particular job types:
 
 See the [sample/](../sample) directory for more examples.
 
-## Local Client Configuration
+### Local Client Configuration
 
 The `racetrack` CLI tool maintains a configuration on your developer workstation. 
 As you saw earlier in the section on [Jobs in Private or Protected git
@@ -536,17 +540,17 @@ racetrack config racetrack_url http://localhost:7002
 
 Local client configuration is stored at `~/.racetrack/config.yaml`
 
-# Guidelines<a name="guide"></a>
+## Guidelines<a name="guide"></a>
 
 This document uses the terms may, must, should, should not, and must not in
 accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
-## Must
+### Must
 
 1. You must use one of the pre-defined job types. Racetrack will error out if
    you do not.
 
-## Should
+### Should
 
 1. The call path should be kept shallow. We prefer a bit bigger Fatmen over
    small that creates a deep call path.
@@ -556,7 +560,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
    usually only a good idea of this part of the functionality is expensive in
    time or physical resources.
 
-## Should not
+### Should not
 
 1. You are discouraged from creating code boundaries by splitting a RT job up
    into several, if they all serve the same request. While Racetrack supports
@@ -569,15 +573,15 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
    not accomplishable with current specialised job types, or which don't lend
    themselves via curation to improvements in specialised job types.
 
-## May
+### May
 
 1. If you have a need which isn't covered by the currently implemented job
    types, you may raise the need with the Racetrack developers in the GitLab
    issue tracker.
 
-# FAQ<a name="faq"></a>
+## FAQ<a name="faq"></a>
 
-## I've submitted a job, where can I see if it's ready?
+### I've submitted a job, where can I see if it's ready?
 
 When you invoke `racetrack deploy . https://racetrack.platform.example.com/lifecycle`, the client will
 block while the deploy operation is in progress. When the command terminates,
@@ -587,7 +591,7 @@ It will be added to the list of running Fatmen in the Racetrack dashboard; you
 can see it there yourself, or if you don't have access, check with the local
 Racetrack admin.
 
-## I've submitted a job, but it's not working. Where can I see my errors?
+### I've submitted a job, but it's not working. Where can I see my errors?
 
 If the error relates to the deployment action, the racetrack CLI tool will
 display an error for you. You can also see it on Racetrack Dashboard.
@@ -595,13 +599,13 @@ display an error for you. You can also see it on Racetrack Dashboard.
 If the error occurred in the process of converting the Job to a Fatman, your
 Racetrack admin can help you.
 
-## My fatman produces raw output, I need it in another format
+### My fatman produces raw output, I need it in another format
 
 Racetrack supports chained fatmen; you can retain the original fatman, and
 deploy a supplemental "handler" fatman which calls the original and transforms
 its output to your desired format. Then you can simply call your handler.
 
-## My fatman takes config parameters, I don't want to pass them every call
+### My fatman takes config parameters, I don't want to pass them every call
 
 You have several options.
 
@@ -620,14 +624,14 @@ original model. Time to deployment in Racetrack is very quick, and you might be
 fine just redeploying the same fatman with different config parameters when they
 change.
 
-## I need to combine the results of multiple fatmen
+### I need to combine the results of multiple fatmen
 
 Develop a "handler" fatman which calls the other fatmen whose results you want
 to combine.
 
 Racetrack supports chaining of fatmen for this purpose.
 
-## I need to have one or more versions of a fatman running at the same time
+### I need to have one or more versions of a fatman running at the same time
 
 You could use something similar as the handler pattern where you place a fatman in 
 front of the fatmen you would like to call. The handler is responsible for calling all 
@@ -636,7 +640,7 @@ but only the result from the active fatman should be returned.
 
 ***NB*** This might evolve to a standard fatman you can deploy and just configure.
 
-## I have other problem running Racetrack locally, please help debug.
+### I have other problem running Racetrack locally, please help debug.
 
 Do the following:
 ```
@@ -652,6 +656,7 @@ racetrack deploy sample/python-class http://localhost:7002
 ```
 
 If it doesn't work, diagnostic commands:
+
 - `kubectl get pods` - do everything has "Running" status? If not, view logs of 
   that pod (ie. `kubectl logs <failing_pod_name>`)
 - look into `kubectl logs service/lifecycle`
@@ -661,7 +666,7 @@ If it doesn't work, diagnostic commands:
 If you can't debug the problem yourself, please send the results of above commands
 to developer channel.
 
-## I need to be able to receive my answers asynchronously
+### I need to be able to receive my answers asynchronously
 
 The way to implement this is to create your own handler that can give you your answers
 asynchronously. A simple way of archiving this would be to provide a callback URL in the ESC query. 
@@ -673,7 +678,7 @@ which was for example provided in the request - and when the Fatman has finished
 processing the request and is ready with a response, it POSTs this to the endpoint
 on the ESC. Obviously, asynchronous calls require you to do some work on the ESC side as well.
 
-## I want to build on an ARM system (such as M1 Mac)
+### I want to build on an ARM system (such as M1 Mac)
 
 Disclaimer: we don't officially support or test for those architectures, but after
 little tweaking you should be still able to run on them. 
