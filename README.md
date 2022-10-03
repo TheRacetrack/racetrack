@@ -79,10 +79,10 @@ please follow the [Tutorial](docs/user.md#tutorial).
 
 ### What can we deploy?
 
-* [Python 3](https://github.com/TheRacetrack/racetrack/tree/master/wrappers/python_wrapper)
+* [Python 3](https://github.com/TheRacetrack/plugin-python-job-type)
 * [Go](https://github.com/TheRacetrack/plugin-go-job-type)
 * [Rust](https://github.com/TheRacetrack/plugin-rust-job-type)
-* [Any language wrapped in a Dockerfile](https://github.com/TheRacetrack/racetrack/tree/master/wrappers/docker-http)
+* [Any language wrapped in a Dockerfile](https://github.com/TheRacetrack/plugin-docker-http-job-type)
 * [Drupal](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample-drupal)
 * [Sphinx](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample-sphinx)
 
