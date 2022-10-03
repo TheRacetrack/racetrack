@@ -31,6 +31,9 @@ markdown_extensions:
 plugins:
   - search
   - same-dir
+  - exclude:
+      glob:
+        - venv/*
 
 nav:
   - General:
@@ -44,5 +47,6 @@ nav:
     - Developer manual: docs/development/develop.md
     - Developing plugins: docs/development/plugins.md
     - Job type plugins: docs/development/plugins-job-types.md
+    - Plugins Bundler: utils/plugin_bundler/README.md
   - Administering:
     - Administering Racetrack: docs/admin.md
