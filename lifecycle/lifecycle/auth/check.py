@@ -104,6 +104,6 @@ def check_staff_user(
     if not user.is_active:
         raise UnauthorizedError(f'User {username} is not active')
     if not user.is_staff:
-        raise UnauthorizedError(f'User {username} is a staff member')
+        raise UnauthorizedError(f'User {username} is not a staff member')
 
     return auth_subject
