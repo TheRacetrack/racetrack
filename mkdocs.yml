@@ -37,7 +37,7 @@ plugins:
 
 nav:
   - General:
-    - Home: README.md
+    - Racetrack: README.md
     - Using Racetrack: docs/user.md
     - Changelog: docs/CHANGELOG.md
     - Fatman Manifest File Schema: docs/manifest-schema.md
