@@ -137,10 +137,10 @@ def upload_plugin(request):
 
 
 @login_required
-def delete_plugin(request, plugin_name: str):
+def delete_plugin(request, plugin_name: str, plugin_version: str):
     try:
         client = LifecyclePluginClient(auth_token=get_auth_token(request))
-        client.delete_plugin(plugin_name)
+        client.delete_plugin(plugin_name, plugin_version)
     except Exception as e:
         log_exception(ContextError('Deleting plugin failed', e))
         return JsonResponse({'error': str(e)}, status=500)

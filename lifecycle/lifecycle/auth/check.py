@@ -1,6 +1,9 @@
 from functools import wraps
 from typing import List
 
+from django.contrib.auth.models import User
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
@@ -80,3 +83,27 @@ def check_auth_decorator(
 
         return decorated
     return auth_decorator
+
+
+def check_staff_user(
+    request: Request,
+) -> models.AuthSubject:
+    """
+    Authenticate and authorize the request,
+    checking if the request is being made by a staff user.
+    :raise UnauthorizedError: If auth subject has no sufficient permissions
+    """
+    token_payload, auth_subject = authenticate_token(request)
+    authorize_subject_type(token_payload, [AuthSubjectType.USER])
+    username = token_payload.subject
+
+    try:
+        user: User = get_object_or_404(User, username=username)
+    except Http404:
+        raise UnauthorizedError(f'User {username} was not found')
+    if not user.is_active:
+        raise UnauthorizedError(f'User {username} is not active')
+    if not user.is_staff:
+        raise UnauthorizedError(f'User {username} is not a staff member')
+
+    return auth_subject

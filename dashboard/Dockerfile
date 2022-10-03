@@ -3,6 +3,7 @@ FROM python:3.9-slim-bullseye
 WORKDIR /src/dashboard
 
 RUN apt-get update -y && apt-get install -y postgresql-client
+# apt cache is cleaned automatically, see /etc/apt/apt.conf.d/docker-clean
 
 COPY racetrack_client/setup.py racetrack_client/requirements.txt racetrack_client/README.md /src/racetrack_client/
 COPY racetrack_commons/setup.py racetrack_commons/requirements.txt /src/racetrack_commons/

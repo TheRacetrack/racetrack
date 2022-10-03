@@ -39,7 +39,7 @@
                     <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
                     {% endif %}
                     {% if user.is_staff %}
-                    <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}">Delete</button>
+                    <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
                     {% endif %}
                 </li>
             {% endfor %}
@@ -66,7 +66,8 @@
 <script>
 function invokePluginAction(actionName, endpoint, that, csrf_token) {
     let pluginName = that.attr('plugin-name');
-    var actionPrefix = actionName + ' ' + pluginName
+    let pluginVersion = that.attr('plugin-version');
+    var actionPrefix = actionName + ' ' + pluginName + ' ' + pluginVersion
     console.log(actionPrefix + '...');
     var previousHtml = that.html();
     that.prop("disabled", true);
@@ -74,7 +75,7 @@ function invokePluginAction(actionName, endpoint, that, csrf_token) {
         `<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>`
     );
     $.ajax({
-        url: '/dashboard/api/' + endpoint + '/' + pluginName,
+        url: '/dashboard/api/' + endpoint + '/' + pluginName + '/' + pluginVersion,
         type: 'post',
         data: {
             csrfmiddlewaretoken: csrf_token,
