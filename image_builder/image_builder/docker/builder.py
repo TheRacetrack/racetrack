@@ -168,7 +168,10 @@ def _gather_job_templates(
 
 
 def _image_exists_in_registry(image_name: str):
-    """Check if an image (with tag) exists in a remote Docker registry (local, private or public)"""
+    """
+    Check if an image (with tag) exists in a remote Docker registry (local, private or public)
+    This command is experimental feature in docker.
+    """
     try:
         shell(f'docker manifest inspect --insecure {image_name}')
         return True
