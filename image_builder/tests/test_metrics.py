@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from fatman_wrapper.config import Config
+from image_builder.config import Config
 from image_builder.api import configure_api
 from racetrack_commons.plugin.engine import PluginEngine
 

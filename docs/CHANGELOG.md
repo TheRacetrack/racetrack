@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- All job types are individual plugins now.
+  Racetrack starts without any job type by default.
+- Base Fatman images are built inside Racetrack by image-builder
+  so it's no longer needed to push images prior to the plugin release.
 
 ## [2.3.0] - 2022-09-23
 ### Added
