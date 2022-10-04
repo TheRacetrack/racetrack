@@ -44,7 +44,7 @@ racetrack config alias set dev http://localhost:7102
 
 Login to Racetrack prior to deploying a job (you can find it in the "Profile" tab of the Dashboard):
 ```bash
-racetrack login dev eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0._XIg7ainazrLnU6-4pJ1BW63vPpgtX41O2RhxshW-E0
+racetrack login dev eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 ```
 
 Finally, you can deploy some jobs there, eg.:
@@ -83,7 +83,6 @@ Submitting a job:
 
 ```bash
 racetrack deploy sample/python-class/ http://localhost:7202
-# or: cd racetrack_client && make deploy-sample
 ```
 
 New container should be created. It can be accessed at http://localhost:7000
