@@ -9,8 +9,9 @@ from watchdog.events import FileSystemEventHandler
 
 from racetrack_commons.plugin.loader import load_plugin_from_zip, load_plugins_from_dir, EXTRACTED_PLUGINS_DIR
 from racetrack_commons.plugin.plugin_manifest import PluginData, PluginManifest
-from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.log.errors import EntityNotFound
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.time import now, datetime_to_timestamp
 
@@ -128,6 +129,18 @@ class PluginEngine:
         observer = Observer()
         observer.schedule(event_handler, path=Path(self.plugins_dir).as_posix(), recursive=False)
         observer.start()
+
+        # inotify may not work on network filesystems
+        def _check_periodically():
+            while True:
+                time.sleep(5 * 60)
+                try:
+                    compare_changes()
+                except BaseException as e:
+                    log_exception(ContextError('periodic check failure', e))
+
+        threading.Thread(target=_check_periodically, daemon=True).start()
+
 
     def upload_plugin(self, filename: str, file_bytes: bytes) -> PluginManifest:
         target_zip = Path(self.plugins_dir) / filename

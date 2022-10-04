@@ -83,7 +83,7 @@ class DockerBuilder(ImageBuilder):
         return full_image, logs, None
 
 
-@backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None)
+@backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
 def _load_job_template(
     plugin_engine: PluginEngine,
     lang: str,
@@ -184,7 +184,7 @@ def _image_exists_in_registry(image_name: str):
     This command is experimental feature in docker.
     """
     try:
-        shell(f'docker manifest inspect --insecure {image_name}')
+        shell(f'docker manifest inspect --insecure {image_name}', print_stdout=False)
         return True
     except CommandError as e:
         if e.returncode == 1 and ("manifest unknown" in e.stdout or "no such manifest" in e.stdout):
