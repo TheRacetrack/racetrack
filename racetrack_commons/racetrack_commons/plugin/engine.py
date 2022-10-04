@@ -133,7 +133,7 @@ class PluginEngine:
         # inotify may not work on network filesystems
         def _check_periodically():
             while True:
-                time.sleep(5 * 60)
+                time.sleep(60)
                 try:
                     compare_changes()
                 except BaseException as e:
