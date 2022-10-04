@@ -16,7 +16,7 @@ setup:
 	python3 -m venv venv &&\
 	. venv/bin/activate &&\
 	pip install --upgrade pip setuptools &&\
-	pip install -r requirements.txt &&\
+	pip install -r requirements-test.txt -r requirements-dev.txt &&\
 	( cd racetrack_client && make setup ) &&\
 	( cd racetrack_commons && make setup ) &&\
 	( cd lifecycle && make setup ) &&\
@@ -30,6 +30,17 @@ setup-racetrack-client:
 	. venv/bin/activate &&\
 	pip install --upgrade pip setuptools &&\
 	( cd racetrack_client && make setup )
+
+setup-test-unit:
+	python3 -m venv venv &&\
+	. venv/bin/activate &&\
+	pip install -r requirements-test.txt &&\
+	( cd racetrack_client && make setup ) &&\
+	( cd racetrack_commons && make setup ) &&\
+	( cd lifecycle && make setup ) &&\
+	( cd image_builder && make setup ) &&\
+	( cd dashboard && make setup )
+	@echo Activate your venv: . venv/bin/activate
 
 setup-test-e2e:
 	python3 -m venv venv &&\
@@ -266,4 +277,4 @@ mkdocs-local:
 	mkdocs serve
 
 mkdocs-push:
-	mkdocs gh-deploy --force
+	mkdocs gh-deploy --force --clean --verbose

@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-go@v3
 
       - name: Install dependencies
-        run: make setup
+        run: make setup-test-unit
       - run: . venv/bin/activate && make test-unit
 
   test-e2e-compose:
