@@ -39,7 +39,8 @@ setup-test-unit:
 	( cd racetrack_commons && make setup ) &&\
 	( cd lifecycle && make setup ) &&\
 	( cd image_builder && make setup ) &&\
-	( cd dashboard && make setup )
+	( cd dashboard && make setup ) &&\
+	( cd utils/plugin_bundler && make setup )
 	@echo Activate your venv: . venv/bin/activate
 
 setup-test-e2e:
@@ -150,7 +151,7 @@ compose-up-docker-daemon: registry docker-build compose-volumes
 		up -d
 
 compose-volumes:
-	mkdir -p .plugins && chmod o+rw .plugins
+	mkdir -p .plugins && chmod ugo+rw .plugins
 
 compose-down: docker-clean-fatman
 	$(docker-compose) --profile dev down

@@ -7,7 +7,7 @@ The following request performs its functionality:
 ```bash
 curl -X POST "http://localhost:7105/pub/fatman/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
-  -H "X-Racetrack-Auth: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0._XIg7ainazrLnU6-4pJ1BW63vPpgtX41O2RhxshW-E0" \
+  -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
   -d '{"numbers": [40, 2]}'
 # Expect:
 # 42
