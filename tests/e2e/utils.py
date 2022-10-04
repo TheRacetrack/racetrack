@@ -131,7 +131,7 @@ def _verify_fatman_logs(fatman_name: str, user_auth: str):
 
 def _install_plugin(plugin_uri: str):
     lifecycle_url = os.environ['LIFECYCLE_URL']
-    config = ClientConfig()
-    set_user_auth(config, lifecycle_url, ADMIN_AUTH_TOKEN)
+    client_config = ClientConfig()
+    set_user_auth(client_config, lifecycle_url, ADMIN_AUTH_TOKEN)
     print(f'Installing plugin {plugin_uri}...')
-    install_plugin(plugin_uri, lifecycle_url)
+    install_plugin(plugin_uri, lifecycle_url, client_config)

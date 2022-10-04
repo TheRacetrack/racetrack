@@ -39,7 +39,8 @@ setup-test-unit:
 	( cd racetrack_commons && make setup ) &&\
 	( cd lifecycle && make setup ) &&\
 	( cd image_builder && make setup ) &&\
-	( cd dashboard && make setup )
+	( cd dashboard && make setup ) &&\
+	( cd utils/plugin_bundler && make setup )
 	@echo Activate your venv: . venv/bin/activate
 
 setup-test-e2e:
