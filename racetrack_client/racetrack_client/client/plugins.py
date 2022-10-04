@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 from urllib.parse import urlparse
 
 from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.auth import get_user_auth
+from racetrack_client.client_config.client_config import ClientConfig
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
@@ -15,15 +16,17 @@ logger = get_logger(__name__)
 def install_plugin(
     plugin_uri: str,
     lifecycle_url: str,
+    client_config: Optional[ClientConfig] = None,
 ):
     """Install a plugin to a remote Racetrack server"""
-    client_config = load_client_config()
+    if client_config is None:
+        client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
 
     plugin_filename, plugin_content = _load_plugin_file(plugin_uri)
 
-    logger.info(f'Uploading pluign {plugin_uri} to {lifecycle_url}...')
+    logger.info(f'Uploading pluign {plugin_uri} to {lifecycle_url}')
     r = Requests.post(
         f'{lifecycle_url}/api/v1/plugin/upload/{plugin_filename}',
         data=plugin_content,
@@ -46,7 +49,7 @@ def uninstall_plugin(
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
 
-    logger.info(f'Uninstalling pluign {plugin_name} {plugin_version} from {lifecycle_url}...')
+    logger.info(f'Uninstalling pluign {plugin_name} {plugin_version} from {lifecycle_url}')
     r = Requests.delete(
         f'{lifecycle_url}/api/v1/plugin/{plugin_name}/{plugin_version}',
         headers=get_auth_request_headers(user_auth),
