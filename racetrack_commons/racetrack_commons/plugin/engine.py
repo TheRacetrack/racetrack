@@ -129,7 +129,7 @@ class PluginEngine:
         observer.schedule(event_handler, path=Path(self.plugins_dir).as_posix(), recursive=False)
         observer.start()
 
-    def upload_plugin(self, filename: str, file_bytes: bytes):
+    def upload_plugin(self, filename: str, file_bytes: bytes) -> PluginManifest:
         target_zip = Path(self.plugins_dir) / filename
         assert target_zip.suffix == '.zip', '.zip plugins are only supported'
 
@@ -150,6 +150,7 @@ class PluginEngine:
 
         self._load_plugins()
         self._record_last_change()
+        return plugin_data.plugin_manifest
         
     def delete_plugin_by_version(self, name: str, version: str):
         plugin_data = self.find_plugin(name, version)
