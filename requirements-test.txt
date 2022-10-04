@@ -1,0 +1,6 @@
+# Testing tools
+pytest==7.1.2
+coverage==5.5
+backoff==1.10.0
+httpretty==1.1.4
+Flask==2.0.2
