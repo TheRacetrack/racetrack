@@ -135,8 +135,11 @@ class PluginEngine:
 
         # save to tmp.zip to avoid overwriting current plugins
         tmp_zip = Path(self.plugins_dir) / 'tmp.zip'
+        if not tmp_zip.is_file():
+            tmp_zip.touch()
+            tmp_zip.chmod(mode=0o666)
         tmp_zip.write_bytes(file_bytes)
-        tmp_zip.chmod(mode=0o666)
+        
         plugin_data = load_plugin_from_zip(tmp_zip)
         plugin_name = plugin_data.plugin_manifest.name
         plugin_version = plugin_data.plugin_manifest.version
