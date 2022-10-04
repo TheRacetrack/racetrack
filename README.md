@@ -1,5 +1,9 @@
 # Racetrack
 
+[![GitHub version (latest SemVer)](https://img.shields.io/github/v/tag/TheRacetrack/racetrack?label=version&sort=semver)](https://github.com/TheRacetrack/racetrack)
+[![PyPI](https://img.shields.io/pypi/v/racetrack-client)](https://pypi.org/project/racetrack-client/)
+[![Github Pages](https://img.shields.io/badge/docs-github.io-blue)](https://theracetrack.github.io/racetrack)
+
 Racetrack is an opinionated framework for deploying, managing, and serving
 application workloads.
 
@@ -69,7 +73,7 @@ For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.i
 please follow the [Tutorial](docs/user.md#tutorial).
 
 * [Using Racetrack](docs/user.md)
-* [Deploying Racetrack](docs/develop.md)
+* [Deploying Racetrack](docs/development/develop.md)
 * [Administering Racetrack](docs/admin.md)
 * [Developing plugins](docs/development/plugins.md)
 * [Developing a new job type](docs/development/plugins-job-types.md)

@@ -1,6 +1,9 @@
-# Deploying Racetrack
+# Administering Racetrack
+
+## Deploying Racetrack
 
 Prerequisites:
+
 - k8s cluster
 
 1. Adjust the docker registry urls and build Racetrack images: `make docker-push`
@@ -10,31 +13,31 @@ or with automated system like Flux.
 Security warning: make sure to enable TLS traffic to PUB and Lifecycle API, since
 they will receive secret tokens, which otherwise would be sent plaintext.
 
-# Maintaining Racetrack
+## Maintaining Racetrack
 
-## Managing users
+### Managing users
 
-### Creating user account
+#### Creating user account
 In order to create an account, 
 user needs to go to Racetrack Dashboard and register new account there.
 Then he should ask Racetrack Admin to activate his account.
 Racetrack Admin goes to Admin panel, `Users` tab, selects user, 
 sets `Active` checkbox and clicks `Save`.
 
-### Changing user's password
+#### Changing user's password
 Admin can change any user's password by going to Admin panel, `Users` tab, 
 selecting user, clicking "change the password using this form".
 
 
-## Managing Fatman Portfolio
+### Managing Fatman Portfolio
 
-### Audit Log
+#### Audit Log
 "Audit Log" tab in Dashboard shows activity events done by users,
 eg. "fatman F1 of user Alice has been deleted by Bob".
 It can be filtered by events related to a logged user,
 whole fatman family or a particular fatman.
 
-### Portfolio table
+#### Portfolio table
 "Portfolio" tab in Dashboard allows to browse fatmen freely
 with custom criteria and showing the candidates for removal.
 Use the filters above each column to filter and limit table data. 
@@ -47,7 +50,7 @@ A higher value means a better candidate for removal.
 "Purge score" value is explained in "Purge reasons" column
 with suggestions explaining why fatman is a candidate for removal.
 
-### Changing Fatman attributes
+#### Changing Fatman attributes
 If you want to overwrite some deployment attributes of a fatman in runtime 
 (eg. minimum memory amount, number of replicas),
 you can go to Admin panel, choose "Fatmen" tab, select particular one,
@@ -56,14 +59,14 @@ Then go back to Racetrack Dashboard, tab "Fatmen" and click Redeploy button unde
 However, keep in mind that this change will be overwritten by the next deployment,
 so better ask maintaner of a fatman to change the manifest in the git repository as well.
 
-## Permissions
+### Permissions
 
 You can view the permissions-graph in Racetrack Dashboard, under Graph page.
 Click on the node to see the details and filter out the neighbours of the selected node.
 
 Permissions can be managed in Administration panel, under "Admin panel" tab in dashboard.
 
-### Allowing ESC to Fatman permissions
+#### Allowing ESC to Fatman permissions
 
 In the Racetrack admin panel, go to ESC list, create new ESC.
 
@@ -78,14 +81,14 @@ If this key becomes stolen, to prevent attacker from using it, reset the ESC api
 in ESC edit page.
 
 
-### Allowing Fatman to Fatman permissions
+#### Allowing Fatman to Fatman permissions
 
 Fatman to Fatman permissions are setup on Fatman family basis; that is you just
 have to set it once that family Adder can be called by Badder, then all Badder
 versions can communicate with all Adder versions. The relation is one way only,
 so Adder won't be able to call Badder unless it's permitted too.
 
-## Resetting admin password
+### Resetting admin password
 
 If there's other admin user, ask him to do the reset in admin panel:
 Users -> select user, next to password field there will be link to change form.
@@ -94,14 +97,14 @@ If none of the admins remember their password, then somebody has to exec
 to Lifecycle pod, `cd /src/lifecycle/lifecycle/django` and run 
 `python manage.py changepassword <my_admin>`, or `python manage.py createsuperuser`.
 
-## Cleaning up Docker Registry
+### Cleaning up Docker Registry
 
 There is a Container Registry utility for cleaning obsolete images from the registry
 (collecting garbage).
 See [registry_cleaner](../utils/registry_cleaner/README.md).
 
 
-## Troubleshooting
+### Troubleshooting
 If something's malfunctioning, check out the following places to find more information:
 
 - Racetrack dashboard pages: fatmen list, audit log, dependencies graph,
@@ -114,9 +117,9 @@ If something's malfunctioning, check out the following places to find more infor
 - Racetrack component logs: dashboard, lifecycle, lifecycle-supervisor, image-builder, pub, postgres, pgbouncer
 
 
-# Backup & Restore
+## Backup & Restore
 
-Here's the overview of the places where Racetrack data are stored:
+Here's the overview of the places where Racetrack data are stored:  
 - **Postgres Database** - keeps information about fatmen
   (that are expected to be running), deployments, users, permissions, etc.
 - **Plugins Volume** - a persistent volume containing plugins 
@@ -133,8 +136,8 @@ Here's the overview of the places where Racetrack data are stored:
   won't be reproduced (the others should work fine),
   unless you redeploy them manually later on.
 
-## Postgres Database
-### Backing up
+### Postgres Database
+#### Backing up
 If Postgres database runs outside kubernetes on an external server,
 use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html)
 tool to make a backup of the database.
@@ -142,7 +145,7 @@ tool to make a backup of the database.
 Otherwise, if your database runs inside kubernetes, 
 exec to `postgres` pod and use [pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html)
 
-### Restoring
+#### Restoring
 If Postgres database runs outside kubernetes,
 use [pgAdmin](https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html)
 tool to restore the database.
@@ -150,14 +153,14 @@ tool to restore the database.
 Otherwise, if your database runs inside kubernetes, 
 exec to `postgres` pod and use [pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html). 
 
-## Plugins Volume
+### Plugins Volume
 Plugins are stored in a Persistent Volume called `racetrack-plugins-pvc`.
 Copy all of its contents with the help of your Kubernetes Admin.
 
 To do a restore, copy saved files back to `racetrack-plugins-pvc` 
 volume and restart all the Racetrack pods.
 
-## Docker Registry
+### Docker Registry
 To do a backup of the Docker Registry, you can pull the images you're interested in (eg. to your local registry).
 When restoring, just push the images back.
 
@@ -167,6 +170,6 @@ docker_registry: ghcr.io
 docker_registry_namespace: theracetrack/racetrack
 ```
 
-## Fatman Secrets
+### Fatman Secrets
 Contact your Kubernetes administrator to back up all the `Secret` resources
 associated with the `racetrack/fatman` label.

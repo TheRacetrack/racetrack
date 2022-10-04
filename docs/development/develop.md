@@ -1,4 +1,6 @@
-# Prerequisites
+# Developer Manual
+
+## Prerequisites
 
 Install:
 
@@ -8,7 +10,7 @@ Install:
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) - if you're going to deploy to Kind
 - [Go 1.16+](https://go.dev/doc/install) - if you're going to develop components in Go (PUB, go_wrapper)
 
-# Development Setup
+## Development Setup
 
 Setup & activate Python venv (this is required for all next steps):
 
@@ -20,6 +22,7 @@ make setup
 
 Components can be run in 3 different ways, every next way is more integrated and
 closer to target setup, but it boots up longer:
+
 - [Localhost](#localhost)
 - [Docker compose](#docker-compose)
 - [Kind](#kind)
@@ -143,7 +146,7 @@ Fatmen are deployed as k8s pods, and should be managed as such.
 
 (1) - none as Postgres is not run on localhost
 
-# Calling a model
+## Calling a model
 
 On any of localhost setups:
 
@@ -165,7 +168,7 @@ curl -k -X POST "https://<cluster ip>/pub/fatman/adder/latest/api/v1/perform" \
 # Expect: 42
 ```
 
-# Deploy Job to Kubernetes
+## Deploy Job to Kubernetes
 
 Enter directory with `fatman.yaml` and issue:
 
@@ -173,10 +176,10 @@ Enter directory with `fatman.yaml` and issue:
 racetrack deploy . https://racetrack.<cluster name>/lifecycle
 ```
 
-See [User Guide](./docs/user-guide.md) for more details on how to deploy a job
+See [User Guide](../user.md) for more details on how to deploy a job
 to the Racetrack instance running on Kubernetes as an end user.
 
-# Testing
+## Testing
 
 Run the following command to perform all tests (unit tests and End-to-End):
 
@@ -196,17 +199,17 @@ Run unit tests only:
 make test-unit
 ```
 
-# Debugging
+## Debugging
 
 In order to view Lifecycle Postgres db, in k8s dashboard exec into postgres pod and:
 ```
 psql -h localhost -d lifecycle_db -U racetrack -p 5432
 ```
 
-# Deployment
+## Deployment
 
 
-## Versioning
+### Versioning
 
 For docker tags on master and release branches (like `cluster-test`, `cluster-preprod` etc),
 we use `<semver>` versioning. Examples: `0.0.15`, `1.0.3`.
@@ -218,7 +221,7 @@ where MR-number stands for gitlab MR number, and dev-version is just sequentiall
 Examples: `0.0.15-125-1`, `1.0.3-142-11`.
 
 
-## Release new changes of Racetrack to test or dev Cluster
+### Release new changes of Racetrack to test or dev Cluster
 
 Do the following in order to apply your changes to your cluster:
 
@@ -238,7 +241,7 @@ You don't need to specify MR id for futher dev releases, because `make version-b
 will bump the dev part if MR is set in file, otherwise it bumps just the semver part.
 
 
-## Releasing new Racetrack version
+### Releasing new Racetrack version
 
 1. Make sure [changelog](../CHANGELOG.md) has all additions and changes
 1. Determine new version number `x.y.z` according to [Semver](https://semver.org/) and latest changes. (`VERSION=x.y.z`)

@@ -1,0 +1,52 @@
+site_name: Racetrack
+repo_name: TheRacetrack/racetrack
+repo_url: https://github.com/TheRacetrack/racetrack
+site_author: TheRacetrack
+docs_dir: .
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: green
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+plugins:
+  - search
+  - same-dir
+  - exclude:
+      glob:
+        - venv/*
+
+nav:
+  - General:
+    - Introduction: README.md
+    - Using Racetrack: docs/user.md
+    - Changelog: docs/CHANGELOG.md
+    - Fatman Manifest File Schema: docs/manifest-schema.md
+    - Python Job Type: docs/job_types/job_python3.md
+    - Glossary: docs/glossary.md
+  - Development:
+    - Developer manual: docs/development/develop.md
+    - Developing plugins: docs/development/plugins.md
+    - Job type plugins: docs/development/plugins-job-types.md
+    - Plugins Bundler: utils/plugin_bundler/README.md
+  - Administering:
+    - Administering Racetrack: docs/admin.md

@@ -1,6 +1,7 @@
 # Glossary
 
 Workloads:
+
 - **ML Model** - An application using Machine Learning algorithms created by Data Scentists or
   Developers, transforming input data & parameters into results.
 - **Job** - A blueprint for creating Fatman, 
@@ -13,6 +14,7 @@ Workloads:
   and provides configuration values for your Job
 
 Platform:
+
 - **ESC (External Service Consumer)** - A system external to the Racetrack using its services.
 - **Lifecycle** - Lifecycle is a subcomponent of Racetrack
   responsible for automated and simplified PUC deployment and monitoring condition of deployed workloads.

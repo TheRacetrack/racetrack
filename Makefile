@@ -261,3 +261,9 @@ version-release-github: docker-push
 template-local-env:
 	cp -n utils/.local.env.template .local.env
 	@echo "Now fill in the .local.env file with your local settings"
+
+mkdocs-local:
+	mkdocs serve
+
+mkdocs-push:
+	mkdocs gh-deploy --force

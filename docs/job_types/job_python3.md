@@ -4,7 +4,7 @@ Racetrack will wrap it up in a web server.
 
 Set `lang: python3` in your `fatman.yaml` manifest file in order to use this type of job.
 
-# Job standards
+## Job standards
 Let's assume you already have your code in a repository at `supersmart/model.py`:
 ```python
 def just_do_it(x: float, y: float) -> float:
@@ -52,7 +52,7 @@ When calling `/perform` endpoint, pass the parameters as a JSON object:
 }
 ```
 
-## Input payload: `docs_input_example` method
+### Input payload: `docs_input_example` method
 Optionally, you can also add a `docs_input_example` method returning exemplary input values for your job.
 It should return a dictionary mapping every parameter name to its sample value. 
 That is an exemplary payload for your service (it will be seen in Swagger UI).
@@ -66,7 +66,7 @@ def docs_input_example(self) -> dict:
     }
 ```
 
-## Auxiliary endpoints: `auxiliary_endpoints` method
+### Auxiliary endpoints: `auxiliary_endpoints` method
 If you need more callable endpoints, you can extend Fatman API with custom auxiliary endpoints (besides `/perform`).
 Do it by implementing `auxiliary_endpoints` method in your entrypoint class, 
 returning dict with endpoint paths and corresponding methods handling the request:
@@ -113,7 +113,7 @@ def docs_input_examples(self) -> Dict[str, Dict]:
 
 See [python-auxiliary-endpoints](../../sample/python-auxiliary-endpoints) for an example.
 
-## Static endpoints: `static_endpoints` method
+### Static endpoints: `static_endpoints` method
 You can configure static endpoints to expose your local files at particular path by your Fatman.
 Do it by implementing `static_endpoints` method in your entrypoint class, 
 returning dict with endpoint paths and corresponding file metadata. 
@@ -136,7 +136,7 @@ to serve recursively all of its content.
 
 See [python-static-endpoints](../../sample/python-static-endpoints) for an example.
 
-## Custom Webview UI: `webview_app` method
+### Custom Webview UI: `webview_app` method
 You can expose user-defined webview pages in your job. 
 Implement `def webview_app(self, base_url: str)` method in your entrypoint class.
 `base_url` parameter is a base URL prefix where the webview app is exposed.
@@ -166,7 +166,7 @@ If there is a `static` directory in your job repo, those resources will be avail
 
 See [python-ui-flask](../../sample/python-ui-flask) for an example.
 
-## Prometheus metrics
+### Prometheus metrics
 Customized Prometheus metrics can be exported by implementing `metrics` method in your entrypoint class.
 It should return list of Metric objects consisting of:
 
@@ -195,7 +195,7 @@ Your metrics will be exposed at `/metrics` endpoint along with the other generic
 
 See [python-metrics](../../sample/python-metrics) for an example.
 
-## Environment variables
+### Environment variables
 If you need to access specific env variables during job building, you can set them
 by using `build_env` field in a manifest:
 ```yaml
@@ -267,7 +267,7 @@ Such approval needs to be done once for every new fatman version (with distinct 
 
 See [python-ui-flask](../../sample/python-ui-flask) for an example.
 
-# Summary of principles
+## Summary of principles
 To sum up:
 
 1. You MUST create entrypoint `.py` file.
@@ -294,7 +294,7 @@ To sum up:
 1. You MAY configure environment variables applied on build time and runtime by setting them explicitly or through a secret file.
 1. The Fatman application MUST be stateless. It MUST NOT depend on previous requests.
 
-# Manifest file
+## Manifest file
 When using `python3` job type, you MUST include the following fields in a `fatman.yaml` manifest file:
 
 - `name` - choose a meaningful text name for a job. It should be unique within the Racetrack cluster.
