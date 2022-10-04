@@ -135,6 +135,16 @@ class PluginEngine:
 
         # save to tmp.zip to avoid overwriting current plugins
         tmp_zip = Path(self.plugins_dir) / 'tmp.zip'
+
+        plugins_dir = tmp_zip.parent
+        mode = plugins_dir.stat().st_mode
+        import stat
+        import os
+        
+        print(f'plugins_dir: {plugins_dir}, mode: {mode}, filemode: {stat.filemode(mode)}')
+        print(f'st_uid: {plugins_dir.stat().st_uid}, gid: {plugins_dir.stat().st_gid}')
+        print(f'UID: {os.getuid()}, GID: {os.getgid()}')
+
         if not tmp_zip.is_file():
             tmp_zip.touch()
             tmp_zip.chmod(mode=0o666)
