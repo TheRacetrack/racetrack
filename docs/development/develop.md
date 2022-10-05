@@ -49,7 +49,7 @@ racetrack login dev eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDU
 
 Activate `python3` job type in the Racetrack by installing the plugin:
 ```bash
-racetrack plugin install https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip dev
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type dev
 ```
 
 Finally, you can deploy some jobs there, eg.:
