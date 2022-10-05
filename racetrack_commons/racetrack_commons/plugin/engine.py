@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 import shutil
 import threading
 from typing import Callable, List, Optional
@@ -98,32 +99,35 @@ class PluginEngine:
             self._record_last_change()
 
         def compare_changes():
-            new_timestamp = self._read_last_change_timestamp()
-            if self.last_change_timestamp != new_timestamp:
-                self.last_change_timestamp = new_timestamp
-                logger.info('Plugins modification detected, reloading plugins...')
-                self._load_plugins()
+            try:
+                new_timestamp = self._read_last_change_timestamp()
+                if self.last_change_timestamp != new_timestamp:
+                    self.last_change_timestamp = new_timestamp
+                    logger.info('Plugins modification detected, reloading plugins...')
+                    self._load_plugins()
+            except BaseException as e:
+                log_exception(ContextError('checking plugin changes', e))
 
         class ChangesHandler(FileSystemEventHandler):
             def on_created(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file creation notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
             def on_deleted(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file deletion notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
             def on_modified(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file modification notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
             def on_moved(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file moving notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
         event_handler = ChangesHandler()
         observer = Observer()
@@ -134,10 +138,7 @@ class PluginEngine:
         def _check_periodically():
             while True:
                 time.sleep(60)
-                try:
-                    compare_changes()
-                except BaseException as e:
-                    log_exception(ContextError('periodic check failure', e))
+                compare_changes()
 
         threading.Thread(target=_check_periodically, daemon=True).start()
 
@@ -147,7 +148,7 @@ class PluginEngine:
         assert target_zip.suffix == '.zip', '.zip plugins are only supported'
 
         # save to tmp.zip to avoid overwriting current plugins
-        tmp_zip = Path(self.plugins_dir) / 'tmp.zip'
+        tmp_zip = Path(self.plugins_dir) / f'tmp_{random.randint(0, 999999)}.zip'
         if not tmp_zip.is_file():
             tmp_zip.touch()
             tmp_zip.chmod(mode=0o666)
