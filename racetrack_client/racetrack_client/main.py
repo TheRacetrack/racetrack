@@ -9,6 +9,7 @@ from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_config_setting, set_config_url_alias
+from racetrack_client.client.plugins import install_plugin, uninstall_plugin
 from racetrack_client.client.run import run_fatman_locally
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
@@ -138,6 +139,23 @@ def main():
     parser_logout.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
     parser_logout.set_defaults(func=_logout)
 
+    # racetrack plugin
+    parser_plugin = subparsers.add_parser('plugin', help='Manage Racetrack plugins')
+    subparsers_plugin = parser_plugin.add_subparsers()
+
+    # racetrack plugin install
+    parser_plugin_install = subparsers_plugin.add_parser('install', help='Install a plugin to a remote Racetrack server')
+    parser_plugin_install.add_argument('plugin_uri', help='location of the plugin file: local path or remote URL')
+    parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_install.set_defaults(func=_install_plugin)
+
+    # racetrack plugin uninstall
+    parser_plugin_install = subparsers_plugin.add_parser('uninstall', help='Uninstall plugin from a remote Racetrack server')
+    parser_plugin_install.add_argument('plugin_name', help='plugin name')
+    parser_plugin_install.add_argument('plugin_version', help='plugin version')
+    parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_install.set_defaults(func=_uninstall_plugin)
+
     args: argparse.Namespace = parser.parse_args()
 
     try:
@@ -200,3 +218,11 @@ def _logout(args: argparse.Namespace):
 
 def _run_local(args: argparse.Namespace):
     run_fatman_locally(args.workdir, args.racetrack_url, local_context=args.local_context, port=args.port)
+
+
+def _install_plugin(args: argparse.Namespace):
+    install_plugin(args.plugin_uri, args.racetrack_url)
+
+
+def _uninstall_plugin(args: argparse.Namespace):
+    uninstall_plugin(args.plugin_name, args.plugin_version, args.racetrack_url)

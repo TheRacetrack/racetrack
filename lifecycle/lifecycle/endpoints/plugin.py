@@ -24,11 +24,11 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         plugin_engine.upload_plugin(file.filename, file_bytes)
 
     @api.post('/plugin/upload/{filename}')
-    async def _upload_plugin_bytes(filename: str, request: Request):
+    async def _upload_plugin_bytes(filename: str, request: Request) -> PluginManifest:
         """Upload plugin from ZIP file sending raw bytes in body"""
         check_staff_user(request)
         file_bytes: bytes = await request.body()
-        plugin_engine.upload_plugin(filename, file_bytes)
+        return plugin_engine.upload_plugin(filename, file_bytes)
     
     @api.delete('/plugin/{plugin_name}/{plugin_version}')
     def _delete_plugin_by_version(plugin_name: str, plugin_version: str, request: Request):

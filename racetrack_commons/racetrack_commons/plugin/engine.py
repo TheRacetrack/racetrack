@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 import shutil
 import threading
 from typing import Callable, List, Optional
@@ -9,8 +10,9 @@ from watchdog.events import FileSystemEventHandler
 
 from racetrack_commons.plugin.loader import load_plugin_from_zip, load_plugins_from_dir, EXTRACTED_PLUGINS_DIR
 from racetrack_commons.plugin.plugin_manifest import PluginData, PluginManifest
-from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.log.errors import EntityNotFound
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.time import now, datetime_to_timestamp
 
@@ -97,46 +99,61 @@ class PluginEngine:
             self._record_last_change()
 
         def compare_changes():
-            new_timestamp = self._read_last_change_timestamp()
-            if self.last_change_timestamp != new_timestamp:
-                self.last_change_timestamp = new_timestamp
-                logger.info('Plugins modification detected, reloading plugins...')
-                self._load_plugins()
+            try:
+                new_timestamp = self._read_last_change_timestamp()
+                if self.last_change_timestamp != new_timestamp:
+                    self.last_change_timestamp = new_timestamp
+                    logger.info('Plugins modification detected, reloading plugins...')
+                    self._load_plugins()
+            except BaseException as e:
+                log_exception(ContextError('checking plugin changes', e))
 
         class ChangesHandler(FileSystemEventHandler):
             def on_created(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file creation notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
             def on_deleted(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file deletion notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
             def on_modified(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file modification notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
             def on_moved(self, event):
                 if Path(event.src_path).name == LAST_CHANGE_FILE:
                     logger.debug(f'file moving notified on {event.src_path}')
-                    threading.Thread(target=compare_changes, daemon=True).start()
+                    compare_changes()
 
         event_handler = ChangesHandler()
         observer = Observer()
         observer.schedule(event_handler, path=Path(self.plugins_dir).as_posix(), recursive=False)
         observer.start()
 
-    def upload_plugin(self, filename: str, file_bytes: bytes):
+        # inotify may not work on network filesystems
+        def _check_periodically():
+            while True:
+                time.sleep(60)
+                compare_changes()
+
+        threading.Thread(target=_check_periodically, daemon=True).start()
+
+
+    def upload_plugin(self, filename: str, file_bytes: bytes) -> PluginManifest:
         target_zip = Path(self.plugins_dir) / filename
         assert target_zip.suffix == '.zip', '.zip plugins are only supported'
 
         # save to tmp.zip to avoid overwriting current plugins
-        tmp_zip = Path(self.plugins_dir) / 'tmp.zip'
+        tmp_zip = Path(self.plugins_dir) / f'tmp_{random.randint(0, 999999)}.zip'
+        if not tmp_zip.is_file():
+            tmp_zip.touch()
+            tmp_zip.chmod(mode=0o666)
         tmp_zip.write_bytes(file_bytes)
-        tmp_zip.chmod(mode=0o666)
+        
         plugin_data = load_plugin_from_zip(tmp_zip)
         plugin_name = plugin_data.plugin_manifest.name
         plugin_version = plugin_data.plugin_manifest.version
@@ -150,6 +167,7 @@ class PluginEngine:
 
         self._load_plugins()
         self._record_last_change()
+        return plugin_data.plugin_manifest
         
     def delete_plugin_by_version(self, name: str, version: str):
         plugin_data = self.find_plugin(name, version)

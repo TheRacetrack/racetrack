@@ -5,14 +5,15 @@ import backoff
 
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.utils.request import ResponseError, Requests, RequestError
+from racetrack_commons.dir import project_root
 from racetrack_commons.entities.dto import EscDto
 from racetrack_commons.entities.esc_client import EscRegistryClient
 from racetrack_commons.entities.fatman_client import FatmanRegistryClient
 from racetrack_client.utils.auth import RT_AUTH_HEADER
+from racetrack_client.client_config.auth import set_user_auth
 from racetrack_client.client_config.client_config import ClientConfig
 from racetrack_client.client.deploy import send_deploy_request
-from racetrack_commons.dir import project_root
-from racetrack_client.client_config.auth import set_user_auth
+from racetrack_client.client.plugins import install_plugin
 
 INTERNAL_AUTH_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMzIyZTA4MDQtMzQyYi00MjQ5LWIzZTktNmY1MGVjZTZhYTRhIiwic3ViamVjdCI6ImUyZV90ZXN0Iiwic3ViamVjdF90eXBlIjoiaW50ZXJuYWwiLCJzY29wZXMiOlsiZnVsbF9hY2Nlc3MiXX0.Tt_o4z22cRNfqBQ3EX0mA2gNKSvv4m5beganNRhheos'
 ADMIN_AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI'
@@ -126,3 +127,11 @@ def _verify_fatman_logs(fatman_name: str, user_auth: str):
     frc = FatmanRegistryClient(auth_token=user_auth)
     logs = frc.get_runtime_logs(fatman_name, 'latest')
     assert len(logs) > 1, 'Unexpected short log from Fatman'
+
+
+def _install_plugin(plugin_uri: str):
+    lifecycle_url = os.environ['LIFECYCLE_URL']
+    client_config = ClientConfig()
+    set_user_auth(client_config, lifecycle_url, ADMIN_AUTH_TOKEN)
+    print(f'Installing plugin {plugin_uri}...')
+    install_plugin(plugin_uri, lifecycle_url, client_config)

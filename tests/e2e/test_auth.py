@@ -13,7 +13,7 @@ from racetrack_commons.entities.dto import EscDto
 from racetrack_commons.entities.esc_client import EscRegistryClient
 from racetrack_commons.entities.fatman_client import FatmanRegistryClient
 
-from e2e.utils import ADMIN_AUTH_TOKEN, INTERNAL_AUTH_TOKEN, _configure_env, _create_esc, _delete_workload, _wait_for_components
+from e2e.utils import ADMIN_AUTH_TOKEN, INTERNAL_AUTH_TOKEN, _configure_env, _create_esc, _delete_workload, _wait_for_components, _install_plugin
 
 TEST_SUITE = os.getenv('TEST_SUITE')
 suite_auth = pytest.mark.skipif(
@@ -25,6 +25,8 @@ suite_auth = pytest.mark.skipif(
 def test_deploy_fatman_chain():
     _configure_env()
     _wait_for_components()
+
+    _install_plugin('https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip')
     esc = _create_esc()
 
     _delete_workload('adder')
@@ -41,6 +43,8 @@ def test_deploy_fatman_chain():
 def test_deploy_unauthenticated():
     _configure_env()
     _wait_for_components()
+
+    _install_plugin('https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip')
     lifecycle_url = os.environ['LIFECYCLE_URL']
     expect_fail = is_auth_required(lifecycle_url)
     sample_path = 'sample/python-class'
@@ -61,6 +65,8 @@ def test_deploy_unauthenticated():
 def test_deploy_wrong_authentication():
     _configure_env()
     _wait_for_components()
+
+    _install_plugin('https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip')
     lifecycle_url = os.environ['LIFECYCLE_URL']
     sample_path = 'sample/python-class'
     print(f'Deploying with wrong authentication {sample_path} job...')

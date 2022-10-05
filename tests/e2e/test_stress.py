@@ -4,7 +4,7 @@ import pytest
 from racetrack_client.log.context_error import ContextError
 from racetrack_commons.entities.fatman_client import FatmanRegistryClient
 
-from e2e.utils import ADMIN_AUTH_TOKEN, _configure_env, _delete_workload, _deploy
+from e2e.utils import ADMIN_AUTH_TOKEN, _configure_env, _delete_workload, _deploy, _install_plugin
 
 suite_full = pytest.mark.skipif(
     os.getenv('TEST_SUITE') != 'full', reason='TEST_SUITE value != full'
@@ -14,6 +14,8 @@ suite_full = pytest.mark.skipif(
 @suite_full
 def test_deploy_delete_stress():
     _configure_env()
+    _install_plugin('https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip')
+
     start = time.time()
 
     for i in range(5):

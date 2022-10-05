@@ -43,6 +43,6 @@ def get_user_auth(client_config: ClientConfig, lifecycle_url: str) -> str:
         return client_config.user_auths[lifecycle_url]
 
     if is_auth_required(lifecycle_url):
-        raise AuthError(f"missing login. You need to do: racetrack login {lifecycle_url} <token>")
+        raise AuthError(f"missing auth token for {lifecycle_url}. You need to do: racetrack login {lifecycle_url} <token>")
 
     return ''

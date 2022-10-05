@@ -39,11 +39,7 @@ class DockerBuilder(ImageBuilder):
             plugin_engine: PluginEngine,
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
-        job_templates = _gather_job_templates(plugin_engine)
-        assert job_templates, f'language {manifest.lang} is not supported. Extend Racetrack with job type plugins'
-        assert manifest.lang in job_templates, f'language {manifest.lang} is not supported, supported are: {list(job_templates.keys())}'
-
-        base_image_path, template_path, job_type_version = job_templates[manifest.lang]
+        base_image_path, template_path, job_type_version = _load_job_template(plugin_engine, manifest.lang)
 
         _wait_for_docker_engine_ready()
 
@@ -85,6 +81,21 @@ class DockerBuilder(ImageBuilder):
             raise ContextError('building Fatman image') from e
 
         return full_image, logs, None
+
+
+@backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
+def _load_job_template(
+    plugin_engine: PluginEngine,
+    lang: str,
+) -> Tuple[Path, Path, str]:
+    """
+    Load job type.
+    In case it's not found, retry attempts due to possible delayed plugins
+    """
+    job_templates = _gather_job_templates(plugin_engine)
+    assert job_templates, f'language {lang} is not supported. Extend Racetrack with job type plugins'
+    assert lang in job_templates, f'language {lang} is not supported, supported are: {list(job_templates.keys())}'
+    return job_templates[lang]
 
 
 def _build_base_image(
@@ -173,7 +184,7 @@ def _image_exists_in_registry(image_name: str):
     This command is experimental feature in docker.
     """
     try:
-        shell(f'docker manifest inspect --insecure {image_name}')
+        shell(f'docker manifest inspect --insecure {image_name}', print_stdout=False)
         return True
     except CommandError as e:
         if e.returncode == 1 and ("manifest unknown" in e.stdout or "no such manifest" in e.stdout):

@@ -28,7 +28,10 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
     Loaded plugins will be sorted by priority, then by plugin version ascending.
     """
     plugins_path = Path(plugins_dir)
-    plugins_path.mkdir(parents=True, exist_ok=True)
+    if not plugins_path.is_dir():
+        plugins_path.mkdir(parents=True, exist_ok=True)
+        plugins_path.chmod(mode=0o777)
+
     plugins_data: List[PluginData] = []
 
     for plugin_zip_path in sorted(plugins_path.glob('*.zip')):

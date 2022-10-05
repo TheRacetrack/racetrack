@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Plugins can be installed by means of racetrack-client command
+  `racetrack install <plugin_uri> <racetrack_url>`,
+  where `plugin_uri` can be either local file path or a remote URL.
+  Plugins can be uninstalled accordingly with
+  `racetrack uninstall <plugin_name> <plugin_version> <racetrack_url>`.
+
 ### Changed
 - All job types are individual plugins now.
   Racetrack starts without any job type by default.
