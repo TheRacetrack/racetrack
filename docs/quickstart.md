@@ -15,13 +15,13 @@ Clone and setup racetrack repository:
 ```shell
 git clone https://github.com/TheRacetrack/racetrack
 cd racetrack
-make setup # Setup & activate Python venv
+make setup-racetrack-client # Setup & activate Python venv
 . venv/bin/activate
 ```
 
 Start Racetrack components and wait a while until it's operational:
 ```shell
-make up
+make compose-up-pull
 ```
 
 Install `racetrack` CLI client:
@@ -111,11 +111,11 @@ cd ../racetrack && make down
 # Clone and setup racetrack repository
 git clone https://github.com/TheRacetrack/racetrack
 cd racetrack
-make setup
+make setup-racetrack-client
 . venv/bin/activate
 
 # Start Racetrack components
-make up
+make compose-up-pull
 LIFECYCLE_URL=http://localhost:7102 ./utils/wait-for-lifecycle.sh # and wait a while until it's operational
 
 # Login to Racetrack with an admin user

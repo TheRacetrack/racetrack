@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: lifecycle/Dockerfile
-    image: racetrack/lifecycle:latest
+    image: ghcr.io/theracetrack/racetrack/lifecycle:latest
     ports:
       - "7102:7102"
     networks:
@@ -22,7 +22,6 @@ services:
     env_file:
       - ./.env
     environment:
-      RK_MOCK: 'true'
       DJANGO_DEBUG: 'True'
       CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
     command: >
@@ -36,7 +35,7 @@ services:
     build:
       context: .
       dockerfile: lifecycle/Dockerfile
-    image: racetrack/lifecycle:latest
+    image: ghcr.io/theracetrack/racetrack/lifecycle:latest
     networks:
       - racetrack_default
     extra_hosts:
@@ -50,7 +49,6 @@ services:
     env_file:
       - ./.env
     environment:
-      RK_MOCK: 'true'
       DJANGO_DEBUG: 'True'
       CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
     command: >
@@ -64,7 +62,7 @@ services:
     build:
       context: .
       dockerfile: image_builder/Dockerfile
-    image: racetrack/image-builder:latest
+    image: ghcr.io/theracetrack/racetrack/image-builder:latest
     ports:
       - "7101:7101"
     networks:
@@ -88,7 +86,7 @@ services:
     build:
       context: .
       dockerfile: dashboard/Dockerfile
-    image: racetrack/dashboard:latest
+    image: ghcr.io/theracetrack/racetrack/dashboard:latest
     ports:
       - "7103:7103"
     networks:
@@ -115,7 +113,7 @@ services:
     build:
       context: pub/
       dockerfile: Dockerfile
-    image: racetrack/pub:latest
+    image: ghcr.io/theracetrack/racetrack/pub:latest
     ports:
       - "7105:7105"
     networks:
@@ -147,7 +145,7 @@ services:
       - racetrack_default
 
   pgbouncer:
-    image: racetrack/pgbouncer:latest
+    image: ghcr.io/theracetrack/racetrack/pgbouncer:latest
     build:
       context: postgres/pgbouncer
       dockerfile: Dockerfile

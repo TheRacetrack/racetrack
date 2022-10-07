@@ -7,7 +7,6 @@ services:
       - ./lifecycle/tests/sample/docker-daemon.yaml:/etc/racetrack/lifecycle/config.yaml
       - ./utils/docker-daemon/certs:/certs
     environment:
-      RK_MOCK: 'true'
       DJANGO_DEBUG: 'True'
       CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
       DOCKER_HOST: tcp://host.docker.internal:2376
@@ -21,7 +20,6 @@ services:
       - ./lifecycle/tests/sample/docker-daemon.yaml:/etc/racetrack/lifecycle/config.yaml
       - ./utils/docker-daemon/certs:/certs
     environment:
-      RK_MOCK: 'true'
       DJANGO_DEBUG: 'True'
       CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
       DOCKER_HOST: tcp://host.docker.internal:2376

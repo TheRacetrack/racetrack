@@ -211,7 +211,7 @@ runtime_env:
   TORCH_MODEL_ZOO: zoo
 ```
 
-When using your runtime vars, don't use the following reserved names: `PUB_URL`, `FATMAN_NAME`, `RK_HOST`.
+When using your runtime vars, don't use the following reserved names: `PUB_URL`, `FATMAN_NAME`.
 
 ### Secret variables
 If you need to set secret environment vars during building your job,

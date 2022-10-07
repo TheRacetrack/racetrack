@@ -9,7 +9,7 @@ test:
 
 run:
 		-docker network create racetrack_default
-		DJANGO_DB_TYPE=sqlite RK_MOCK=true DEPLOYMENT_TYPE=localhost \
+		DJANGO_DB_TYPE=sqlite DEPLOYMENT_TYPE=localhost \
 		SECRET_KEY=dev CONFIG_FILE=tests/sample/local.yaml \
 		AUTH_KEY=QaPU2UW8r7KXfRtLJVCKahCK93TKhVB5 \
 		python -m lifecycle serve
