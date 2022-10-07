@@ -62,6 +62,24 @@ def uninstall_plugin(
     logger.info(f'Plugin {plugin_name} {plugin_version} has been uninstalled from {lifecycle_url}')
 
 
+def list_installed_plugins(lifecycle_url: str):
+    """List plugins installed on a remote Racetrack server"""
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/plugins',
+        headers=get_auth_request_headers(user_auth),
+    )
+    plugin_manifests = parse_response_object(r, 'Lifecycle response error')
+    plugin_infos = [f'{p["name"]}=={p["version"]}' for p in plugin_manifests]
+
+    logger.info(f'Plugins currently installed on {lifecycle_url} ({len(plugin_infos)}):')
+    for info in plugin_infos:
+        print(info)
+
+
 def _load_plugin_file(plugin_uri: str) -> Tuple[str, bytes]:
     local_file = Path(plugin_uri)
     if local_file.is_file():

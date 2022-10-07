@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plugins can be uninstalled with a new command:
   `racetrack plugin uninstall <plugin_name> <plugin_version> <racetrack_url>`.
 
+- List of currently installed plugins can be checked with:
+  `racetrack plugin list <racetrack_url>`.
+
 ### Changed
 - All job types are individual plugins now.
   Racetrack starts without any job type by default.

@@ -56,3 +56,8 @@ Plugins can be uninstalled with a command:
 ```
 racetrack plugin uninstall <plugin_name> <plugin_version> <racetrack_url>
 ```
+
+List of currently installed plugins can be checked with:
+```
+racetrack plugin list <racetrack_url>
+```
