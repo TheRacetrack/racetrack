@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Plugins can be installed by means of racetrack-client command
-  `racetrack install <plugin_uri> <racetrack_url>`,
-  where `plugin_uri` can be either local file path or a remote URL.
-  Plugins can be uninstalled accordingly with
-  `racetrack uninstall <plugin_name> <plugin_version> <racetrack_url>`.
+  `racetrack plugin install <plugin_uri> <racetrack_url>`,
+  where `plugin_uri` can be either:
+  - local file path (eg. `python3-job-type-2.4.0.zip`),
+  - URL to a remote HTTP file (eg. `https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
+  - GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) - it takes the ZIP file from the latest release.
+  - GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) - it takes the ZIP file from the specific release.
+
+- Plugins can be uninstalled with a new command:
+  `racetrack plugin uninstall <plugin_name> <plugin_version> <racetrack_url>`.
 
 ### Changed
 - All job types are individual plugins now.
@@ -34,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of `3.8-slim-buster`.
 - Plugins are distributed as ZIP files.
   They can be installed and uninstalled in a Dashboard's Administration page.
-  See [plugins.md](development/plugins.md).
+  See [using-plugins.md](development/using-plugins.md).
 
 ## [2.2.1] - 2022-08-25
 ### Changed
@@ -79,7 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Plugins can provide its own Fatman Deployers
   to deploy workloads to other types of platforms.
-  See [plugins.md](development/plugins.md) and
+  See [developing-plugins.md](development/developing-plugins.md) and
   [Docker Daemon Deployer Plugin](https://github.com/TheRacetrack/plugin-docker-daemon-deployer)
 
 ### Changed
@@ -180,7 +185,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See [overlays sample](../sample/overlays).
 - Job types can be extended with plugins.
   Check out [sample job-type plugin](https://github.com/TheRacetrack/plugin-rust-job-type)
-  and [plugins.md](development/plugins.md) to see a guide how to create and activate plugins.
+  and [developing-plugins.md](development/developing-plugins.md) to see a guide how to create and activate plugins.
 - Racetrack documentation is now served at "Docs" tab in Dashboard.
   Check out "Home" page to get started.
 - Plugins can extend Racetrack documentation with its own pages written in Markdown
@@ -320,7 +325,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2022-01-17
 ### Added
 - Racetrack functionality can be extended with plugins.
-  Check out [plugins.md](development/plugins.md) to see a guide how to create and activate plugins.
+  Check out [developing-plugins.md](development/developing-plugins.md) to see a guide how to create and activate plugins.
 
 ### Changed
 - Whole directories are handled in `static_endpoints` to serve recursively all of its content.

@@ -385,7 +385,7 @@ We won't build this Dockerfile now, it will be handled by Racetrack once the job
 `plugin.py` is a file that is read by the Racetrack instance, when loading the plugin.
 It should contain the `Plugin` class with the implemented methods,
 depending on the functionality that it targets to provide.
-See [plugins.md](./plugins.md) for the list of all supported hooks.
+See [developing-plugins.md](./developing-plugins.md) for the list of all supported hooks.
 
 We want to provide job types with this plugin,
 so let's implement `fatman_job_types` method.

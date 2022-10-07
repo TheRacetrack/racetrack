@@ -1,40 +1,4 @@
-# Racetrack plugins
-Racetrack instance might be enriched by plugins that add 
-customized, tailored functionality to a generic Racetrack.
-
-## Known plugins
-These are the public Racetrack plugins that are commonly available to be installed:
-
-- Job types:
-
-  - [github.com/TheRacetrack/plugin-python-job-type](https://github.com/TheRacetrack/plugin-python-job-type) -
-    Python 3 Job Type
-  - [github.com/TheRacetrack/plugin-docker-http-job-type](https://github.com/TheRacetrack/plugin-docker-http-job-type) -
-    Dockerfile-based Job Type
-  - [github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type) -
-    Golang (Go) Job Type
-  - [github.com/TheRacetrack/plugin-rust-job-type](https://github.com/TheRacetrack/plugin-rust-job-type) -
-    Rust Job Type
-  - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
-    Docker Proxy jobs (like Drupal or Sphinx)
-
-- Deployers:
-
-  - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
-    deployer to remote Docker Daemon
-
-- Others:
-
-  - [github.com/TheRacetrack/plugin-teams-notifications](https://github.com/TheRacetrack/plugin-teams-notifications) -
-    Sending notifications to Teams channel
-
-## Installing / Uninstalling plugin
-To activate the plugin in Racetrack, you need the ZIP plugin file.
-Go to the Dashboard Administration page
-(you need to be privileged, staff user to see this tab)
-and upload the zipped plugin there.
-
-To disable a plugin, click "Delete" button next to a plugin.
+# Developing plugins
 
 ## How does plugin work?
 Loading a plugin happens in Racetrack in a following manner:

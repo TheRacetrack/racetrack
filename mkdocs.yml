@@ -42,10 +42,11 @@ nav:
     - Changelog: docs/CHANGELOG.md
     - Fatman Manifest File Schema: docs/manifest-schema.md
     - Python Job Type: docs/job_types/job_python3.md
+    - Using plugins: docs/development/using-plugins.md
     - Glossary: docs/glossary.md
   - Development:
     - Developer manual: docs/development/develop.md
-    - Developing plugins: docs/development/plugins.md
+    - Developing plugins: docs/development/developing-plugins.md
     - Job type plugins: docs/development/plugins-job-types.md
     - Plugins Bundler: utils/plugin_bundler/README.md
   - Administering:

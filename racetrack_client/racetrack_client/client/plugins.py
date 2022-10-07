@@ -74,8 +74,13 @@ def _load_plugin_file(plugin_uri: str) -> Tuple[str, bytes]:
         return download_file(plugin_uri)
 
     if plugin_uri.startswith('github.com/'):
-        logger.debug(f'{plugin_uri} recognized as a GitHub repository')
-        return _get_latest_github_release(plugin_uri)
+        if '==' in plugin_uri:
+            logger.debug(f'{plugin_uri} recognized as a specific version of a GitHub repository')
+            parts = plugin_uri.split('==')
+            return _get_github_release(parts[0], parts[1])
+        else:
+            logger.debug(f'{plugin_uri} recognized as a GitHub repository')
+            return _get_latest_github_release(plugin_uri)
 
     raise ValueError(f'Unknown plugin location: {plugin_uri}')
 
@@ -100,6 +105,16 @@ def _get_latest_github_release(repo_name: str) -> Tuple[str, bytes]:
     latest_release = releases[-1]
     logger.info(f'getting latest version {latest_release.version} from the {repo_name} repository')
     return download_file(latest_release.download_url)
+
+
+def _get_github_release(repo_name: str, version: str) -> Tuple[str, bytes]:
+    releases = _list_github_releases(repo_name)
+    assert releases, f'repository {repo_name} doesn\'t have any valid release'
+    filtered_releases = [r for r in releases if r.version == version]
+    assert filtered_releases, f'repository {repo_name} doesn\'t have a release with version {version}'
+    release = filtered_releases[0]
+    logger.info(f'getting version {release.version} from the {repo_name} repository')
+    return download_file(release.download_url)
 
 
 def _list_github_releases(repo_name: str) -> List[PluginRelease]:

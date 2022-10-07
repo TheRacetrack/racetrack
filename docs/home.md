@@ -10,6 +10,8 @@ If you are:
     - [Python Job Type](./job_types/job_python3.md) - specifics for jobs written in Python
     - [Dockerfile Job Type](./job_types/job_docker.md) - Dockerfile jobs specifics
     - [Golang Job Type](./job_types/job_golang.md) - for jobs written in Go
+    - [Using plugins](./development/using-plugins.md) - 
+      how to install plugins
     - [Glossary](./glossary.md) - terminology explained
     - [CHANGELOG](./CHANGELOG.md) - latest user-facing, notable changes
 
@@ -20,5 +22,5 @@ If you are:
 - Racetrack Developer, see:
     - [Developer manual](./development/develop.md) - 
       development setup, deployment, testing, releasing version
-    - [Racetrack plugins](./development/plugins.md) - 
-      how to create and install plugins
+    - [Developing plugins](./development/developing-plugins.md) - 
+      how to create plugins

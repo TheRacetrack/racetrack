@@ -145,7 +145,7 @@ def main():
 
     # racetrack plugin install
     parser_plugin_install = subparsers_plugin.add_parser('install', help='Install a plugin to a remote Racetrack server')
-    parser_plugin_install.add_argument('plugin_uri', help='location of the plugin file: local path or remote URL')
+    parser_plugin_install.add_argument('plugin_uri', help='location of the plugin file: local file path, URL to a remote HTTP file or repository name')
     parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
     parser_plugin_install.set_defaults(func=_install_plugin)
 
