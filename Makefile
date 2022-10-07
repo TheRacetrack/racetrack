@@ -153,7 +153,7 @@ compose-up-service: compose-volumes
 
 # Start containers from pulled images (without building)
 compose-up-pull: registry compose-volumes
-	$(docker-compose) up -d --no-build --pull=always --wait
+	$(docker-compose) up -d --no-build --pull=always
 
 compose-up-docker-daemon: registry docker-build compose-volumes
 	$(docker-compose) -f docker-compose.yaml \
