@@ -3,6 +3,7 @@ repo_name: TheRacetrack/racetrack
 repo_url: https://github.com/TheRacetrack/racetrack
 site_author: TheRacetrack
 docs_dir: .
+edit_uri: ''
 theme:
   name: material
   icon:
@@ -23,6 +24,8 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
+  features:
+    - navigation.expand
 markdown_extensions:
   - admonition
   - pymdownx.highlight:
@@ -34,20 +37,27 @@ plugins:
   - exclude:
       glob:
         - venv/*
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/TheRacetrack/racetrack
+      name: Racetrack on GitHub
 
 nav:
-  - General:
-    - Introduction: README.md
-    - Using Racetrack: docs/user.md
-    - Changelog: docs/CHANGELOG.md
+  - Introduction: README.md
+  - Using Racetrack:
+    - Quickstart: docs/quickstart.md
+    - User Guide: docs/user.md
     - Fatman Manifest File Schema: docs/manifest-schema.md
     - Python Job Type: docs/job_types/job_python3.md
+  - Plugins:
     - Using plugins: docs/development/using-plugins.md
-    - Glossary: docs/glossary.md
-  - Development:
-    - Developer manual: docs/development/develop.md
     - Developing plugins: docs/development/developing-plugins.md
     - Job type plugins: docs/development/plugins-job-types.md
     - Plugins Bundler: utils/plugin_bundler/README.md
-  - Administering:
-    - Administering Racetrack: docs/admin.md
+  - Development:
+    - Developer manual: docs/development/develop.md
+    - Deployment: docs/development/deployment.md
+  - Administering: docs/admin.md
+  - Changelog: docs/CHANGELOG.md
+  - Glossary: docs/glossary.md

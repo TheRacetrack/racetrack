@@ -6,27 +6,24 @@ customized, tailored functionality to a generic Racetrack.
 These are the known, public Racetrack plugins that are commonly available to be installed:
 
 - Job types:
-
-  - [github.com/TheRacetrack/plugin-python-job-type](https://github.com/TheRacetrack/plugin-python-job-type) -
-    Python 3 Job Type
-  - [github.com/TheRacetrack/plugin-docker-http-job-type](https://github.com/TheRacetrack/plugin-docker-http-job-type) -
-    Dockerfile-based Job Type
-  - [github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type) -
-    Golang (Go) Job Type
-  - [github.com/TheRacetrack/plugin-rust-job-type](https://github.com/TheRacetrack/plugin-rust-job-type) -
-    Rust Job Type
-  - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
-    Docker Proxy jobs (like Drupal or Sphinx)
+    - [github.com/TheRacetrack/plugin-python-job-type](https://github.com/TheRacetrack/plugin-python-job-type) -
+      Python 3 Job Type
+    - [github.com/TheRacetrack/plugin-docker-http-job-type](https://github.com/TheRacetrack/plugin-docker-http-job-type) -
+      Dockerfile-based Job Type
+    - [github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type) -
+      Golang (Go) Job Type
+    - [github.com/TheRacetrack/plugin-rust-job-type](https://github.com/TheRacetrack/plugin-rust-job-type) -
+      Rust Job Type
+    - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
+      Docker Proxy jobs (like Drupal or Sphinx)
 
 - Deployers:
-
-  - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
-    deployer to remote Docker Daemon
+    - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
+      deployer to remote Docker Daemon
 
 - Others:
-
-  - [github.com/TheRacetrack/plugin-teams-notifications](https://github.com/TheRacetrack/plugin-teams-notifications) -
-    Sending notifications to Teams channel
+    - [github.com/TheRacetrack/plugin-teams-notifications](https://github.com/TheRacetrack/plugin-teams-notifications) -
+      Sending notifications to Teams channel
 
 ## Installing / Uninstalling plugin
 ### From a dashboard
