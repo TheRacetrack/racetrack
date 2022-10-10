@@ -12,7 +12,7 @@ def test_extend_base_manifest():
         (Path(path) / 'fatman-base.yaml').write_text("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
@@ -36,7 +36,7 @@ resources:
         manifest = load_validated_manifest(Path(path) / 'fatman-overlay.yaml')
         assert manifest.extends is None
         assert manifest.name == 'overlay-example'
-        assert manifest.lang == 'golang'
+        assert manifest.lang == 'golang:latest'
         assert manifest.replicas == 3
         assert str(manifest.resources.memory_min) == '500M'
         assert str(manifest.resources.cpu_min) == '100m'

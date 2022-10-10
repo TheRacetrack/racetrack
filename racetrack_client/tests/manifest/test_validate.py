@@ -14,7 +14,7 @@ def test_valid_manifest_file():
     validate_tmp_manifest("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
@@ -26,7 +26,7 @@ def test_read_manifest_fields():
     manifest = validate_tmp_manifest("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
@@ -47,7 +47,7 @@ def test_directory_with_valid_manifest():
         (Path(path) / 'fatman.yaml').write_text("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
@@ -63,7 +63,7 @@ def test_invalid_data_type():
         validate_tmp_manifest("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 git: its-a-string-you-moron
 """)
     assert "value is not a valid dict" in str(excinfo.value)
@@ -86,7 +86,7 @@ def test_superfluous_fields():
 name: golang-function
 surname: Moron
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
@@ -100,7 +100,7 @@ def test_invalid_owner_email():
         validate_tmp_manifest("""
 name: golang-function
 owner_email: moron
-lang: golang
+lang: golang:latest
 git:
   remote: https://github.com/TheRacetrack/racetrack
 """)
