@@ -73,15 +73,17 @@ class DockerBuilder(ImageBuilder):
 
         try:
             logger.info(f'building Fatman image: {full_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
-            logs = build_container_image(full_image, dockerfile_path, workspace, metric_labels, logs_filename)
-            logger.info(f'Fatman image has been built: {full_image}')
+            with wrap_context('building fatman image'):
+                logs = build_container_image(full_image, dockerfile_path, workspace, metric_labels, logs_filename)
+                logger.info(f'Fatman image has been built: {full_image}')
 
             if manifest.docker and manifest.docker.dockerfile_path:
-                user_module_image = get_fatman_user_module_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
-                logger.info(f'building Dockerfile-originated user-module image: {user_module_image}')
-                dockerfile_path = workspace / manifest.docker.dockerfile_path
-                logs = build_container_image(user_module_image, dockerfile_path, workspace, metric_labels, logs_filename)
-                logger.info(f'finished building Dockerfile-originated user-module image: {user_module_image}')
+                with wrap_context('building Dockerfile-originated user-module image'):
+                    user_module_image = get_fatman_user_module_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
+                    logger.info(f'building Dockerfile-originated user-module image: {user_module_image}')
+                    dockerfile_path = workspace / manifest.docker.dockerfile_path
+                    logs = build_container_image(user_module_image, dockerfile_path, workspace, metric_labels, logs_filename)
+                    logger.info(f'finished building Dockerfile-originated user-module image: {user_module_image}')
             metric_images_built.inc()
         except CommandError as e:
             metric_images_building_errors.inc()
@@ -100,9 +102,9 @@ def _build_base_image(
     deployment_id: str,
     metric_labels: Dict[str, str],
 ) -> str:
-    with wrap_context('building base image'):
-        base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{job_type.lang_name}:{job_type.version}')
-        if not _image_exists_in_registry(base_image):
+    base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{job_type.lang_name}:{job_type.version}')
+    if not _image_exists_in_registry(base_image):
+        with wrap_context('building base image'):
             base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
             logger.info(f'base image not found in a registry, rebuilding {base_image}, '
                         f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
@@ -114,7 +116,7 @@ def _build_base_image(
                 base_logs_filename,
             )
             logger.info(f'base Fatman image has been built and pushed: {base_image}')
-        return base_image
+    return base_image
 
 
 def build_container_image(
@@ -148,19 +150,19 @@ def _image_exists_in_registry(image_name: str):
     Check if an image (with tag) exists in a remote Docker registry (local, private or public)
     This command is experimental feature in docker.
     """
-    try:
-        shell(f'docker manifest inspect --insecure {image_name}', print_stdout=False)
-        return True
-    except CommandError as e:
-        if e.returncode == 1 and ("manifest unknown" in e.stdout or "no such manifest" in e.stdout):
-            return False
-        raise e
+    with wrap_context('checking if image exists in registry'):
+        try:
+            shell(f'docker manifest inspect --insecure {image_name}', print_stdout=False)
+            return True
+        except CommandError as e:
+            if e.returncode == 1 and ("manifest unknown" in e.stdout or "no such manifest" in e.stdout):
+                return False
+            raise e
 
 
 @backoff.on_exception(backoff.fibo, CommandError, max_value=3, max_time=30, jitter=None)
 def _wait_for_docker_engine_ready():
     shell('docker ps')
-
 
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
@@ -173,7 +175,8 @@ def _load_job_type(
     Load job type.
     In case it's not found, retry attempts due to possible delayed plugins loading
     """
-    job_types = _gather_job_types(config, plugin_engine)
+    with wrap_context('gathering available job types'):
+        job_types = _gather_job_types(config, plugin_engine)
     assert job_types, f'language {lang} is not supported. Extend Racetrack with job type plugins'
     assert lang in job_types, f'language {lang} is not supported, supported are: {sorted(job_types.keys())}'
     return job_types[lang]
