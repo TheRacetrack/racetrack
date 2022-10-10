@@ -5,11 +5,11 @@ and how to deploy a sample job there.
 
 ## Prerequisites
 
-- Python 3.8+
-- [Docker v20.10+](https://docs.docker.com/engine/install/ubuntu/)
+- Python 3.8 (or higher)
+- [Docker v20.10 (or higher)](https://docs.docker.com/engine/install/ubuntu/)
   managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 
-## 1. Setting up local environment (optional)
+## 1. Set up a local environment (optional)
 For your convenience use virtual environment:
 ```shell
 mkdir -p racetrack && cd racetrack
@@ -17,27 +17,27 @@ python3 -m venv venv
 . venv/bin/activate
 ```
 
-## 2. Setting up local Racetrack
+## 2. Set up local Racetrack
 
-Start Racetrack components:
+Start Racetrack components with an utility script:
 ```shell
 curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash -s
 ```
 
 Racetrack is now ready to accept `python3` jobs at [localhost:7102](http://localhost:7102).
 
-## 3. Installing Racetrack client
+## 3. Install Racetrack client
 
 Install `racetrack` CLI client:
 ```
 pip3 install --upgrade racetrack-client
 ```
 
-## 2. Deploying a Job
+## 4. Deploy a Job
 
 Let's create a model which purpose is to add numbers.
 
-Create `sample/entrypoint.py` file containing the logic:
+Create `sample/entrypoint.py` file with your application logic:
 ```python
 class Entrypoint:
     def perform(self, a: float, b: float) -> float:
@@ -62,22 +62,22 @@ python:
 
 Finally, submit your job to Racetrack:
 ```shell
-racetrack deploy sample http://localhost:7102 --context-local
+racetrack deploy sample/ http://localhost:7102 --context-local
 ```
 
 This will convert your source code to a REST microservice workload, called "Fatman".
 
-## 3. Calling a fatman
+## 5. Call a fatman
 
 You can find your application on the Racetrack Dashboard,
 which is available at [http://localhost:7103/dashboard](http://localhost:7103/dashboard)
 (use default login `admin` with password `admin`).
 
-Also, you should get the link to your Fatman from the `racetrack-client` output.
+Also, you should get the link to your Fatman from the `racetrack` client output.
 Check it out at [http://localhost:7105/pub/fatman/adder/0.0.1](http://localhost:7105/pub/fatman/adder/0.0.1).
-
 This opens a SwaggerUI page, from which you can call your function
 (try `/perform` endpoint with `{"a": 40, "b": 2}` body).
+
 You can do it from CLI with an HTTP client as well:
 ```shell
 curl -X POST "http://localhost:7105/pub/fatman/adder/latest/api/v1/perform" \
@@ -87,7 +87,7 @@ curl -X POST "http://localhost:7105/pub/fatman/adder/latest/api/v1/perform" \
 # Expect: 42
 ```
 
-## 4. Clean up
+## 6. Clean up
 
 Tear down all the components:
 ```shell
