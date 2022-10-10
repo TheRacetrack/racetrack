@@ -29,6 +29,14 @@ from racetrack_commons.plugin.engine import PluginEngine
 logger = get_logger(__name__)
 
 
+@dataclass
+class JobTypeVersion:
+    lang_name: str
+    version: str  # semantic version of the job type
+    base_image_path: Path  # base Dockerfile path
+    template_path: Path  # fatman template Dockerfile path
+
+
 class DockerBuilder(ImageBuilder):
     def build(
         self,
@@ -42,7 +50,7 @@ class DockerBuilder(ImageBuilder):
         plugin_engine: PluginEngine,
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
-        base_image_path, template_path, job_type_version = _load_job_type(config, plugin_engine, manifest.lang)
+        job_type: JobTypeVersion = _load_job_type(config, plugin_engine, manifest.lang)
 
         _wait_for_docker_engine_ready()
 
@@ -53,12 +61,12 @@ class DockerBuilder(ImageBuilder):
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
 
-        base_image = _build_base_image(config, manifest, base_image_path, job_type_version, deployment_id, metric_labels)
+        base_image = _build_base_image(config, job_type, deployment_id, metric_labels)
 
         with wrap_context('templating Dockerfile'):
             dockerfile_path = workspace / '.fatman.Dockerfile'
             racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
-            template_dockerfile(manifest, template_path, dockerfile_path, base_image,
+            template_dockerfile(manifest, job_type.template_path, dockerfile_path, base_image,
                                 git_version, racetrack_version, env_vars)
 
         full_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
@@ -88,22 +96,20 @@ class DockerBuilder(ImageBuilder):
 
 def _build_base_image(
     config: Config,
-    manifest: Manifest,
-    base_image_path: Path,
-    job_type_version: str,
+    job_type: JobTypeVersion,
     deployment_id: str,
     metric_labels: Dict[str, str],
 ) -> str:
     with wrap_context('building base image'):
-        base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{manifest.lang}:{job_type_version}')
+        base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{job_type.lang_name}:{job_type.version}')
         if not _image_exists_in_registry(base_image):
             base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
             logger.info(f'base image not found in a registry, rebuilding {base_image}, '
                         f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
             build_container_image(
                 base_image,
-                base_image_path,
-                base_image_path.parent,
+                job_type.base_image_path,
+                job_type.base_image_path.parent,
                 metric_labels,
                 base_logs_filename,
             )
@@ -156,20 +162,13 @@ def _wait_for_docker_engine_ready():
     shell('docker ps')
 
 
-@dataclass
-class JobTypeVersion:
-    lang_name: str
-    version: str
-    base_dockerfile: Path
-    fatman_template_dockerfile: Path
-
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
 def _load_job_type(
     config: Config,
     plugin_engine: PluginEngine,
     lang: str,
-) -> Tuple[Path, Path, str]:
+) -> JobTypeVersion:
     """
     Load job type.
     In case it's not found, retry attempts due to possible delayed plugins loading
@@ -177,8 +176,7 @@ def _load_job_type(
     job_types = _gather_job_types(config, plugin_engine)
     assert job_types, f'language {lang} is not supported. Extend Racetrack with job type plugins'
     assert lang in job_types, f'language {lang} is not supported, supported are: {sorted(job_types.keys())}'
-    job_type: JobTypeVersion = job_types[lang]
-    return job_type.base_dockerfile, job_type.fatman_template_dockerfile, job_type.version
+    return job_types[lang]
 
 
 def _gather_job_types(
