@@ -88,7 +88,8 @@ which is available at [http://localhost:7103/dashboard](http://localhost:7103/da
 Also, you should get the link to your Fatman from the `racetrack-client` output.
 Check it out at [http://localhost:7105/pub/fatman/adder/0.0.1](http://localhost:7105/pub/fatman/adder/0.0.1).
 
-This opens a SwaggerUI page, from which you can call your function (`/perform` endpoint).
+This opens a SwaggerUI page, from which you can call your function
+(try `/perform` endpoint with `{"a": 40, "b": 2}` body).
 You can do it from CLI with an HTTP client as well:
 ```shell
 curl -X POST "http://localhost:7105/pub/fatman/adder/latest/api/v1/perform" \
@@ -144,7 +145,7 @@ python:
   entrypoint_class: 'Entrypoint'
 EOF
 
-# Deploy Job to create a Fatman
+# Deploy Job to create a running Fatman
 racetrack deploy . http://localhost:7102 --context-local
 
 # Call your application
