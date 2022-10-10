@@ -1,3 +1,5 @@
+from collections import defaultdict
+from dataclasses import dataclass
 import os
 from pathlib import Path
 import time
@@ -17,6 +19,7 @@ from image_builder.metrics import (
 from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
+from racetrack_client.utils.semver import SemanticVersion
 from racetrack_client.utils.shell import shell, CommandError, shell_output
 from racetrack_client.utils.url import join_paths
 from racetrack_commons.deploy.image import get_fatman_image, get_fatman_user_module_image
@@ -28,18 +31,18 @@ logger = get_logger(__name__)
 
 class DockerBuilder(ImageBuilder):
     def build(
-            self,
-            config: Config,
-            manifest: Manifest,
-            workspace: Path,
-            tag: str,
-            git_version: str,
-            env_vars: Dict[str, str],
-            deployment_id: str,
-            plugin_engine: PluginEngine,
+        self,
+        config: Config,
+        manifest: Manifest,
+        workspace: Path,
+        tag: str,
+        git_version: str,
+        env_vars: Dict[str, str],
+        deployment_id: str,
+        plugin_engine: PluginEngine,
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
-        base_image_path, template_path, job_type_version = _load_job_template(plugin_engine, manifest.lang)
+        base_image_path, template_path, job_type_version = _load_job_type(config, plugin_engine, manifest.lang)
 
         _wait_for_docker_engine_ready()
 
@@ -81,21 +84,6 @@ class DockerBuilder(ImageBuilder):
             raise ContextError('building Fatman image') from e
 
         return full_image, logs, None
-
-
-@backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
-def _load_job_template(
-    plugin_engine: PluginEngine,
-    lang: str,
-) -> Tuple[Path, Path, str]:
-    """
-    Load job type.
-    In case it's not found, retry attempts due to possible delayed plugins
-    """
-    job_templates = _gather_job_templates(plugin_engine)
-    assert job_templates, f'language {lang} is not supported. Extend Racetrack with job type plugins'
-    assert lang in job_templates, f'language {lang} is not supported, supported are: {list(job_templates.keys())}'
-    return job_templates[lang]
 
 
 def _build_base_image(
@@ -149,35 +137,6 @@ def build_container_image(
     return logs
 
 
-@backoff.on_exception(backoff.fibo, CommandError, max_value=3, max_time=30, jitter=None)
-def _wait_for_docker_engine_ready():
-    shell('docker ps')
-
-
-def _gather_job_templates(
-    plugin_engine: PluginEngine,
-) -> Dict[str, Tuple[Path, Path, str]]:
-    """
-    Load job types from plugins.
-    Return job name -> (base image name, dockerfile template path)
-    """
-    job_templates: Dict[str, Tuple[Path, Path, str]] = {}
-
-    plugin_results: List[Dict[str, Tuple[Path, Path]]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
-    for plugin_job_types in plugin_results:
-        if plugin_job_types:
-            for job_full_name, job_data in plugin_job_types.items():
-                base_image_path, template_path = job_data
-                assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
-                assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
-                name_parts = job_full_name.split(':')
-                job_name = name_parts[0]
-                job_version = name_parts[1] if len(name_parts) > 1 else 'latest'
-                job_templates[job_name] = (base_image_path, template_path, job_version)
-
-    return job_templates
-
-
 def _image_exists_in_registry(image_name: str):
     """
     Check if an image (with tag) exists in a remote Docker registry (local, private or public)
@@ -190,3 +149,69 @@ def _image_exists_in_registry(image_name: str):
         if e.returncode == 1 and ("manifest unknown" in e.stdout or "no such manifest" in e.stdout):
             return False
         raise e
+
+
+@backoff.on_exception(backoff.fibo, CommandError, max_value=3, max_time=30, jitter=None)
+def _wait_for_docker_engine_ready():
+    shell('docker ps')
+
+
+@dataclass
+class JobTypeVersion:
+    lang_name: str
+    version: str
+    base_dockerfile: Path
+    fatman_template_dockerfile: Path
+
+
+@backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
+def _load_job_type(
+    config: Config,
+    plugin_engine: PluginEngine,
+    lang: str,
+) -> Tuple[Path, Path, str]:
+    """
+    Load job type.
+    In case it's not found, retry attempts due to possible delayed plugins loading
+    """
+    job_types = _gather_job_types(config, plugin_engine)
+    assert job_types, f'language {lang} is not supported. Extend Racetrack with job type plugins'
+    assert lang in job_types, f'language {lang} is not supported, supported are: {sorted(job_types.keys())}'
+    job_type: JobTypeVersion = job_types[lang]
+    return job_type.base_dockerfile, job_type.fatman_template_dockerfile, job_type.version
+
+
+def _gather_job_types(
+    config: Config,
+    plugin_engine: PluginEngine,
+) -> Dict[str, JobTypeVersion]:
+    """
+    Load job types from plugins.
+    Return job name (with version) -> (base image name, dockerfile template path)
+    """
+    job_types: Dict[str, JobTypeVersion] = {}
+    job_family_versions: Dict[str, List[JobTypeVersion]] = defaultdict(list)
+
+    plugin_results: List[Dict[str, Tuple[Path, Path]]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
+    for plugin_job_types in plugin_results:
+        if plugin_job_types:
+            for job_full_name, job_data in plugin_job_types.items():
+                base_image_path, template_path = job_data
+                assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
+                assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
+                name_parts = job_full_name.split(':')
+                assert len(name_parts) == 2, f'job type {job_full_name} should have the version defined (name:version)'
+                lang_name = name_parts[0]
+                lang_version = name_parts[1]
+                job_type_version = JobTypeVersion(lang_name, lang_version, base_image_path, template_path)
+                job_types[job_full_name] = job_type_version
+                job_family_versions[lang_name].append(job_type_version)
+
+    if config.latest_job_type_versions:
+        for lang_name in job_family_versions.keys():
+            versions = job_family_versions[lang_name]
+            versions.sort(key=lambda v: SemanticVersion(v.version))
+            latest_version = versions[-1]
+            job_types[f'{lang_name}:latest'] = latest_version
+
+    return job_types

@@ -118,7 +118,7 @@ def test_invalid_replicas():
         validate_tmp_manifest("""
 name: skynet
 owner_email: nobody@example.com
-lang: python3
+lang: python3:latest
 git:
   remote: https://github.com/TheRacetrack/racetrack
 replicas: 100
@@ -131,7 +131,7 @@ def test_invalid_ssh_git_remote():
         validate_tmp_manifest("""
 name: skynet
 owner_email: nobody@example.com
-lang: python3
+lang: python3:latest
 git:
   remote: git@github.com:TheRacetrack/racetrack.git
 """)

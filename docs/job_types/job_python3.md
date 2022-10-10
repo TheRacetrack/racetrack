@@ -2,7 +2,7 @@
 "python3" job type is intended to handle the calls to your Python function.
 Racetrack will wrap it up in a web server.
 
-Set `lang: python3` in your `fatman.yaml` manifest file in order to use this type of job.
+Set `lang: python3:latest` in your `fatman.yaml` manifest file in order to use this type of job.
 
 ## Job standards
 Let's assume you already have your code in a repository at `supersmart/model.py`:
@@ -327,7 +327,7 @@ The final `fatman.yaml` may look like this:
 ```yaml
 name: supersmart
 owner_email: nobody@example.com
-lang: python3
+lang: python3:latest
 
 git:
   remote: https://github.com/racetrack/supersmart-model

@@ -1,6 +1,6 @@
 name: docker-golang-http
 owner_email: sample@example.com
-lang: docker-http
+lang: docker-http:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack

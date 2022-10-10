@@ -145,7 +145,7 @@ A typical `fatman.yaml` will look like this:
 ```yaml
 name: my_fantabulous_skynet_AI
 owner_email: nobody@example.com
-lang: python3  # this would be your Fatman Type
+lang: python3:latest  # this would be your Fatman Type
 
 git:
   remote: https://github.com/racetrack/supersmart-model

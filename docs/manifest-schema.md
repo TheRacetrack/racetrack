@@ -11,7 +11,8 @@ fields:
 - `name` (**required**) - name of the current service to be deployed by means of
   this mainfest file. It cannot contain underscores (but can contain dashes).
 - `lang` (**required**) - Language wrapper used to embed model. This should be one
-  of the supported wrapper names: `python3`, `golang` or `docker-http`
+  of the supported wrapper names combined with the wrapper version:
+  `python3:2.4.0`, `python3:latest`, `golang:latest` or `docker-http:latest`, etc.
 - `git` (**required**) - the object describes the place where the source code can be
   found using git VCS.
     - `remote` (**required**) - **HTTPS** URL of git remote. This is also root of your
@@ -50,7 +51,7 @@ fields:
 It doesn't really make sense, but it contains all fields with exemplary values:
 ```yaml
 name: skynet
-lang: python3
+lang: python3:latest
 git:
   remote: https://github.com/racetrack/supersmart-model
   branch: master

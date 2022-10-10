@@ -35,6 +35,8 @@ def validate_manifest(manifest: Manifest):
     with wrap_context('parsing Fatman version'):
         SemanticVersion(manifest.version)
 
+    assert ':' in manifest.lang, '"lang" should specify the version in a format "name:version"'
+
     assert 1 <= manifest.replicas <= 15, 'replicas count out of allowed range'
 
     assert urlsplit(manifest.git.remote).scheme == 'https', 'git remote URL should be HTTPS'
