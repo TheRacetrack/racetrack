@@ -194,14 +194,14 @@ docker-push: docker-build
 docker-push-github: docker-build
 	docker login ghcr.io
 	docker push ${GHCR_PREFIX}/lifecycle:latest
-	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,${GHCR_PREFIX}/lifecycle:${TAG})
 	docker push ${GHCR_PREFIX}/image-builder:latest
-	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${GHCR_PREFIX}/image-builder:${TAG})
 	docker push ${GHCR_PREFIX}/dashboard:latest
-	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${GHCR_PREFIX}/dashboard:${TAG})
 	docker push ${GHCR_PREFIX}/pub:latest
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${GHCR_PREFIX}/pub:${TAG})
 	docker push ${GHCR_PREFIX}/pgbouncer:latest
+	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,${GHCR_PREFIX}/lifecycle:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${GHCR_PREFIX}/image-builder:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${GHCR_PREFIX}/dashboard:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${GHCR_PREFIX}/pub:${TAG})
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${GHCR_PREFIX}/pgbouncer:${TAG})
 
 local-registry-push: docker-build
