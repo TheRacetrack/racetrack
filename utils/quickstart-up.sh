@@ -2,13 +2,14 @@
 set -e
 
 echo "Downloading Racetrack configuration files..."
-mkdir -p lifecycle/tests/sample image_builder/tests/sample
+mkdir -p lifecycle/tests/sample image_builder/tests/sample postgres
 curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/setup-registry.sh -sS -o setup-registry.sh
 curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/docker-compose.yaml -sS -o docker-compose.yaml
 curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/.env -sS -o .env
 curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/wait-for-lifecycle.sh -sS -o wait-for-lifecycle.sh
 curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/lifecycle/tests/sample/compose.yaml -sS -o lifecycle/tests/sample/compose.yaml
 curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/image_builder/tests/sample/compose.yaml -sS -o image_builder/tests/sample/compose.yaml
+curl https://raw.githubusercontent.com/TheRacetrack/racetrack/master/postgres/init.sql -sS -o postgres/init.sql
 
 echo "Setting up local Docker Registry..."
 bash setup-registry.sh
