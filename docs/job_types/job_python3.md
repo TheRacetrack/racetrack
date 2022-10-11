@@ -211,7 +211,7 @@ runtime_env:
   TORCH_MODEL_ZOO: zoo
 ```
 
-When using your runtime vars, don't use the following reserved names: `PUB_URL`, `FATMAN_NAME`, `RK_HOST`.
+When using your runtime vars, don't use the following reserved names: `PUB_URL`, `FATMAN_NAME`.
 
 ### Secret variables
 If you need to set secret environment vars during building your job,
@@ -259,8 +259,9 @@ public_endpoints:
   - '/api/v1/perform'
   - '/api/v1/webview'
 ```
-| :exclamation: Exempting a path `/foo` also exempts *any* path under it like `/foo/secret`. Use this feature with care.  |
-|-----------------------------------------|
+
+!!! warning
+    Exempting a path `/foo` also exempts *any* path under it like `/foo/secret`. Use this feature with care.
 
 After deploying such fatman, there will be created a request that needs to be approved by Racetrack admin.
 Such approval needs to be done once for every new fatman version (with distinct `version` field).

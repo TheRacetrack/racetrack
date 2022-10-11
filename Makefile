@@ -1,14 +1,21 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.3.0
+TAG ?= 2.4.0
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
+GHCR_PREFIX = ghcr.io/theracetrack/racetrack
 DOCKER_GID=$(shell (getent group docker || echo 'docker:x:0') | cut -d: -f3 )
 
 docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false DOCKER_GID=${DOCKER_GID} \
 	docker compose
 docker = DOCKER_BUILDKIT=1 docker
+
+# function: docker_tag_and_push,<src_image>,<target_image>
+define docker_tag_and_push
+	docker tag $(1) $(2)
+	docker push $(2)
+endef
 
 -include .local.env
 
@@ -143,7 +150,11 @@ compose-up-service: compose-volumes
 		--build-arg DOCKER_TAG="$(TAG)" \
 		$(service)
 	$(docker-compose) up -d $(service)
-		
+
+# Start containers from pulled images (without building)
+compose-up-pull: registry compose-volumes
+	$(docker-compose) up -d --no-build --pull=always
+
 compose-up-docker-daemon: registry docker-build compose-volumes
 	$(docker-compose) -f docker-compose.yaml \
 		-f ./utils/docker-daemon/docker-compose.docker-daemon.yaml \
@@ -174,29 +185,31 @@ docker-build-stress:
 
 docker-push: docker-build
 	docker login ${DOCKER_REGISTRY}
+	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/image-builder:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/dashboard:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pub:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:${TAG})
 
-	docker tag racetrack/lifecycle:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:$(TAG)
-	docker tag racetrack/image-builder:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/image-builder:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/image-builder:$(TAG)
-	docker tag racetrack/dashboard:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/dashboard:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/dashboard:$(TAG)
-	docker tag racetrack/pub:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pub:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pub:$(TAG)
-	docker tag racetrack/pgbouncer:latest ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:$(TAG)
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:$(TAG)
+docker-push-github: docker-build
+	docker login ghcr.io
+	docker push ${GHCR_PREFIX}/lifecycle:latest
+	docker push ${GHCR_PREFIX}/image-builder:latest
+	docker push ${GHCR_PREFIX}/dashboard:latest
+	docker push ${GHCR_PREFIX}/pub:latest
+	docker push ${GHCR_PREFIX}/pgbouncer:latest
+	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,${GHCR_PREFIX}/lifecycle:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${GHCR_PREFIX}/image-builder:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${GHCR_PREFIX}/dashboard:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${GHCR_PREFIX}/pub:${TAG})
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${GHCR_PREFIX}/pgbouncer:${TAG})
 
 local-registry-push: docker-build
-	docker tag racetrack/lifecycle:latest localhost:5000/racetrack/lifecycle:latest
-	docker push localhost:5000/racetrack/lifecycle:latest
-	docker tag racetrack/image-builder:latest localhost:5000/racetrack/image-builder:latest
-	docker push localhost:5000/racetrack/image-builder:latest
-	docker tag racetrack/dashboard:latest localhost:5000/racetrack/dashboard:latest
-	docker push localhost:5000/racetrack/dashboard:latest
-	docker tag racetrack/pub:latest localhost:5000/racetrack/pub:latest
-	docker push localhost:5000/racetrack/pub:latest
-	docker tag racetrack/pgbouncer:latest localhost:5000/racetrack/pgbouncer:latest
-	docker push localhost:5000/racetrack/pgbouncer:latest
+	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,localhost:5000/racetrack/lifecycle:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,localhost:5000/racetrack/image-builder:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,localhost:5000/racetrack/dashboard:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,localhost:5000/racetrack/pub:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,localhost:5000/racetrack/pgbouncer:latest)
 
 docker-clean-fatman:
 	./utils/cleanup-fatmen-docker.sh
@@ -265,10 +278,8 @@ version-release: docker-push
 	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
 
 version-release-github: TAG = $(shell ./utils/version_bumper.py --current)
-version-release-github: DOCKER_REGISTRY = ghcr.io
-version-release-github: DOCKER_REGISTRY_NAMESPACE = theracetrack/racetrack
-version-release-github: docker-push
-	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
+version-release-github: docker-push-github
+	@echo "Racetrack version $(TAG) is released to registry ghcr.io"
 
 template-local-env:
 	cp -n utils/.local.env.template .local.env

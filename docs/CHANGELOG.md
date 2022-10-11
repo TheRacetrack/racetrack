@@ -5,14 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.4.0] - 2022-10-11
 ### Added
 - Plugins can be installed by means of racetrack-client command
   `racetrack plugin install <plugin_uri> <racetrack_url>`,
   where `plugin_uri` can be either:
-  - local file path (eg. `python3-job-type-2.4.0.zip`),
-  - URL to a remote HTTP file (eg. `https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
-  - GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) - it takes the ZIP file from the latest release.
-  - GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) - it takes the ZIP file from the specific release.
+    - local file path (eg. `python3-job-type-2.4.0.zip`),
+    - URL to a remote HTTP file (eg. `https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
+    - GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) - it takes the ZIP file from the latest release.
+    - GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) - it takes the ZIP file from the specific release.
 
 - Plugins can be uninstalled with a new command:
   `racetrack plugin uninstall <plugin_name> <plugin_version> <racetrack_url>`.

@@ -8,7 +8,7 @@ Job types allow you to run applications written in specific programming language
 Here's the overall flow which describes how job types are created
 and used by others to deploy fatmen workloads:
 
-![Job Type Plugins](../assets/job-type-plugins.png)
+[![Job Type Plugins](../assets/job-type-plugins.png)](../assets/job-type-plugins.png)
 
 1. **Plugin Developer** writes the source code of a wrapper and base.Dockerfile.
   He creates plugin code, fatman template Dockerfile and plugin Manifest.

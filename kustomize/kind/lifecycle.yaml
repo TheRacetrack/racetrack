@@ -54,10 +54,6 @@ spec:
               value: 'true'
             - name: DJANGO_DEBUG
               value: 'true'
-            - name: RK_MOCK
-              value: 'true'
-            - name: RK_HOST
-              value: ''
             - name: PUBLIC_IP
               value: ''
               valueFrom: null

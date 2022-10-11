@@ -1,6 +1,5 @@
 import argparse
 import sys
-import urllib3
 
 from racetrack_client import __version__
 from racetrack_client.client.deploy import send_deploy_request, DeploymentError
@@ -17,8 +16,6 @@ from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest.validate import validate_and_show_manifest
 from racetrack_client.utils.auth import AuthError
 from racetrack_client.utils.datamodel import datamodel_to_yaml_str
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = get_logger(__name__)
 
