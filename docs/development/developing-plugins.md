@@ -1,14 +1,4 @@
-# Racetrack plugins
-Racetrack instance might be enriched by plugins that add 
-customized, tailored functionality to a generic Racetrack.
-
-## Installing / Uninstalling plugin
-To activate the plugin in Racetrack, you need the ZIP plugin file.
-Go to the Dashboard Administration page
-(you need to be privileged, staff user to see this tab)
-and upload the zipped plugin there.
-
-To disable a plugin, click "Delete" button next to a plugin.
+# Developing plugins
 
 ## How does plugin work?
 Loading a plugin happens in Racetrack in a following manner:

@@ -9,7 +9,7 @@ from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_config_setting, set_config_url_alias
-from racetrack_client.client.plugins import install_plugin, uninstall_plugin
+from racetrack_client.client.plugins import install_plugin, list_installed_plugins, uninstall_plugin
 from racetrack_client.client.run import run_fatman_locally
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
@@ -145,7 +145,7 @@ def main():
 
     # racetrack plugin install
     parser_plugin_install = subparsers_plugin.add_parser('install', help='Install a plugin to a remote Racetrack server')
-    parser_plugin_install.add_argument('plugin_uri', help='location of the plugin file: local path or remote URL')
+    parser_plugin_install.add_argument('plugin_uri', help='location of the plugin file: local file path, URL to a remote HTTP file or repository name')
     parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
     parser_plugin_install.set_defaults(func=_install_plugin)
 
@@ -155,6 +155,11 @@ def main():
     parser_plugin_install.add_argument('plugin_version', help='plugin version')
     parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
     parser_plugin_install.set_defaults(func=_uninstall_plugin)
+
+    # racetrack plugin list
+    parser_plugin_list = subparsers_plugin.add_parser('list', help='List plugins installed on a remote Racetrack server')
+    parser_plugin_list.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_list.set_defaults(func=_list_installed_plugins)
 
     args: argparse.Namespace = parser.parse_args()
 
@@ -226,3 +231,7 @@ def _install_plugin(args: argparse.Namespace):
 
 def _uninstall_plugin(args: argparse.Namespace):
     uninstall_plugin(args.plugin_name, args.plugin_version, args.racetrack_url)
+
+
+def _list_installed_plugins(args: argparse.Namespace):
+    list_installed_plugins(args.racetrack_url)

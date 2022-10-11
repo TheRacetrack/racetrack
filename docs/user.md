@@ -259,7 +259,7 @@ Job.
 # Login to Racetrack prior to deploying a job
 racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack
-racetrack plugin install https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
 # go to the sample directory
 cd sample/python-class/
 # deploy from the current directory (.) to the Racetrack service which is
@@ -654,7 +654,7 @@ docker system prune -a
 make kind-up
 # Wait 10 minutes
 make kind-test
-racetrack plugin install https://github.com/TheRacetrack/plugin-python-job-type/releases/download/2.4.0/python3-job-type-2.4.0.zip http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
 racetrack deploy sample/python-class http://localhost:7002
 ```
 
