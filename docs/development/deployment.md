@@ -38,9 +38,9 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
    add a new empty "Unreleased" section 
 1. Create release branch ie. `release-x.y.z`: `git checkout -b release-$VERSION`
 1. Increment version with:
-  - `make version-bump` to bump patch version, 
-  - `make version-bump-minor` to bump minor version,
-  - or `make version-bump-major` to bump major version.
+    - `make version-bump-major` to bump major version.
+    - `make version-bump-minor` to bump minor version,
+    - or `make version-bump` to bump patch version, 
 1. Commit and push all changes from previous points: `git commit -am "Release version $VERSION"`
 1. Merge `release-x.y.z` branch to `master`: `git checkout master && git merge release-$VERSION && git push`
 1. Tag the resulting commit and push tag: `git tag $VERSION && git push origin $VERSION`
