@@ -21,7 +21,7 @@ These are the known, public Racetrack plugins that are commonly available to be 
 - Deployers:
 
   - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
-    deployer to remote Docker Daemon
+    deploys to remote Docker Daemon
 
 - Others:
 
@@ -44,8 +44,12 @@ where `plugin_uri` can be either:
 
 - local file path (eg. `python3-job-type-2.4.0.zip`),
 - URL to a remote HTTP file (eg. `https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
-- GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) - it takes the ZIP file from the latest release.
-- GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) - it takes the ZIP file from the specific release.
+- GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) -
+  it takes the ZIP file from the latest release.
+  Pay attention to omit `https://` part.
+- GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) -
+  it takes the ZIP file from the specific release.
+  Pay attention to omit `https://` part.
 
 For instance, use the following command to activate the latest python3 plugin on your local kind setup:
 ```
