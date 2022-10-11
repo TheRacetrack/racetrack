@@ -50,10 +50,6 @@ spec:
           env:
             - name: CONFIG_FILE
               value: /etc/racetrack/lifecycle/config.yaml
-            - name: RK_MOCK
-              value: 'true'
-            - name: RK_HOST
-              value: ''
             - name: PUBLIC_IP
               value: ''
               valueFrom: null

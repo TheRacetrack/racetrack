@@ -78,7 +78,7 @@ Make sure it's safely transported to ESC developer, ie. using email encrypted wi
 public-private key scheme like PGP.
 
 If this key becomes stolen, to prevent attacker from using it, reset the ESC api-token
-in ESC edit page.
+in Auth Subject edit page.
 
 
 #### Allowing Fatman to Fatman permissions
@@ -113,13 +113,16 @@ If something's malfunctioning, check out the following places to find more infor
     - via Dashboard (Fatmen / Logs / Build logs),
     - in image-builder container, at `/var/log/racetrack/image-builder/build-logs`,
     - through Django Admin Panel: Deployments model, "Build logs" field,
-- Django Admin panel: browse stored models,
+- Django Admin panel (Dashboard > Administration > Lifecycle Admin panel):
+  browse stored models (eg. Users, Auth subjects, Auth resource permissions,
+  Deployments, Fatmen, Fatman families, External service consumers),
 - Racetrack component logs: dashboard, lifecycle, lifecycle-supervisor, image-builder, pub, postgres, pgbouncer
 
 
 ## Backup & Restore
 
-Here's the overview of the places where Racetrack data are stored:  
+Here's the overview of the places where Racetrack data are stored:
+
 - **Postgres Database** - keeps information about fatmen
   (that are expected to be running), deployments, users, permissions, etc.
 - **Plugins Volume** - a persistent volume containing plugins 
