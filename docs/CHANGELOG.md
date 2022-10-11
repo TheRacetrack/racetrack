@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Racetrack starts without any job type by default.
 - Base Fatman images are built inside Racetrack by image-builder
   so it's no longer needed to push images prior to the plugin release.
+- One job type can be installed in multiple versions at the same time.
+  Users have to pick one of these versions and specify it in the manifest of their fatman,
+  eg. `lang: python3:2.4.0`.
+  Version of a job type is now required in the `lang` field of Manifest.
+  `latest` version can be used (resolving to the highest semantic version),
+  though it's discouraged.
 
 ## [2.3.0] - 2022-09-23
 ### Added
