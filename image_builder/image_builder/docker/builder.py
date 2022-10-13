@@ -208,11 +208,10 @@ def _gather_job_types(
                 job_types[job_full_name] = job_type_version
                 job_family_versions[lang_name].append(job_type_version)
 
-    if config.latest_job_type_versions:
-        for lang_name in job_family_versions.keys():
-            versions = job_family_versions[lang_name]
-            versions.sort(key=lambda v: SemanticVersion(v.version))
-            latest_version = versions[-1]
-            job_types[f'{lang_name}:latest'] = latest_version
+    for lang_name in job_family_versions.keys():
+        versions = job_family_versions[lang_name]
+        versions.sort(key=lambda v: SemanticVersion(v.version))
+        latest_version = versions[-1]
+        job_types[f'{lang_name}:latest'] = latest_version
 
     return job_types

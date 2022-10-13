@@ -34,6 +34,3 @@ class Config(BaseModel, extra=Extra.forbid):
 
     # Remove workspace directories after building
     clean_up_workspaces: bool = True
-
-    # Allow implicit ("latest") job type versions if not given
-    latest_job_type_versions: bool = True
