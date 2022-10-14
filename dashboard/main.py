@@ -1,11 +1,13 @@
 #!/usr/bin/env
 import os
 
+from a2wsgi import WSGIMiddleware
+
 from racetrack_client.log.logs import configure_logs
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.debug import is_deployment_local
 
-from app.asgi import application
+from app.wsgi import application
 
 
 def run_asgi_app():
@@ -17,7 +19,7 @@ def run_asgi_app():
     if is_deployment_local():
         app = 'app.asgi:application'
     else:
-        app = application
+        app = WSGIMiddleware(application)
 
     serve_asgi_app(app, http_addr, http_port, access_log=True)
 
