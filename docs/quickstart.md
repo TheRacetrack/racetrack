@@ -50,7 +50,7 @@ And a `sample/fatman.yaml` file describing what's inside:
 ```yaml
 name: adder
 owner_email: sample@example.com
-lang: python3
+lang: python3:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack

@@ -40,7 +40,7 @@ And a YAML file like this:
 ```yaml
 name: adder
 owner_email: meowmeow@example.com
-lang: python3
+lang: python3:latest
 
 git:
   remote: https://www.github.com/path/to-repo.git

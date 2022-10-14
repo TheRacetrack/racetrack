@@ -2,7 +2,7 @@
 "golang" job type is intended to handle the calls to your Go function.
 Racetrack will wrap it up in a web server.
 
-Set `lang: golang` in your `fatman.yaml` manifest file in order to use this type of job.
+Set `lang: golang:latest` in your `fatman.yaml` manifest file in order to use this type of job.
 
 # Job standards
 Let's assume you already have your code in a repository at `model.go`:
@@ -95,7 +95,7 @@ The final `fatman.yaml` may look like this:
 ```yaml
 name: supersmart
 owner_email: nobody@example.com
-lang: golang
+lang: golang:latest
 
 git:
   remote: https://github.com/racetrack/supersmart-model
