@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 import importlib.util
 import os
 import sys
@@ -8,10 +8,11 @@ import zipfile
 
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.semver import SemanticVersion
 from racetrack_client.utils.shell import shell
 from racetrack_client.utils.datamodel import parse_yaml_datamodel
-from racetrack_commons.plugin.plugin_manifest import PluginData, PluginManifest
+from racetrack_commons.plugin.plugin_data import PluginData
 from racetrack_commons.plugin.core import PluginCore
 
 logger = get_logger(__name__)

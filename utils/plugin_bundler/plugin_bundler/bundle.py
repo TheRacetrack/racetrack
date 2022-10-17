@@ -5,9 +5,9 @@ import zipfile
 
 from racetrack_client.log.logs import get_logger
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.datamodel import parse_yaml_datamodel, datamodel_to_yaml_str
 from racetrack_client.utils.time import now
-from racetrack_commons.plugin.plugin_manifest import PluginManifest
 
 from plugin_bundler.filename_matcher import FilenameMatcher
 

@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import markdown
 
-from racetrack_commons.plugin.plugin_manifest import PluginManifest
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 
 

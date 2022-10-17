@@ -8,7 +8,7 @@ from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_config_setting, set_config_url_alias
-from racetrack_client.client.plugins import install_plugin, list_installed_plugins, uninstall_plugin
+from racetrack_client.plugin.install import install_plugin, list_installed_plugins, uninstall_plugin
 from racetrack_client.client.run import run_fatman_locally
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
