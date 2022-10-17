@@ -54,7 +54,6 @@ nav:
     - Using plugins: docs/development/using-plugins.md
     - Developing plugins: docs/development/developing-plugins.md
     - Job type plugins: docs/development/plugins-job-types.md
-    - Plugins Bundler: utils/plugin_bundler/README.md
   - Development:
     - Developer manual: docs/development/develop.md
     - Deployment: docs/development/deployment.md

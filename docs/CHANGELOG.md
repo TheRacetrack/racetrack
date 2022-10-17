@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   eg. `lang: python3:2.4.0`.
   Version of a job type is now required in the `lang` field of Manifest in a manner `name:version`.
   `latest` version can be used (resolving to the highest semantic version), though it's discouraged.
+- Plugin bundler has been moved to racetrack-client.
+  Now you can do `racetrack plugin bundle` instead of `racetrack-plugin-bundler bundle`.
 
 ## [2.4.0] - 2022-10-11
 ### Added

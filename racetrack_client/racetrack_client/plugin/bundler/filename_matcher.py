@@ -1,6 +1,6 @@
 from pathlib import Path
 import fnmatch
-from typing import List, Optional
+from typing import List
 
 DEFAULT_IGNORE_PATTERNS = [
     '*.zip',
