@@ -3,10 +3,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, UploadFile, Request
 
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
-from racetrack_commons.plugin.plugin_manifest import PluginManifest
 from lifecycle.auth.check import check_staff_user
 
 

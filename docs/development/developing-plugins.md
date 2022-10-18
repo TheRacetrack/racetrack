@@ -50,14 +50,18 @@ priority: -1
 ```
 
 ### Building a plugin
-Source code of the plugin can be bundled into a ZIP file
-by means of a `racetrack-plugin-bundler` tool.
-Here's [how to install racetrack-plugin-bundler](../../utils/plugin_bundler/README.md).
+Local source code of the plugin can be turned into a ZIP file
+by means of a `racetrack` client tool.
 
-Make sure the plugin version inside `plugin-manifest.yaml` is up-to-date.
-
-Then, you can run `racetrack-plugin-bundler bundle` to turn a plugin into a ZIP file.
-Zipped plugin will be generated in a plugin directory.
+1. Install `racetrack` client:
+  ```shell
+  pip3 install racetrack-client
+  ```
+2. Go to the directory where your plugin is located.
+3. Make sure the plugin version inside `plugin-manifest.yaml` is up-to-date.
+4. Run `racetrack plugin bundle` to turn a plugin into a ZIP file.
+  Zipped plugin will be generated in a plugin directory.
+  See the output to locate the outcome package.
 
 See [plugin_sample](plugin_sample) for an example of a plugin.
 

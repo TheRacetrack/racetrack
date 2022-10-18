@@ -1,9 +1,9 @@
 from typing import List, Optional
 
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.datamodel import parse_dict_datamodels
 from racetrack_client.utils.request import Requests, parse_response
 from racetrack_commons.entities.lifecycle_client import LifecycleClient
-from racetrack_commons.plugin.plugin_manifest import PluginManifest
 
 
 class LifecyclePluginClient:

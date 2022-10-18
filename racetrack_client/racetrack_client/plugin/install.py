@@ -102,6 +102,7 @@ def _load_plugin_file(plugin_uri: str) -> Tuple[str, bytes]:
 
     raise ValueError(f'Unknown plugin location: {plugin_uri}')
 
+
 def download_file(url: str) -> Tuple[str, bytes]:
     logger.info(f'downloading file {url}')
     filename = Path(urlparse(url).path).name

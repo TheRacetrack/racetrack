@@ -1,5 +1,6 @@
 from pathlib import Path
-from plugin_bundler.filename_matcher import match_file_pattern, FilenameMatcher
+
+from racetrack_client.plugin.bundler.filename_matcher import match_file_pattern, FilenameMatcher
 
 
 def test_match_file_patterns():

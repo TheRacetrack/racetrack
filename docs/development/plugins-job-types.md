@@ -12,7 +12,7 @@ and used by others to deploy fatmen workloads:
 
 1. **Plugin Developer** writes the source code of a wrapper and base.Dockerfile.
   He creates plugin code, fatman template Dockerfile and plugin Manifest.
-  Next, he turns it into a ZIP plugin using `racetrack-plugin-bundler`.
+  Next, he turns it into a ZIP plugin using a plugin bundler.
 2. He uploads the plugin to the Racetrack.
 3. **Data Scientist** writes the source code of his Job and pushes it to a Git repository.
 4. He creates fatman.yaml Manifest (including job type name and reference to a git repository)
@@ -414,7 +414,7 @@ class Plugin:
 
 ### 7. Create `.racetrackignore` file
 We don't need to incorporate all the local files into a plugin ZIP file.
-We can instruct `racetrack-plugin-bundler` to ignore these files by adding `.racetrackignore` file:
+We can instruct `racetrack` plugin bundler to ignore these files by adding `.racetrackignore` file:
 ```
 Cargo.lock
 target
@@ -423,11 +423,14 @@ target
 ```
 
 ### 8. Bundle plugin into a ZIP file
-Source code of the plugin can be bundled into a ZIP file
-by means of a `racetrack-plugin-bundler` tool.
-Here's [how to install racetrack-plugin-bundler](../../utils/plugin_bundler/README.md).
+Local source code of the plugin can be turned into a ZIP file
+by means of a `racetrack` client tool.
+Install it with: 
+```shell
+pip3 install racetrack-client
+```
 
-Let's run `racetrack-plugin-bundler bundle` in a directory where the plugin is located (`rust-job-type` dir)
+Let's run `racetrack plugin bundle` in a directory where the plugin is located (`rust-job-type` dir)
 to turn a plugin into a ZIP file.
 The outcome is `rust-job-type-1.0.0.zip`.
 

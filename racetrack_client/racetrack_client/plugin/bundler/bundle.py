@@ -5,11 +5,10 @@ import zipfile
 
 from racetrack_client.log.logs import get_logger
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.plugin.bundler.filename_matcher import FilenameMatcher
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.datamodel import parse_yaml_datamodel, datamodel_to_yaml_str
 from racetrack_client.utils.time import now
-from racetrack_commons.plugin.plugin_manifest import PluginManifest
-
-from plugin_bundler.filename_matcher import FilenameMatcher
 
 logger = get_logger(__name__)
 
@@ -18,6 +17,7 @@ PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
 
 
 def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional[str]):
+    """Turn local plugin code into ZIP file"""
     plugin_dir = Path(workdir)
     assert (plugin_dir / PLUGIN_FILENAME).is_file(), f'plugin directory should contain {PLUGIN_FILENAME} file'
 
