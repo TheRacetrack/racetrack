@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2022-10-18
 ### Changed
 - One job type can be installed in multiple versions at the same time.
   Users have to pick one of these versions and specify it in the manifest of their fatman,
