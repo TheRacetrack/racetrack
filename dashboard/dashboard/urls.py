@@ -19,6 +19,7 @@ urlpatterns = [
     path('docs/file/<path:doc_path>', view_doc_page, name='doc_page'),
     path('docs/plugin/<str:plugin_name>', view_doc_plugin, name='doc_plugin'),
     path('register/', views.register, name='register'),
+    path('change_password/', views.change_password, name='change_password'),
     path('registered', views.registered, name='registered'),
     path('profile', views.user_profile, name='profile'),
     path('administration', views.view_administration, name='administration'),
