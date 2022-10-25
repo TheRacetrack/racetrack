@@ -15,7 +15,7 @@ def mount_at_base_path(api_app: ASGIApp, *base_path_patterns: str) -> FastAPI:
         wrapper_app.mount(base_path_pattern, api_app)
 
     wrapper_app.mount('/', api_app)
-
+    wrapper_app.add_middleware(TrailingSlashForwarder)
     return wrapper_app
 
 
