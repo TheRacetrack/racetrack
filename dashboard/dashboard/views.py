@@ -2,7 +2,8 @@ import logging
 from typing import Dict, List
 
 from django.conf import settings
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -51,15 +52,32 @@ class RacetrackUserCreationForm(UserCreationForm):
         return username
 
 
+class RacetrackPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class RegisterView(generic.CreateView):
     form_class = RacetrackUserCreationForm
     success_url = reverse_lazy('dashboard:registered')
     template_name = 'registration/register.html'
 
 
+class ChangePasswordView(PasswordChangeView):
+    form_class = RacetrackPasswordChangeForm
+    success_url = reverse_lazy('dashboard:profile')
+    template_name = 'registration/change_password.html'
+
+
 def register(request):
     request.session['registered'] = False
     return RegisterView.as_view()(request)
+
+
+def change_password(request):
+    return ChangePasswordView.as_view()(request)
 
 
 def registered(request):

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Users can change their password on a Dashboard -> Profile tab -> Change Password
+
 ## [2.5.0] - 2022-10-18
 ### Changed
 - One job type can be installed in multiple versions at the same time.
