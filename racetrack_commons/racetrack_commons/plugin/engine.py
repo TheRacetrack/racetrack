@@ -27,7 +27,10 @@ class PluginEngine:
         self.last_change_timestamp: int = 0
         if plugins_dir:
             self.plugins_dir: str = plugins_dir
-            self._load_plugins()
+            try:
+                self._load_plugins()
+            except BaseException as e:
+                log_exception(e)
             self._watch_plugins_changes()
 
     def _load_plugins(self):
