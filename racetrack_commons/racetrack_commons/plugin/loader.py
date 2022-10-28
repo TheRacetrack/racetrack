@@ -31,7 +31,10 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
     plugins_path = Path(plugins_dir)
     if not plugins_path.is_dir():
         plugins_path.mkdir(parents=True, exist_ok=True)
-        plugins_path.chmod(mode=0o777)
+        try:
+            plugins_path.chmod(mode=0o777)
+        except PermissionError:
+            logger.warning(f'Can\'t change permissions of {plugins_path}')
 
     plugins_data: List[PluginData] = []
 
@@ -50,7 +53,10 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
     extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
     if not extracted_plugins_dir.is_dir():
         extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
-        extracted_plugins_dir.chmod(mode=0o777)
+        try:
+            extracted_plugins_dir.chmod(mode=0o777)
+        except PermissionError:
+            logger.warning(f'Can\'t change permissions of {extracted_plugins_dir}')
 
     extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
     
@@ -73,12 +79,15 @@ def load_plugin_from_dir(plugin_dir: Path, zip_path: Path, init_dir: bool) -> Pl
     setattr(plugin, 'plugin_dir', plugin_dir)
 
     if init_dir:  # set permissions after loading a class due to *.pyc created after all
-        plugin_dir.chmod(mode=0o777)
-        for p in plugin_dir.rglob("*"):
-            if p.is_dir():
-                p.chmod(mode=0o777)
-            else:
-                p.chmod(mode=0o666)
+        try:
+            plugin_dir.chmod(mode=0o777)
+            for p in plugin_dir.rglob("*"):
+                if p.is_dir():
+                    p.chmod(mode=0o777)
+                else:
+                    p.chmod(mode=0o666)
+        except PermissionError:
+            logger.warning(f'Can\'t change permissions in {plugin_dir}')
     
     logger.info(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
     return PluginData(zip_path=zip_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)

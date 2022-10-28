@@ -8,6 +8,8 @@ Workloads:
 - **Fatman** - The source code converted to REST microservice workload with a standardized interface, served on Racetrack.
 - **Fatman Image** - Job built into Docker image
 - **Job Type** - one of the languages and frameworks supported by Racetrack that user choose to develop a job in
+- **Job Type Version** - the specific revision of the job standard including the way of handling the requests and its features.
+  Language Wrappers are installed in Racetrack to support particular Job Type Versions.
 - **Job** - A blueprint for creating Fatman, 
   consisting of source code (written in the style required by Racetrack) and Fatman Manifest file.
 - **ML Model** - An application using Machine Learning algorithms created by Data Scentists or

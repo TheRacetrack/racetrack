@@ -71,7 +71,8 @@ def setup_opentelemetry(
             with tracer.start_as_current_span(endpoint_name, links=span_links) as span:
                 span.set_attribute('endpoint.method', request.method)
                 span.set_attribute('endpoint.path', request.url.path)
-                span.set_attribute('traceparent', traceparent)
+                if traceparent:
+                    span.set_attribute('traceparent', traceparent)
                 try:
                     response: Response = await call_next(request)
                     span.set_attribute('response_code', response.status_code)

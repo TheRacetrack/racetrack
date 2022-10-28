@@ -27,7 +27,10 @@ class PluginEngine:
         self.last_change_timestamp: int = 0
         if plugins_dir:
             self.plugins_dir: str = plugins_dir
-            self._load_plugins()
+            try:
+                self._load_plugins()
+            except BaseException as e:
+                log_exception(e)
             self._watch_plugins_changes()
 
     def _load_plugins(self):
@@ -152,7 +155,10 @@ class PluginEngine:
         tmp_zip = Path(self.plugins_dir) / f'tmp_{random.randint(0, 999999)}.zip'
         if not tmp_zip.is_file():
             tmp_zip.touch()
-            tmp_zip.chmod(mode=0o666)
+            try:
+                tmp_zip.chmod(mode=0o666)
+            except PermissionError:
+                logger.warning(f'Can\'t change permissions of file {tmp_zip}')
         tmp_zip.write_bytes(file_bytes)
         
         plugin_data = load_plugin_from_zip(tmp_zip)
@@ -211,7 +217,10 @@ class PluginEngine:
         change_file = Path(self.plugins_dir) / LAST_CHANGE_FILE
         if not change_file.is_file():
             change_file.touch()
-            change_file.chmod(mode=0o666)
+            try:
+                change_file.chmod(mode=0o666)
+            except PermissionError:
+                logger.warning(f'Can\'t change permissions of file {change_file}')
         change_file.write_text(f'{self.last_change_timestamp}')
 
     @property
