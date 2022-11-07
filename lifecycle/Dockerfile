@@ -9,6 +9,7 @@ RUN apt-get update -y && apt-get install -y \
     gnupg \
     lsb-release \
     git \
+    dnsutils \
     vim
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
     echo \
