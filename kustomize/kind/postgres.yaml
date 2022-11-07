@@ -42,7 +42,7 @@ spec:
             failureThreshold: 20
           readinessProbe:
             exec:
-              command: ["pg_isready", "-h", "localhost", "-p", "5432", "-U", "racetrack", "-d", "lifecycle_db"]
+              command: ["pg_isready", "-h", "localhost", "-p", "5432", "-U", "racetrack", "-d", "racetrack"]
             initialDelaySeconds: 5
             periodSeconds: 10
 
@@ -117,7 +117,7 @@ data:
     -- should be the same as in postgres/init.sql --
 
     CREATE USER racetrack WITH ENCRYPTED PASSWORD 'dev-25ZjbUDJH6MzmUR';
-    GRANT ALL PRIVILEGES ON DATABASE lifecycle_db TO racetrack;
+    GRANT ALL PRIVILEGES ON DATABASE racetrack TO racetrack;
 
 ---
 apiVersion: v1

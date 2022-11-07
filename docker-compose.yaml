@@ -160,7 +160,7 @@ services:
       DB_USER: 'racetrack'
       DB_PASSWORD: 'dev-25ZjbUDJH6MzmUR'
       DB_HOST: 'postgres'
-      DB_NAME: 'lifecycle_db'
+      DB_NAME: 'racetrack'
       DB_PORT: '5532'
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 30000
