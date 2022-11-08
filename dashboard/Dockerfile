@@ -2,7 +2,9 @@ FROM python:3.9-slim-bullseye
 
 WORKDIR /src/dashboard
 
-RUN apt-get update -y && apt-get install -y postgresql-client
+RUN apt-get update -y && apt-get install -y \
+  postgresql-client curl dnsutils vim &&\
+  rm -rf /var/lib/apt/lists/*
 # apt cache is cleaned automatically, see /etc/apt/apt.conf.d/docker-clean
 
 COPY racetrack_client/setup.py racetrack_client/requirements.txt racetrack_client/README.md /src/racetrack_client/
