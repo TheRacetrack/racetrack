@@ -17,7 +17,7 @@ def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
             cluster_name = parts[1]
         else:
             cluster_name = parts[0]
-        database_name.replace('{CLUSTER_NAME}', cluster_name)
+        database_name = database_name.replace('{CLUSTER_NAME}', cluster_name)
 
     available_databases: Dict[str, Dict] = {
         'sqlite': {
