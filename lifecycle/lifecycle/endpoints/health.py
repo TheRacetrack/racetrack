@@ -1,10 +1,12 @@
 import os
 
-from django.db import connection
+from django.conf import settings
+from django.db import connection, close_old_connections
 from django.db.utils import OperationalError
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from racetrack_client.utils.shell import shell, CommandError
 from lifecycle.django.registry.database import db_access
 from lifecycle.config import Config
 
@@ -47,7 +49,18 @@ def setup_health_endpoint(api: FastAPI, config: Config):
 @db_access
 def is_database_connected() -> bool:
     try:
+        DJANGO_DB_TYPE = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+        if DJANGO_DB_TYPE == 'postgres':
+            db_name = settings.DATABASES['default']['NAME']
+            user = settings.DATABASES['default']['USER']
+            host = settings.DATABASES['default']['HOST']
+            port = settings.DATABASES['default']['PORT']
+            shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False)
+
+        close_old_connections()
         connection.cursor().execute("select 1")
         return True
+    except CommandError:
+        return False
     except OperationalError:
         return False
