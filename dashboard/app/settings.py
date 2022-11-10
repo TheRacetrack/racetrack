@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from racetrack_commons.database.database import populate_database_settings
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,30 +79,9 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DJANGO_DB_TYPE = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
-if DJANGO_DB_TYPE not in ['sqlite', 'postgres']:
-    raise Exception("Error, unknown DJANGO_DB_TYPE: " + DJANGO_DB_TYPE)
+DJANGO_DB_TYPE: str = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
 
-available_databases = {
-    'sqlite': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
-    'postgres': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB'),
-        'USER': os.environ.get('POSTGRES_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST'),
-        'PORT': os.environ.get('POSTGRES_PORT'),
-        'CONN_MAX_AGE': 0,
-    }
-}
-
-DATABASES = {
-    'default': available_databases[DJANGO_DB_TYPE],
-    DJANGO_DB_TYPE: available_databases[DJANGO_DB_TYPE],
-}
+DATABASES = populate_database_settings(BASE_DIR)
 
 DATABASE_ROUTERS = [
     'dashboard.database_routers.routers.Router',
