@@ -11,7 +11,6 @@ from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.utils.http import urlencode
 
-from racetrack_commons.urls import get_external_pub_url
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.time import days_ago
@@ -22,6 +21,7 @@ from racetrack_commons.entities.audit_client import AuditClient
 from racetrack_commons.entities.dto import AuditLogEventDto, FatmanDto
 from racetrack_commons.entities.fatman_client import FatmanRegistryClient
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
+from racetrack_commons.urls import get_external_pub_url
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 from dashboard.purge import enrich_fatmen_purge_info
 from dashboard.utils import login_required, remove_ansi_sequences
@@ -191,6 +191,8 @@ def view_fatman_portfolio(request):
         for fatman_dict in fatmen_dicts:
             fatman_dict['update_time_days_ago'] = days_ago(fatman_dict['update_time'])
             fatman_dict['last_call_time_days_ago'] = days_ago(fatman_dict['last_call_time'])
+            manifest: Dict = fatman_dict.get('manifest')
+            fatman_dict['job_type_version'] = manifest.get('lang') if manifest else None
 
         context['fatmen'] = fatmen_dicts
     except Exception as e:
