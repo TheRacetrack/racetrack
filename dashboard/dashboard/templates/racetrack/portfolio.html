@@ -24,6 +24,7 @@
                         <th>Family name</th>
                         <th>Version</th>
                         <th>Status</th>
+                        <th>Job type version</th>
                         <th>Deployed by</th>
                         <th>Last updated ago [days]</th>
                         <th>Last called ago [days]</th>
@@ -43,6 +44,7 @@
                         <td>{{ fatman.name }}</td>
                         <td>{{ fatman.version }}</td>
                         <td>{{ fatman.status | upper }}</td>
+                        <td>{{ fatman.job_type_version }}</td>
                         <td>{{ fatman.deployed_by | default_if_none:'' }}</td>
                         <td>{{ fatman.update_time_days_ago | floatformat:"-2" }}</td>
                         <td>{{ fatman.last_call_time_days_ago | floatformat:"-2" }}</td>
@@ -104,6 +106,7 @@ var tfConfig = {
         'string', // family name
         'string', // version
         'string', // status
+        'string', // job type version
         'string', // deployed by
         'number', // last updated ago
         'number', // last called ago
@@ -121,7 +124,7 @@ var tfConfig = {
     },
     extensions: [{
         name: 'colsVisibility',
-        at_start: [9, 10, 11],
+        at_start: [10, 11, 12],
         text: 'Columns: ',
         enable_tick_all: true,
         tick_to_hide: false,
