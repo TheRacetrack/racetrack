@@ -13,7 +13,6 @@ from django.utils.http import urlencode
 
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
-from racetrack_client.manifest.manifest import Manifest
 from racetrack_client.utils.time import days_ago
 from racetrack_commons.auth.auth import UnauthorizedError
 from racetrack_commons.auth.token import decode_jwt
