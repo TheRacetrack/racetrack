@@ -5,8 +5,10 @@ Racetrack v2 introduces a restrictive Fatman permissions model.
 For instance, users can have access to a subset of fatmen and they
 can see and manage only those that are allowed for them.
 
-By default, nobody is allowed to do anything (if the permissions list is empty).
-However, a brand new user comes with a default set of permissions allowing him to:
+By default, nobody is allowed to do anything, if the permissions list is empty.
+However, when a new user is created, a set of default permissions is created accordingly.
+Admin can revoke these permissions later on.
+New user comes with the permissions allowing him to:
 
 - read all fatmen status (browse on a dashboard)
 - call endpoints of every fatman
@@ -64,7 +66,7 @@ For instance, if **Fatman** field is empty and the **Family** is set, the permis
 If none of the fields is filled, the permission works on all of the resources (all families, all fatmen, all endpoints).
 
 Keep in mind that the permission may give an access not only to the existing resources, 
-but also for those that are yet to come up in future
+but also for those that are yet to come up in future.
 For example, new fatman version from the same family will be affected, while there is a permission covering the whole family.
 
 ## How to grant a permission?
