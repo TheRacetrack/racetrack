@@ -1,6 +1,7 @@
 from pathlib import Path
 import random
 import shutil
+import tempfile
 import threading
 from typing import Callable, List, Optional
 import time
@@ -150,31 +151,30 @@ class PluginEngine:
 
 
     def upload_plugin(self, filename: str, file_bytes: bytes) -> PluginManifest:
-        target_zip = Path(self.plugins_dir) / filename
-        assert target_zip.suffix == '.zip', '.zip plugins are only supported'
-
-        # save to tmp.zip to avoid overwriting current plugins
-        tmp_zip = Path(self.plugins_dir) / f'tmp_{random.randint(0, 999999)}.zip'
-        if not tmp_zip.is_file():
-            tmp_zip.touch()
-            try:
-                tmp_zip.chmod(mode=0o666)
-            except PermissionError:
-                logger.warning(f'Can\'t change permissions of file {tmp_zip}')
-        tmp_zip.write_bytes(file_bytes)
-        
+        tmp_dir = Path(tempfile.mkdtemp(prefix='racetrack-uploaded-plugin-'))
         try:
+            assert Path(filename).suffix == '.zip', '.zip plugins are only supported'
+
+            # save to tmp.zip to avoid overwriting current plugins
+            tmp_zip = tmp_dir / f'tmp_{random.randint(0, 999999)}.zip'
+            if not tmp_zip.is_file():
+                tmp_zip.touch()
+                try:
+                    tmp_zip.chmod(mode=0o666)
+                except PermissionError:
+                    logger.warning(f'Can\'t change permissions of file {tmp_zip}')
+            tmp_zip.write_bytes(file_bytes)
+            
             plugin_data = load_plugin_from_zip(tmp_zip)
             plugin_name = plugin_data.plugin_manifest.name
             plugin_version = plugin_data.plugin_manifest.version
 
+            self._delete_older_plugin_version(plugin_name, plugin_version)
+            tmp_zip.rename(Path(self.plugins_dir) / filename)
+            logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
+            
         finally:
-            tmp_extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / tmp_zip.stem
-            shutil.rmtree(tmp_extracted_dir)
-
-        self._delete_older_plugin_version(plugin_name, plugin_version)
-        tmp_zip.rename(target_zip)
-        logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
+            shutil.rmtree(tmp_dir)
 
         self._load_plugins()
         self._record_last_change()
