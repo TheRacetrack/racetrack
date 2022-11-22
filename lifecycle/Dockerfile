@@ -18,6 +18,8 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
     apt-get update -y && apt-get install -y docker-ce-cli &&\
     rm -rf /var/lib/apt/lists/*
 # apt cache is cleaned automatically, see /etc/apt/apt.conf.d/docker-clean
+RUN useradd -u 100000 -m racetrack &&\
+  mkdir -p -m 777 /home/racetrack/.docker
 
 # install kubectl
 RUN curl -L "https://dl.k8s.io/release/v1.24.3/bin/linux/amd64/kubectl" \
