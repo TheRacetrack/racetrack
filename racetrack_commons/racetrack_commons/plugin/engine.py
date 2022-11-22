@@ -163,12 +163,14 @@ class PluginEngine:
                 logger.warning(f'Can\'t change permissions of file {tmp_zip}')
         tmp_zip.write_bytes(file_bytes)
         
-        plugin_data = load_plugin_from_zip(tmp_zip)
-        plugin_name = plugin_data.plugin_manifest.name
-        plugin_version = plugin_data.plugin_manifest.version
+        try:
+            plugin_data = load_plugin_from_zip(tmp_zip)
+            plugin_name = plugin_data.plugin_manifest.name
+            plugin_version = plugin_data.plugin_manifest.version
 
-        tmp_extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / tmp_zip.stem
-        shutil.rmtree(tmp_extracted_dir)
+        finally:
+            tmp_extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / tmp_zip.stem
+            shutil.rmtree(tmp_extracted_dir)
 
         self._delete_older_plugin_version(plugin_name, plugin_version)
         tmp_zip.rename(target_zip)
