@@ -170,9 +170,9 @@ class PluginEngine:
             plugin_version = plugin_data.plugin_manifest.version
 
             self._delete_older_plugin_version(plugin_name, plugin_version)
-            tmp_zip.rename(Path(self.plugins_dir) / filename)
+            shutil.move(tmp_zip, Path(self.plugins_dir) / filename)
             logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
-            
+
         finally:
             shutil.rmtree(tmp_dir)
 
