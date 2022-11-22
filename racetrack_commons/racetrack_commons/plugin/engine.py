@@ -41,6 +41,8 @@ class PluginEngine:
                 duration = time.time() - start_time
                 plugin_plural = 'plugin' if len(self.plugins_data) == 1 else 'plugins'
                 logger.info(f'{len(self.plugins_data)} {plugin_plural} have been loaded in {duration:.2f}s')
+            else:
+                logger.info(f'No plugins to load')
 
     def invoke_plugin_hook(self, function: Callable, *args, **kwargs) -> List:
         """
