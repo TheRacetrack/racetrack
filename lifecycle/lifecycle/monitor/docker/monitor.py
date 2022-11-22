@@ -8,9 +8,12 @@ from lifecycle.monitor.metric_parser import read_last_call_timestamp_metric, scr
 from racetrack_client.log.exception import short_exception_details
 from racetrack_client.utils.shell import shell_output
 from racetrack_client.utils.time import datetime_to_timestamp, now
-from racetrack_commons.deploy.resource import fatman_resource_name, fatman_internal_name
+from racetrack_commons.api.debug import is_deployment_local
+from racetrack_commons.deploy.resource import fatman_resource_name
 from racetrack_commons.entities.dto import FatmanDto, FatmanStatus
 from racetrack_client.log.logs import get_logger
+
+FATMAN_INTERNAL_PORT = 7000  # Fatman listening port seen from inside the container
 
 logger = get_logger(__name__)
 
@@ -44,7 +47,7 @@ class DockerMonitor(FatmanMonitor):
                     create_time=datetime_to_timestamp(now()),
                     update_time=datetime_to_timestamp(now()),
                     manifest=None,
-                    internal_name=fatman_internal_name(resource_name, fatman_port, config.deployer),
+                    internal_name=self.fatman_internal_name(resource_name, fatman_port),
                     error=None,
                 )
                 try:
@@ -77,3 +80,10 @@ class DockerMonitor(FatmanMonitor):
     def read_recent_logs(self, fatman: FatmanDto, tail: int = 20) -> str:
         container_name = fatman_resource_name(fatman.name, fatman.version)
         return shell_output(f'docker logs "{container_name}" --tail {tail}')
+
+    @staticmethod
+    def fatman_internal_name(resource_name: str, fatman_port: str):
+        if is_deployment_local():
+            return f'localhost:{fatman_port}'
+        else:
+            return f'{resource_name}:{FATMAN_INTERNAL_PORT}'
