@@ -80,6 +80,7 @@ please follow the [Tutorial](docs/user.md#tutorial).
 * [Developing plugins](docs/development/developing-plugins.md)
 * [Developing a new job type](docs/development/plugins-job-types.md)
 
+See the [Documentation](https://theracetrack.github.io/racetrack/) for more details.
 
 ## Currently supported
 

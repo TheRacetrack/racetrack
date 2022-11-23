@@ -31,6 +31,8 @@ markdown_extensions:
   - pymdownx.highlight:
       use_pygments: true
   - pymdownx.superfences
+  - toc:
+      permalink: true
 plugins:
   - search
   - same-dir
@@ -50,6 +52,7 @@ nav:
     - User Guide: docs/user.md
     - Fatman Manifest File Schema: docs/manifest-schema.md
     - Python Job Type: docs/job_types/job_python3.md
+    - Permission model: docs/permissions.md
   - Plugins:
     - Using plugins: docs/development/using-plugins.md
     - Developing plugins: docs/development/developing-plugins.md
