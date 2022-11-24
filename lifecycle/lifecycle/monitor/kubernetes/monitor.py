@@ -13,7 +13,7 @@ from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.exception import short_exception_details
 from racetrack_client.utils.shell import CommandError, shell_output
 from racetrack_client.utils.time import datetime_to_timestamp
-from racetrack_commons.deploy.resource import fatman_resource_name, fatman_internal_name
+from racetrack_commons.deploy.resource import fatman_resource_name
 from racetrack_commons.entities.dto import FatmanDto, FatmanStatus
 from racetrack_client.log.logs import get_logger
 
@@ -52,7 +52,7 @@ class KubernetesMonitor(FatmanMonitor):
                 create_time=start_timestamp,
                 update_time=start_timestamp,
                 manifest=None,
-                internal_name=fatman_internal_name(resource_name, '', config.deployer),
+                internal_name=resource_name,
                 error=None,
             )
             try:

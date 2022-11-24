@@ -7,17 +7,18 @@ from lifecycle.deployer.base import FatmanDeployer
 from lifecycle.deployer.secrets import FatmanSecrets
 from lifecycle.fatman.models_registry import read_fatman_family_model
 from racetrack_client.client.env import merge_env_vars
+from racetrack_client.client.run import FATMAN_INTERNAL_PORT
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, shell_output
 from racetrack_client.utils.time import datetime_to_timestamp, now
-from racetrack_commons.plugin.core import PluginCore
-from racetrack_commons.plugin.engine import PluginEngine
+from racetrack_commons.api.debug import is_deployment_local
 from racetrack_commons.api.tracing import get_tracing_header_name
 from racetrack_commons.deploy.image import get_fatman_image, get_fatman_user_module_image
-from racetrack_commons.deploy.resource import fatman_resource_name, fatman_internal_name, FATMAN_INTERNAL_PORT, \
-    fatman_user_module_resource_name
+from racetrack_commons.deploy.resource import fatman_resource_name, fatman_user_module_resource_name
 from racetrack_commons.entities.dto import FatmanDto, FatmanStatus, FatmanFamilyDto
+from racetrack_commons.plugin.core import PluginCore
+from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
 
@@ -99,7 +100,7 @@ class DockerFatmanDeployer(FatmanDeployer):
             create_time=deployment_timestamp,
             update_time=deployment_timestamp,
             manifest=manifest,
-            internal_name=fatman_internal_name(entrypoint_resource_name, str(fatman_port), config.deployer),
+            internal_name=self.fatman_internal_name(entrypoint_resource_name, str(fatman_port)),
             image_tag=tag,
         )
 
@@ -149,3 +150,10 @@ class DockerFatmanDeployer(FatmanDeployer):
                            fatman_version: str,
                            ) -> FatmanSecrets:
         raise NotImplementedError("managing secrets is not supported on local docker")
+
+    @staticmethod
+    def fatman_internal_name(resource_name: str, fatman_port: str):
+        if is_deployment_local():
+            return f'localhost:{fatman_port}'
+        else:
+            return f'{resource_name}:{FATMAN_INTERNAL_PORT}'

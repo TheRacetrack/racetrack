@@ -39,42 +39,42 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
     plugins_data: List[PluginData] = []
 
     for plugin_zip_path in sorted(plugins_path.glob('*.zip')):
-        with wrap_context(f'extracting plugin from {plugin_zip_path.name}'):
-            plugin_data = load_plugin_from_zip(plugin_zip_path)
-            plugins_data.append(plugin_data)
+        plugin_data = load_plugin_from_zip(plugin_zip_path)
+        plugins_data.append(plugin_data)
 
     plugins_data.sort(key=lambda p: (p.plugin_manifest.priority, SemanticVersion(p.plugin_manifest.version)))
     return plugins_data
 
 
 def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
-    assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
-    
-    extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
-    if not extracted_plugins_dir.is_dir():
-        extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            extracted_plugins_dir.chmod(mode=0o777)
-        except PermissionError:
-            logger.warning(f'Can\'t change permissions of {extracted_plugins_dir}')
+    with wrap_context(f'loading plugin from {plugin_zip_path.name}'):
+        assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
+        
+        extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
+        if not extracted_plugins_dir.is_dir():
+            extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                extracted_plugins_dir.chmod(mode=0o777)
+            except PermissionError:
+                logger.warning(f'Can\'t change permissions of {extracted_plugins_dir}')
 
-    extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
-    
-    init_dir = False
-    if not extracted_plugin_path.is_dir():
-        extracted_plugin_path.mkdir(parents=True, exist_ok=True)
-        with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
-            zip_ref.extractall(extracted_plugin_path)
-        init_dir = True
+        extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
+        
+        init_dir = False
+        if not extracted_plugin_path.is_dir():
+            extracted_plugin_path.mkdir(parents=True, exist_ok=True)
+            with zipfile.ZipFile(plugin_zip_path.as_posix(), 'r') as zip_ref:
+                zip_ref.extractall(extracted_plugin_path)
+            init_dir = True
 
-    return load_plugin_from_dir(extracted_plugin_path, plugin_zip_path, init_dir)
+        return load_plugin_from_dir(extracted_plugin_path, plugin_zip_path, init_dir)
 
 
 def load_plugin_from_dir(plugin_dir: Path, zip_path: Path, init_dir: bool) -> PluginData:
     plugin_manifest = load_plugin_manifest(plugin_dir)
 
     _install_plugin_dependencies(plugin_dir)
-    plugin = _load_plugin_class(plugin_dir)
+    plugin = _load_plugin_class(plugin_dir, plugin_manifest)
     setattr(plugin, 'plugin_manifest', plugin_manifest)
     setattr(plugin, 'plugin_dir', plugin_dir)
 
@@ -105,10 +105,10 @@ def _install_plugin_dependencies(plugin_dir: Path):
     if requirements.is_file():
         dependencies = ', '.join(requirements.read_text().splitlines())
         logger.debug(f'installing package dependencies from {requirements}: {dependencies}')
-        shell(f'pip install -r requirements.txt', workdir=plugin_dir)
+        shell(f'pip install --user -r requirements.txt', workdir=plugin_dir)
 
 
-def _load_plugin_class(plugin_dir: Path) -> PluginCore:
+def _load_plugin_class(plugin_dir: Path, plugin_manifest: PluginManifest) -> PluginCore:
     """Load plugin class from plugin directory"""
     plugin_filename = (plugin_dir / PLUGIN_FILENAME).relative_to(plugin_dir)
 
@@ -118,15 +118,21 @@ def _load_plugin_class(plugin_dir: Path) -> PluginCore:
     sys.path.append(os.getcwd())
 
     try:
-        spec = importlib.util.spec_from_file_location("racetrack_plugin", plugin_filename)
-        ext_module = importlib.util.module_from_spec(spec)
-        loader: Optional[Loader] = spec.loader
-        assert loader is not None, 'no module loader'
-        loader.exec_module(ext_module)
+        with wrap_context(f'loading plugin class'):
+            spec = importlib.util.spec_from_file_location("racetrack_plugin", plugin_filename)
+            ext_module = importlib.util.module_from_spec(spec)
+            loader: Optional[Loader] = spec.loader
+            assert loader is not None, 'no module loader'
+            loader.exec_module(ext_module)
 
-        assert hasattr(ext_module, PLUGIN_CLASS_NAME), f'class name {PLUGIN_CLASS_NAME} was not found'
-        plugin_class = getattr(ext_module, PLUGIN_CLASS_NAME)
-        plugin = plugin_class()
+            assert hasattr(ext_module, PLUGIN_CLASS_NAME), f'class name {PLUGIN_CLASS_NAME} was not found'
+            plugin_class = getattr(ext_module, PLUGIN_CLASS_NAME)
+
+        setattr(plugin_class, 'plugin_manifest', plugin_manifest)
+        setattr(plugin_class, 'plugin_dir', plugin_dir)
+
+        with wrap_context(f'instantiating plugin class'):
+            plugin = plugin_class()
 
     finally:
         sys.path.remove(os.getcwd())

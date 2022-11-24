@@ -30,8 +30,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.api.debug import debug_mode_enabled
 from racetrack_commons.api.tracing import get_tracing_header_name
 from racetrack_commons.deploy.image import get_fatman_image, get_fatman_user_module_image
-from racetrack_commons.deploy.resource import fatman_resource_name, fatman_internal_name, \
-    fatman_user_module_resource_name
+from racetrack_commons.deploy.resource import fatman_resource_name, fatman_user_module_resource_name
 from racetrack_commons.entities.dto import FatmanDto, FatmanStatus, FatmanFamilyDto
 
 logger = get_logger(__name__)
@@ -120,7 +119,7 @@ class KubernetesFatmanDeployer(FatmanDeployer):
             create_time=deployment_timestamp,
             update_time=deployment_timestamp,
             manifest=manifest,
-            internal_name=fatman_internal_name(resource_name, '', config.deployer),
+            internal_name=resource_name,
             image_tag=tag,
         )
 
