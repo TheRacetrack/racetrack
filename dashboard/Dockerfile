@@ -27,7 +27,6 @@ COPY docs/. /src/docs/
 
 ENV DJANGO_DEBUG False
 ENV DJANGO_SETTINGS_MODULE "app.settings"
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION "python"
 CMD python -u main.py
 
 EXPOSE 7003
