@@ -1,6 +1,9 @@
 import os
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
+
+# Fix for OpenTelemetry to work with newer protobuf
+os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 
 from fastapi import FastAPI, Request, Response
 from opentelemetry import trace
