@@ -7,6 +7,7 @@ from lifecycle.deployer.base import FatmanDeployer
 from lifecycle.deployer.secrets import FatmanSecrets
 from lifecycle.fatman.models_registry import read_fatman_family_model
 from racetrack_client.client.env import merge_env_vars
+from racetrack_client.client.run import FATMAN_INTERNAL_PORT
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, shell_output
@@ -18,8 +19,6 @@ from racetrack_commons.deploy.resource import fatman_resource_name, fatman_user_
 from racetrack_commons.entities.dto import FatmanDto, FatmanStatus, FatmanFamilyDto
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
-
-FATMAN_INTERNAL_PORT = 7000  # Fatman listening port seen from inside the container
 
 logger = get_logger(__name__)
 

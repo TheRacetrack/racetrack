@@ -5,6 +5,7 @@ from lifecycle.config import Config
 from lifecycle.monitor.base import FatmanMonitor
 from lifecycle.monitor.health import check_until_fatman_is_operational, quick_check_fatman_condition
 from lifecycle.monitor.metric_parser import read_last_call_timestamp_metric, scrape_metrics
+from racetrack_client.client.run import FATMAN_INTERNAL_PORT
 from racetrack_client.log.exception import short_exception_details
 from racetrack_client.utils.shell import shell_output
 from racetrack_client.utils.time import datetime_to_timestamp, now
@@ -12,8 +13,6 @@ from racetrack_commons.api.debug import is_deployment_local
 from racetrack_commons.deploy.resource import fatman_resource_name
 from racetrack_commons.entities.dto import FatmanDto, FatmanStatus
 from racetrack_client.log.logs import get_logger
-
-FATMAN_INTERNAL_PORT = 7000  # Fatman listening port seen from inside the container
 
 logger = get_logger(__name__)
 
