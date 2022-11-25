@@ -80,6 +80,23 @@ def list_installed_plugins(lifecycle_url: str):
         print(info)
 
 
+def list_available_job_types(lifecycle_url: str):
+    """List job type versions available on a remote Racetrack server"""
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/job_type/versions',
+        headers=get_auth_request_headers(user_auth),
+    )
+    versions = parse_response_object(r, 'Lifecycle response error')
+
+    logger.info(f'Job type versions currently installed on {lifecycle_url} ({len(versions)}):')
+    for version in versions:
+        print(version)
+
+
 def _load_plugin_file(plugin_uri: str) -> Tuple[str, bytes]:
     local_file = Path(plugin_uri)
     if local_file.is_file():
