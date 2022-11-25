@@ -121,7 +121,9 @@ def user_profile(request):
 def view_administration(request):
     context = {}
     try:
-        context['plugins'] = LifecyclePluginClient().get_plugins_info()
+        plugin_client = LifecyclePluginClient()
+        context['plugins'] = plugin_client.get_plugins_info()
+        context['job_type_versions'] = plugin_client.get_job_type_versions()
     except Exception as e:
         log_exception(ContextError('Getting plugins data failed', e))
         context['error'] = str(e)

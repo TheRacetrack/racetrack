@@ -28,6 +28,18 @@
                 Racetrack: {{ racetrack_version }}
             </p>
 
+            <h5 class="card-title">Job Types</h5>
+            {% if job_type_versions|length > 0 %}
+            Available Job Type versions:
+            <ul>
+            {% for job_type_version in job_type_versions %}
+                <li>
+                    <span>{{ job_type_version }}</span>
+                </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+
             <h5 class="card-title">Plugins</h5>
             {% if plugins|length > 0 %}
             Active plugins:

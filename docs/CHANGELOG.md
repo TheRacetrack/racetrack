@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - "Portfolio" table in a Dashboard has a new column "Job type version".
 - List of available job types can be checked with:
-  `racetrack plugin list --job-types <racetrack_url>`
+  `racetrack plugin list --job-types <racetrack_url>`.
+  It is also listed in the *Administration* tab on *Dashboard*.
 
 ### Fixed
 - When uploading a faulty plugin, the errors are handled in a more reliable manner.
