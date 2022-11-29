@@ -56,7 +56,7 @@ class DockerBuilder(ImageBuilder):
             dockerfile_path = workspace / '.fatman.Dockerfile'
             racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
             template_dockerfile(manifest, job_type.template_path, dockerfile_path, base_image,
-                                git_version, racetrack_version, env_vars)
+                                git_version, racetrack_version, job_type.version, env_vars)
 
         full_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
 
@@ -92,10 +92,10 @@ def _build_base_image(
     metric_labels: Dict[str, str],
 ) -> str:
     base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{job_type.lang_name}:{job_type.version}')
-    if not _image_exists_in_registry(base_image):
+    if not config.cache_base_images or not _image_exists_in_registry(base_image):
         with wrap_context('building base image'):
             base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
-            logger.info(f'base image not found in a registry, rebuilding {base_image}, '
+            logger.info(f'rebuilding base image {base_image}, '
                         f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
             build_container_image(
                 base_image,

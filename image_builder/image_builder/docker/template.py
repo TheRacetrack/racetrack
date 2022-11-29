@@ -14,6 +14,7 @@ def template_dockerfile(
     base_image: Optional[str],
     git_version: str,
     deployed_by_racetrack_version: Optional[str],
+    job_type_version: Optional[str],
     env_vars: Dict[str, str],
 ):
     """
@@ -24,6 +25,7 @@ def template_dockerfile(
     :param base_image: Full name of base image
     :param git_version: version name from Fatman git history
     :param deployed_by_racetrack_version: Version of Racetrack the Fatman was deployed with
+    :param job_type_version: Version of Job Type used to build the Fatman's image
     :param env_vars: environment variables that should be set during building
     """
     template_content = Path(template_path).read_text()
@@ -35,6 +37,7 @@ def template_dockerfile(
         'resource_name': resource_name,
         'git_version': git_version,
         'deployed_by_racetrack_version': deployed_by_racetrack_version,
+        'job_type_version': job_type_version,
         'env_vars': env_vars,
     }
     templated = template.render(**render_vars)

@@ -29,6 +29,9 @@ class Config(BaseModel, extra=Extra.forbid):
     # Interval (in minutes) between tasks pruning build cache
     build_cache_prune_interval_m: float = 60
 
+    # Don't rebuild base Fatman image, if there is existing one (it makes images immutable)
+    cache_base_images: bool = True
+
     # Path to a directory with plugins to be loaded from
     plugins_dir: str = '.plugins'
 

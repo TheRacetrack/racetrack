@@ -1,8 +1,8 @@
-from typing import List
+from __future__ import annotations
 
 
 class AdderModel:
-    def perform(self, numbers: List[float]) -> float:
+    def perform(self, numbers: list[float]) -> float:
         """
         Add numbers.
         :param numbers: Numbers to add.
