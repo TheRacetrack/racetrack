@@ -8,7 +8,7 @@ import backoff
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.template import template_dockerfile
-from image_builder.job_type import JobTypeVersion, load_job_type
+from image_builder.job_type import JobType, load_job_type
 from image_builder.metrics import (
     metric_images_built,
     metric_images_building_errors,
@@ -39,7 +39,7 @@ class DockerBuilder(ImageBuilder):
         plugin_engine: PluginEngine,
     ) -> Tuple[str, str, Optional[str]]:
         """Build image from manifest file in a workspace directory and return built image name"""
-        job_type: JobTypeVersion = load_job_type(plugin_engine, manifest.lang)
+        job_type: JobType = load_job_type(plugin_engine, manifest.lang)
 
         _wait_for_docker_engine_ready()
 
@@ -87,7 +87,7 @@ class DockerBuilder(ImageBuilder):
 
 def _build_base_image(
     config: Config,
-    job_type: JobTypeVersion,
+    job_type: JobType,
     deployment_id: str,
     metric_labels: Dict[str, str],
 ) -> str:

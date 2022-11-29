@@ -62,7 +62,7 @@ def uninstall_plugin(
     logger.info(f'Plugin {plugin_name} {plugin_version} has been uninstalled from {lifecycle_url}')
 
 
-def list_installed_plugins(lifecycle_url: str):
+def list_installed_plugins(lifecycle_url: str) -> None:
     """List plugins installed on a remote Racetrack server"""
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
@@ -80,7 +80,7 @@ def list_installed_plugins(lifecycle_url: str):
         print(info)
 
 
-def list_available_job_types(lifecycle_url: str):
+def list_available_job_types(lifecycle_url: str) -> None:
     """List job type versions available on a remote Racetrack server"""
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)

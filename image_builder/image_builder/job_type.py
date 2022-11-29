@@ -12,7 +12,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 
 
 @dataclass
-class JobTypeVersion:
+class JobType:
     lang_name: str
     version: str  # semantic version of the job type
     base_image_path: Path  # base Dockerfile path
@@ -23,7 +23,7 @@ class JobTypeVersion:
 def load_job_type(
     plugin_engine: PluginEngine,
     lang: str,
-) -> JobTypeVersion:
+) -> JobType:
     """
     Load job type.
     In case it's not found, retry attempts due to possible delayed plugins loading
@@ -37,13 +37,13 @@ def load_job_type(
 
 def gather_job_types(
     plugin_engine: PluginEngine,
-) -> dict[str, JobTypeVersion]:
+) -> dict[str, JobType]:
     """
     Load job types from plugins.
     Return job name (with version) -> (base image name, dockerfile template path)
     """
-    job_types: dict[str, JobTypeVersion] = {}
-    job_family_versions: dict[str, list[JobTypeVersion]] = defaultdict(list)
+    job_types: dict[str, JobType] = {}
+    job_family_versions: dict[str, list[JobType]] = defaultdict(list)
 
     plugin_results: list[dict[str, tuple[Path, Path]]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
     for plugin_job_types in plugin_results:
@@ -56,7 +56,7 @@ def gather_job_types(
                 assert len(name_parts) == 2, f'job type {job_full_name} should have the version defined (name:version)'
                 lang_name = name_parts[0]
                 lang_version = name_parts[1]
-                job_type_version = JobTypeVersion(lang_name, lang_version, base_image_path, template_path)
+                job_type_version = JobType(lang_name, lang_version, base_image_path, template_path)
                 job_types[job_full_name] = job_type_version
                 job_family_versions[lang_name].append(job_type_version)
 

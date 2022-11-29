@@ -29,33 +29,37 @@
             </p>
 
             <h5 class="card-title">Job Types</h5>
-            {% if job_type_versions|length > 0 %}
             Available Job Type versions:
-            <ul>
-            {% for job_type_version in job_type_versions %}
-                <li>
-                    <span>{{ job_type_version }}</span>
-                </li>
-            {% endfor %}
-            </ul>
+            {% if job_type_versions|length > 0 %}
+                <ul>
+                {% for job_type_version in job_type_versions %}
+                    <li>
+                        <span>{{ job_type_version }}</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>empty</p>
             {% endif %}
 
             <h5 class="card-title">Plugins</h5>
-            {% if plugins|length > 0 %}
             Active plugins:
-            <ul>
-            {% for plugin in plugins %}
-                <li>
-                    <span>{{ plugin.name }} (version {{ plugin.version }})</span>
-                    {% if plugin.url %}
-                    <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
-                    {% endif %}
-                    {% if user.is_staff %}
-                    <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
-                    {% endif %}
-                </li>
-            {% endfor %}
-            </ul>
+            {% if plugins|length > 0 %}
+                <ul>
+                {% for plugin in plugins %}
+                    <li>
+                        <span>{{ plugin.name }} (version {{ plugin.version }})</span>
+                        {% if plugin.url %}
+                        <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
+                        {% endif %}
+                        {% if user.is_staff %}
+                        <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>empty</p>
             {% endif %}
 
             {% if user.is_staff %}
