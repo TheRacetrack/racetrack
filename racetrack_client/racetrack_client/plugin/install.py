@@ -62,7 +62,7 @@ def uninstall_plugin(
     logger.info(f'Plugin {plugin_name} {plugin_version} has been uninstalled from {lifecycle_url}')
 
 
-def list_installed_plugins(lifecycle_url: str):
+def list_installed_plugins(lifecycle_url: str) -> None:
     """List plugins installed on a remote Racetrack server"""
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
@@ -78,6 +78,23 @@ def list_installed_plugins(lifecycle_url: str):
     logger.info(f'Plugins currently installed on {lifecycle_url} ({len(plugin_infos)}):')
     for info in plugin_infos:
         print(info)
+
+
+def list_available_job_types(lifecycle_url: str) -> None:
+    """List job type versions available on a remote Racetrack server"""
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/job_type/versions',
+        headers=get_auth_request_headers(user_auth),
+    )
+    versions = parse_response_object(r, 'Lifecycle response error')
+
+    logger.info(f'Job type versions currently installed on {lifecycle_url} ({len(versions)}):')
+    for version in versions:
+        print(version)
 
 
 def _load_plugin_file(plugin_uri: str) -> Tuple[str, bytes]:

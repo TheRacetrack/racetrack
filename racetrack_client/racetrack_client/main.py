@@ -9,7 +9,7 @@ from racetrack_client.client_config.auth import login_user_auth, logout_user_aut
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_config_setting, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
-from racetrack_client.plugin.install import install_plugin, list_installed_plugins, uninstall_plugin
+from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
 from racetrack_client.client.run import run_fatman_locally
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
@@ -157,6 +157,7 @@ def main():
     # racetrack plugin list
     parser_plugin_list = subparsers_plugin.add_parser('list', help='List plugins installed on a remote Racetrack server')
     parser_plugin_list.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_list.add_argument('--job-types', action='store_true', help='list available job type versions')
     parser_plugin_list.set_defaults(func=_list_installed_plugins)
 
     # racetrack plugin bundle
@@ -239,7 +240,10 @@ def _uninstall_plugin(args: argparse.Namespace):
 
 
 def _list_installed_plugins(args: argparse.Namespace):
-    list_installed_plugins(args.racetrack_url)
+    if args.job_types:
+        list_available_job_types(args.racetrack_url)
+    else:
+        list_installed_plugins(args.racetrack_url)
 
 
 def _plugin_bundle(args: argparse.Namespace):

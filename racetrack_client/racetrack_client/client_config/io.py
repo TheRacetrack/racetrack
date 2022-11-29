@@ -21,7 +21,7 @@ def load_client_config() -> ClientConfig:
             config_dict = yaml.load(file, Loader=yaml.FullLoader)
             config = ClientConfig.parse_obj(config_dict)
 
-            logger.info(f'client config loaded from {path}')
+            logger.debug(f'client config loaded from {path}')
             return config
     except Exception as e:
         raise RuntimeError('loading client config failed') from e
