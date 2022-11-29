@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from image_builder.config import Config
 from image_builder.build import build_fatman_image
 from image_builder.health import health_response
+from image_builder.job_type import list_available_job_types
 from image_builder.scheduler import schedule_tasks_async
 from racetrack_client.client_config.io import load_credentials_from_dict
 from racetrack_client.log.logs import init_logs, configure_logs
@@ -139,3 +140,8 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
             'logs': logs,
             'error': error,
         }
+
+    @api.get('/job_type/versions')
+    def _get_job_type_versions():
+        """List available job type versions"""
+        return list_available_job_types(plugin_engine)
