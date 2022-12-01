@@ -18,8 +18,11 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
     apt-get update -y && apt-get install -y docker-ce-cli &&\
     rm -rf /var/lib/apt/lists/*
 # apt cache is cleaned automatically, see /etc/apt/apt.conf.d/docker-clean
+
 RUN useradd -u 100000 -m racetrack &&\
-  mkdir -p -m 777 /home/racetrack/.docker
+  mkdir -p -m 777 \
+    /home/racetrack/.docker \
+    /home/racetrack/.local/lib/python3.9/site-packages
 
 # install kubectl
 RUN curl -L "https://dl.k8s.io/release/v1.24.3/bin/linux/amd64/kubectl" \
@@ -42,10 +45,7 @@ RUN cd /src/racetrack_client && python setup.py develop &&\
   cd /src/racetrack_commons && python setup.py develop &&\
   cd /src/lifecycle && python setup.py develop
 
-# give permissions to modify sqlite db and download plugins
-RUN mkdir -p -m 777 /.cache /.local /src/lifecycle/lifecycle/django && \
-    chmod 777 -R /src/lifecycle/lifecycle/django && \
-    chmod 777 /usr/local/lib/python3.9/site-packages
+RUN chmod 777 -R /src/lifecycle/lifecycle/django
 
 ENV DJANGO_SETTINGS_MODULE "lifecycle.django.app.settings"
 CMD python -u -m lifecycle serve

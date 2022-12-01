@@ -1,4 +1,4 @@
-FROM python:3.8-slim-bullseye
+FROM python:3.9-slim-bullseye
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
@@ -17,8 +17,13 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
     apt-get update -y && apt-get install -y docker-ce-cli &&\
     rm -rf /var/lib/apt/lists/*
 # apt cache is cleaned automatically, see /etc/apt/apt.conf.d/docker-clean
+
 RUN useradd -u 100000 -m racetrack &&\
-  mkdir -p -m 777 /var/log/racetrack/image-builder/build-logs /src/workspaces /home/racetrack/.docker
+  mkdir -p -m 777 \
+    /home/racetrack/.docker \
+    /home/racetrack/.local/lib/python3.9/site-packages \
+    /var/log/racetrack/image-builder/build-logs \
+    /src/workspaces
 
 WORKDIR /src/
 COPY .dockerignore /src/
