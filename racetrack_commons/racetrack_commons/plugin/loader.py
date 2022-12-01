@@ -105,7 +105,7 @@ def _install_plugin_dependencies(plugin_dir: Path):
     if requirements.is_file():
         dependencies = ', '.join(requirements.read_text().splitlines())
         logger.debug(f'installing package dependencies from {requirements}: {dependencies}')
-        shell(f'pip install --user -r requirements.txt', workdir=plugin_dir)
+        shell(f'python -m pip install --user -r requirements.txt', workdir=plugin_dir)
 
 
 def _load_plugin_class(plugin_dir: Path, plugin_manifest: PluginManifest) -> PluginCore:
