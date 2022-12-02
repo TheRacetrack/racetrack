@@ -59,7 +59,7 @@ nav:
     - Job type plugins: docs/development/plugins-job-types.md
   - Development:
     - Developer manual: docs/development/develop.md
-    - Deployment: docs/development/deployment.md
+    - Deployment & Release: docs/development/deployment.md
   - Administering: docs/admin.md
   - Changelog: docs/CHANGELOG.md
   - Glossary: docs/glossary.md
