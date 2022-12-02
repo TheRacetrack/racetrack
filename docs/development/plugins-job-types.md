@@ -286,7 +286,8 @@ Every wrapper has to follow some rules:
 - You MAY implement swagger documentation for your endpoints on root endpoint.
 - You MAY implement `/metrics` endpoint for exposing Prometheus metrics.
 - You MAY expose any other endpoints.
-
+- Be careful to isolate libraries / requirements installed by the user
+  from the versions of the libraries used by the core wrapper.
 
 ### 4. Prepare base Dockerfile
 

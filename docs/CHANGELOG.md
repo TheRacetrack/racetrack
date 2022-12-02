@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - When uploading a faulty plugin, the errors are handled in a more reliable manner.
-- `python3` base image has now `git` and `build-essential` installed (again).
 - Plugin's requirements are installed with non-root user context.
 - Plugin directory is accessible when initializing the plugin in `__init__` method.
 
