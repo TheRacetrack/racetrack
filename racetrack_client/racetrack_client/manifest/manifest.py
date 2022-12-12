@@ -53,7 +53,7 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
         return Quantity(str(v))
 
 
-class Manifest(BaseModel, extra=Extra.forbid):
+class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     """Fatman Manifest file - build recipe to get deployable image from source code workspace"""
 
     # name of the Fatman Workload
@@ -111,3 +111,6 @@ class Manifest(BaseModel, extra=Extra.forbid):
 
     # Language wrapper attributes
     wrapper_properties: Optional[Dict[str, Any]] = None
+
+    # Back-end platform where to deploy the service
+    infrastructure_target: Optional[str] = None

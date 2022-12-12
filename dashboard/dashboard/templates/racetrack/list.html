@@ -34,6 +34,10 @@
                     <span class="badge bg-warning text-dark ms-2">{{ fatman.status | upper }}</span>
                     {% endif %}
 
+                    {% if fatman.infrastructure_target %}
+                    <span class="badge rounded-pill bg-info text-dark ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Infrastructure Target">{{ fatman.infrastructure_target }}</span>
+                    {% endif %}
+
                     {% fatman_labels fatman as labels %}
                     {% for label in labels %}
                     <span class="badge rounded-pill bg-info text-dark ms-2">{{ label.name }}: {{ label.value }}</span>
@@ -79,9 +83,7 @@
 
                         <div class="mt-2">
                             <div class="btn-group" role="group">
-                                {% if fatman.status == "running" %}
                                 <a href="{{ external_pub_url }}/fatman/{{ fatman.name }}/{{ fatman.version }}" class="btn btn-outline-primary align-middle" target="_blank" rel="noopener noreferrer">Open</a>
-                                {% endif %}
 
                                 <div class="btn-group" role="group">
                                     <button id="btnGroupLogs-{{ fatman.id }}" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

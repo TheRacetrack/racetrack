@@ -123,7 +123,6 @@ services:
     user: '100000:100000'
     environment:
       PUB_PORT: '7105'
-      FORWARD_TO_DOMAIN: 'localhost'
       LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
       AUTH_REQUIRED: 'true'
       AUTH_DEBUG: 'true'

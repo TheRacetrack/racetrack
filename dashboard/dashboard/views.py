@@ -124,6 +124,7 @@ def view_administration(request):
         plugin_client = LifecyclePluginClient()
         context['plugins'] = plugin_client.get_plugins_info()
         context['job_type_versions'] = plugin_client.get_job_type_versions()
+        context['infrastructure_targets'] = plugin_client.get_infrastructure_targets()
     except Exception as e:
         log_exception(ContextError('Getting plugins data failed', e))
         context['error'] = str(e)
@@ -157,6 +158,21 @@ def upload_plugin(request):
 
 
 @login_required
+def plugin_config_editor(request, plugin_name: str, plugin_version: str):
+    context = {
+        'plugin_name': plugin_name,
+        'plugin_version': plugin_version,
+    }
+    try:
+        plugin_client = LifecyclePluginClient(auth_token=get_auth_token(request))
+        context['plugin_config'] = plugin_client.read_plugin_config(plugin_name, plugin_version)
+    except Exception as e:
+        log_exception(ContextError('Getting plugin data failed', e))
+        context['error'] = str(e)
+    return render(request, 'racetrack/plugin_config_editor.html', context)
+
+
+@login_required
 def delete_plugin(request, plugin_name: str, plugin_version: str):
     try:
         client = LifecyclePluginClient(auth_token=get_auth_token(request))
@@ -166,6 +182,16 @@ def delete_plugin(request, plugin_name: str, plugin_version: str):
         return JsonResponse({'error': str(e)}, status=500)
     return HttpResponse(status=204)
 
+@login_required
+def write_plugin_config(request, plugin_name: str, plugin_version: str):
+    try:
+        client = LifecyclePluginClient(auth_token=get_auth_token(request))
+        config_data = request.body.decode()
+        client.write_plugin_config(plugin_name, plugin_version, config_data)
+    except Exception as e:
+        log_exception(ContextError('Updating plugin config failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+    return HttpResponse(status=200)
 
 @login_required
 def dependencies_graph(request):

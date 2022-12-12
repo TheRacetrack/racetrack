@@ -9,22 +9,11 @@ import (
 
 // Returns target proxy URL for fatman, which is accessed at urlPath
 func TargetURL(cfg *Config, fatman *FatmanDetails, urlPath string) url.URL {
-
-	var host string
-	// useful for tests when target domain is localhost
-	if cfg.ForwardToDomain == "localhost" {
-		host = fatman.InternalName
-	} else {
-		host = fmt.Sprintf("%s.%s:%s", fatman.InternalName, cfg.ForwardToDomain, cfg.ForwardToPort)
-	}
-
-	target := url.URL{
+	return url.URL{
 		Scheme: cfg.ForwardToProtocol,
-		Host:   host,
+		Host:   fatman.InternalName,
 		Path:   urlPath,
 	}
-
-	return target
 }
 
 func JoinURL(base string, paths ...string) string {

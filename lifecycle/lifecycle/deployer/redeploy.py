@@ -10,7 +10,7 @@ from lifecycle.django.registry import models
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.manifest.manifest import Manifest
 from racetrack_commons.plugin.engine import PluginEngine
-from racetrack_commons.entities.dto import DeploymentStatus
+from racetrack_commons.entities.dto import DeploymentStatus, FatmanDto
 
 
 def redeploy_fatman(
@@ -26,24 +26,24 @@ def redeploy_fatman(
     manifest = fatman.manifest
     assert fatman.manifest is not None, "fatman doesn't have Manifest data specified"
 
-    deployment_id = create_deployment(manifest, deployer_username)
+    infra_target = fatman.infrastructure_target
+    deployment = create_deployment(manifest, deployer_username, infra_target)
     try:
-        fatman_secrets = _retrieve_fatman_secrets(config, manifest, plugin_engine)
+        fatman_secrets = _retrieve_fatman_secrets(config, manifest, plugin_engine, fatman)
 
         with wrap_context('redeploying fatman'):
             build_and_provision(
-                config, manifest, fatman_secrets, deployment_id,
+                config, manifest, fatman_secrets, deployment,
                 build_context=None,
-                deployer_username=deployer_username,
                 auth_subject=auth_subject,
                 previous_fatman=fatman,
                 plugin_engine=plugin_engine,
             )
 
-        save_deployment_result(deployment_id, DeploymentStatus.DONE)
+        save_deployment_result(deployment.id, DeploymentStatus.DONE)
 
     except BaseException as e:
-        save_deployment_result(deployment_id, DeploymentStatus.FAILED, error=str(e))
+        save_deployment_result(deployment.id, DeploymentStatus.FAILED, error=str(e))
         raise e
 
 
@@ -61,28 +61,29 @@ def reprovision_fatman(
     assert fatman.manifest is not None, "fatman doesn't have Manifest data specified"
     assert fatman.image_tag is not None, "latest image tag is unknown"
 
-    deployment_id = create_deployment(manifest, deployer_username)
+    infra_target = fatman.infrastructure_target
+    deployment = create_deployment(manifest, deployer_username, infra_target)
     try:
         if manifest.secret_runtime_env_file:
-            fatman_secrets = _retrieve_fatman_secrets(config, manifest, plugin_engine)
+            fatman_secrets = _retrieve_fatman_secrets(config, manifest, plugin_engine, fatman)
         else:
             fatman_secrets = FatmanSecrets(git_credentials=None, secret_build_env={}, secret_runtime_env={})
 
         with wrap_context('reprovisioning fatman'):
             provision_fatman(
                 config, manifest, fatman.image_tag, fatman_secrets.secret_build_env,
-                fatman_secrets.secret_runtime_env, deployment_id, deployer_username,
+                fatman_secrets.secret_runtime_env, deployment,
                 auth_subject, None, plugin_engine,
             )
 
-        save_deployment_result(deployment_id, DeploymentStatus.DONE)
+        save_deployment_result(deployment.id, DeploymentStatus.DONE)
 
     except BaseException as e:
-        save_deployment_result(deployment_id, DeploymentStatus.FAILED, error=str(e))
+        save_deployment_result(deployment.id, DeploymentStatus.FAILED, error=str(e))
         raise e
 
 
-def _retrieve_fatman_secrets(config: Config, manifest: Manifest, plugin_engine: PluginEngine) -> FatmanSecrets:
+def _retrieve_fatman_secrets(config: Config, manifest: Manifest, plugin_engine: PluginEngine, fatman: FatmanDto) -> FatmanSecrets:
     with wrap_context('retrieving fatman secrets'):
-        fatman_deployer = get_fatman_deployer(config, plugin_engine)
+        fatman_deployer = get_fatman_deployer(plugin_engine, fatman.infrastructure_target)
         return fatman_deployer.get_fatman_secrets(manifest.name, manifest.version)

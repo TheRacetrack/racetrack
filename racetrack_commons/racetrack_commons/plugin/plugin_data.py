@@ -10,3 +10,4 @@ class PluginData:
     zip_path: Path
     plugin_manifest: PluginManifest
     plugin_instance: PluginCore
+    config_path: Path

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import contextlib
 import threading
 from typing import Dict
@@ -12,14 +13,15 @@ logger = get_logger(__name__)
 
 
 class SocketIOServer:
-    def __init__(self, logs_streamer: LogsStreamer):
+    def __init__(self, log_streamers: list[LogsStreamer]):
         """
         Socket.IO server for streaming data to clients
         :param logs_streamer: Source of logs
         """
         self.sio = socketio.Server(async_mode='threading')
         self.client_resources: Dict[str, Dict[str, str]] = {}  # Map Client ID to a resource
-        logs_streamer.broadcaster = self.broadcast_logs_nextline
+        for log_streamer in log_streamers:
+            log_streamer.broadcaster = self.broadcast_logs_nextline
 
         @self.sio.event
         def connect(client_id: str, environ):
@@ -36,7 +38,8 @@ class SocketIOServer:
                 self.client_resources[client_id] = resource_properties
                 session_id = self.get_session_id(client_id, resource_properties)
                 logger.info(f'Creating consumer session: {session_id}')
-                logs_streamer.create_session(session_id, resource_properties)
+                for log_streamer in log_streamers:
+                    log_streamer.create_session(session_id, resource_properties)
                 return session_id
 
         @self.sio.event
@@ -47,7 +50,8 @@ class SocketIOServer:
                 del self.client_resources[client_id]
                 session_id = self.get_session_id(client_id, resource_properties)
                 logger.info(f'Consumer session closed: {session_id}')
-                logs_streamer.close_session(session_id)
+                for log_streamer in log_streamers:
+                    log_streamer.close_session(session_id)
 
         self.wsgi_app = socketio.WSGIApp(self.sio, socketio_path='lifecycle/socket.io')
 

@@ -1,5 +1,6 @@
+from __future__ import annotations
 from abc import ABC
-from typing import Dict, Optional, Tuple, Any
+from typing import Any
 from pathlib import Path
 
 from racetrack_client.manifest import Manifest
@@ -9,13 +10,20 @@ from racetrack_commons.entities.dto import FatmanDto
 class PluginCore(ABC):
     """
     Abstract Racetrack Plugin with method interfaces to override
-    
+
     Additional attributes can be used:
     - self.plugin_dir: pathlib.Path - path to a plugin directory
-    - self.plugin_manifest: PluginManifest - Details of the contents of the plugin
+    - self.plugin_manifest: racetrack_client.plugin.plugin_manifest.PluginManifest - Details of the contents of the plugin
+    - self.config_path: pathlib.Path - path to a file with plugin's config
     """
 
-    def post_fatman_deploy(self, manifest: Manifest, fatman: FatmanDto, image_name: str, deployer_username: str = None):
+    def post_fatman_deploy(
+        self,
+        manifest: Manifest,
+        fatman: FatmanDto,
+        image_name: str,
+        deployer_username: str | None = None,
+    ):
         """
         Supplementary actions invoked after fatman is deployed
         :param image_name: full name of the fatman image
@@ -23,45 +31,32 @@ class PluginCore(ABC):
         """
         pass
 
-    def fatman_runtime_env_vars(self) -> Optional[Dict[str, str]]:
+    def fatman_runtime_env_vars(self) -> dict[str, str] | None:
         """Supplementary env vars dictionary added to runtime vars when deploying a Fatman"""
         return None
 
-    def fatman_job_types(self) -> Dict[str, Tuple[Path, Path]]:
+    def fatman_job_types(self) -> dict[str, tuple[Path, Path]]:
         """
         Job types provided by this plugin
         :return dict of job type name (with version) -> (base image path, dockerfile template path)
         """
         return {}
 
-    def fatman_deployers(self) -> Dict[str, Any]:
+    def infrastructure_targets(self) -> dict[str, Any]:
         """
-        Fatman Deployers provided by this plugin
-        :return dict of deployer name -> an instance of lifecycle.deployer.base.FatmanDeployer
-        """
-        return {}
-
-    def fatman_monitors(self) -> Dict[str, Any]:
-        """
-        Fatman Monitors provided by this plugin
-        :return dict of deployer name -> an instance of lifecycle.monitor.base.FatmanMonitor
+        Infrastructure Targets (deployment targets for Fatmen) provided by this plugin
+        Infrastructure Target should contain Fatman Deployer, Fatman Monitor and Fatman Logs Streamer.
+        :return dict of infrastructure name -> an instance of lifecycle.deployer.infra_target.InfrastructureTarget
         """
         return {}
 
-    def fatman_logs_streamers(self) -> Dict[str, Any]:
-        """
-        Fatman Monitors provided by this plugin
-        :return dict of deployer name -> an instance of lifecycle.monitor.base.LogsStreamer
-        """
-        return {}
-
-    def markdown_docs(self) -> Optional[str]:
+    def markdown_docs(self) -> str | None:
         """
         Return documentation for this plugin in markdown format
         """
         return None
 
-    def post_fatman_delete(self, fatman: FatmanDto, username_executor: str = None):
+    def post_fatman_delete(self, fatman: FatmanDto, username_executor: str | None = None):
         """
         Supplementary actions invoked after fatman is deleted
         :param username_executor: username of the user who deleted the fatman

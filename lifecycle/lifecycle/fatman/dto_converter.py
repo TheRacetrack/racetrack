@@ -30,6 +30,7 @@ def fatman_model_to_dto(model: models.Fatman, config: Config) -> FatmanDto:
         image_tag=model.image_tag,
         deployed_by=model.deployed_by,
         last_call_time=datetime_to_timestamp(model.last_call_time) if model.last_call_time is not None else None,
+        infrastructure_target=model.infrastructure_target,
     )
 
 
@@ -42,6 +43,7 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         deployed_by=model.deployed_by,
         phase=model.phase,
         image_name=model.image_name,
+        infrastructure_target=model.infrastructure_target,
     )
 
 

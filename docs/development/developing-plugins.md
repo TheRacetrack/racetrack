@@ -87,31 +87,15 @@ def fatman_job_types(self) -> Dict[str, Tuple[Path, Path]]:
     """
 ```
 
-- `fatman_deployers` - Fatman Deployers provided by this plugin
+- `infrastructure_targets` - Infrastructure Targets (deployment targets for Fatmen) provided by this plugin.
 ```python
-def fatman_deployers(self) -> Dict[str, Any]:
+def infrastructure_targets(self) -> dict[str, Any]:
     """
-    Fatman Deployers provided by this plugin
-    :return dict of deployer name -> an instance of lifecycle.deployer.base.FatmanDeployer
+    Infrastructure Targets (deployment targets for Fatmen) provided by this plugin
+    Infrastructure Target should contain Fatman Deployer, Fatman Monitor and Fatman Logs Streamer.
+    :return dict of infrastructure name -> an instance of lifecycle.deployer.infra_target.InfrastructureTarget
     """
-```
-
-- `fatman_monitors` - Fatman Monitors provided by this plugin
-```python
-def fatman_monitors(self) -> Dict[str, Any]:
-    """
-    Fatman Monitors provided by this plugin
-    :return dict of deployer name -> an instance of lifecycle.monitor.base.FatmanMonitor
-    """
-```
-
-- `fatman_logs_streamers` - Fatman Monitors provided by this plugin
-```python
-def fatman_logs_streamers(self) -> Dict[str, Any]:
-    """
-    Fatman Monitors provided by this plugin
-    :return dict of deployer name -> an instance of lifecycle.monitor.base.LogsStreamer
-    """
+    return {}
 ```
 
 - `markdown_docs` - Return documentation for this plugin in markdown format

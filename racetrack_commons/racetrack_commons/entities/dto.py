@@ -19,7 +19,7 @@ class FatmanFamilyDto(BaseModel):
     id: Optional[str] = None
 
 
-class FatmanDto(BaseModel):
+class FatmanDto(BaseModel, arbitrary_types_allowed=True):
     name: str
     version: str
     status: str
@@ -37,6 +37,7 @@ class FatmanDto(BaseModel):
     # username of the last deployer
     deployed_by: Optional[str] = None
     last_call_time: Optional[int] = None
+    infrastructure_target: Optional[str] = None
 
     def __str__(self):
         return f'{self.name} v{self.version}'
@@ -48,7 +49,7 @@ class DeploymentStatus(Enum):
     FAILED = 'failed'  # deployment failed with an error
 
 
-class DeploymentDto(BaseModel):
+class DeploymentDto(BaseModel, arbitrary_types_allowed=True):
     id: str
     status: str
     error: Optional[str] = None
@@ -56,6 +57,7 @@ class DeploymentDto(BaseModel):
     deployed_by: Optional[str] = None  # username of the last deployer
     phase: Optional[str] = None  # phase (step) of the deployment
     image_name: Optional[str] = None
+    infrastructure_target: Optional[str] = None
 
 
 class EscDto(BaseModel):

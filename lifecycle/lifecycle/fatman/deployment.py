@@ -18,7 +18,8 @@ from racetrack_client.utils.time import now
 def create_deployment(
     manifest: Manifest,
     username: str,
-) -> str:
+    infrastructure_target: str,
+) -> DeploymentDto:
     check_for_concurrent_deployments(manifest)
 
     deployment_id = str(uuid.uuid4())
@@ -31,9 +32,10 @@ def create_deployment(
         fatman_name=manifest.name,
         fatman_version=manifest.version,
         deployed_by=username,
+        infrastructure_target=infrastructure_target,
     )
     deployment.save()
-    return deployment_id
+    return deployment_model_to_dto(deployment)
 
 
 def check_for_concurrent_deployments(manifest: Manifest):

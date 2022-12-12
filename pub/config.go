@@ -9,8 +9,6 @@ type Config struct {
 	LogLevel              string `env:"LOG_LEVEL" envDefault:"debug"`
 	ListenPort            string `env:"PUB_PORT" envDefault:"7205"`
 	ForwardToProtocol     string `env:"FORWARD_TO_PROTOCOL" envDefault:"http"`
-	ForwardToDomain       string `env:"FORWARD_TO_DOMAIN" envDefault:"racetrack.svc"`
-	ForwardToPort         string `env:"FORWARD_TO_PORT" envDefault:"7000"`
 	GitVersion            string `env:"GIT_VERSION"`
 	LifecycleUrl          string `env:"LIFECYCLE_URL" envDefault:"http://localhost:7202/lifecycle"`
 	AuthRequired          bool   `env:"AUTH_REQUIRED" envDefault:"false"`
