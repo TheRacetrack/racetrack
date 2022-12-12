@@ -3,7 +3,7 @@ from fastapi.responses import Response, JSONResponse
 
 from lifecycle.auth.authenticate import authenticate_token
 from lifecycle.auth.authorize import authorize_internal_token, authorize_resource_access, grant_permission
-from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_fatman_family
+from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_fatman_family, regenerate_all_esc_tokens, regenerate_all_fatman_family_tokens, regenerate_all_user_tokens
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
 from lifecycle.fatman.esc import read_esc_model
@@ -79,3 +79,22 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         esc_model = read_esc_model(esc_id)
         auth_subject = get_auth_subject_by_esc(esc_model)
         return {'token': auth_subject.token}
+
+    @api.post('/auth/token/user/regenerate')
+    def _generate_tokens_for_all_users(request: Request):
+        """Generate new tokens for all Users"""
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        regenerate_all_user_tokens()
+        
+    @api.post('/auth/token/fatman_family/regenerate')
+    def _generate_tokens_for_all_fatman_families(request: Request):
+        """Generate new tokens for all Fatman Families"""
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        regenerate_all_fatman_family_tokens()
+        
+    @api.post('/auth/token/esc/regenerate')
+    def _generate_tokens_for_all_escs(request: Request):
+        """Generate new tokens for all ESCs"""
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        regenerate_all_esc_tokens()
+        
