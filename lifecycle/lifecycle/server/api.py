@@ -30,17 +30,17 @@ from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.telemetry.otlp import setup_opentelemetry
 
 logger = get_logger(__name__)
-BASE_URL = '/lifecycle'
 
 
-def run_api_server(config: Config, plugin_engine: PluginEngine):
+def run_api_server(config: Config, plugin_engine: PluginEngine, service_name: str = 'lifecycle'):
     """Create app from config and run ASGI HTTP server"""
-    app = create_fastapi_app(config, plugin_engine)
+    app = create_fastapi_app(config, plugin_engine, service_name)
     serve_asgi_app(app, config.http_addr, config.http_port)
 
 
-def create_fastapi_app(config: Config, plugin_engine: PluginEngine) -> ASGIApp:
+def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str) -> ASGIApp:
     """Create FastAPI app and register all endpoints without running a server"""
+    BASE_URL = f'/{service_name}'
     fastapi_app = create_fastapi(
         title='Lifecycle API Server',
         description='Management of deployed Fatman Workloads',
