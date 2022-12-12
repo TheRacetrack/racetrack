@@ -5,7 +5,7 @@ from racetrack_client.utils.config import load_config
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
 from lifecycle.server.api import run_api_server
-from lifecycle.server.scheduler import schedule_tasks_sync
+from lifecycle.server.scheduler import schedule_tasks_async
 from lifecycle.server.supervisor import startup_check
 
 
@@ -25,7 +25,8 @@ def run_lifecycle_supervisor():
     config, plugin_engine = _init_lifecycle()
     logger.info("Starting Lifecycle Supervisor")
     startup_check()
-    schedule_tasks_sync(config, plugin_engine)
+    schedule_tasks_async(config, plugin_engine)
+    run_api_server(config, plugin_engine, 'lifecycle-supervisor')
 
 
 def _init_lifecycle() -> Tuple[Config, PluginEngine]:
