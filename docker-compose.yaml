@@ -36,8 +36,6 @@ services:
       context: .
       dockerfile: lifecycle/Dockerfile
     image: ghcr.io/theracetrack/racetrack/lifecycle:latest
-    ports:
-      - "7107:7102"
     networks:
       - racetrack_default
     extra_hosts:

@@ -1,18 +1,12 @@
 import time
-from threading import Thread
 
 import schedule
-
 from lifecycle.config import Config
 from lifecycle.fatman.registry import sync_registry_fatmen
 from lifecycle.fatman.reconcile import reconcile_fatmen
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
-
-
-def schedule_tasks_async(config: Config, plugin_engine: PluginEngine):
-    Thread(target=schedule_tasks_sync, args=(config, plugin_engine), daemon=True).start()
 
 
 def schedule_tasks_sync(config: Config, plugin_engine: PluginEngine):
