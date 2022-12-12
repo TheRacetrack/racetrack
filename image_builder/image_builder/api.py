@@ -68,7 +68,7 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         username: str = Field(example="admin")
         password: str = Field(example="hunter2")
 
-    class BuildPayloadModel(BaseModel):
+    class BuildPayloadModel(BaseModel, arbitrary_types_allowed=True):
         manifest: Dict[str, Any] = Field(
             description='Manifest - build recipe for a Fatman',
             example={

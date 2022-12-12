@@ -17,3 +17,6 @@ class PluginManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True
 
     # order in plugins sequence, lowest priority gets executed first
     priority: int = 0
+
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))

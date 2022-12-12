@@ -19,7 +19,7 @@ INTERNAL_AUTH_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMzIyZTA4
 ADMIN_AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI'
 
 
-def _configure_env():
+def _configure_env() -> str:
     environment = os.environ.get('TEST_ENV', 'kind')
     print(f'Running jobs test on {environment} environment...')
     if environment == 'kind':
@@ -39,6 +39,7 @@ def _configure_env():
         os.environ['LIFECYCLE_URL'] = test_host + '/lifecycle'
         os.environ['IMAGE_BUILDER_URL'] = ''
         os.environ['PUB_URL'] = test_host + '/pub'
+    return environment
 
 
 def _wait_for_components():

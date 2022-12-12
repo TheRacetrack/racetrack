@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 
 def install_plugin(
     plugin_uri: str,
-    lifecycle_url: str,
+    lifecycle_url: Optional[str],
     client_config: Optional[ClientConfig] = None,
 ):
     """Install a plugin to a remote Racetrack server"""
@@ -45,7 +45,7 @@ def install_plugin(
 def uninstall_plugin(
     plugin_name: str,
     plugin_version: str,
-    lifecycle_url: str,
+    lifecycle_url: Optional[str],
 ):
     """Uninstall plugin from a remote Racetrack server"""
     client_config = load_client_config()
@@ -62,14 +62,14 @@ def uninstall_plugin(
     logger.info(f'Plugin {plugin_name} {plugin_version} has been uninstalled from {lifecycle_url}')
 
 
-def list_installed_plugins(lifecycle_url: str) -> None:
+def list_installed_plugins(lifecycle_url: Optional[str]) -> None:
     """List plugins installed on a remote Racetrack server"""
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
 
     r = Requests.get(
-        f'{lifecycle_url}/api/v1/plugins',
+        f'{lifecycle_url}/api/v1/plugin',
         headers=get_auth_request_headers(user_auth),
     )
     plugin_manifests = parse_response_object(r, 'Lifecycle response error')
@@ -80,14 +80,14 @@ def list_installed_plugins(lifecycle_url: str) -> None:
         print(info)
 
 
-def list_available_job_types(lifecycle_url: str) -> None:
+def list_available_job_types(lifecycle_url: Optional[str]) -> None:
     """List job type versions available on a remote Racetrack server"""
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
 
     r = Requests.get(
-        f'{lifecycle_url}/api/v1/job_type/versions',
+        f'{lifecycle_url}/api/v1/plugin/job_type/versions',
         headers=get_auth_request_headers(user_auth),
     )
     versions = parse_response_object(r, 'Lifecycle response error')

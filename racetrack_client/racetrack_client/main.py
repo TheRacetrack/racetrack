@@ -144,19 +144,19 @@ def main():
     # racetrack plugin install
     parser_plugin_install = subparsers_plugin.add_parser('install', help='Install a plugin to a remote Racetrack server')
     parser_plugin_install.add_argument('plugin_uri', help='location of the plugin file: local file path, URL to a remote HTTP file or repository name')
-    parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_install.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
     parser_plugin_install.set_defaults(func=_install_plugin)
 
     # racetrack plugin uninstall
     parser_plugin_install = subparsers_plugin.add_parser('uninstall', help='Uninstall plugin from a remote Racetrack server')
     parser_plugin_install.add_argument('plugin_name', help='plugin name')
     parser_plugin_install.add_argument('plugin_version', help='plugin version')
-    parser_plugin_install.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_install.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
     parser_plugin_install.set_defaults(func=_uninstall_plugin)
 
     # racetrack plugin list
     parser_plugin_list = subparsers_plugin.add_parser('list', help='List plugins installed on a remote Racetrack server')
-    parser_plugin_list.add_argument('racetrack_url', help='URL to Racetrack server or alias name')
+    parser_plugin_list.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
     parser_plugin_list.add_argument('--job-types', action='store_true', help='list available job type versions')
     parser_plugin_list.set_defaults(func=_list_installed_plugins)
 
@@ -191,7 +191,7 @@ def _set_config_credentials(args: argparse.Namespace):
 
 
 def _set_config_racetrack_url(args: argparse.Namespace):
-    set_config_setting('racetrack_url', args.setting_value)
+    set_config_setting('lifecycle_url', args.setting_value)
 
 
 def _set_config_url_alias(args: argparse.Namespace):
