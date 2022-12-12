@@ -10,7 +10,6 @@ from racetrack_client.manifest import Manifest
 from racetrack_client.manifest.validate import load_validated_manifest
 from racetrack_client.utils.request import parse_response_object, Requests
 
-
 logger = get_logger(__name__)
 
 

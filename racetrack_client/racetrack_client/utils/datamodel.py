@@ -1,7 +1,7 @@
 import dataclasses
 from datetime import date, datetime
 import json
-from pathlib import PosixPath
+from pathlib import Path, PosixPath
 from pydantic import BaseModel
 from typing import Dict, List, Type, TypeVar
 
@@ -42,7 +42,21 @@ def parse_yaml_datamodel(
     data = yaml.load(yaml_obj, Loader=yaml.FullLoader)
     if data is None:
         data = {}
-    return parse_dict_datamodel(data, clazz)
+    return clazz.parse_obj(data)
+
+
+def parse_yaml_file_datamodel(
+    path: Path,
+    clazz: Type[T],
+) -> T:
+    """
+    Parse YAML file and convert it to expected data model
+    :param path: Path to a YAML file
+    :param clazz: pydantic.BaseModel type
+    """
+    assert path.is_file(), f"File doesn't exist: {path}"
+    data = path.read_text()
+    return parse_yaml_datamodel(data, clazz)
 
 
 def datamodel_to_yaml_str(dt: BaseModel) -> str:

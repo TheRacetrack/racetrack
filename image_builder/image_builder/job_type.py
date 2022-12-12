@@ -30,7 +30,7 @@ def load_job_type(
     """
     with wrap_context('gathering available job types'):
         job_types = gather_job_types(plugin_engine)
-    assert job_types, f'language {lang} is not supported here. No job type plugins are installed to Racetrack.'
+    assert job_types, f'language {lang} is not supported here. No job type plugins are currently installed to Racetrack.'
     assert lang in job_types, f'language {lang} is not supported, supported are: {sorted(job_types.keys())}'
     return job_types[lang]
 
