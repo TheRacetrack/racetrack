@@ -33,12 +33,12 @@
 {% block javascript %}
 <script>
 $("#button-save-config").click(function () {
-    that = $(this)
-    let config_data = $('#plugin-config-editor').val()
-    let csrf_token = '{{ csrf_token }}'
+    that = $(this);
+    let config_data = $('#plugin-config-editor').val();
+    let csrf_token = '{{ csrf_token }}';
     let pluginName = '{{ plugin_name }}';
     let pluginVersion = '{{ plugin_version }}';
-    var actionPrefix = 'Saving plugin\'s config (' + pluginName + ' ' + pluginVersion + ')'
+    var actionPrefix = 'Saving plugin\'s config (' + pluginName + ' ' + pluginVersion + ')';
     console.log(actionPrefix + '...');
     var previousHtml = that.html();
     that.prop("disabled", true);
