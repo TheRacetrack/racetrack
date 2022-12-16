@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every plugin can have its own configuration, stored in a YAML file.
   After uploading the plugin, the configuration can be edited on Dashboard's *Administration* tab,
   with a *Edit Config* button.
-  Plugin can read the configuration form a file `self.config_path: pathlib.Path`.
+  Plugin can read the configuration from a file `self.config_path: pathlib.Path`.
 
 ## [2.6.0] - 2022-12-02
 ### Added
