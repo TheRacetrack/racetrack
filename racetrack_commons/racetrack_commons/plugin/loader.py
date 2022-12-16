@@ -1,9 +1,10 @@
-from typing import List, Optional
 import importlib.util
-import os
-import sys
 from importlib.abc import Loader
+import os
 from pathlib import Path
+import random
+import sys
+from typing import List, Optional
 import zipfile
 
 from racetrack_client.log.context_error import wrap_context
@@ -21,6 +22,8 @@ PLUGIN_CLASS_NAME = 'Plugin'
 PLUGIN_FILENAME = 'plugin.py'
 PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
 EXTRACTED_PLUGINS_DIR = 'extracted'
+PLUGINS_CONFIG_DIR = 'config'
+PLUGIN_CONFIG_FILENAME = 'config.yaml'
 
 
 def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
@@ -29,12 +32,7 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
     Loaded plugins will be sorted by priority, then by plugin version ascending.
     """
     plugins_path = Path(plugins_dir)
-    if not plugins_path.is_dir():
-        plugins_path.mkdir(parents=True, exist_ok=True)
-        try:
-            plugins_path.chmod(mode=0o777)
-        except PermissionError:
-            logger.warning(f'Can\'t change permissions of {plugins_path}')
+    _ensure_dir_exists(plugins_path)
 
     plugins_data: List[PluginData] = []
 
@@ -51,14 +49,19 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
         assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
         
         extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
-        if not extracted_plugins_dir.is_dir():
-            extracted_plugins_dir.mkdir(parents=True, exist_ok=True)
-            try:
-                extracted_plugins_dir.chmod(mode=0o777)
-            except PermissionError:
-                logger.warning(f'Can\'t change permissions of {extracted_plugins_dir}')
-
+        _ensure_dir_exists(extracted_plugins_dir)
         extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
+
+        plugins_config_dir = plugin_zip_path.parent / PLUGINS_CONFIG_DIR
+        _ensure_dir_exists(plugins_config_dir)
+        _ensure_dir_exists(plugins_config_dir / plugin_zip_path.stem)
+        config_file = plugins_config_dir / plugin_zip_path.stem / PLUGIN_CONFIG_FILENAME
+        if not config_file.is_file():
+            config_file.touch()
+            try:
+                config_file.chmod(mode=0o666)
+            except PermissionError:
+                logger.warning(f'Can\'t change permissions of {config_file}')
         
         init_dir = False
         if not extracted_plugin_path.is_dir():
@@ -67,16 +70,17 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
                 zip_ref.extractall(extracted_plugin_path)
             init_dir = True
 
-        return load_plugin_from_dir(extracted_plugin_path, plugin_zip_path, init_dir)
+        return load_plugin_from_dir(extracted_plugin_path, config_file, plugin_zip_path, init_dir)
 
 
-def load_plugin_from_dir(plugin_dir: Path, zip_path: Path, init_dir: bool) -> PluginData:
+def load_plugin_from_dir(plugin_dir: Path, config_path: Path, zip_path: Path, init_dir: bool) -> PluginData:
     plugin_manifest = load_plugin_manifest(plugin_dir)
 
     _install_plugin_dependencies(plugin_dir)
-    plugin = _load_plugin_class(plugin_dir, plugin_manifest)
+    plugin = _load_plugin_class(plugin_dir, config_path, plugin_manifest)
     setattr(plugin, 'plugin_manifest', plugin_manifest)
     setattr(plugin, 'plugin_dir', plugin_dir)
+    setattr(plugin, 'config_path', config_path)
 
     if init_dir:  # set permissions after loading a class due to *.pyc created after all
         try:
@@ -89,8 +93,8 @@ def load_plugin_from_dir(plugin_dir: Path, zip_path: Path, init_dir: bool) -> Pl
         except PermissionError:
             logger.warning(f'Can\'t change permissions in {plugin_dir}')
     
-    logger.info(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
-    return PluginData(zip_path=zip_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)
+    logger.debug(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
+    return PluginData(zip_path=zip_path, config_path=config_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)
 
 
 def load_plugin_manifest(plugin_dir: Path) -> PluginManifest:
@@ -108,18 +112,22 @@ def _install_plugin_dependencies(plugin_dir: Path):
         shell(f'python -m pip install --user -r requirements.txt', workdir=plugin_dir)
 
 
-def _load_plugin_class(plugin_dir: Path, plugin_manifest: PluginManifest) -> PluginCore:
+def _load_plugin_class(plugin_dir: Path, config_path: Path, plugin_manifest: PluginManifest) -> PluginCore:
     """Load plugin class from plugin directory"""
     plugin_filename = (plugin_dir / PLUGIN_FILENAME).relative_to(plugin_dir)
 
     # change working directory to enable imports in plugin module
+    plugin_dir_posix = plugin_dir.absolute().resolve().as_posix()
     original_cwd = os.getcwd()
-    os.chdir(plugin_dir)
-    sys.path.append(os.getcwd())
+    os.chdir(plugin_dir_posix)
+    sys.path.append(plugin_dir_posix)
+
+    core_modules = set(sys.modules.keys())
 
     try:
         with wrap_context(f'loading plugin class'):
-            spec = importlib.util.spec_from_file_location("racetrack_plugin", plugin_filename)
+            module_name = f'racetrack_plugin_{random.randint(0, 999999)}'
+            spec = importlib.util.spec_from_file_location(module_name, plugin_filename)
             ext_module = importlib.util.module_from_spec(spec)
             loader: Optional[Loader] = spec.loader
             assert loader is not None, 'no module loader'
@@ -130,12 +138,27 @@ def _load_plugin_class(plugin_dir: Path, plugin_manifest: PluginManifest) -> Plu
 
         setattr(plugin_class, 'plugin_manifest', plugin_manifest)
         setattr(plugin_class, 'plugin_dir', plugin_dir)
+        setattr(plugin_class, 'config_path', config_path)
 
         with wrap_context(f'instantiating plugin class'):
             plugin = plugin_class()
 
     finally:
-        sys.path.remove(os.getcwd())
+        sys.path.remove(plugin_dir_posix)
         os.chdir(original_cwd)
+        # Unload the cached plugin's modules to prevent from using them by other plugins
+        plugin_modules = set(sys.modules.keys()) - core_modules
+        if plugin_modules:
+            for mod in plugin_modules:
+                del sys.modules[mod]
 
     return plugin
+
+
+def _ensure_dir_exists(path: Path):
+    if not path.is_dir():
+        path.mkdir(parents=True, exist_ok=True)
+        try:
+            path.chmod(mode=0o777)
+        except PermissionError:
+            logger.warning(f'Can\'t change permissions of {path}')

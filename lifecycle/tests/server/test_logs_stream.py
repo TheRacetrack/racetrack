@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 def test_streaming_logs():
     logs_streamer = SayHelloLogsStreamer()
-    server = SocketIOServer(logs_streamer)
+    server = SocketIOServer([logs_streamer])
     port = free_tcp_port()
     with server.run_async(port):
         fetched_logs = []

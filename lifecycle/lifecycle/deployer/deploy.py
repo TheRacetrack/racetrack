@@ -1,6 +1,7 @@
 import logging
 import threading
 from typing import Optional
+from lifecycle.deployer.infra_target import determine_infrastructure_name
 
 from racetrack_client.client.env import SecretVars
 from racetrack_client.client_config.client_config import Credentials
@@ -10,7 +11,7 @@ from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.time import now
 from racetrack_commons.plugin.engine import PluginEngine
-from racetrack_commons.entities.dto import DeploymentStatus, FatmanDto
+from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus, FatmanDto
 from lifecycle.config import Config
 from lifecycle.deployer.builder import build_fatman, wait_for_image_builder_ready
 from lifecycle.deployer.deployers import get_fatman_deployer
@@ -29,10 +30,9 @@ def deploy_new_fatman(
     manifest: Manifest,
     git_credentials: Optional[Credentials],
     secret_vars: SecretVars,
-    deployment_id: str,
+    deployment: DeploymentDto,
     build_context: Optional[str],
     force: bool,
-    deployer_username: str,
     auth_subject: models.AuthSubject,
     plugin_engine: PluginEngine,
 ):
@@ -46,15 +46,15 @@ def deploy_new_fatman(
             secret_build_env=secret_vars.build_env,
             secret_runtime_env=secret_vars.runtime_env,
         )
-        fatman_deployer = get_fatman_deployer(config, plugin_engine)
+        fatman_deployer = get_fatman_deployer(plugin_engine, deployment.infrastructure_target)
         try:
             fatman_deployer.save_fatman_secrets(manifest.name, manifest.version, fatman_secrets)
         except NotImplementedError:
-            logging.warning(f'managing secrets is not supported on {config.deployer}')
+            logging.warning(f'managing secrets is not supported on {deployment.infrastructure_target}')
 
     build_and_provision(
-        config, manifest, fatman_secrets, deployment_id, build_context,
-        deployer_username, auth_subject, None, plugin_engine,
+        config, manifest, fatman_secrets, deployment, build_context,
+        auth_subject, None, plugin_engine,
     )
 
 
@@ -62,19 +62,18 @@ def build_and_provision(
     config: Config,
     manifest: Manifest,
     fatman_secrets: FatmanSecrets,
-    deployment_id: str,
+    deployment: DeploymentDto,
     build_context: Optional[str],
-    deployer_username: str,
     auth_subject: Optional[models.AuthSubject],
     previous_fatman: Optional[FatmanDto],
     plugin_engine: PluginEngine,
 ):
     """Build a Fatman image from a manifest file and provision it (deploy to a cluster)"""
     tag = now().strftime(r'%Y-%m-%dT%H%M%S')
-    build_fatman(config, manifest, fatman_secrets, deployment_id, build_context, tag)
+    build_fatman(config, manifest, fatman_secrets, deployment, build_context, tag)
     provision_fatman(
         config, manifest, tag, fatman_secrets.secret_build_env,
-        fatman_secrets.secret_runtime_env, deployment_id, deployer_username,
+        fatman_secrets.secret_runtime_env, deployment,
         auth_subject, previous_fatman, plugin_engine,
     )
 
@@ -94,13 +93,14 @@ def deploy_fatman_in_background(
     Schedule deployment of a fatman in background
     :return: deployment ID
     """
-    deployment_id = create_deployment(manifest, username)
-    logger.info(f'starting deployment {deployment_id} in background')
-    args = (config, manifest, git_credentials, secret_vars, deployment_id,
-            build_context, force, plugin_engine, username, auth_subject)
+    infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
+    deployment = create_deployment(manifest, username, infra_target)
+    logger.info(f'starting deployment {deployment.id} in background')
+    args = (config, manifest, git_credentials, secret_vars, deployment,
+            build_context, force, plugin_engine, auth_subject)
     thread = threading.Thread(target=deploy_fatman_saving_result, args=args, daemon=True)
     thread.start()
-    return deployment_id
+    return deployment.id
 
 
 def deploy_fatman_saving_result(
@@ -108,24 +108,23 @@ def deploy_fatman_saving_result(
     manifest: Manifest,
     git_credentials: Optional[Credentials],
     secret_vars: SecretVars,
-    deployment_id: str,
+    deployment: DeploymentDto,
     build_context: Optional[str],
     force: bool,
     plugin_engine: PluginEngine,
-    username: str,
     auth_subject: models.AuthSubject,
 ):
     """Deploy a Fatman storing its faulty or successful result in DB"""
     try:
         wait_for_image_builder_ready(config)
         deploy_new_fatman(
-            config, manifest, git_credentials, secret_vars, deployment_id,
-            build_context, force, username, auth_subject, plugin_engine,
+            config, manifest, git_credentials, secret_vars, deployment,
+            build_context, force, auth_subject, plugin_engine,
         )
-        save_deployment_result(deployment_id, DeploymentStatus.DONE)
+        save_deployment_result(deployment.id, DeploymentStatus.DONE)
     except BaseException as e:
         log_exception(e)
-        save_deployment_result(deployment_id, DeploymentStatus.FAILED, error=str(e))
+        save_deployment_result(deployment.id, DeploymentStatus.FAILED, error=str(e))
 
 
 def _protect_fatman_overwriting(manifest: Manifest, force: bool):

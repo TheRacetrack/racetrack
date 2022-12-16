@@ -24,5 +24,7 @@ urlpatterns = [
     path('profile', views.user_profile, name='profile'),
     path('administration', views.view_administration, name='administration'),
     path('plugin/upload', views.upload_plugin, name='upload_plugin'),
+    path('plugin/config-editor/<plugin_name>/<plugin_version>', views.plugin_config_editor, name='plugin_config_editor'),
     path('api/plugin/delete/<plugin_name>/<plugin_version>', views.delete_plugin, name='delete_plugin'),
+    path('api/plugin/write-config/<plugin_name>/<plugin_version>', views.write_plugin_config, name='write_plugin_config'),
 ]

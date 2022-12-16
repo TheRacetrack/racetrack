@@ -21,7 +21,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         username: str = Field(example="admin")
         password: str = Field(example="hunter2")
 
-    class DeployPayloadModel(BaseModel):
+    class DeployPayloadModel(BaseModel, arbitrary_types_allowed=True):
         manifest: Dict[str, Any] = Field(
             description='Manifest - build recipe for a Fatman',
             example={
@@ -94,7 +94,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         build_context = payload.build_context
         username = get_username_from_token(request)
         deployment_id = build_fatman_in_background(config, manifest, git_credentials, secret_vars,
-                                                   build_context, username)
+                                                   build_context, username, plugin_engine)
         return {"id": deployment_id}
 
     @api.get('/deploy/{deploy_id}')

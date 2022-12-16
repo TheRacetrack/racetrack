@@ -124,6 +124,7 @@ def create_fatman_model(fatman_dto: FatmanDto) -> models.Fatman:
         error=fatman_dto.error,
         image_tag=fatman_dto.image_tag,
         deployed_by=fatman_dto.deployed_by,
+        infrastructure_target=fatman_dto.infrastructure_target,
     )
     new_fatman.save()
     return new_fatman
@@ -149,6 +150,7 @@ def update_fatman_model(fatman: models.Fatman, fatman_dto: FatmanDto):
     fatman.image_tag = fatman_dto.image_tag
     fatman.deployed_by = fatman_dto.deployed_by
     fatman.last_call_time = timestamp_to_datetime(fatman_dto.last_call_time) if fatman_dto.last_call_time is not None else None
+    fatman.infrastructure_target = fatman_dto.infrastructure_target
     fatman.save()
 
 
@@ -188,6 +190,7 @@ def create_trashed_fatman(fatman_dto: FatmanDto) -> models.TrashFatman:
         image_tag=fatman_dto.image_tag,
         deployed_by=fatman_dto.deployed_by,
         last_call_time=timestamp_to_datetime(fatman_dto.last_call_time) if fatman_dto.last_call_time is not None else None,
+        infrastructure_target=fatman_dto.infrastructure_target,
         age_days=age_days,
     )
     new_fatman.save()

@@ -95,8 +95,9 @@ See the [Documentation](https://theracetrack.github.io/racetrack/) for more deta
 
 ### Where can we deploy to?
 
-* [Kubernetes](https://github.com/TheRacetrack/racetrack/tree/master/lifecycle/lifecycle/deployer/kubernetes)
-* [Docker daemons](https://github.com/TheRacetrack/plugin-docker-daemon-deployer)
+* [Kubernetes](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure)
+* [local Docker](https://github.com/TheRacetrack/plugin-docker-infrastructure)
+* [remote Docker Daemon](https://github.com/TheRacetrack/plugin-docker-daemon-deployer)
 
 ## About
 

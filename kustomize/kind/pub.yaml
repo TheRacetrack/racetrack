@@ -24,8 +24,6 @@ spec:
             - containerPort: 7005
           tty: true
           env:
-            - name: FORWARD_TO_DOMAIN
-              value: 'racetrack.svc'
             - name: PUB_PORT
               value: '7005'
             - name: LIFECYCLE_URL
