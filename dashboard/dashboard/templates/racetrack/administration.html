@@ -141,15 +141,5 @@ $(".button-delete-plugin").click(function () {
         invokePluginAction('Deleting plugin', `plugin/delete`, that, '{{ csrf_token }}')
     });
 });
-
-let searchParams = new URLSearchParams(window.location.search);
-if (searchParams.has('success')) {
-    showAlert(searchParams.get('success'), 'success');
-    window.history.replaceState(null, null, window.location.pathname);
-}
-if (searchParams.has('error')) {
-    showAlert(searchParams.get('error'), 'danger');
-    window.history.replaceState(null, null, window.location.pathname);
-}
 </script>
 {% endblock javascript %}

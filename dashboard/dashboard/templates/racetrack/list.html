@@ -163,11 +163,5 @@ $(".button-reprovision-fatman").click(function () {
 $(".localize-datetime").text(function(index, text) {
     return new Date(text).toString();
 });
-
-let searchParams = new URLSearchParams(window.location.search);
-if (searchParams.has('success')) {
-    showAlert(searchParams.get('success'), 'success');
-    window.history.replaceState(null, null, window.location.pathname);
-}
 </script>
 {% endblock javascript %}
