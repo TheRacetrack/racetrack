@@ -26,7 +26,7 @@ def set_config_setting(setting_name: str, setting_value: str):
     with wrap_context('converting setting to target data type'):
         client_config = ClientConfig.parse_obj(config_dict)
 
-    logger.info(f'Client setting {setting_name} set to: {setting_value}')
+    logger.info(f'Client setting "{setting_name}" set to: {setting_value}')
     save_client_config(client_config)
 
 

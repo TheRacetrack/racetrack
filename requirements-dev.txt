@@ -1,7 +1,7 @@
 # Developer tools
-mypy==0.812
-flake8==3.9.0
-pylint==2.13.2
-black==20.8b1
-twine==3.4.2
-wheel==0.36.2
+mypy==0.991
+flake8==6.0.0
+pylint==2.15.8
+black==22.10.0
+twine==4.0.2
+wheel==0.38.4

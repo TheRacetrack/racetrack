@@ -8,7 +8,7 @@ class Credentials(BaseModel):
     password: str
 
 
-class ClientConfig(BaseModel):
+class ClientConfig(BaseModel, arbitrary_types_allowed=True):
     """Global options for a local client"""
 
     # default URL of Racetrack API server (Lifecycle URL)

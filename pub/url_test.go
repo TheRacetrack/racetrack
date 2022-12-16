@@ -43,12 +43,10 @@ func TestTargetURL(t *testing.T) {
 	{
 		fatman := &FatmanDetails{
 			Name:         "svc-name",
-			InternalName: "fatman-svc-name",
+			InternalName: "fatman-svc-name.racetrack.svc:1234",
 		}
 		cfg := Config{
 			ForwardToProtocol: "http",
-			ForwardToDomain:   "racetrack.svc",
-			ForwardToPort:     "1234",
 		}
 		res := TargetURL(&cfg, fatman, "pub/fatman/golang/latest/api/v1/perform")
 		assert.Equal(t, "http://fatman-svc-name.racetrack.svc:1234/pub/fatman/golang/latest/api/v1/perform", res.String())
@@ -61,8 +59,6 @@ func TestTargetURL(t *testing.T) {
 		}
 		cfg := Config{
 			ForwardToProtocol: "http",
-			ForwardToDomain:   "localhost",
-			ForwardToPort:     "1331",
 		}
 		res := TargetURL(&cfg, fatman, "/pub/fatman/golang/latest/api/v1/parameters")
 		assert.Equal(t, "http://fatman-golang:7000/pub/fatman/golang/latest/api/v1/parameters", res.String())

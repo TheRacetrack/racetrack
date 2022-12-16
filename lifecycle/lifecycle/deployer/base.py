@@ -10,14 +10,15 @@ from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto
 
 class FatmanDeployer(ABC):
     @abstractmethod
-    def deploy_fatman(self,
-                      manifest: Manifest,
-                      config: Config,
-                      plugin_engine: PluginEngine,
-                      tag: str,
-                      runtime_env_vars: Dict[str, str],
-                      family: FatmanFamilyDto,
-                      ) -> FatmanDto:
+    def deploy_fatman(
+        self,
+        manifest: Manifest,
+        config: Config,
+        plugin_engine: PluginEngine,
+        tag: str,
+        runtime_env_vars: Dict[str, str],
+        family: FatmanFamilyDto,
+    ) -> FatmanDto:
         """Deploy a Fatman from a manifest file"""
         raise NotImplementedError()
 
@@ -32,18 +33,20 @@ class FatmanDeployer(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def save_fatman_secrets(self,
-                            fatman_name: str,
-                            fatman_version: str,
-                            fatman_secrets: FatmanSecrets,
-                            ):
+    def save_fatman_secrets(
+        self,
+        fatman_name: str,
+        fatman_version: str,
+        fatman_secrets: FatmanSecrets,
+    ):
         """Create or update secrets needed to build and deploy a fatman"""
         raise NotImplementedError()
 
     @abstractmethod
-    def get_fatman_secrets(self,
-                           fatman_name: str,
-                           fatman_version: str,
-                           ) -> FatmanSecrets:
+    def get_fatman_secrets(
+        self,
+        fatman_name: str,
+        fatman_version: str,
+    ) -> FatmanSecrets:
         """Retrieve secrets for building and deploying a fatman"""
         raise NotImplementedError()

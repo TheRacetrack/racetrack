@@ -20,6 +20,8 @@ def resolve_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[
 
 def _resolve_short_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[str]) -> str:
     if not lifecycle_name:
+        if client_config.lifecycle_url in client_config.lifecycle_url_aliases:
+            return client_config.lifecycle_url_aliases[client_config.lifecycle_url]
         return client_config.lifecycle_url
     if lifecycle_name in client_config.lifecycle_url_aliases:
         return client_config.lifecycle_url_aliases[lifecycle_name]

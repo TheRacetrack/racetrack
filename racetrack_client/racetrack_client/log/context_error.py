@@ -1,5 +1,9 @@
 from contextlib import contextmanager
 
+from racetrack_client.log.logs import get_logger
+
+logger = get_logger(__name__)
+
 
 class ContextError(RuntimeError):
     """
@@ -28,8 +32,10 @@ class ContextError(RuntimeError):
 
 
 @contextmanager
-def wrap_context(context_name: str):
+def wrap_context(context_name: str, log_debug: bool = False):
     """Apply context to occurred errors and propagate them further"""
+    if log_debug:
+        logger.debug(context_name)
     try:
         yield
     except Exception as e:

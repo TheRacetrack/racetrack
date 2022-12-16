@@ -9,7 +9,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 def read_runtime_logs(fatman_name: str, fatman_version: str, tail: int, config: Config, plugin_engine: PluginEngine) -> str:
     """Read recent logs from running fatman by its name"""
     fatman = read_versioned_fatman(fatman_name, fatman_version, config)
-    return read_recent_logs(fatman, tail, config, plugin_engine)
+    return read_recent_logs(fatman, tail, plugin_engine)
 
 
 def read_build_logs(fatman_name: str, fatman_version: str, tail: int) -> str:

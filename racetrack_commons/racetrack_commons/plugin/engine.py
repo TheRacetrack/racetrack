@@ -1,9 +1,10 @@
+from __future__ import annotations
 from pathlib import Path
 import random
 import shutil
 import tempfile
 import threading
-from typing import Callable, List, Optional
+from typing import Any, Callable
 import time
 
 from watchdog.observers import Observer
@@ -23,8 +24,8 @@ LAST_CHANGE_FILE = 'last-change.txt'
 
 
 class PluginEngine:
-    def __init__(self, plugins_dir: Optional[str] = None):
-        self.plugins_data: List[PluginData] = []
+    def __init__(self, plugins_dir: str | None = None):
+        self.plugins_data: list[PluginData] = []
         self.last_change_timestamp: int = 0
         if plugins_dir:
             self.plugins_dir: str = plugins_dir
@@ -41,11 +42,12 @@ class PluginEngine:
             if self.plugins_data:
                 duration = time.time() - start_time
                 plugin_plural = 'plugin' if len(self.plugins_data) == 1 else 'plugins'
-                logger.info(f'{len(self.plugins_data)} {plugin_plural} have been loaded in {duration:.2f}s')
+                plugins_list_str = ', '.join([f'{p.plugin_manifest.name} ({p.plugin_manifest.version})' for p in self.plugins_data])
+                logger.info(f'{len(self.plugins_data)} {plugin_plural} have been loaded in {duration:.2f}s: {plugins_list_str}')
             else:
                 logger.info(f'No plugins to load')
 
-    def invoke_plugin_hook(self, function: Callable, *args, **kwargs) -> List:
+    def invoke_plugin_hook(self, function: Callable, *args, **kwargs) -> list[Any]:
         """
         Invoke a hook function in all plugins
         :param function: PluginCore function to invoke
@@ -57,13 +59,13 @@ class PluginEngine:
         results = []
         for plugin_data in self.plugins_data:
             if hasattr(plugin_data.plugin_instance, function_name):
-                with wrap_context(f'Invoking hook {function_name} from plugin {plugin_data.plugin_manifest.name}'):
-                    logger.debug(f'Invoking hook {function_name} from plugin {plugin_data.plugin_manifest.name}')
+                with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
+                                  log_debug=True):
                     result = getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
                     results.append(result)
         return results
 
-    def invoke_one_plugin_hook(self, plugin_name: str, function: Callable, *args, **kwargs):
+    def invoke_one_plugin_hook(self, plugin_name: str, function: Callable, *args, **kwargs) -> Any:
         """
         Invoke a hook function for one plugin
         :param plugin_name: name of the plugin
@@ -74,14 +76,32 @@ class PluginEngine:
         function_name = function.__name__
         plugin_data = self.find_plugin(plugin_name)
         if hasattr(plugin_data.plugin_instance, function_name):
-            with wrap_context(f'Invoking hook {function_name} from plugin {plugin_data.plugin_manifest.name}'):
-                logger.debug(f'Invoking hook {function_name} from plugin {plugin_data.plugin_manifest.name}')
+            with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
+                              log_debug=True):
                 return getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
         else:
             logger.warning(f'Plugin {plugin_name} does not have hook {function_name}')
             return None
 
-    def find_plugin(self, name: str, version: Optional[str] = None) -> PluginData:
+    def invoke_associated_plugin_hook(self, function: Callable, *args, **kwargs) -> dict[PluginManifest, Any]:
+        """
+        Invoke a hook function in all plugins and associate the results with the plugins' manifests
+        :param function: PluginCore function to invoke
+        :param args: positional arguments to pass to the function
+        :param kwargs: keyword arguments to pass to the function
+        :return: dict of plugins' manifests mapped to the return value from each plugin
+        """
+        function_name = function.__name__
+        results: dict[PluginManifest, Any] = {}
+        for plugin_data in self.plugins_data:
+            if hasattr(plugin_data.plugin_instance, function_name):
+                with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
+                                  log_debug=True):
+                    result = getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
+                    results[plugin_data.plugin_manifest] = result
+        return results
+
+    def find_plugin(self, name: str, version: str | None = None) -> PluginData:
         if version:
             for plugin_data in self.plugins_data:
                 if plugin_data.plugin_manifest.name == name and plugin_data.plugin_manifest.version == version:
@@ -149,7 +169,6 @@ class PluginEngine:
 
         threading.Thread(target=_check_periodically, daemon=True).start()
 
-
     def upload_plugin(self, filename: str, file_bytes: bytes) -> PluginManifest:
         tmp_dir = Path(tempfile.mkdtemp(prefix='racetrack-uploaded-plugin-'))
         try:
@@ -179,6 +198,18 @@ class PluginEngine:
         self._load_plugins()
         self._record_last_change()
         return plugin_data.plugin_manifest
+
+    def read_plugin_config(self, name: str, version: str) -> str:
+        plugin_data = self.find_plugin(name, version)
+        config_data = Path(plugin_data.config_path).read_text()
+        return config_data
+
+    def write_plugin_config(self, name: str, version: str, config: str):
+        plugin_data = self.find_plugin(name, version)
+        plugin_data.config_path.write_text(config)
+        logger.info(f'Plugin config ({name} {version}) has been overwritten: {plugin_data.config_path}')
+        self._record_last_change()
+        self._load_plugins()
         
     def delete_plugin_by_version(self, name: str, version: str):
         plugin_data = self.find_plugin(name, version)
@@ -228,5 +259,5 @@ class PluginEngine:
         change_file.write_text(f'{self.last_change_timestamp}')
 
     @property
-    def plugin_manifests(self) -> List[PluginManifest]:
+    def plugin_manifests(self) -> list[PluginManifest]:
         return [p.plugin_manifest for p in self.plugins_data]

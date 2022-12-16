@@ -21,7 +21,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.deploy.image import get_fatman_image
 from racetrack_commons.entities.audit import AuditLogEventType
-from racetrack_commons.entities.dto import FatmanDto
+from racetrack_commons.entities.dto import DeploymentDto, FatmanDto
 
 logger = get_logger(__name__)
 
@@ -32,8 +32,7 @@ def provision_fatman(
     tag: str,
     secret_build_env: Dict[str, str],
     secret_runtime_env: Dict[str, str],
-    deployment_id: str,
-    deployer_username: Optional[str],
+    deployment: DeploymentDto,
     auth_subject: Optional[models.AuthSubject],
     previous_fatman: Optional[FatmanDto],
     plugin_engine: PluginEngine,
@@ -46,11 +45,11 @@ def provision_fatman(
         check_deploy_permissions(auth_subject, manifest)
 
     with wrap_context('creating fatman resource'):
-        save_deployment_phase(deployment_id, 'creating cluster resources')
+        save_deployment_phase(deployment.id, 'creating cluster resources')
         image_name = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
 
         logger.info(f'provisioning fatman {manifest.name} from image {image_name}')
-        fatman_deployer = get_fatman_deployer(config, plugin_engine)
+        fatman_deployer = get_fatman_deployer(plugin_engine, deployment.infrastructure_target)
 
         family = create_fatman_family_if_not_exist(manifest.name)
         family_dto = fatman_family_model_to_dto(family)
@@ -61,26 +60,26 @@ def provision_fatman(
 
         fatman = fatman_deployer.deploy_fatman(manifest, config, plugin_engine,
                                                tag, runtime_env_vars, family_dto)
-        fatman.deployed_by = deployer_username
+        fatman.deployed_by = deployment.deployed_by
 
     with wrap_context('saving fatman in database'):
         save_fatman_model(fatman)
 
     with wrap_context('verifying deployed fatman'):
-        save_deployment_phase(deployment_id, 'starting Fatman server')
+        save_deployment_phase(deployment.id, 'starting Fatman server')
 
         def on_fatman_alive():
-            save_deployment_phase(deployment_id, 'initializing Fatman entrypoint')
+            save_deployment_phase(deployment.id, 'initializing Fatman entrypoint')
 
-        check_fatman_condition(fatman, config, on_fatman_alive, plugin_engine)
+        check_fatman_condition(fatman, on_fatman_alive, plugin_engine)
 
     with wrap_context('invoking post-deploy actions'):
-        save_deployment_phase(deployment_id, 'post-deploy hooks')
-        post_fatman_deploy(manifest, fatman, image_name, deployer_username,
+        save_deployment_phase(deployment.id, 'post-deploy hooks')
+        post_fatman_deploy(manifest, fatman, image_name, deployment,
                            auth_subject, previous_fatman, plugin_engine)
 
     metric_deployed_fatman.inc()
-    logger.info(f'fatman {manifest.name} v{manifest.version} has been provisioned, deployment ID: {deployment_id}')
+    logger.info(f'fatman {manifest.name} v{manifest.version} has been provisioned, deployment ID: {deployment.id}')
     return fatman
 
 
@@ -88,13 +87,13 @@ def post_fatman_deploy(
     manifest: Manifest,
     fatman: FatmanDto,
     image_name: str,
-    deployer_username: Optional[str],
+    deployment: DeploymentDto,
     auth_subject: Optional[models.AuthSubject],
     previous_fatman: Optional[FatmanDto],
     plugin_engine: PluginEngine,
 ):
     """Supplementary actions invoked after fatman is deployed"""
-    plugin_engine.invoke_plugin_hook(PluginCore.post_fatman_deploy, manifest, fatman, image_name, deployer_username=deployer_username)
+    plugin_engine.invoke_plugin_hook(PluginCore.post_fatman_deploy, manifest, fatman, image_name, deployer_username=deployment.deployed_by)
 
     if auth_subject is not None and previous_fatman is None:
         with wrap_context('granting permissions'):
@@ -111,14 +110,14 @@ def post_fatman_deploy(
     if previous_fatman is None:
         AuditLogger().log_event(
             AuditLogEventType.FATMAN_DEPLOYED,
-            username_executor=deployer_username,
+            username_executor=deployment.deployed_by,
             fatman_name=fatman.name,
             fatman_version=fatman.version,
         )
     else:
         AuditLogger().log_event(
             AuditLogEventType.FATMAN_REDEPLOYED,
-            username_executor=deployer_username,
+            username_executor=deployment.deployed_by,
             username_subject=previous_fatman.deployed_by,
             fatman_name=fatman.name,
             fatman_version=fatman.version,

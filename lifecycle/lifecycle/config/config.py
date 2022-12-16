@@ -1,6 +1,6 @@
+from typing import Optional
 from pydantic import BaseModel, Extra, validator
 
-from racetrack_commons.deploy.type import DeployerType
 from racetrack_client.utils.quantity import Quantity
 
 
@@ -13,12 +13,6 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # API endpoints
     http_addr: str = '0.0.0.0'
     http_port: int = 7202
-
-    # Target environment where to deploy Fatmen:
-    # - docker - run container on local docker
-    # - kubernetes - run Pod & Service in Kubernetes cluster
-    # It should be one of DeployerType enum values, although it might be extended with plugins
-    deployer: str = DeployerType.DOCKER.value
 
     # Image builder address
     image_builder_url: str = 'http://localhost:7201'
@@ -57,6 +51,9 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # OpenTelemetry
     open_telemetry_enabled: bool = False
     open_telemetry_endpoint: str = 'console'
+
+    # Default back-end platform where to deploy the services
+    infrastructure_target: Optional[str] = None
 
     @validator(
         'max_fatman_memory_limit',

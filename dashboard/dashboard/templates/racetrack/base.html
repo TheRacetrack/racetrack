@@ -114,6 +114,16 @@
 $('[data-bs-toggle="tooltip"]').each(function(i, obj) {
     new bootstrap.Tooltip(obj)
 });
+
+let searchParams = new URLSearchParams(window.location.search);
+if (searchParams.has('success')) {
+    showAlert(searchParams.get('success'), 'success');
+    window.history.replaceState(null, null, window.location.pathname);
+}
+if (searchParams.has('error')) {
+    showAlert(searchParams.get('error'), 'danger');
+    window.history.replaceState(null, null, window.location.pathname);
+}
 </script>
 {% block javascript %}
 {% endblock javascript %}

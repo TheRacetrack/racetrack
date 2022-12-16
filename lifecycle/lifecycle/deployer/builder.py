@@ -4,6 +4,7 @@ from typing import Optional, Dict
 import backoff
 
 from lifecycle.config import Config
+from lifecycle.deployer.infra_target import determine_infrastructure_name
 from lifecycle.deployer.secrets import FatmanSecrets
 from lifecycle.django.registry.database import db_access
 from lifecycle.fatman.deployment import create_deployment, save_deployment_build_logs, save_deployment_image_name, save_deployment_result, save_deployment_phase
@@ -17,7 +18,8 @@ from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_commons.deploy.image import get_fatman_image
-from racetrack_commons.entities.dto import DeploymentStatus
+from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus
+from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
 
@@ -26,14 +28,14 @@ def build_fatman(
     config: Config,
     manifest: Manifest,
     fatman_secrets: FatmanSecrets,
-    deployment_id: str,
+    deployment: DeploymentDto,
     build_context: Optional[str],
     tag: str,
 ):
     with wrap_context('building an image'):
-        save_deployment_phase(deployment_id, 'building image')
+        save_deployment_phase(deployment.id, 'building image')
         _send_image_build_request(config, manifest, fatman_secrets.git_credentials,
-                                  fatman_secrets.secret_build_env, tag, deployment_id, build_context)
+                                  fatman_secrets.secret_build_env, tag, deployment, build_context)
 
 
 def _send_image_build_request(
@@ -42,27 +44,27 @@ def _send_image_build_request(
     git_credentials: Optional[Credentials],
     secret_build_env: Dict[str, str],
     tag: str,
-    deployment_id: str,
+    deployment: DeploymentDto,
     build_context: Optional[str],
 ):
     """
     Send request to Image Builder API in order to build image at given workspace
     """
-    logger.info(f'building a job by image-builder, deployment ID: {deployment_id}')
+    logger.info(f'building a job by image-builder, deployment ID: {deployment.id}')
     # see `image_builder.api._setup_api_endpoints`
     r = Requests.post(
         f'{config.image_builder_url}/api/v1/build',
-        json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment_id),
+        json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment),
     )
     response = parse_response_object(r, 'Image builder API error')
     build_logs: str = response['logs']
     image_name = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
-    save_deployment_build_logs(deployment_id, build_logs)
-    save_deployment_image_name(deployment_id, image_name)
+    save_deployment_build_logs(deployment.id, build_logs)
+    save_deployment_image_name(deployment.id, image_name)
     error: str = response['error']
     if error:
         raise RuntimeError(error)
-    logger.info(f'fatman image {image_name} has been built, deployment ID: {deployment_id}')
+    logger.info(f'fatman image {image_name} has been built, deployment ID: {deployment.id}')
 
 
 def _build_image_request_payload(
@@ -71,7 +73,7 @@ def _build_image_request_payload(
     secret_build_env: Dict[str, str],
     tag: str,
     build_context: Optional[str],
-    deployment_id: str,
+    deployment: DeploymentDto,
 ) -> Dict:
     return {
         "manifest": datamodel_to_dict(manifest),
@@ -79,7 +81,7 @@ def _build_image_request_payload(
         "secret_build_env": secret_build_env,
         "tag": tag,
         "build_context": build_context,
-        "deployment_id": deployment_id,
+        "deployment_id": deployment.id,
     }
 
 
@@ -91,14 +93,16 @@ def build_fatman_in_background(
     secret_vars: SecretVars,
     build_context: Optional[str],
     username: str,
+    plugin_engine: PluginEngine,
 ) -> str:
-    deployment_id = create_deployment(manifest, username)
-
-    logger.info(f'started building fatman {deployment_id} in background')
-    args = (config, manifest, git_credentials, secret_vars, deployment_id, build_context)
+    infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
+    deployment = create_deployment(manifest, username, infra_target)
+    
+    logger.info(f'started building fatman {deployment.id} in background')
+    args = (config, manifest, git_credentials, secret_vars, deployment, build_context)
     thread = threading.Thread(target=_build_fatman_saving_result, args=args, daemon=True)
     thread.start()
-    return deployment_id
+    return deployment.id
 
 
 @db_access
@@ -107,7 +111,7 @@ def _build_fatman_saving_result(
     manifest: Manifest,
     git_credentials: Optional[Credentials],
     secret_vars: SecretVars,
-    deployment_id: str,
+    deployment: DeploymentDto,
     build_context: Optional[str],
 ):
     """Deploy a Fatman storing its faulty or successful result in DB"""
@@ -121,11 +125,11 @@ def _build_fatman_saving_result(
             secret_runtime_env=secret_vars.runtime_env,
         )
 
-        build_fatman(config, manifest, fatman_secrets, deployment_id, build_context, tag)
-        save_deployment_result(deployment_id, DeploymentStatus.DONE)
+        build_fatman(config, manifest, fatman_secrets, deployment, build_context, tag)
+        save_deployment_result(deployment.id, DeploymentStatus.DONE)
     except BaseException as e:
         log_exception(e)
-        save_deployment_result(deployment_id, DeploymentStatus.FAILED, error=str(e))
+        save_deployment_result(deployment.id, DeploymentStatus.FAILED, error=str(e))
 
 
 @backoff.on_exception(backoff.fibo, RequestError, max_value=3, max_time=30, jitter=None)

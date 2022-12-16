@@ -44,6 +44,7 @@ class Fatman(models.Model):
     image_tag = models.CharField(max_length=256, null=True)
     deployed_by = models.CharField(max_length=256, null=True)  # points to git_credentials.username
     last_call_time = models.DateTimeField(null=True, blank=True)
+    infrastructure_target = models.CharField(max_length=256, null=True)
 
     def __str__(self):
         return f'{self.name} v{self.version}'
@@ -70,6 +71,7 @@ class Deployment(models.Model):
     build_logs = models.TextField(null=True, blank=True)
     phase = models.TextField(null=True, blank=True)
     image_name = models.TextField(null=True, blank=True)
+    infrastructure_target = models.CharField(max_length=256, null=True)
 
     def __str__(self):
         return f'{self.id}'
@@ -120,6 +122,7 @@ class TrashFatman(models.Model):
     image_tag = models.CharField(max_length=256, null=True)
     deployed_by = models.CharField(max_length=256, null=True)  # points to git_credentials.username
     last_call_time = models.DateTimeField(null=True, blank=True)
+    infrastructure_target = models.CharField(max_length=256, null=True)
     age_days = models.DecimalField(max_digits=6, decimal_places=3)
 
 

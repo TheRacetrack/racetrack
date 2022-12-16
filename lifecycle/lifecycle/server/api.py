@@ -11,7 +11,7 @@ from lifecycle.endpoints.audit import setup_audit_endpoints
 from lifecycle.endpoints.auth import setup_auth_endpoints
 from lifecycle.endpoints.info import setup_info_endpoints
 from lifecycle.endpoints.plugin import setup_plugin_endpoints
-from lifecycle.monitor.monitors import get_logs_streamer
+from lifecycle.monitor.monitors import list_log_streamers
 from lifecycle.endpoints.health import setup_health_endpoint
 from lifecycle.endpoints.deploy import setup_deploy_endpoints
 from lifecycle.endpoints.esc import setup_esc_endpoints
@@ -58,7 +58,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
     setup_api_endpoints(api_router, config, plugin_engine)
     fastapi_app.include_router(api_router, prefix="/api/v1")
 
-    sio_wsgi_app = setup_socket_io_server(config, plugin_engine)
+    sio_wsgi_app = setup_socket_io_server(plugin_engine)
 
     if config.open_telemetry_enabled:
         # opentelemetry middleware prior to error handlers in order to catch errors before the latter intercept it
@@ -100,7 +100,7 @@ def setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     setup_auth_endpoints(api, config)
 
 
-def setup_socket_io_server(config: Config, plugin_engine: PluginEngine):
+def setup_socket_io_server(plugin_engine: PluginEngine):
     """Configure Socket.IO server for streaming data to clients"""
-    logs_streamer = get_logs_streamer(config, plugin_engine)
-    return SocketIOServer(logs_streamer).wsgi_app
+    log_streamers = list_log_streamers(plugin_engine)
+    return SocketIOServer(log_streamers).wsgi_app

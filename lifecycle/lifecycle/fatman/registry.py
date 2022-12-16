@@ -73,7 +73,8 @@ def delete_fatman(
 ):
     fatman = read_fatman(fatman_name, fatman_version, config)  # raise 404 if not found
     if fatman.status != FatmanStatus.LOST.value:
-        get_fatman_deployer(config, plugin_engine).delete_fatman(fatman_name, fatman_version)
+        deployer = get_fatman_deployer(plugin_engine, fatman.infrastructure_target)
+        deployer.delete_fatman(fatman_name, fatman_version)
 
     owner_username = fatman.deployed_by
     AuditLogger().log_event(
@@ -137,6 +138,12 @@ def _sync_registry_fatman(registry_fatman: FatmanDto, cluster_fatman: FatmanDto)
         logger.debug(f'fatman {registry_fatman} changed status to: {registry_fatman.status}')
     if registry_fatman.error != cluster_fatman.error:
         registry_fatman.error = cluster_fatman.error
+        changed = True
+    if registry_fatman.infrastructure_target != cluster_fatman.infrastructure_target:
+        registry_fatman.infrastructure_target = cluster_fatman.infrastructure_target
+        changed = True
+    if registry_fatman.internal_name != cluster_fatman.internal_name:
+        registry_fatman.internal_name = cluster_fatman.internal_name
         changed = True
     if cluster_fatman.last_call_time is not None:
         if registry_fatman.last_call_time is None or registry_fatman.last_call_time < cluster_fatman.last_call_time:
