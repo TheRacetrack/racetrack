@@ -139,14 +139,15 @@ Fatmen are deployed as k8s pods, and should be managed as such.
 
 ## Port numbers
 
-| service       | kind/Kubernetes (X) | docker-compose (X+100) | localhost (X+200) |
-| -------       | ---------------     | --------------         | ---------         |
-| Lifecycle     | 7002                | 7102                   | 7202              |
-| Image Builder | 7001                | 7101                   | 7201              |
-| Dashboard     | 7003                | 7103                   | 7203              |
-| Fatman        | 7000                | 7100                   | 7200              |
-| PUB           | 7005                | 7105                   | 7205              |
-| postgres      | 5432                | 5532                   | --- (1)           |
+| service              | kind/Kubernetes (X) | docker-compose (X+100) | localhost (X+200) |
+| -------------------- | ---------------     | --------------         | ---------         |
+| Lifecycle            | 7002                | 7102                   | 7202              |
+| Image Builder        | 7001                | 7101                   | 7201              |
+| Dashboard            | 7003                | 7103                   | 7203              |
+| Fatman               | 7000                | 7100                   | 7200              |
+| PUB                  | 7005                | 7105                   | 7205              |
+| Lifecycle Supervisor | 7006                | 7106                   | 7202              |
+| postgres             | 5432                | 5532                   | --- (1)           |
 
 (1) - none as Postgres is not run on localhost
 

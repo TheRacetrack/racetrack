@@ -36,6 +36,8 @@ spec:
         - name: lifecycle-supervisor
           image: kind-registry:5000/racetrack/lifecycle:latest
           imagePullPolicy: Always
+          ports:
+            - containerPort: 7002
           tty: true
           volumeMounts:
             - name: lifecycle-config
@@ -48,8 +50,6 @@ spec:
             - configMapRef:
                 name: lifecycle-env
           env:
-            - name: CONFIG_FILE
-              value: /etc/racetrack/lifecycle/config.yaml
             - name: PUBLIC_IP
               value: ''
               valueFrom: null
@@ -60,6 +60,18 @@ spec:
               value: 'true'
             - name: DJANGO_DEBUG
               value: 'true'
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 7002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 7002
+            initialDelaySeconds: 3
+            periodSeconds: 10
           command: ["python", "-u", "-m", "lifecycle", "supervisor"]
       volumes:
         - name: lifecycle-config
@@ -68,3 +80,21 @@ spec:
         - name: racetrack-plugins
           persistentVolumeClaim:
             claimName: racetrack-plugins-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: lifecycle-supervisor
+  labels:
+    app.kubernetes.io/name: lifecycle-supervisor
+spec:
+  selector:
+    app.kubernetes.io/name: lifecycle-supervisor
+  type: NodePort
+  ports:
+    - name: lifecycle-supervisor
+      nodePort: 30006
+      port: 7006
+      targetPort: 7002

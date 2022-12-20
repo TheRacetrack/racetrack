@@ -50,16 +50,16 @@ spec:
             - configMapRef:
                 name: lifecycle-env
           env:
-            - name: DEBUG
-              value: 'true'
-            - name: DJANGO_DEBUG
-              value: 'true'
             - name: PUBLIC_IP
               value: ''
               valueFrom: null
             - name: CLUSTER_FQDN
               value: ''
               valueFrom: null
+            - name: DEBUG
+              value: 'true'
+            - name: DJANGO_DEBUG
+              value: 'true'
           livenessProbe:
             httpGet:
               path: /live
