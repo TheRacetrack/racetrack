@@ -98,7 +98,13 @@ def _build_base_image(
     deployment_id: str,
     metric_labels: dict[str, str],
 ) -> str:
-    base_image = join_paths(config.docker_registry, config.docker_registry_namespace, 'fatman-base', f'{job_type.lang_name}:{job_type.version}')
+    if job_type.base_image_paths[image_index] is None:
+        return ''
+        
+    base_image = join_paths(
+        config.docker_registry, config.docker_registry_namespace, 
+        'fatman-base', f'{job_type.lang_name}:{job_type.version}',
+    )
     if not config.cache_base_images or not _image_exists_in_registry(base_image):
         base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
         logger.info(f'rebuilding base image {base_image}, '

@@ -400,16 +400,16 @@ from pathlib import Path
 
 
 class Plugin:
-    def fatman_job_types(self) -> Dict[str, Tuple[Path, Path]]:
+    def fatman_job_types(self) -> dict[str, list[tuple[Path, Path]]]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
         """
         return {
-            f'rust:{self.plugin_manifest.version}': (
+            f'rust:{self.plugin_manifest.version}': [(
                 self.plugin_dir / 'base.Dockerfile',
                 self.plugin_dir / 'fatman-template.Dockerfile',
-            ),
+            )],
         }
 ```
 

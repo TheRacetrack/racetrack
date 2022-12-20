@@ -16,11 +16,11 @@ from racetrack_client.client.env import hide_env_vars, merge_env_vars
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
-from racetrack_commons.deploy.resource import count_job_type_containers
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.deploy.image import get_fatman_image
+from racetrack_commons.deploy.job_type import load_job_type
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.entities.dto import DeploymentDto, FatmanDto
 
@@ -125,3 +125,12 @@ def post_fatman_deploy(
             fatman_name=fatman.name,
             fatman_version=fatman.version,
         )
+
+
+def count_job_type_containers(
+    manifest: Manifest,
+    plugin_engine: PluginEngine,
+) -> int:
+    """Determine number of containers used by a job type to compose a Fatman"""
+    job_type = load_job_type(plugin_engine, manifest.lang)
+    return len(job_type.template_paths)
