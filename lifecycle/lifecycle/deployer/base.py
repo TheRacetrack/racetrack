@@ -18,6 +18,7 @@ class FatmanDeployer(ABC):
         tag: str,
         runtime_env_vars: Dict[str, str],
         family: FatmanFamilyDto,
+        containers_num: int = 1,
     ) -> FatmanDto:
         """Deploy a Fatman from a manifest file"""
         raise NotImplementedError()

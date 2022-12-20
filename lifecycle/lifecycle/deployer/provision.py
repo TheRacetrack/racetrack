@@ -16,6 +16,7 @@ from racetrack_client.client.env import hide_env_vars, merge_env_vars
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
+from racetrack_commons.deploy.resource import count_job_type_containers
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
@@ -58,8 +59,10 @@ def provision_fatman(
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
         runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
 
+        containers_num = count_job_type_containers(manifest.lang, plugin_engine)
+
         fatman = fatman_deployer.deploy_fatman(manifest, config, plugin_engine,
-                                               tag, runtime_env_vars, family_dto)
+                                               tag, runtime_env_vars, family_dto, containers_num)
         fatman.deployed_by = deployment.deployed_by
 
     with wrap_context('saving fatman in database'):

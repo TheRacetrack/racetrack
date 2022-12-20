@@ -35,10 +35,10 @@ class PluginCore(ABC):
         """Supplementary env vars dictionary added to runtime vars when deploying a Fatman"""
         return None
 
-    def fatman_job_types(self) -> dict[str, tuple[Path, Path]]:
+    def fatman_job_types(self) -> dict[str, list[tuple[Path, Path]]]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
         """
         return {}
 
