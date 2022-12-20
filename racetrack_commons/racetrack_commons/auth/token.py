@@ -78,7 +78,7 @@ def generate_service_token(
 def generate_internal_token(
     subject_name: str, 
     signature_key: str, 
-    scopes: AuthScope = [AuthScope.FULL_ACCESS],
+    scopes: List[AuthScope] = [AuthScope.FULL_ACCESS],
 ) -> str:
     """Generate an auth token for internal Racetrack service to communicate with Lifecycle API"""
     payload = AuthTokenPayload(

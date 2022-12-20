@@ -2,6 +2,7 @@ import os
 import uuid
 
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
@@ -133,3 +134,27 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
         return auth_subject.fatman_family.name
     else:
         raise ValueError("Unknown auth_subject type")
+
+
+def regenerate_all_user_tokens():
+    auth_subject_queryset = models.AuthSubject.objects.filter(Q(user__isnull=False))
+    for auth_subject in auth_subject_queryset:
+        regenerate_auth_token(auth_subject)
+    count = auth_subject_queryset.count()
+    logger.info(f'Regenerated tokens of all {count} Users')
+
+
+def regenerate_all_fatman_family_tokens():
+    auth_subject_queryset = models.AuthSubject.objects.filter(Q(fatman_family__isnull=False))
+    for auth_subject in auth_subject_queryset:
+        regenerate_auth_token(auth_subject)
+    count = auth_subject_queryset.count()
+    logger.info(f'Regenerated tokens of all {count} Fatman Families')
+
+
+def regenerate_all_esc_tokens():
+    auth_subject_queryset = models.AuthSubject.objects.filter(Q(esc__isnull=False))
+    for auth_subject in auth_subject_queryset:
+        regenerate_auth_token(auth_subject)
+    count = auth_subject_queryset.count()
+    logger.info(f'Regenerated tokens of all {count} ESCs')
