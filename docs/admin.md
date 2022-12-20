@@ -156,6 +156,17 @@ tool to restore the database.
 Otherwise, if your database runs inside kubernetes, 
 exec to `postgres` pod and use [pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html). 
 
+##### Rotating Auth Key
+If you restore a snapshot of the Racetrack's database originating from the other environment (with different `AUTH_KEY`),
+it can invalidate the auth tokens, making the signature invalid with the current `AUTH_KEY`.
+In this case, once the migration is done, do the following:
+
+- Exec into the `lifecycle-supervisor` pod/container
+- Run `python -m lifecycle generate-auth admin` to create a valid Auth token for you. Copy it.
+- Go to Lifecycle-Supervisor or Lifecycle API page (`/lifecycle`) and Authorize with your Racetrack Auth Token.
+- Call endpoints `POST /api/v1/auth/token/user/regenerate` and `POST /api/v1/auth/token/fatman_family/regenerate`
+  to recreate valid signatures for the tokens.
+
 ### Plugins Volume
 Plugins are stored in a Persistent Volume called `racetrack-plugins-pvc`.
 Copy all of its contents with the help of your Kubernetes Admin.
