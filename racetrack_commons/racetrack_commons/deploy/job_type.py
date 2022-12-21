@@ -53,11 +53,11 @@ def gather_job_types(
                 if isinstance(job_data, tuple):
                     base_image_paths = [job_data[0]]
                     template_paths = [job_data[1]]
-                if isinstance(job_data, list):
+                elif isinstance(job_data, list):
                     base_image_paths = [item[0] for item in job_data]
                     template_paths = [item[1] for item in job_data]
                 else:
-                    raise RuntimeError('Invalid job type data. It should be list[tuple[Path, Path]]')
+                    raise RuntimeError(f'Invalid job type data. It should be list[tuple[Path, Path]], was {type(job_data)}')
 
                 assert len(base_image_paths) > 0, 'Job type should have non-empty list of base'
 
