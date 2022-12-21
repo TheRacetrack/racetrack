@@ -59,14 +59,14 @@ class DockerBuilder(ImageBuilder):
             with wrap_context(f'building base image {progress}'):
                 base_image = _build_base_image(config, job_type, image_index, deployment_id, metric_labels)
 
-            if manifest.docker and manifest.docker.dockerfile_path and image_index == 1:
-                # User-module Dockerfile coming with a Manifest
+            template_path = job_type.template_paths[image_index]
+            if template_path is None:
+                assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
                 dockerfile_path = workspace / manifest.docker.dockerfile_path
             else:
                 with wrap_context(f'templating Dockerfile {progress}'):
                     dockerfile_path = workspace / f'.fatman-{image_index}.Dockerfile'
                     racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
-                    template_path = job_type.template_paths[image_index]
                     template_dockerfile(manifest, template_path, dockerfile_path, base_image,
                                         git_version, racetrack_version, job_type.version, env_vars)
 
