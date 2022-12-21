@@ -101,9 +101,9 @@ def _build_base_image(
     if job_type.base_image_paths[image_index] is None:
         return ''
         
-    base_image = join_paths(
-        config.docker_registry, config.docker_registry_namespace, 
-        'fatman-base', f'{job_type.lang_name}:{job_type.version}',
+    base_image = get_base_image_name(
+        config.docker_registry, config.docker_registry_namespace,
+        job_type.lang_name, job_type.version, image_index,
     )
     if not config.cache_base_images or not _image_exists_in_registry(base_image):
         base_logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
@@ -163,3 +163,12 @@ def _image_exists_in_registry(image_name: str):
 @backoff.on_exception(backoff.fibo, CommandError, max_value=3, max_time=30, jitter=None)
 def _wait_for_docker_engine_ready():
     shell('docker ps')
+
+
+def get_base_image_name(docker_registry: str, registry_namespace: str, name: str, tag: str, module_index: int = 0) -> str:
+    """Return full name of Fatman entrypoint image"""
+    if module_index == 0:
+        image_type = 'fatman-base'
+    else:
+        image_type = f'fatman-base-{module_index}'
+    return join_paths(docker_registry, registry_namespace, image_type, f'{name}:{tag}')
