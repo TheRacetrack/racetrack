@@ -128,9 +128,9 @@ def post_fatman_deploy(
 
 
 def count_job_type_containers(
-    manifest: Manifest,
+    lang: str,
     plugin_engine: PluginEngine,
 ) -> int:
     """Determine number of containers used by a job type to compose a Fatman"""
-    job_type = load_job_type(plugin_engine, manifest.lang)
+    job_type = load_job_type(plugin_engine, lang)
     return len(job_type.template_paths)

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
@@ -108,9 +108,9 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         )
 
     class BuildingResultModel(BaseModel):
-        image_name: str = Field(
-            description='full docker image name with docker tag',
-            example='ghcr.io/racetrack/fatman-entrypoint/adder:latest',
+        image_names: List[str] = Field(
+            description='List of full names of built images',
+            example=['ghcr.io/racetrack/fatman-entrypoint/adder:latest'],
         )
         logs: str = Field(
             description='build logs output',
