@@ -36,6 +36,12 @@ These are the known, public Racetrack plugins that are commonly available to be 
       racetrack plugin install github.com/TheRacetrack/plugin-docker-proxy-job-type
       ```
 
+    - [https://github.com/TheRacetrack/plugin-hugo-job-type](https://github.com/TheRacetrack/plugin-hugo-job-type) -
+      HUGO Job Type
+      ```
+      racetrack plugin install github.com/TheRacetrack/plugin-hugo-job-type
+      ```
+
 - Infrastructure Targets:
     - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
       deploys to remote Docker Daemon
