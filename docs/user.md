@@ -524,7 +524,7 @@ See documentation for particular job types:
 
 - [python3](job_types/job_python3.md) - designed for Python projects
 - [golang](job_types/job_golang.md) - designed for Go projects
-- [docker-http](job_types/job_docker.md) - designed for any other Dockefile-based jobs
+- [docker-proxy](job_types/job_docker.md) - designed for any other Dockefile-based jobs
 
 See the [sample/](../sample) directory for more examples.
 
