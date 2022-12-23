@@ -89,7 +89,7 @@ See the [Documentation](https://theracetrack.github.io/racetrack/) for more deta
 * [Python 3](https://github.com/TheRacetrack/plugin-python-job-type)
 * [Go](https://github.com/TheRacetrack/plugin-go-job-type)
 * [Rust](https://github.com/TheRacetrack/plugin-rust-job-type)
-* [Any language wrapped in a Dockerfile](https://github.com/TheRacetrack/plugin-docker-http-job-type)
+* [Any language wrapped in a Dockerfile](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
 * [HUGO framework](https://github.com/TheRacetrack/plugin-hugo-job-type)
 * [Drupal](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/drupal)
 * [Sphinx](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/sphinx)
