@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
@@ -29,7 +28,7 @@ var telemetryExcludedEndpoints = map[string]bool{
 	"GET /ready":   true,
 }
 
-func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider, error) {
+func SetupOpenTelemetry(router *gin.Engine, cfg *Config) (*trace.TracerProvider, error) {
 	otlpEndpoint := cfg.OpenTelemetryEndpoint
 	otlpUrl, err := url.Parse(otlpEndpoint)
 	if err != nil {
@@ -57,34 +56,32 @@ func SetupOpenTelemetry(router *mux.Router, cfg *Config) (*trace.TracerProvider,
 	)
 	otel.SetTracerProvider(tp)
 
-	telemetryMiddleware := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	telemetryMiddleware := func(c *gin.Context) {
+		
+		endpointName := fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.Path)
+		_, isExcluded := telemetryExcludedEndpoints[endpointName]
 
-			endpointName := fmt.Sprintf("%s %s", req.Method, req.URL.Path)
-			_, isExcluded := telemetryExcludedEndpoints[endpointName]
+		if !isExcluded {
+			_, span := tracer.Start(context.Background(), endpointName)
 
-			if !isExcluded {
-				_, span := tracer.Start(context.Background(), endpointName)
-
-				traceparent := req.Header.Get(cfg.RequestTracingHeader)
-				if traceparent == "" {
-					// parse traceparent fields (https://www.w3.org/TR/trace-context/#traceparent-header)
-					traceId := span.SpanContext().TraceID().String()
-					spanId := span.SpanContext().SpanID().String()
-					traceparent = fmt.Sprintf("00-%s-%s-01", traceId, spanId)
-					req.Header.Set(cfg.RequestTracingHeader, traceparent)
-				}
-
-				span.SetAttributes(
-					attribute.String("endpoint.method", req.Method),
-					attribute.String("endpoint.path", req.URL.Path),
-					attribute.String("traceparent", traceparent),
-				)
-				defer span.End()
+			traceparent := c.Request.Header.Get(cfg.RequestTracingHeader)
+			if traceparent == "" {
+				// parse traceparent fields (https://www.w3.org/TR/trace-context/#traceparent-header)
+				traceId := span.SpanContext().TraceID().String()
+				spanId := span.SpanContext().SpanID().String()
+				traceparent = fmt.Sprintf("00-%s-%s-01", traceId, spanId)
+				c.Request.Header.Set(cfg.RequestTracingHeader, traceparent)
 			}
 
-			next.ServeHTTP(w, req)
-		})
+			span.SetAttributes(
+				attribute.String("endpoint.method", c.Request.Method),
+				attribute.String("endpoint.path", c.Request.URL.Path),
+				attribute.String("traceparent", traceparent),
+			)
+			defer span.End()
+		}
+	
+		c.Next()
 	}
 
 	router.Use(telemetryMiddleware)

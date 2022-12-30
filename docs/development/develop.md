@@ -12,7 +12,7 @@ Install:
 - [Docker v20.10+](https://docs.docker.com/engine/install/ubuntu/)
 - [kubectl v1.24.3+](https://kubernetes.io/docs/tasks/tools/#kubectl) - if you're going to deploy to Kind
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) - if you're going to deploy to Kind
-- [Go 1.16+](https://go.dev/doc/install) - if you're going to develop components in Go (PUB, go_wrapper)
+- [Go 1.19+](https://go.dev/doc/install) - if you're going to develop components in Go (PUB, go_wrapper)
 
 ## Development Setup
 

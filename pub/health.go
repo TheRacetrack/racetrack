@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
 )
 
@@ -33,12 +34,14 @@ func healthEndpoint(res http.ResponseWriter, req *http.Request, cfg *Config) {
 	res.Write(response)
 }
 
-func liveEndpoint(res http.ResponseWriter, req *http.Request, cfg *Config) {
-	res.Header().Set("Content-Type", "application/json")
-	res.Write([]byte("{\"live\": true}"))
+func liveEndpoint(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"live": true,
+	})
 }
 
-func readyEndpoint(res http.ResponseWriter, req *http.Request, cfg *Config) {
-	res.Header().Set("Content-Type", "application/json")
-	res.Write([]byte("{\"ready\": true}"))
+func readyEndpoint(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"ready": true,
+	})
 }

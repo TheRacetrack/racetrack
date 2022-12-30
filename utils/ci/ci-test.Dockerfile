@@ -6,7 +6,7 @@ RUN apt-get update -y && apt-get install -y \
 
 # install Go
 ENV GOPATH /root/go
-ENV GO_VERSION 1.16
+ENV GO_VERSION 1.19
 ENV GO_ARCH amd64
 ENV PATH /usr/local/go/bin:$PATH
 ENV PATH $GOPATH/bin:$PATH
