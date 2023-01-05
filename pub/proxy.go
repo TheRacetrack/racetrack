@@ -7,66 +7,65 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
-func proxyEndpoint(res http.ResponseWriter, req *http.Request, cfg *Config) {
+func proxyEndpoint(c *gin.Context, cfg *Config) {
 	startTime := time.Now()
 
-	requestId := getRequestTracingId(req, cfg.RequestTracingHeader)
+	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
 
-	logger.Info("Incoming Proxy request", log.Ctx{"method": req.Method, "path": req.URL.Path})
-	statusCode, err := handleProxyRequest(res, req, cfg, logger, requestId)
+	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+	statusCode, err := handleProxyRequest(c, cfg, logger, requestId)
 	if err != nil {
 		metricFatmanProxyRequestErrors.Inc()
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
 			"status": statusCode,
 			"error":  errorStr,
-			"path":   req.URL.Path,
+			"path":   c.Request.URL.Path,
 		})
-		http.Error(res, errorStr, statusCode)
+		http.Error(c.Writer, errorStr, statusCode)
 	}
 	metricOverallFatmanProxyResponseTime.Add(time.Since(startTime).Seconds())
 }
 
 func handleProxyRequest(
-	res http.ResponseWriter,
-	req *http.Request,
+	c *gin.Context,
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
 ) (int, error) {
-	if req.Method != "POST" && req.Method != "GET" {
-		res.Header().Set("Allow", "GET, POST")
+
+	if c.Request.Method != "POST" && c.Request.Method != "GET" {
+		c.Writer.Header().Set("Allow", "GET, POST")
 		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
 	}
 
-	vars := mux.Vars(req)
-	fatmanName := vars["fatman"]
+	fatmanName := c.Param("fatman")
 	if fatmanName == "" {
 		return http.StatusBadRequest, errors.New("Couldn't extract fatman name")
 	}
 
-	fatmanVersion := vars["version"]
+	fatmanVersion := c.Param("version")
 	if fatmanVersion == "" {
 		return http.StatusBadRequest, errors.New("Couldn't extract fatman version")
 	}
 
-	if req.Header.Get("Accept") == "" {
+	if c.Request.Header.Get("Accept") == "" {
 		return http.StatusBadRequest, errors.New("Missing 'Accept' header. " +
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	fatmanPath := vars["path"]
+	fatmanPath := c.Param("path")
 
-	authToken := getAuthFromHeaderOrCookie(req)
+	authToken := getAuthFromHeaderOrCookie(c.Request)
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 
@@ -81,7 +80,7 @@ func handleProxyRequest(
 	metricFatmanProxyRequests.WithLabelValues(fatmanName, fatman.Version).Inc()
 
 	if cfg.AuthRequired {
-		err := lifecycleClient.AuthenticateCaller(req.URL.Path, fatmanName, fatman.Version, fatmanPath, cfg.AuthDebug)
+		err := lifecycleClient.AuthenticateCaller(c.Request.URL.Path, fatmanName, fatman.Version, fatmanPath, cfg.AuthDebug)
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
@@ -93,8 +92,8 @@ func handleProxyRequest(
 		}
 	}
 
-	targetUrl := TargetURL(cfg, fatman, req.URL.Path)
-	ServeReverseProxy(targetUrl, res, req, fatmanName, fatman.Version, cfg, logger, requestId)
+	targetUrl := TargetURL(cfg, fatman, c.Request.URL.Path)
+	ServeReverseProxy(targetUrl, c.Writer, c.Request, fatmanName, fatman.Version, cfg, logger, requestId)
 	return 200, nil
 }
 
