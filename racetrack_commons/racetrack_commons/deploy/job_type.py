@@ -59,14 +59,7 @@ def gather_job_types(
                 else:
                     raise RuntimeError(f'Invalid job type data. It should be list[tuple[Path, Path]], was {type(job_data)}')
 
-                assert len(base_image_paths) > 0, 'Job type should have non-empty list of base'
-
-                for i, base_image_path in enumerate(base_image_paths):
-                    template_path = template_paths[i]
-                    if base_image_path is not None:
-                        assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
-                    if template_path is not None:
-                        assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
+                _validate_dockerfile_paths(base_image_paths, template_paths, job_full_name)
 
                 name_parts = job_full_name.split(':')
                 assert len(name_parts) == 2, f'job type {job_full_name} should have the version defined (name:version)'
@@ -89,3 +82,14 @@ def list_available_job_types(plugin_engine: PluginEngine) -> list[str]:
     with wrap_context('gathering available job types'):
         job_types = gather_job_types(plugin_engine)
     return sorted(job_types.keys())
+
+
+def _validate_dockerfile_paths(base_image_paths: list[Path], template_paths: list[Path], job_full_name: str):
+    assert len(base_image_paths) > 0, 'Job type should have non-empty list of base images'
+
+    for i, base_image_path in enumerate(base_image_paths):
+        template_path = template_paths[i]
+        if base_image_path is not None:
+            assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
+        if template_path is not None:
+            assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
