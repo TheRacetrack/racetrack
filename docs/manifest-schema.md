@@ -33,6 +33,7 @@ fields:
     - `dockerfile_path` - relative path to Dockerfile recipe
 - `build_env` - dictionary of environment variables that should be set when building the image
 - `image_type` - type of deployed image. Only `docker` is currently available.
+- `infrastructure_target` - Back-end platform where to deploy the service.
 - `labels` - dictionary with metadata describing fatman for humans
 - `public_endpoints` - list of public fatman endpoints that can be accessed without authentication
 - `replicas` - number of running instances of the Fatman to deploy
@@ -48,7 +49,7 @@ fields:
   (apt or apk depending on base image type)
 
 ## Example
-It doesn't really make sense, but it contains all fields with exemplary values:
+This example is not valid as a whole, but it contains all fields with exemplary values:
 ```yaml
 name: skynet
 lang: python3:latest
@@ -70,6 +71,7 @@ docker:
 build_env:
   DEBIAN_FRONTEND: 'noninteractive'
 image_type: docker
+infrastructure_target: kubernetes
 labels:
   model: linear-regression
 public_endpoints:

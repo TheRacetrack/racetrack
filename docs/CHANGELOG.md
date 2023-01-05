@@ -5,11 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.7.0] - 2023-01-05
 ### Added
 - Every plugin can have its own configuration, stored in a YAML file.
   After uploading the plugin, the configuration can be edited on Dashboard's *Administration* tab,
   with a *Edit Config* button.
   Plugin can read the configuration from a file `self.config_path: pathlib.Path`.
+- Racetrack instance can operate with multiple infrastructure targets.
+  By default, there is no infrastructure target. It has to be extended by installing a plugin.
+  The infrastructure target is displayed next to the fatman name, on Dashboard's list.
+  There is a new, optional field `infrastructure_target` in a Manifest.
+  If given, it enforces using the specific target in case of many infrastructures are in use.
+  Otherwise, the deafult infrastructure is applied.
+- Fatman can be composed of multiple Docker images provided by a plugin or user's manifest.
 
 ## [2.6.0] - 2022-12-02
 ### Added
