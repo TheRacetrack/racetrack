@@ -2,6 +2,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Union
 
 import backoff
 
@@ -11,7 +12,7 @@ from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 
 
-JobTypeImagePaths = list[tuple[Path, Path]]
+JobTypeImagePaths = Union[list[tuple[Path, Path]], tuple[Path, Path]]
 
 
 @dataclass
