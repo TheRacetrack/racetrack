@@ -12,7 +12,7 @@ func main() {
 	log.Info("I wish only to serve...")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/perform", performHandler)
-	addr := ":7004"
+	addr := ":7001"
 	log.Info("Listening on HTTP address", log.Ctx{"addr": addr})
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {

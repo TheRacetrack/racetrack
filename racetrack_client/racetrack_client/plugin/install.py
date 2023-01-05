@@ -161,6 +161,9 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
 
     r = Requests.get(
         f'https://api.github.com/repos/{gh_user}/{gh_repo}/releases',
+        headers={
+            'User-Agent': 'request',
+        },
     )
 
     json_releases = parse_response_object(r, 'GitHub API response')

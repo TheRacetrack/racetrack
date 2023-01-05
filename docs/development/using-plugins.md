@@ -12,10 +12,10 @@ These are the known, public Racetrack plugins that are commonly available to be 
       racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
       ```
 
-    - [github.com/TheRacetrack/plugin-docker-http-job-type](https://github.com/TheRacetrack/plugin-docker-http-job-type) -
-      Dockerfile-based Job Type
+    - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
+      Dockerfile-based Job Type (any language or app wrapped in a Dockerfile like Drupal or Sphinx)
       ```
-      racetrack plugin install github.com/TheRacetrack/plugin-docker-http-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-docker-proxy-job-type
       ```
 
     - [github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type) -
@@ -30,10 +30,10 @@ These are the known, public Racetrack plugins that are commonly available to be 
       racetrack plugin install github.com/TheRacetrack/plugin-rust-job-type
       ```
 
-    - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
-      Docker Proxy jobs (like Drupal or Sphinx)
+    - [https://github.com/TheRacetrack/plugin-hugo-job-type](https://github.com/TheRacetrack/plugin-hugo-job-type) -
+      HUGO Job Type
       ```
-      racetrack plugin install github.com/TheRacetrack/plugin-docker-proxy-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-hugo-job-type
       ```
 
 - Infrastructure Targets:

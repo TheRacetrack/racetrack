@@ -2,10 +2,10 @@
 Dockerfile jobs should be used as a last resort. You should rather use job types
 specifically dedicated to your language if possible.
 
-"docker-http" job type is intended to handle the calls to your Web server written 
+"docker-proxy" job type is intended to handle the calls to your Web server written 
 in any programming language, enclosed in a docker image by Dockerfile recipe.
 
-Set `lang: docker-http` in your `fatman.yaml` manifest file in order to use this type of job.
+Set `lang: docker-proxy` in your `fatman.yaml` manifest file in order to use this type of job.
 
 # Job standards
 Let's assume you want to have a model running in a docker container and calculating
@@ -73,10 +73,10 @@ To sum up:
    (eg. load model data from external sources).
 
 # Manifest file
-When using `docker-http` job type, you MUST include the following fields in a `fatman.yaml` manifest file:
+When using `docker-proxy` job type, you MUST include the following fields in a `fatman.yaml` manifest file:
 - `name` - choose a meaningful text name for a job. It should be unique within the Racetrack cluster.
 - `owner_email` - email address of the Fatman's owner to reach out
-- `lang` - Set base image to "docker-http"
+- `lang` - Set base image to "docker-proxy"
 - `git.remote` - URL to your remote repo 
 
 You MAY include the following fields:
@@ -89,7 +89,7 @@ The final `fatman.yaml` may look like this:
 ```yaml
 name: supersmart
 owner_email: nobody@example.com
-lang: docker-http
+lang: docker-proxy
 
 git:
   remote: https://github.com/racetrack/supersmart-model

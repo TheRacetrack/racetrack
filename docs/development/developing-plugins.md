@@ -80,10 +80,10 @@ def fatman_runtime_env_vars(self) -> Optional[Dict[str, str]]:
 
 - `fatman_job_types` - Job types provided by this plugin
 ```python
-def fatman_job_types(self) -> Dict[str, Tuple[Path, Path]]:
+def fatman_job_types(self) -> dict[str, list[tuple[Path, Path]]]:
     """
     Job types provided by this plugin
-    :return dict of job type name (with version) -> (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
     """
 ```
 

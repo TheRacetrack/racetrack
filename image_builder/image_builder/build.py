@@ -4,7 +4,7 @@ import tarfile
 import time
 from base64 import b64decode
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 from racetrack_client.client.env import merge_env_vars
 from racetrack_client.client_config.client_config import Credentials
@@ -39,7 +39,7 @@ def build_fatman_image(
         build_context: Optional[str],
         deployment_id: str,
         plugin_engine: PluginEngine,
-) -> Tuple[str, str, Optional[str]]:
+) -> Tuple[List[str], str, Optional[str]]:
     """Build image from given manifest and return built image name"""
     metric_labels = {
         'fatman_name': manifest.name,
@@ -65,7 +65,7 @@ def build_fatman_image(
 
         logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
                     f'deployment ID: {deployment_id}, git version: {git_version}')
-        image_name, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
+        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
                                                       build_env_vars, deployment_id, plugin_engine)
 
         if config.clean_up_workspaces:
@@ -73,7 +73,7 @@ def build_fatman_image(
                 if repo_dir.exists():
                     shutil.rmtree(repo_dir)
 
-        return image_name, logs, error
+        return image_names, logs, error
 
     finally:
         metric_image_building_done_requests.labels(**metric_labels).inc()

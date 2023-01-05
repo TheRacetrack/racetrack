@@ -11,4 +11,4 @@ def perform_endpoint():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7004)
+    app.run(host='0.0.0.0', port=7001)

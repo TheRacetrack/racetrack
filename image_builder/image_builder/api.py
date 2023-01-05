@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 from image_builder.config import Config
 from image_builder.build import build_fatman_image
 from image_builder.health import health_response
-from image_builder.job_type import list_available_job_types
 from image_builder.scheduler import schedule_tasks_async
 from racetrack_client.client_config.io import load_credentials_from_dict
 from racetrack_client.log.logs import init_logs, configure_logs
@@ -16,6 +15,7 @@ from racetrack_client.utils.config import load_config
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.asgi.fastapi import create_fastapi
 from racetrack_commons.api.metrics import setup_metrics_endpoint
+from racetrack_commons.deploy.job_type import list_available_job_types
 from racetrack_commons.plugin.engine import PluginEngine
 
 
@@ -108,9 +108,9 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         )
 
     class BuildingResultModel(BaseModel):
-        image_name: str = Field(
-            description='full docker image name with docker tag',
-            example='ghcr.io/racetrack/fatman-entrypoint/adder:latest',
+        image_names: List[str] = Field(
+            description='List of full names of built images',
+            example=['ghcr.io/racetrack/fatman-entrypoint/adder:latest'],
         )
         logs: str = Field(
             description='build logs output',
@@ -131,12 +131,12 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         secret_build_env = payload.secret_build_env or {}
         build_context = payload.build_context
         deployment_id = payload.deployment_id
-        image_name, logs, error = build_fatman_image(
+        image_names, logs, error = build_fatman_image(
             config, manifest, git_credentials, secret_build_env, tag,
             build_context, deployment_id, plugin_engine,
         )
         return {
-            'image_name': image_name,
+            'image_names': image_names,
             'logs': logs,
             'error': error,
         }

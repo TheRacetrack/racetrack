@@ -1,6 +1,6 @@
 name: docker-python-flask
 owner_email: sample@example.com
-lang: docker-http:latest
+lang: docker-proxy:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack

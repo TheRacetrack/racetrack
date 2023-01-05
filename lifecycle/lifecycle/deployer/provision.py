@@ -20,6 +20,7 @@ from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.deploy.image import get_fatman_image
+from racetrack_commons.deploy.job_type import load_job_type
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.entities.dto import DeploymentDto, FatmanDto
 
@@ -58,8 +59,10 @@ def provision_fatman(
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
         runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
 
+        containers_num = count_job_type_containers(manifest.lang, plugin_engine)
+
         fatman = fatman_deployer.deploy_fatman(manifest, config, plugin_engine,
-                                               tag, runtime_env_vars, family_dto)
+                                               tag, runtime_env_vars, family_dto, containers_num)
         fatman.deployed_by = deployment.deployed_by
 
     with wrap_context('saving fatman in database'):
@@ -122,3 +125,12 @@ def post_fatman_deploy(
             fatman_name=fatman.name,
             fatman_version=fatman.version,
         )
+
+
+def count_job_type_containers(
+    lang: str,
+    plugin_engine: PluginEngine,
+) -> int:
+    """Determine number of containers used by a job type to compose a Fatman"""
+    job_type = load_job_type(plugin_engine, lang)
+    return len(job_type.template_paths)

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, List
 
 from image_builder.config import Config
 from racetrack_client.manifest import Manifest
@@ -19,7 +19,7 @@ class ImageBuilder(ABC):
             env_vars: Dict[str, str],
             deployment_id: str,
             plugin_engine: PluginEngine,
-    ) -> Tuple[str, str, Optional[str]]:
+    ) -> Tuple[List[str], str, Optional[str]]:
         """
         Build image from manifest file in a workspace directory.
         :param config: Image builder configuration
@@ -29,6 +29,6 @@ class ImageBuilder(ABC):
         :param git_version: version name from Fatman git history
         :param env_vars: environment variables that should be set during building
         :param deployment_id: unique deployment id (UUID4)
-        :return: Built image name, build logs, error message
+        :return: Full names of built images, build logs, error message
         """
         raise NotImplementedError()
