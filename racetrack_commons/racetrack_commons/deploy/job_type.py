@@ -11,6 +11,9 @@ from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 
 
+JobTypeImagePaths = list[tuple[Path, Path]]
+
+
 @dataclass
 class JobType:
     lang_name: str
@@ -45,7 +48,7 @@ def gather_job_types(
     job_types: dict[str, JobType] = {}
     job_family_versions: dict[str, list[JobType]] = defaultdict(list)
 
-    plugin_results: list[dict[str, tuple[Path, Path]]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
+    plugin_results: list[dict[str, JobTypeImagePaths]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
     for plugin_job_types in plugin_results:
         if plugin_job_types:
             for job_full_name, job_data in plugin_job_types.items():
