@@ -7,7 +7,7 @@ def test_deploy_model():
 
     _install_plugin('github.com/TheRacetrack/plugin-python-job-type')
     if environment == 'docker':
-        _install_plugin('github.com/TheRacetrack/plugin-docker-infrastructure')
+        _install_plugin('github.com/TheRacetrack/plugin-docker-infrastructure==1.0.1')
     elif environment == 'kind':
         _install_plugin('github.com/TheRacetrack/plugin-kubernetes-infrastructure')
 

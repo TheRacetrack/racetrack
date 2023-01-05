@@ -16,7 +16,7 @@ changes and/or source) is:
 | [Python](https://www.python.org/downloads/)                         | 3.8         | 3.10           |
 | [Docker](https://docs.docker.com/engine/release-notes/)             | 20.10.17    | 20.10.17       |
 | [PostgreSQL](https://www.postgresql.org/docs/release/)              | 13.1        | 14             |
-| [Go](https://go.dev/)                                               | 1.16        | 1.18.3         |
+| [Go](https://go.dev/)                                               | 1.19        | 1.19.4         |
 | [Django](https://pypi.org/project/Django)                           | 3.2.6       | 4.0.5          |
 | [jQuery](https://github.com/jquery/jquery/releases)                 | 3.6.0       | 3.6.0          |
 | [Bootstrap](https://getbootstrap.com/docs/versions/)                | 5.0.1       | 5.2            |

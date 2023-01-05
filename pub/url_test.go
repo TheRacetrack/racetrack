@@ -2,40 +2,58 @@ package main
 
 import (
 	"net/http"
-	"net/url"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFatmanPathExtraction(t *testing.T) {
-	router := mux.NewRouter()
-	router.NewRoute().Path(baseIngressPath + proxyPathTemplate)
-	routeMatch := mux.RouteMatch{}
+	router := gin.Default()
+	router.GET(baseIngressPath + "/fatman/:fatman/:version/*path", func(c *gin.Context) {
+		fatman_name := c.Param("fatman")
+		fatman_version := c.Param("version")
+		fatman_path := c.Param("path")
+		c.JSON(http.StatusOK, gin.H{
+			"name": fatman_name,
+			"path": fatman_path,
+			"version": fatman_version,
+		})
+	})
+	router.GET(baseIngressPath + "/fatman/:fatman/:version", func(c *gin.Context) {
+		fatman_name := c.Param("fatman")
+		fatman_version := c.Param("version")
+		fatman_path := c.Param("path")
+		c.JSON(http.StatusOK, gin.H{
+			"name": fatman_name,
+			"path": fatman_path,
+			"version": fatman_version,
+		})
+	})
 
 	{
-		request := http.Request{Method: "GET", URL: &url.URL{Path: "/pub/fatman/name-123/latest/api/v1/perform"}}
-		assert.True(t, router.Match(&request, &routeMatch))
-		assert.Equal(t, "name-123", routeMatch.Vars["fatman"])
-		assert.Equal(t, "latest", routeMatch.Vars["version"])
-		assert.Equal(t, "/api/v1/perform", routeMatch.Vars["path"])
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/pub/fatman/name-123/latest/api/v1/perform", nil)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, "{\"name\":\"name-123\",\"path\":\"/api/v1/perform\",\"version\":\"latest\"}", w.Body.String())
 	}
 
 	{
-		request := http.Request{Method: "GET", URL: &url.URL{Path: "/pub/fatman/name-123/0.0.1/"}}
-		assert.True(t, router.Match(&request, &routeMatch))
-		assert.Equal(t, "name-123", routeMatch.Vars["fatman"])
-		assert.Equal(t, "0.0.1", routeMatch.Vars["version"])
-		assert.Equal(t, "/", routeMatch.Vars["path"])
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/pub/fatman/name-123/0.0.1/", nil)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, "{\"name\":\"name-123\",\"path\":\"/\",\"version\":\"0.0.1\"}", w.Body.String())
 	}
 
 	{
-		request := http.Request{Method: "GET", URL: &url.URL{Path: "/pub/fatman/name-123/0.0.2"}}
-		assert.True(t, router.Match(&request, &routeMatch))
-		assert.Equal(t, "name-123", routeMatch.Vars["fatman"])
-		assert.Equal(t, "0.0.2", routeMatch.Vars["version"])
-		assert.Equal(t, "", routeMatch.Vars["path"])
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/pub/fatman/name-123/0.0.2", nil)
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, "{\"name\":\"name-123\",\"path\":\"\",\"version\":\"0.0.2\"}", w.Body.String())
 	}
 }
 
