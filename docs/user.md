@@ -212,7 +212,9 @@ Racetrack, and to help you get used to the core Racetrack concepts.
 
 1. A workstation with a sane operating system (currently, Debian and -
    grudgingly - Ubuntu are considered sane)
-1. Docker v20.10+
+1. [Docker v20.10+](https://docs.docker.com/engine/install/ubuntu/)
+  managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+1. [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
 1. bash
 1. python3 and python3-venv (Python 3.8+)
 1. [racetrack-client](https://pypi.org/project/racetrack-client/) (see section
