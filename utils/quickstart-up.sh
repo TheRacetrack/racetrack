@@ -36,6 +36,9 @@ racetrack login http://localhost:7102 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZ
 echo "Installing python3 job type in Racetrack..."
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7102
 
+echo "Installing docker infrastructure plugin in Racetrack..."
+racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure http://localhost:7102
+
 echo "Preparing sample job to be deployed..."
 mkdir -p sample
 cat << EOF > sample/entrypoint.py
