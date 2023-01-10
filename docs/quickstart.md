@@ -8,6 +8,7 @@ and how to deploy a sample job there.
 - Python 3.8 (or higher)
 - [Docker v20.10 (or higher)](https://docs.docker.com/engine/install/ubuntu/)
   managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+- [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
 
 ## 1. Set up a local environment (optional)
 For your convenience use virtual environment:
