@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+
+  locust:
+    container_name: locust
+    image: ghcr.io/theracetrack/racetrack/locust:latest
+    build:
+      context: ../..
+      dockerfile: tests/stress/Dockerfile
+    restart: unless-stopped
+    environment:
+      test_env: compose
+      fatman_name: adder
+      fatman_version: 0.0.1
+      LIFECYCLE_URL: http://localhost:7102/lifecycle
+    network_mode: "host"

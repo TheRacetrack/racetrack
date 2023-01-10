@@ -1,0 +1,5 @@
+textarea.plugin-config-editor {
+    font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace;
+    min-height: 30em !important;
+    overflow: auto;
+}

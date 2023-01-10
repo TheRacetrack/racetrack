@@ -1,0 +1,63 @@
+{% extends "racetrack/base.html" %}
+
+{% block content %}
+
+<div class="container">
+<div class="card border-0">
+<div class="card-body">
+
+    <div class="invalid-feedback d-block text-center">
+    {% if form.errors %}
+        <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+            <p>Your account doesn't have access to this page. To proceed, please login with an account that has access.</p>
+        {% else %}
+            <p>Please login to see this page.</p>
+        {% endif %}
+    {% endif %}
+    </div>
+
+    <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+        <div class="card border-1 rounded-3">
+          <div class="card-body p-4 p-sm-4">
+            <h5 class="card-title text-center mb-4">Sign In</h5>
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-floating mb-3">
+                    <input type="text" name="username" autofocus autocomplete="username" required id="id_username" class="form-control" placeholder="Email">
+                    <label for="id_username">Email</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" name="password" autocomplete="current-password" required id="id_password" class="form-control" placeholder="Password">
+                    <label for="id_password">Password</label>
+                </div>
+
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-login text-uppercase fw-bold" type="submit">Sign in</button>
+                </div>
+                
+                <hr class="my-4">
+                <div class="d-grid mb-2 text-center">
+                    <a href="{% url 'password_reset' %}">Lost password?</a>
+                </div>
+                <div class="d-grid mb-2 text-center">
+                    <a href="{% url 'dashboard:register' %}">Not registered yet?</a>
+                </div>
+
+                <input type="hidden" name="next" value="{{ next }}" />
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+
+</div>
+</div>
+</div>
+
+{% endblock %}

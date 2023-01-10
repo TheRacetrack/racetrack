@@ -1,0 +1,3735 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="TheRacetrack">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.0, mkdocs-material-8.5.6">
+    
+    
+      
+        <title>Changelog - Racetrack</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Racetrack" class="md-header__button md-logo" aria-label="Racetrack" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Racetrack
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/TheRacetrack/racetrack" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    TheRacetrack/racetrack
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Racetrack" class="md-nav__button md-logo" aria-label="Racetrack" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Racetrack
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/TheRacetrack/racetrack" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    TheRacetrack/racetrack
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Using Racetrack
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Using Racetrack" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Using Racetrack
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        Quickstart
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/" class="md-nav__link">
+        User Guide
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manifest-schema/" class="md-nav__link">
+        Fatman Manifest File Schema
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../job_types/job_python3/" class="md-nav__link">
+        Python Job Type
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        Permission model
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/using-plugins/" class="md-nav__link">
+        Using plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/developing-plugins/" class="md-nav__link">
+        Developing plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/plugins-job-types/" class="md-nav__link">
+        Job type plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Development
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Development" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Development
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/develop/" class="md-nav__link">
+        Developer manual
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/deployment/" class="md-nav__link">
+        Deployment & Release
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../admin/" class="md-nav__link">
+        Administering
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Changelog
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Changelog
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    [Unreleased]
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#270-2023-01-05" class="md-nav__link">
+    [2.7.0] - 2023-01-05
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.7.0] - 2023-01-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#260-2022-12-02" class="md-nav__link">
+    [2.6.0] - 2022-12-02
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.6.0] - 2022-12-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251-2022-10-28" class="md-nav__link">
+    [2.5.1] - 2022-10-28
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.5.1] - 2022-10-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#250-2022-10-18" class="md-nav__link">
+    [2.5.0] - 2022-10-18
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.5.0] - 2022-10-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#240-2022-10-11" class="md-nav__link">
+    [2.4.0] - 2022-10-11
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.4.0] - 2022-10-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#230-2022-09-23" class="md-nav__link">
+    [2.3.0] - 2022-09-23
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.3.0] - 2022-09-23">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#221-2022-08-25" class="md-nav__link">
+    [2.2.1] - 2022-08-25
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.2.1] - 2022-08-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#220-2022-08-16" class="md-nav__link">
+    [2.2.0] - 2022-08-16
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.2.0] - 2022-08-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#212-2022-07-29" class="md-nav__link">
+    [2.1.2] - 2022-07-29
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.1.2] - 2022-07-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#211-2022-07-25" class="md-nav__link">
+    [2.1.1] - 2022-07-25
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.1.1] - 2022-07-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_6" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#210-2022-07-08" class="md-nav__link">
+    [2.1.0] - 2022-07-08
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.1.0] - 2022-07-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_7" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200-2022-06-30" class="md-nav__link">
+    [2.0.0] - 2022-06-30
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.0.0] - 2022-06-30">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_8" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2022-05-31" class="md-nav__link">
+    [1.2.0] - 2022-05-31
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.2.0] - 2022-05-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_9" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2022-04-21" class="md-nav__link">
+    [1.1.0] - 2022-04-21
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.1.0] - 2022-04-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_10" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-2022-04-06" class="md-nav__link">
+    [1.0.2] - 2022-04-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.2] - 2022-04-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_11" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-2022-04-06" class="md-nav__link">
+    [1.0.1] - 2022-04-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.1] - 2022-04-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_12" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_13" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2022-03-29" class="md-nav__link">
+    [1.0.0] - 2022-03-29
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.0] - 2022-03-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#078-2022-03-18" class="md-nav__link">
+    [0.7.8] - 2022-03-18
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#077-2022-03-18" class="md-nav__link">
+    [0.7.7] - 2022-03-18
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.7] - 2022-03-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_14" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#076-2022-03-04" class="md-nav__link">
+    [0.7.6] - 2022-03-04
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#075-2022-03-01" class="md-nav__link">
+    [0.7.5] - 2022-03-01
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.5] - 2022-03-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#074-2022-03-01" class="md-nav__link">
+    [0.7.4] - 2022-03-01
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.4] - 2022-03-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#073-2022-02-28" class="md-nav__link">
+    [0.7.3] - 2022-02-28
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.3] - 2022-02-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_15" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#072-2022-02-14" class="md-nav__link">
+    [0.7.2] - 2022-02-14
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.2] - 2022-02-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_16" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#071-2022-02-07" class="md-nav__link">
+    [0.7.1] - 2022-02-07
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.1] - 2022-02-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_13" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_17" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2022-01-31" class="md-nav__link">
+    [0.7.0] - 2022-01-31
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.0] - 2022-01-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_14" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_18" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#061-2022-01-24" class="md-nav__link">
+    [0.6.1] - 2022-01-24
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.1] - 2022-01-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_15" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_19" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2022-01-17" class="md-nav__link">
+    [0.6.0] - 2022-01-17
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.0] - 2022-01-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_16" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_20" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2022-01-10" class="md-nav__link">
+    [0.5.0] - 2022-01-10
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0] - 2022-01-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_21" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#041-2022-01-05" class="md-nav__link">
+    [0.4.1] - 2022-01-05
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.1] - 2022-01-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2022-01-03" class="md-nav__link">
+    [0.4.0] - 2022-01-03
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0] - 2022-01-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_17" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#035-2021-12-09" class="md-nav__link">
+    [0.3.5] - 2021-12-09
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.5] - 2021-12-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_18" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_11" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#034-2021-12-06" class="md-nav__link">
+    [0.3.4] - 2021-12-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.4] - 2021-12-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_22" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#033-2021-11-22" class="md-nav__link">
+    [0.3.3] - 2021-11-22
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.3] - 2021-11-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_23" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_12" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031-2021-11-15" class="md-nav__link">
+    [0.3.1] - 2021-11-15
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1] - 2021-11-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_19" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_13" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2021-11-08" class="md-nav__link">
+    [0.3.0] - 2021-11-08
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2021-11-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_20" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_24" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021-2021-10-25" class="md-nav__link">
+    [0.2.1] - 2021-10-25
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.1] - 2021-10-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_21" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_25" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2021-10-11" class="md-nav__link">
+    [0.2.0] - 2021-10-11
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2021-10-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_22" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_26" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2021-10-04" class="md-nav__link">
+    [0.1.1] - 2021-10-04
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.1] - 2021-10-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_23" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_27" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_14" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2021-09-27" class="md-nav__link">
+    [0.1.0] - 2021-09-27
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.0] - 2021-09-27">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_28" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_15" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0017-2021-09-20" class="md-nav__link">
+    [0.0.17] - 2021-09-20
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.17] - 2021-09-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_24" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_16" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0016-2021-09-13" class="md-nav__link">
+    [0.0.16] - 2021-09-13
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.16] - 2021-09-13">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_25" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_29" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_17" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0015-2021-09-07" class="md-nav__link">
+    [0.0.15] - 2021-09-07
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.15] - 2021-09-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_26" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_30" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0014-2021-09-06" class="md-nav__link">
+    [0.0.14] - 2021-09-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.14] - 2021-09-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_31" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_18" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005-2021-08-26" class="md-nav__link">
+    [0.0.5] - 2021-08-26
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.5] - 2021-08-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_27" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_32" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#004-2021-08-20" class="md-nav__link">
+    [0.0.4] - 2021-08-20
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.4] - 2021-08-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_28" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#002-2021-08-10" class="md-nav__link">
+    [0.0.2] - 2021-08-10
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.2] - 2021-08-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_29" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        Glossary
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    [Unreleased]
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#270-2023-01-05" class="md-nav__link">
+    [2.7.0] - 2023-01-05
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.7.0] - 2023-01-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#260-2022-12-02" class="md-nav__link">
+    [2.6.0] - 2022-12-02
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.6.0] - 2022-12-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251-2022-10-28" class="md-nav__link">
+    [2.5.1] - 2022-10-28
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.5.1] - 2022-10-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#250-2022-10-18" class="md-nav__link">
+    [2.5.0] - 2022-10-18
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.5.0] - 2022-10-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#240-2022-10-11" class="md-nav__link">
+    [2.4.0] - 2022-10-11
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.4.0] - 2022-10-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#230-2022-09-23" class="md-nav__link">
+    [2.3.0] - 2022-09-23
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.3.0] - 2022-09-23">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#221-2022-08-25" class="md-nav__link">
+    [2.2.1] - 2022-08-25
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.2.1] - 2022-08-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#220-2022-08-16" class="md-nav__link">
+    [2.2.0] - 2022-08-16
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.2.0] - 2022-08-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_5" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#212-2022-07-29" class="md-nav__link">
+    [2.1.2] - 2022-07-29
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.1.2] - 2022-07-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#211-2022-07-25" class="md-nav__link">
+    [2.1.1] - 2022-07-25
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.1.1] - 2022-07-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_6" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_6" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#210-2022-07-08" class="md-nav__link">
+    [2.1.0] - 2022-07-08
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.1.0] - 2022-07-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_7" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200-2022-06-30" class="md-nav__link">
+    [2.0.0] - 2022-06-30
+  </a>
+  
+    <nav class="md-nav" aria-label="[2.0.0] - 2022-06-30">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_7" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_8" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2022-05-31" class="md-nav__link">
+    [1.2.0] - 2022-05-31
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.2.0] - 2022-05-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_8" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_9" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2022-04-21" class="md-nav__link">
+    [1.1.0] - 2022-04-21
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.1.0] - 2022-04-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_9" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_10" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-2022-04-06" class="md-nav__link">
+    [1.0.2] - 2022-04-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.2] - 2022-04-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_11" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-2022-04-06" class="md-nav__link">
+    [1.0.1] - 2022-04-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.1] - 2022-04-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_12" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_13" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2022-03-29" class="md-nav__link">
+    [1.0.0] - 2022-03-29
+  </a>
+  
+    <nav class="md-nav" aria-label="[1.0.0] - 2022-03-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_10" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#078-2022-03-18" class="md-nav__link">
+    [0.7.8] - 2022-03-18
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#077-2022-03-18" class="md-nav__link">
+    [0.7.7] - 2022-03-18
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.7] - 2022-03-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_14" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#076-2022-03-04" class="md-nav__link">
+    [0.7.6] - 2022-03-04
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#075-2022-03-01" class="md-nav__link">
+    [0.7.5] - 2022-03-01
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.5] - 2022-03-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_11" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#074-2022-03-01" class="md-nav__link">
+    [0.7.4] - 2022-03-01
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.4] - 2022-03-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_12" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#073-2022-02-28" class="md-nav__link">
+    [0.7.3] - 2022-02-28
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.3] - 2022-02-28">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_15" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_5" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#072-2022-02-14" class="md-nav__link">
+    [0.7.2] - 2022-02-14
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.2] - 2022-02-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_16" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_6" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#071-2022-02-07" class="md-nav__link">
+    [0.7.1] - 2022-02-07
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.1] - 2022-02-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_13" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_17" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2022-01-31" class="md-nav__link">
+    [0.7.0] - 2022-01-31
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.7.0] - 2022-01-31">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_14" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_18" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_7" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#061-2022-01-24" class="md-nav__link">
+    [0.6.1] - 2022-01-24
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.1] - 2022-01-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_15" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_19" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_8" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2022-01-17" class="md-nav__link">
+    [0.6.0] - 2022-01-17
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.6.0] - 2022-01-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_16" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_20" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_9" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2022-01-10" class="md-nav__link">
+    [0.5.0] - 2022-01-10
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.5.0] - 2022-01-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_21" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#041-2022-01-05" class="md-nav__link">
+    [0.4.1] - 2022-01-05
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.1] - 2022-01-05">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_10" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2022-01-03" class="md-nav__link">
+    [0.4.0] - 2022-01-03
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.4.0] - 2022-01-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_17" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#035-2021-12-09" class="md-nav__link">
+    [0.3.5] - 2021-12-09
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.5] - 2021-12-09">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_18" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_11" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#034-2021-12-06" class="md-nav__link">
+    [0.3.4] - 2021-12-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.4] - 2021-12-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_22" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#033-2021-11-22" class="md-nav__link">
+    [0.3.3] - 2021-11-22
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.3] - 2021-11-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_23" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_12" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#031-2021-11-15" class="md-nav__link">
+    [0.3.1] - 2021-11-15
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.1] - 2021-11-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_19" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_13" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2021-11-08" class="md-nav__link">
+    [0.3.0] - 2021-11-08
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2021-11-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_20" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_24" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021-2021-10-25" class="md-nav__link">
+    [0.2.1] - 2021-10-25
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.1] - 2021-10-25">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_21" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_25" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2021-10-11" class="md-nav__link">
+    [0.2.0] - 2021-10-11
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2021-10-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_22" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_26" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2021-10-04" class="md-nav__link">
+    [0.1.1] - 2021-10-04
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.1] - 2021-10-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_23" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_27" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_14" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2021-09-27" class="md-nav__link">
+    [0.1.0] - 2021-09-27
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.0] - 2021-09-27">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_28" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_15" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0017-2021-09-20" class="md-nav__link">
+    [0.0.17] - 2021-09-20
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.17] - 2021-09-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_24" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_16" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0016-2021-09-13" class="md-nav__link">
+    [0.0.16] - 2021-09-13
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.16] - 2021-09-13">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_25" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_29" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_17" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0015-2021-09-07" class="md-nav__link">
+    [0.0.15] - 2021-09-07
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.15] - 2021-09-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_26" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_30" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0014-2021-09-06" class="md-nav__link">
+    [0.0.14] - 2021-09-06
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.14] - 2021-09-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_31" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_18" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005-2021-08-26" class="md-nav__link">
+    [0.0.5] - 2021-08-26
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.5] - 2021-08-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_27" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_32" class="md-nav__link">
+    Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#004-2021-08-20" class="md-nav__link">
+    [0.0.4] - 2021-08-20
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.4] - 2021-08-20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_28" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#002-2021-08-10" class="md-nav__link">
+    [0.0.2] - 2021-08-10
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.0.2] - 2021-08-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_29" class="md-nav__link">
+    Added
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<p>All <strong>user-facing</strong>, notable changes will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="270-2023-01-05">[2.7.0] - 2023-01-05<a class="headerlink" href="#270-2023-01-05" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Every plugin can have its own configuration, stored in a YAML file.
+  After uploading the plugin, the configuration can be edited on Dashboard's <em>Administration</em> tab,
+  with a <em>Edit Config</em> button.
+  Plugin can read the configuration from a file <code>self.config_path: pathlib.Path</code>.</li>
+<li>Racetrack instance can operate with multiple infrastructure targets.
+  By default, there is no infrastructure target. It has to be extended by installing a plugin.
+  The infrastructure target is displayed next to the fatman name, on Dashboard's list.
+  There is a new, optional field <code>infrastructure_target</code> in a Manifest.
+  If given, it enforces using the specific target in case of many infrastructures are in use.
+  Otherwise, the deafult infrastructure is applied.</li>
+<li>Fatman can be composed of multiple Docker images provided by a plugin or user's manifest.</li>
+</ul>
+<h2 id="260-2022-12-02">[2.6.0] - 2022-12-02<a class="headerlink" href="#260-2022-12-02" title="Permanent link">&para;</a></h2>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>"Portfolio" table in a Dashboard has a new column "Job type version".</li>
+<li>List of available job types can be checked with:
+  <code>racetrack plugin list --job-types &lt;racetrack_url&gt;</code>.
+  It is also listed in the <em>Administration</em> tab on <em>Dashboard</em>.</li>
+<li>Exact job type version can be checked at Fatman's <code>/health</code> endpoint.</li>
+</ul>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>When uploading a faulty plugin, the errors are handled in a more reliable manner.</li>
+<li>Plugin's requirements are installed with non-root user context.</li>
+<li>Plugin directory is accessible when initializing the plugin in <code>__init__</code> method.</li>
+<li>Fixed conflict between newer protobuf version and opentelemetry package.</li>
+</ul>
+<h2 id="251-2022-10-28">[2.5.1] - 2022-10-28<a class="headerlink" href="#251-2022-10-28" title="Permanent link">&para;</a></h2>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Users can change their password on a Dashboard -&gt; Profile tab -&gt; Change Password</li>
+<li>Fatman webviews can now serve ASGI applications (like FastAPI)</li>
+</ul>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added missing <code>__init__.py</code> file in one of the racetrack-client modules.</li>
+</ul>
+<h2 id="250-2022-10-18">[2.5.0] - 2022-10-18<a class="headerlink" href="#250-2022-10-18" title="Permanent link">&para;</a></h2>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>One job type can be installed in multiple versions at the same time.
+  Users have to pick one of these versions and specify it in the manifest of their fatman,
+  eg. <code>lang: python3:2.4.0</code>.
+  Version of a job type is now required in the <code>lang</code> field of Manifest in a manner <code>name:version</code>.
+  <code>latest</code> version can be used (resolving to the highest semantic version), though it's discouraged.</li>
+<li>Plugin bundler has been moved to racetrack-client.
+  Now you can do <code>racetrack plugin bundle</code> instead of <code>racetrack-plugin-bundler bundle</code>.</li>
+</ul>
+<h2 id="240-2022-10-11">[2.4.0] - 2022-10-11<a class="headerlink" href="#240-2022-10-11" title="Permanent link">&para;</a></h2>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Plugins can be installed by means of racetrack-client command
+  <code>racetrack plugin install &lt;plugin_uri&gt; &lt;racetrack_url&gt;</code>,
+  where <code>plugin_uri</code> can be either:</p>
+<ul>
+<li>local file path (eg. <code>python3-job-type-2.4.0.zip</code>),</li>
+<li>URL to a remote HTTP file (eg. <code>https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip</code>),</li>
+<li>GitHub repository name (eg. <code>github.com/TheRacetrack/plugin-python-job-type</code>) - it takes the ZIP file from the latest release.</li>
+<li>GitHub repository name with version (eg. <code>github.com/TheRacetrack/plugin-python-job-type==2.4.0</code>) - it takes the ZIP file from the specific release.</li>
+</ul>
+</li>
+<li>
+<p>Plugins can be uninstalled with a new command:
+  <code>racetrack plugin uninstall &lt;plugin_name&gt; &lt;plugin_version&gt; &lt;racetrack_url&gt;</code>.</p>
+</li>
+<li>
+<p>List of currently installed plugins can be checked with:
+  <code>racetrack plugin list &lt;racetrack_url&gt;</code>.</p>
+</li>
+</ul>
+<h3 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All job types are individual plugins now.
+  Racetrack starts without any job type by default.</li>
+<li>Base Fatman images are built inside Racetrack by image-builder
+  so it's no longer needed to push images prior to the plugin release.</li>
+</ul>
+<h2 id="230-2022-09-23">[2.3.0] - 2022-09-23<a class="headerlink" href="#230-2022-09-23" title="Permanent link">&para;</a></h2>
+<h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman access can be narrowed down to single endpoints.
+  When adding Auth Resource Permission (in Admin panel), there is a new <code>endpoint</code> field,
+  which narrows down the permission only to this particular Fatman's endpoint.
+  If not set, it covers all endpoints (just as other resource filters do).
+  For instance, ESC can have a permission with <code>call_fatman</code> scope to only call one endpoint.</li>
+<li>OpenTelemetry can be turned on in Racetrack.
+  Given the OTLP collector endpoint,
+  the traces from lifecycle, pub and fatman will be sent there.</li>
+</ul>
+<h3 id="changed_2">Changed<a class="headerlink" href="#changed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>python3</code> job type is now based on <code>3.9-slim-bullseye</code> image
+  instead of <code>3.8-slim-buster</code>.</li>
+<li>Plugins are distributed as ZIP files.
+  They can be installed and uninstalled in a Dashboard's Administration page.
+  See <a href="../development/using-plugins/">using-plugins.md</a>.</li>
+</ul>
+<h2 id="221-2022-08-25">[2.2.1] - 2022-08-25<a class="headerlink" href="#221-2022-08-25" title="Permanent link">&para;</a></h2>
+<h3 id="changed_3">Changed<a class="headerlink" href="#changed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Maximum amount of memory for a fatman is reduced to <code>1GiB</code> by default
+  (if not set explicitly in a manifest).
+  In general the maximum memory can't be more than 4 times higher than the minimum memory.
+  Racetrack keeps an eye on this rule by automatically adjusting minimum memory amount, if needed.
+  It is recommended to declare maximum memory amount explicitly
+  in a manifest by defining <code>resources.memory_max</code> field.</li>
+<li>Fatman versions in PUB's metrics are always resolved to the exact version
+  instead of wildcards.</li>
+</ul>
+<h2 id="220-2022-08-16">[2.2.0] - 2022-08-16<a class="headerlink" href="#220-2022-08-16" title="Permanent link">&para;</a></h2>
+<h3 id="added_5">Added<a class="headerlink" href="#added_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Golang job types serve interactive Swagger UI with API documentation on the home page.</li>
+</ul>
+<h3 id="changed_4">Changed<a class="headerlink" href="#changed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Function <code>fatman_job_types</code> of plugins changed its signature.
+  Now the first parameter is a Docker Registry prefix to work well
+  with different Docker registry namespaces.
+  All job-type plugins has to be adjusted accordingly.
+  See <a href="../development/plugins-job-types/">plugins-job-types.md</a> for more details.</li>
+<li>A namespace for docker images in a Docker Registry is configurable
+  so that Racetrack can be released to any Docker Registry.</li>
+<li>A namespace for fatman workloads running on Kubernetes is now configurable
+  by means of <code>FATMAN_K8S_NAMESPACE</code> environment variable,
+  by default it's set to <code>racetrack</code>.</li>
+<li>Hostname subdomain of Racetrack services is now configurable by means of
+  <code>RACETRACK_SUBDOMAIN</code> environment variable, by default it's set to <code>racetrack</code>.</li>
+<li>Golang job type has been moved to <a href="https://github.com/TheRacetrack/plugin-go-job-type">Plugin - Go Job Type</a>.
+  Now it's not enabled by default in Racetrack.</li>
+</ul>
+<h2 id="212-2022-07-29">[2.1.2] - 2022-07-29<a class="headerlink" href="#212-2022-07-29" title="Permanent link">&para;</a></h2>
+<h3 id="changed_5">Changed<a class="headerlink" href="#changed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Overall requests performance has been improved by switching from 
+  Flask &amp; twisted (WSGI) to FastAPI &amp; Uvicorn (ASGI) web server.
+  Fatman server should now be less laggy under heavy load.
+  Additionaly, FastAPI comes with better request validation and newer SwaggerUI page.
+  Fatman redeployment is needed for the changes to take effect.</li>
+</ul>
+<h2 id="211-2022-07-25">[2.1.1] - 2022-07-25<a class="headerlink" href="#211-2022-07-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_6">Added<a class="headerlink" href="#added_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Plugins can provide its own Fatman Deployers
+  to deploy workloads to other types of platforms.
+  See <a href="../development/developing-plugins/">developing-plugins.md</a> and
+  <a href="https://github.com/TheRacetrack/plugin-docker-daemon-deployer">Docker Daemon Deployer Plugin</a></li>
+</ul>
+<h3 id="changed_6">Changed<a class="headerlink" href="#changed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman's metrics now contain number of requests and duration for each endpoint
+  (including auxiliary endpoints).</li>
+</ul>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed redeploying fatmen from the dashboard</li>
+<li>Making multiple attempts to deploy the same fatman at the same time is now disallowed.</li>
+<li>"In progress" deployments are halted when Lifecycle restarts
+  (due to upgrade or eviction)</li>
+</ul>
+<h2 id="210-2022-07-08">[2.1.0] - 2022-07-08<a class="headerlink" href="#210-2022-07-08" title="Permanent link">&para;</a></h2>
+<h3 id="changed_7">Changed<a class="headerlink" href="#changed_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Fatman secrets (git credentials and secret vars) are kept in Racetrack,
+  so fatmen are fully reproducible again.
+  In other words, it is technically possible to rebuild and reprovision fatman
+  by anyone who is allowed to do so (anyone with permissions, not just the author)
+  to apply latest Racetrack changes.
+  You can click "Rebuild and provision" to do a complete redeployment of a fatman,
+  or just "Reprovision" to apply changes without rebuilding the image
+  (eg. useful when changing replicas count).</p>
+</li>
+<li>
+<p>Racetrack client no longer depends on <code>requests</code> package 
+  in favour of using the built-in <code>urllib</code> module.</p>
+</li>
+</ul>
+<h2 id="200-2022-06-30">[2.0.0] - 2022-06-30<a class="headerlink" href="#200-2022-06-30" title="Permanent link">&para;</a></h2>
+<h3 id="added_7">Added<a class="headerlink" href="#added_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Plugins can hook into the <code>post_fatman_delete</code> event to add their
+  actions after deleting a fatman.
+  See <a href="https://github.com/TheRacetrack/plugin-teams-notifications">Teams Notifications Racetrack Plugin</a></p>
+</li>
+<li>
+<p>Response errors are also displayed in the logs 
+  in addition to returning message in HTTP payload.</p>
+</li>
+<li>
+<p>Racetrack client has new command <code>racetrack run-local . &lt;racetrack_url&gt;</code>
+  allowing to run fatman locally based on docker image built by remote Racetrack.
+  Docker has to be installed on your system.</p>
+</li>
+</ul>
+<h3 id="changed_8">Changed<a class="headerlink" href="#changed_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Fatman permissions model is more restrictive.
+    Now users, ESCs and fatman families can be granted fine-grained permissions.
+    Users can have access to a subset of fatmen and they
+    can see and manage only those that are allowed for them.
+    Old permissions have been migrated (Fatman-to-Fatman and ESC-to-fatman access).</p>
+<p>By default, Users can now do the following:</p>
+<ul>
+<li>read all fatman status (browse on a dashboard)</li>
+<li>call endpoints of every fatman</li>
+<li>deploy and redeploy fatmen</li>
+<li>delete only fatmen that has been deployed by the user (starting from the newly deployed ones)</li>
+</ul>
+<p>Admin can grant or revoke permissions.
+Permisssion can cover either all fatmen, whole fatman family or a single fatman.</p>
+<p>Permission is related to one of the operation type (called "scope"):</p>
+<ul>
+<li><code>read_fatman</code> - list fatman, check fatman details</li>
+<li><code>deploy_fatman</code> - deploy fatman in a particular family, redeploy fatman</li>
+<li><code>deploy_new_family</code> - deploy new fatman family</li>
+<li><code>delete_fatman</code> - move to trash, dismantle from a cluster</li>
+<li><code>call_fatman</code> - call fatman endpoints</li>
+<li><code>call_admin_api</code> - not important for regular users</li>
+<li><code>full_access</code> - not important for regular users</li>
+</ul>
+</li>
+<li>
+<p>Authentication tokens have been revamped and format changed.
+  Users are required to use new tokens in order to use CLI racetrack client.
+  Log in to Dashboard, copy the token and run <code>racetrack login</code> again.
+  Old ESC tokens are still supported to keep backwards compatibility, 
+  but they should be regenerated if possible.</p>
+</li>
+<li>
+<p>A method for calling fatman from inside of other fatman has been changed due to new auth model.
+  See <a href="../../sample/python-chain/entrypoint.py">python-chain sample</a>.
+  All fatmen calling another fatman are required to be redeployed (to use new tokens).</p>
+</li>
+<li>
+<p>Since there is one type of tokens, 
+  Auth header has been unified and renamed to <code>X-Racetrack-Auth</code>.
+  It should be used no matter if it's ESC, User or a Fatman.
+  Old headers are still supported but may be abandoned in the future:
+  <code>X-Racetrack-User-Auth</code>, <code>X-Racetrack-Esc-Auth</code>, <code>X-Racetrack-Fatman-Auth</code></p>
+</li>
+<li>
+<p>Racetrack services has been adjusted to the new URL format. 
+  <code>/ikp-rt</code> prefix has been removed from all URLs.
+  Instead, <code>ikp-rt</code> part may be included in the cluster hostname, making session cookies to work hassle-free and more secure.
+  For instance, Racetrack Dashboard address is now: <code>https://ikp-rt.&lt;cluster.address&gt;/dashboard</code>.
+  Lifecycle address is: <code>https://ikp-rt.&lt;cluster.address&gt;/lifecycle</code>.
+  PUB runs on: <code>https://ikp-rt.&lt;cluster.address&gt;/pub</code>.
+  Thus, Fatman instances can be accessed at: <code>https://ikp-rt.&lt;cluster.address&gt;/pub/fatman/&lt;name&gt;/&lt;version&gt;/&lt;path&gt;</code>.</p>
+</li>
+</ul>
+<h2 id="120-2022-05-31">[1.2.0] - 2022-05-31<a class="headerlink" href="#120-2022-05-31" title="Permanent link">&para;</a></h2>
+<h3 id="added_8">Added<a class="headerlink" href="#added_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>fatman.yaml</code> manifest file supports overlays.
+  Including <code>extends</code> field (with a path to base manifest)
+  will make it to merge base and overlay layers.
+  It may come in handy when working with multiple environments (dev/test/prod)
+  referring to the same base manifest.
+  See <a href="../sample/overlays">overlays sample</a>.</li>
+<li>Job types can be extended with plugins.
+  Check out <a href="https://github.com/TheRacetrack/plugin-rust-job-type">sample job-type plugin</a>
+  and <a href="../development/developing-plugins/">developing-plugins.md</a> to see a guide how to create and activate plugins.</li>
+<li>Racetrack documentation is now served at "Docs" tab in Dashboard.
+  Check out "Home" page to get started.</li>
+<li>Plugins can extend Racetrack documentation with its own pages written in Markdown
+  (it may be generated at runtime depending on plugin configuration).</li>
+</ul>
+<h3 id="changed_9">Changed<a class="headerlink" href="#changed_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>racetrack validate PATH</code> now evaluates the manifest outcome
+  and prints it to verify the result of extending overlay manifest.</li>
+<li>Critical actions like deleting fatman or redeploying it
+  open a modal window with confirmation button to prevent accidental removal.</li>
+<li>Racetrack environments are easier distinguishable between dev, test, preprod and prod
+  due to different colors of the dashboard navbar and additional prefix <code>[prod]</code> in the title.</li>
+</ul>
+<h2 id="110-2022-04-21">[1.1.0] - 2022-04-21<a class="headerlink" href="#110-2022-04-21" title="Permanent link">&para;</a></h2>
+<h3 id="added_9">Added<a class="headerlink" href="#added_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>New "Audit Log" tab in Dashboard shows activity events done by users,
+  eg. "fatman F1 of user Alice has been deleted by Bob".
+  It can be filtered by events related to a logged user,
+  whole fatman family or a particular fatman.</li>
+</ul>
+<h3 id="changed_10">Changed<a class="headerlink" href="#changed_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Once a fatman name (and version) has been claimed,
+  it can never be deployed again to prevent accidental/hostile reusing.</li>
+<li>Login page has been revamped.</li>
+</ul>
+<h3 id="fixed_3">Fixed<a class="headerlink" href="#fixed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Display error cause on dashboard in case of "Redeploy" failure.</li>
+</ul>
+<h2 id="102-2022-04-06">[1.0.2] - 2022-04-06<a class="headerlink" href="#102-2022-04-06" title="Permanent link">&para;</a></h2>
+<h3 id="changed_11">Changed<a class="headerlink" href="#changed_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Set default fatman maximum memory to 8GiB</li>
+</ul>
+<h2 id="101-2022-04-06">[1.0.1] - 2022-04-06<a class="headerlink" href="#101-2022-04-06" title="Permanent link">&para;</a></h2>
+<h3 id="changed_12">Changed<a class="headerlink" href="#changed_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman dependency graph is interactive, nodes are movable.
+  Clicking on a node filters out all its neighbours 
+  to see which fatmen can be accessed by particular ESC 
+  or which ESCs have access to a particular fatman.</li>
+</ul>
+<h3 id="changed_13">Changed<a class="headerlink" href="#changed_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Set default fatman minimum memory to 150MiB</li>
+</ul>
+<h2 id="100-2022-03-29">[1.0.0] - 2022-03-29<a class="headerlink" href="#100-2022-03-29" title="Permanent link">&para;</a></h2>
+<h3 id="added_10">Added<a class="headerlink" href="#added_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman manifest can declare resources to be allocated to the Fatman
+  with <code>resources</code> field, including minimum/maximum memory, minimum/maximum CPU cores.
+  See <a href="../user/#the-fatman-manifest-file">Fatman Manifest File</a></li>
+<li>Dashboard shows datetime when the last call was made to a fatman.
+  Fatman redeployment is needed for the changes to take effect.</li>
+<li>Dashboard has a new "Portfolio" tab for browsing fatmen freely
+  with custom criteria and showing the candidates for removal.</li>
+</ul>
+<h2 id="078-2022-03-18">[0.7.8] - 2022-03-18<a class="headerlink" href="#078-2022-03-18" title="Permanent link">&para;</a></h2>
+<h2 id="077-2022-03-18">[0.7.7] - 2022-03-18<a class="headerlink" href="#077-2022-03-18" title="Permanent link">&para;</a></h2>
+<h3 id="changed_14">Changed<a class="headerlink" href="#changed_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Racetrack client validates given token when running <code>racetrack login</code>
+  and complains immediately if it's wrong</li>
+<li>Fatman returns 400 BAD REQUEST response in case of missing argument,
+  unexpected argument or any other TypeError.</li>
+</ul>
+<h3 id="fixed_4">Fixed<a class="headerlink" href="#fixed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed Fatmen getting Lost.
+  Fatmen shouldn't wrongly change its status to "Lost" any longer.</li>
+</ul>
+<h2 id="076-2022-03-04">[0.7.6] - 2022-03-04<a class="headerlink" href="#076-2022-03-04" title="Permanent link">&para;</a></h2>
+<h2 id="075-2022-03-01">[0.7.5] - 2022-03-01<a class="headerlink" href="#075-2022-03-01" title="Permanent link">&para;</a></h2>
+<h3 id="added_11">Added<a class="headerlink" href="#added_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Log messages contain Request Tracing ID, 
+  which allows to track down what was happening during the request processing by different services.
+  PUB can read tracing ID from a specific HTTP request header. If not given, it will be generated.
+  On IKP clusters this header is named <code>traceparent</code> (by default it's <code>X-Request-Tracing-Id</code>).
+  ID is also returned in the response headers, so you can use it when reporting bugs.
+  Fatman redeployment is needed for the changes to take effect.</li>
+</ul>
+<h2 id="074-2022-03-01">[0.7.4] - 2022-03-01<a class="headerlink" href="#074-2022-03-01" title="Permanent link">&para;</a></h2>
+<h3 id="added_12">Added<a class="headerlink" href="#added_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>PUB collects histogram of fatman response times
+  and metrics related to endless requests and response codes.</li>
+</ul>
+<h2 id="073-2022-02-28">[0.7.3] - 2022-02-28<a class="headerlink" href="#073-2022-02-28" title="Permanent link">&para;</a></h2>
+<h3 id="changed_15">Changed<a class="headerlink" href="#changed_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>GET /metrics 200</code> requests are hidden from access logs.</li>
+<li>Reading from <code>stdin</code> is prohibited at fatman initialization and it raises an error once detected,
+  showing stack trace with the place where there was an attempt.
+  Fatman doesn't go unresponsive any longer, awaiting input indefinitely.</li>
+</ul>
+<h3 id="fixed_5">Fixed<a class="headerlink" href="#fixed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman logs doesn't show misleading "Timing out client" errors anymore.
+  It was related to HTTP sessions kept alive by browsers, not actual fatman request time-outs.</li>
+</ul>
+<h2 id="072-2022-02-14">[0.7.2] - 2022-02-14<a class="headerlink" href="#072-2022-02-14" title="Permanent link">&para;</a></h2>
+<h3 id="changed_16">Changed<a class="headerlink" href="#changed_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Access logs are not polluted with redundant <code>/live</code>, <code>/ready</code> &amp; <code>/health</code> requests.</li>
+</ul>
+<h3 id="fixed_6">Fixed<a class="headerlink" href="#fixed_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Racetrack logs show non-ASCII characters</li>
+</ul>
+<h2 id="071-2022-02-07">[0.7.1] - 2022-02-07<a class="headerlink" href="#071-2022-02-07" title="Permanent link">&para;</a></h2>
+<h3 id="added_13">Added<a class="headerlink" href="#added_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Racetrack dashboard shows active plugins along with their versions.</li>
+</ul>
+<h3 id="changed_17">Changed<a class="headerlink" href="#changed_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman manifest is checked against using HTTPS git remote only (SSH is not supported).</li>
+<li><code>None</code> values metrics are allowed. They're ignored instead of logging error
+  as there is no null in Prometheus, only samples that don't exist.</li>
+<li>Fatman access logs have shorter, concise format.
+  Time, HTTP method, path and response code are the only ones displayed.</li>
+</ul>
+<h2 id="070-2022-01-31">[0.7.0] - 2022-01-31<a class="headerlink" href="#070-2022-01-31" title="Permanent link">&para;</a></h2>
+<h3 id="added_14">Added<a class="headerlink" href="#added_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>When accessing a Fatman through a PUB, there can be used wildcard version format: <code>1.x</code> or <code>1.2.x</code>.
+  This points to a highest stable version of the Fatman that matches the pattern.
+  For instance, <code>1.x</code> keeps track of all v1 updates, but skips next major versions <code>2.0.0</code> and above.
+  Fatman redeployment is needed for the changes to take effect.</li>
+</ul>
+<h3 id="changed_18">Changed<a class="headerlink" href="#changed_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>"latest" fatman version now points to the highest version disregarding versions with any label (eg. <code>-dev</code>).
+  Thus deploying <code>2.0.0-alpha</code> pre-release versions doesn't affect "latest" alias until <code>2.0.0</code> is deployed.</li>
+</ul>
+<h3 id="fixed_7">Fixed<a class="headerlink" href="#fixed_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Public endpoints are properly handled with version aliases (eg. "latest", "1.x")</li>
+</ul>
+<h2 id="061-2022-01-24">[0.6.1] - 2022-01-24<a class="headerlink" href="#061-2022-01-24" title="Permanent link">&para;</a></h2>
+<h3 id="added_15">Added<a class="headerlink" href="#added_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Phases of deployment are tracked by showing "building image", "creating cluster resources",
+  "initializing Fatman entrypoint", etc. in RT client in place of bare "deployment in progress..." message.</li>
+</ul>
+<h3 id="changed_19">Changed<a class="headerlink" href="#changed_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman versions are validated according to <a href="https://semver.org/">SemVer format</a>.
+  Version should match <code>MAJOR.MINOR.PATCH[LABEL]</code>, eg.: <code>0.1.2</code> or <code>0.0.0-dev</code>.</li>
+</ul>
+<h3 id="fixed_8">Fixed<a class="headerlink" href="#fixed_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Zero-value metrics are shown properly at <code>/metrics</code> endpoint of a Fatman.</li>
+</ul>
+<h2 id="060-2022-01-17">[0.6.0] - 2022-01-17<a class="headerlink" href="#060-2022-01-17" title="Permanent link">&para;</a></h2>
+<h3 id="added_16">Added<a class="headerlink" href="#added_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Racetrack functionality can be extended with plugins.
+  Check out <a href="../development/developing-plugins/">developing-plugins.md</a> to see a guide how to create and activate plugins.</li>
+</ul>
+<h3 id="changed_20">Changed<a class="headerlink" href="#changed_20" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Whole directories are handled in <code>static_endpoints</code> to serve recursively all of its content.</li>
+<li>Metrics from Postgres database and PUB are exported. 
+  It gives better monitoring of Fatman requests performance.</li>
+<li>Registration form has been revamped to show errors in a more user-friendly way.</li>
+<li>Pods resource requests have been adjusted to its actual needs.
+  Cluster resource shortages shouldn't happen so prematurely anymore.</li>
+</ul>
+<h3 id="fixed_9">Fixed<a class="headerlink" href="#fixed_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Show real reason of internal exceptions, eg. Neo4j auth error</li>
+</ul>
+<h2 id="050-2022-01-10">[0.5.0] - 2022-01-10<a class="headerlink" href="#050-2022-01-10" title="Permanent link">&para;</a></h2>
+<h3 id="changed_21">Changed<a class="headerlink" href="#changed_21" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Overwriting fatmen is disabled.
+  It's not allowed to deploy a fatman with the same name &amp; version as an existing one,
+  unless it's deployed with <code>--force</code> flag.</li>
+<li>Duplicated env vars error is now more meaningful:
+  "found illegal runtime env vars, which conflict with reserved names: RK_HOST"</li>
+</ul>
+<h2 id="041-2022-01-05">[0.4.1] - 2022-01-05<a class="headerlink" href="#041-2022-01-05" title="Permanent link">&para;</a></h2>
+<h3 id="fixed_10">Fixed<a class="headerlink" href="#fixed_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fixed Manifests getting empty on Racetrack upgrade.</li>
+</ul>
+<h2 id="040-2022-01-03">[0.4.0] - 2022-01-03<a class="headerlink" href="#040-2022-01-03" title="Permanent link">&para;</a></h2>
+<h3 id="added_17">Added<a class="headerlink" href="#added_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Number of running instances of the Fatman 
+  can be configured with <code>replicas</code> field in a manifest.yaml.
+  In case of multiple replicas, <code>racetrack logs</code> collects logs from all instances at once.</li>
+<li>Deployed fatmen can be deleted through racetrack client using new command:
+  <code>racetrack delete &lt;workdir&gt; &lt;racetrack_url&gt; [--version X.Y.Z]</code>.</li>
+</ul>
+<h2 id="035-2021-12-09">[0.3.5] - 2021-12-09<a class="headerlink" href="#035-2021-12-09" title="Permanent link">&para;</a></h2>
+<h3 id="added_18">Added<a class="headerlink" href="#added_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman endpoints that are supposed to be accessed publicly (without authentication)
+  can be declared in <code>public_endpoints</code> field of manifest.
+  This makes a request that needs to be approved by Racetrack admin.
+  See <a href="../sample/python-ui-flask">python-ui-flask sample</a>.</li>
+</ul>
+<h3 id="fixed_11">Fixed<a class="headerlink" href="#fixed_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Improved overall Fatman response time.</li>
+</ul>
+<h2 id="034-2021-12-06">[0.3.4] - 2021-12-06<a class="headerlink" href="#034-2021-12-06" title="Permanent link">&para;</a></h2>
+<h3 id="changed_22">Changed<a class="headerlink" href="#changed_22" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman's <code>/live</code>, <code>/ready</code> and <code>/health</code> endpoints doesn't require authentication.</li>
+</ul>
+<h2 id="033-2021-11-22">[0.3.3] - 2021-11-22<a class="headerlink" href="#033-2021-11-22" title="Permanent link">&para;</a></h2>
+<h3 id="changed_23">Changed<a class="headerlink" href="#changed_23" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman "dashboard" renamed to "webview". See <a href="../job_types/job_python3/#custom-webview-ui-webview_app-method">python3: Custom Webview UI</a> </li>
+<li>On local dev Racetrack there's no need to commit every job change prior to deployment
+  (it gets the working directory snapshot).</li>
+</ul>
+<h3 id="fixed_12">Fixed<a class="headerlink" href="#fixed_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Default admin account is no longer recreated.</li>
+</ul>
+<h2 id="031-2021-11-15">[0.3.1] - 2021-11-15<a class="headerlink" href="#031-2021-11-15" title="Permanent link">&para;</a></h2>
+<h3 id="added_19">Added<a class="headerlink" href="#added_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>New optional field in Manifest: <code>labels</code> - dictionary with metadata describing fatman for humans.
+  Labels are shown on a dashboard page besides fatman name.</li>
+<li>Example input data (shown on Swagger UI) can be defined for auxiliary endpoints 
+  by implementing <code>docs_input_examples</code>.
+  See <a href="../job_types/job_python3/#auxiliary-endpoints-auxiliary_endpoints-method">python3: Auxiliary endpoints</a> 
+  section and <a href="../sample/python-auxiliary-endpoints">python-auxiliary-endpoints sample</a>.</li>
+</ul>
+<h3 id="fixed_13">Fixed<a class="headerlink" href="#fixed_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>RT specific Dashboard cookie is removed upon logout</li>
+<li>Error returned by Fatman contains more information (including Lifecycle response)
+  and uses correct status code (instead of 500)</li>
+<li>Fixed showing spurious success of Fatman redeployment 
+  (ensure new Fatman responds to health probes).</li>
+</ul>
+<h2 id="030-2021-11-08">[0.3.0] - 2021-11-08<a class="headerlink" href="#030-2021-11-08" title="Permanent link">&para;</a></h2>
+<h3 id="added_20">Added<a class="headerlink" href="#added_20" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>racetrack logs</code> command follows Fatman logs when called along with <code>--follow</code> flag.</li>
+</ul>
+<h3 id="changed_24">Changed<a class="headerlink" href="#changed_24" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Lifecycle API is fully authenticated, every request to Fatman needs to have either User, ESC or Fatman token.</li>
+<li><code>X-Racetrack-Caller</code> header has changed to <code>X-Racetrack-Esc-Auth</code></li>
+</ul>
+<h2 id="021-2021-10-25">[0.2.1] - 2021-10-25<a class="headerlink" href="#021-2021-10-25" title="Permanent link">&para;</a></h2>
+<h3 id="added_21">Added<a class="headerlink" href="#added_21" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Multiple versions of the same fatman are allowed. 
+  Obsolete versions are not removed automatically. 
+  ESC permissions are assigned to whole fatmen family by its name.</li>
+<li>Build logs are always captured and can be seen on Racetrack Dashboard by clicking "Logs" / "Build logs"
+  or by issuing <code>racetrack build-logs &lt;workdir&gt; &lt;racetrack_url&gt;</code>.</li>
+<li>Fatman logs are displayed on Dashboard under option "Logs" / "Runtime logs". </li>
+</ul>
+<h3 id="changed_25">Changed<a class="headerlink" href="#changed_25" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman base URL is changed to <code>/ikp-rt/pub/fatman/&lt;fatman-name&gt;/&lt;version&gt;/</code>. 
+  Version can be e.g. <code>0.0.1</code> or <code>latest</code>.</li>
+</ul>
+<h2 id="020-2021-10-11">[0.2.0] - 2021-10-11<a class="headerlink" href="#020-2021-10-11" title="Permanent link">&para;</a></h2>
+<h3 id="added_22">Added<a class="headerlink" href="#added_22" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Environment vars can be configured in manifest (including build time env, runtime env and secrets).
+  Therefore, pip dependencies can be installed from a private repository. 
+  See <a href="../job_types/job_python3/#environment-variables">python3 Environment variables</a> section.</li>
+<li>Swagger UI allows to set <code>X-Racetrack-Caller</code> header for making authorized Fatman calls.</li>
+<li>Dashboard profile shows a user token </li>
+<li>Racetrack client <code>deploy</code> and <code>logs</code> commands enforces logging with token</li>
+<li><code>racetrack login</code> and <code>logout</code> commands</li>
+<li><code>racetrack config show</code> for viewing racetrack config</li>
+</ul>
+<h3 id="changed_26">Changed<a class="headerlink" href="#changed_26" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>docs_input_example</code> outcome is validated at deployment stage. 
+  It's checked against JSON-serializability and its size should not exceed 1 MB.
+  This solves unresponsive Swagger UI pages, 
+  but it may enforce to use a brief example at the expense of having representative one.</li>
+</ul>
+<h2 id="011-2021-10-04">[0.1.1] - 2021-10-04<a class="headerlink" href="#011-2021-10-04" title="Permanent link">&para;</a></h2>
+<h3 id="added_23">Added<a class="headerlink" href="#added_23" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Customized Prometheus metrics can be exported by implementing <code>metrics</code> method.</li>
+</ul>
+<h3 id="changed_27">Changed<a class="headerlink" href="#changed_27" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Dashboard allows users to register, to be able to login and view list of Fatmen.</li>
+</ul>
+<h3 id="fixed_14">Fixed<a class="headerlink" href="#fixed_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Generating graph on RT Dashboard</li>
+<li>Generating token for ESC in RT admin panel</li>
+</ul>
+<h2 id="010-2021-09-27">[0.1.0] - 2021-09-27<a class="headerlink" href="#010-2021-09-27" title="Permanent link">&para;</a></h2>
+<h3 id="changed_28">Changed<a class="headerlink" href="#changed_28" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Hide "Open" button for erroneous Fatman on Dashboard page.
+  Instead, show a section containing error message and logs. </li>
+<li>Racetrack client infers full lifecycle URL, namely https protocol and <code>/ikp-rt/lifecycle</code> path, if not given. 
+  For instance, <code>ikp-dev-cluster.example.com</code> is a valid URL to deploy fatmen.</li>
+<li>Admin panel not available on Dashboard (moved to Lifecycle).</li>
+</ul>
+<h3 id="fixed_15">Fixed<a class="headerlink" href="#fixed_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use DNS hostname of a cluster instead of raw IP address when redirecting to a Fatman URL
+  (fixed in dashboard "Open" link as well as in <code>racetrack deploy</code> output).</li>
+</ul>
+<h2 id="0017-2021-09-20">[0.0.17] - 2021-09-20<a class="headerlink" href="#0017-2021-09-20" title="Permanent link">&para;</a></h2>
+<h3 id="added_24">Added<a class="headerlink" href="#added_24" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman serves 3 version numbers at <code>/health</code> endpoint: <ul>
+<li><code>git_version</code> - arising from the git history of a job source code,</li>
+<li><code>fatman_version</code> - taken from <code>version</code> field in manifest (this is also displayed at SwaggerUI page).</li>
+<li><code>deployed_by_racetrack_version</code> - version of the Racetrack the Fatman was deployed with.</li>
+</ul>
+</li>
+<li>Dashboard displays current Racetrack version in the footer.</li>
+<li>Static endpoints for serving local files at particular path (eg: <code>/xrai</code> endpoint serving <code>xrai.yaml</code>)</li>
+<li>Authorization to PUB (optional right now) for accessing Fatman <code>/perform</code>.
+  Requires creating ESC and distributing its token to user.</li>
+</ul>
+<h3 id="fixed_16">Fixed<a class="headerlink" href="#fixed_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Show localized Dashboard dates on Firefox</li>
+</ul>
+<h2 id="0016-2021-09-13">[0.0.16] - 2021-09-13<a class="headerlink" href="#0016-2021-09-13" title="Permanent link">&para;</a></h2>
+<h3 id="added_25">Added<a class="headerlink" href="#added_25" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>build-essential</code> package is incorporated into python3 base image. <code>gcc</code> and <code>g++</code> packages are
+  there out-of-the-box, so there is no need to include them manually to your <code>system_dependencies</code> any longer.</li>
+<li>Dashboard page shows both dates for each Fatman: "Created at" and "Last updated" 
+  (deployed at) along with its age (e.g. "5 minutes ago", "5 days ago").</li>
+</ul>
+<h3 id="changed_29">Changed<a class="headerlink" href="#changed_29" title="Permanent link">&para;</a></h3>
+<ul>
+<li>In case of python3 initialization error, full traceback coming from fatman is 
+  displayed to a user (eg: it's easier to find out where is a bad import).</li>
+<li>Deployment errors displayed by CLI client are shortened and yet more meaningful.
+  Client's traceback is not displayed if not needed.</li>
+<li>Datetimes shown on Dashboard get a localized timezone from a browser, so it's
+  no longer UTC time (unless you work from UK).</li>
+<li>Fatmen list on Dashboard is ordered by last deployment date.</li>
+</ul>
+<h3 id="fixed_17">Fixed<a class="headerlink" href="#fixed_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix retrieving logs right after deploying a Fatman.</li>
+<li>Increased timeout for creating a pod. It takes into account longer image pulling.</li>
+</ul>
+<h2 id="0015-2021-09-07">[0.0.15] - 2021-09-07<a class="headerlink" href="#0015-2021-09-07" title="Permanent link">&para;</a></h2>
+<h3 id="added_26">Added<a class="headerlink" href="#added_26" title="Permanent link">&para;</a></h3>
+<ul>
+<li>New required <code>owner_email</code> field (email address of the Fatman's owner to reach out) in manifest</li>
+<li>List of Fatmen (in Dashboard) shows who deployed the fatman recently 
+  (username is taken from git credentials)</li>
+<li>Auxiliary endpoints - custom endpoint paths handled by entrypoint methods (eg. <code>/explain</code> endpoint)</li>
+</ul>
+<h3 id="changed_30">Changed<a class="headerlink" href="#changed_30" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Racetrack client shows full logs from building the image in case of failure.</li>
+</ul>
+<h2 id="0014-2021-09-06">[0.0.14] - 2021-09-06<a class="headerlink" href="#0014-2021-09-06" title="Permanent link">&para;</a></h2>
+<h3 id="changed_31">Changed<a class="headerlink" href="#changed_31" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fatman has read-write access to local working directory.</li>
+<li>Deployment errors are more meaningful and less misleading due to revised health checks
+  (ie. cluster errors are distinguished from job syntax errors or initialization errors).</li>
+<li>One common versioning for all Racetrack components (backend and CLI client)</li>
+</ul>
+<h3 id="fixed_18">Fixed<a class="headerlink" href="#fixed_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix "Critical worker timeout" WSGI error</li>
+<li>Increase memory limits for building images (up to 8Gi)</li>
+<li>Fix Lifecycle resurrecting dead jobs</li>
+</ul>
+<h2 id="005-2021-08-26">[0.0.5] - 2021-08-26<a class="headerlink" href="#005-2021-08-26" title="Permanent link">&para;</a></h2>
+<h3 id="added_27">Added<a class="headerlink" href="#added_27" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Setting aliases for Racetrack servers</li>
+</ul>
+<h3 id="changed_32">Changed<a class="headerlink" href="#changed_32" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Syntax for configuring private registries credentials</li>
+<li>Input payload is flattened (without "args" &amp; "kwargs")</li>
+</ul>
+<h2 id="004-2021-08-20">[0.0.4] - 2021-08-20<a class="headerlink" href="#004-2021-08-20" title="Permanent link">&para;</a></h2>
+<h3 id="added_28">Added<a class="headerlink" href="#added_28" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Showing recent logs from Fatman</li>
+</ul>
+<h2 id="002-2021-08-10">[0.0.2] - 2021-08-10<a class="headerlink" href="#002-2021-08-10" title="Permanent link">&para;</a></h2>
+<h3 id="added_29">Added<a class="headerlink" href="#added_29" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Deploying Fatman</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../admin/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Administering" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Administering
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../glossary/" class="md-footer__link md-footer__link--next" aria-label="Next: Glossary" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Glossary
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/TheRacetrack/racetrack" target="_blank" rel="noopener" title="Racetrack on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.078830c0.min.js"></script>
+      
+    
+  </body>
+</html>
