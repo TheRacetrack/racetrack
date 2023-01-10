@@ -4,7 +4,7 @@ from lifecycle.config import Config
 from lifecycle.deployer.deploy import build_and_provision, provision_fatman
 from lifecycle.deployer.deployers import get_fatman_deployer
 from lifecycle.deployer.secrets import FatmanSecrets
-from lifecycle.fatman.deployment import create_deployment, save_deployment_result
+from lifecycle.fatman.deployment import create_deployment, save_deployment_phase, save_deployment_result
 from lifecycle.fatman.registry import decommission_fatman_infrastructure, read_fatman
 from lifecycle.django.registry import models
 from racetrack_client.log.context_error import wrap_context
@@ -99,6 +99,7 @@ def move_fatman(
     assert fatman.manifest is not None, "fatman doesn't have Manifest data specified"
     assert fatman.image_tag is not None, "fatman's image tag is unknown"
     assert new_infra_target, "infrastructure target has to be specified"
+    assert new_infra_target != old_infra_target, "new infrastructure target has to be different from the current one"
 
     deployment = create_deployment(manifest, deployer_username, new_infra_target)
     try:
@@ -115,6 +116,7 @@ def move_fatman(
             )
 
         with wrap_context('deleting fatman from a former infrastructure'):
+            save_deployment_phase(deployment.id, 'deleting fatman from a former infrastructure')
             decommission_fatman_infrastructure(
                 fatman.name, fatman.version, old_infra_target, config, deployer_username, plugin_engine
             )

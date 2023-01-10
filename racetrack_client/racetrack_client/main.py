@@ -4,6 +4,7 @@ import sys
 from racetrack_client import __version__
 from racetrack_client.client.deploy import send_deploy_request, DeploymentError
 from racetrack_client.client.delete import delete_fatman
+from racetrack_client.client.move import move_fatman
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
@@ -69,9 +70,16 @@ def main():
     parser_delete = subparsers.add_parser('delete', help='Delete fatman instance')
     parser_delete.add_argument('workdir', default='.', nargs='?', help='directory with fatman.yaml manifest')
     parser_delete.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
-    parser_delete.add_argument('--version', nargs='?', type=str,
-                               help='fatman version to delete')
+    parser_delete.add_argument('--version', nargs='?', type=str, help='fatman version to delete')
     parser_delete.set_defaults(func=_delete_fatman)
+
+    # racetrack move
+    parser_delete = subparsers.add_parser('move', help='Move fatman from one infrastructure target to another fatman instance')
+    parser_delete.add_argument('workdir', default='.', nargs='?', help='directory with fatman.yaml manifest')
+    parser_delete.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
+    parser_delete.add_argument('--version', nargs='?', type=str, help='fatman version to move out')
+    parser_delete.add_argument('--infrastructure_target', nargs='?', type=str, help='infrastructure target to move on')
+    parser_delete.set_defaults(func=_move_fatman)
 
     # racetrack run-local
     parser_run = subparsers.add_parser('run-local', help='Run fatman locally')
@@ -208,6 +216,10 @@ def _build_logs(args: argparse.Namespace):
 
 def _delete_fatman(args: argparse.Namespace):
     delete_fatman(args.workdir, args.racetrack_url, args.version)
+
+
+def _move_fatman(args: argparse.Namespace):
+    move_fatman(args.workdir, args.racetrack_url, args.version, args.infrastructure_target)
 
 
 def _show_config(args: argparse.Namespace):
