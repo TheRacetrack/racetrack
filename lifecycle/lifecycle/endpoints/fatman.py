@@ -1,9 +1,11 @@
 from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, Request
+from pydantic import BaseModel, Field
 
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
-from lifecycle.deployer.redeploy import redeploy_fatman, reprovision_fatman
+from lifecycle.deployer.redeploy import redeploy_fatman, reprovision_fatman, move_fatman
 from lifecycle.fatman.graph import build_fatman_dependencies_graph
 from lifecycle.fatman.registry import (
     delete_fatman,
@@ -13,9 +15,8 @@ from lifecycle.fatman.registry import (
 )
 from lifecycle.fatman.public_endpoints import read_active_fatman_public_endpoints
 from lifecycle.fatman.logs import read_build_logs, read_runtime_logs
-from pydantic import BaseModel, Field
-from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.auth.authenticate import get_username_from_token
+from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 
 
@@ -85,6 +86,9 @@ def setup_fatman_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             example=1000000,
         )
 
+    class MoveFatmanPayload(BaseModel):
+        infrastructure_target: str = Field(description='text content of configuration file')
+
     @api.get('/fatman')
     def _list_all_fatmen(request: Request):
         """Get list of deployed Fatman"""
@@ -117,18 +121,25 @@ def setup_fatman_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return delete_fatman(fatman_name, fatman_version, config, username, plugin_engine)
 
     @api.post('/fatman/{fatman_name}/{fatman_version}/redeploy')
-    def _redeploy_fatman(fatman_name, fatman_version: str, request: Request):
+    def _redeploy_fatman(fatman_name: str, fatman_version: str, request: Request):
         """Deploy specific Fatman image once again (build and provision)"""
         auth_subject = check_auth(request, fatman_name=fatman_name, fatman_version=fatman_version, scope=AuthScope.DEPLOY_FATMAN)
         username = get_username_from_token(request)
         return redeploy_fatman(fatman_name, fatman_version, config, plugin_engine, username, auth_subject)
 
     @api.post('/fatman/{fatman_name}/{fatman_version}/reprovision')
-    def _reprovision_fatman(fatman_name, fatman_version: str, request: Request):
+    def _reprovision_fatman(fatman_name: str, fatman_version: str, request: Request):
         """Provision specific Fatman image once again to a cluster"""
         auth_subject = check_auth(request, fatman_name=fatman_name, fatman_version=fatman_version, scope=AuthScope.DEPLOY_FATMAN)
         username = get_username_from_token(request)
         return reprovision_fatman(fatman_name, fatman_version, config, plugin_engine, username, auth_subject)
+
+    @api.post('/fatman/{fatman_name}/{fatman_version}/move')
+    def _move_fatman(fatman_name: str, fatman_version: str, payload: MoveFatmanPayload, request: Request):
+        """Move fatman from one infrastructure target to another"""
+        auth_subject = check_auth(request, fatman_name=fatman_name, fatman_version=fatman_version, scope=AuthScope.DEPLOY_FATMAN)
+        username = get_username_from_token(request)
+        return move_fatman(fatman_name, fatman_version, payload.infrastructure_target, config, plugin_engine, username, auth_subject)
 
     @api.get('/fatman/{fatman_name}/{fatman_version}/logs')
     def _get_fatman_logs(request: Request, fatman_name: str, fatman_version: str, tail: int = 20):

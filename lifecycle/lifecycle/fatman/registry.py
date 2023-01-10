@@ -91,6 +91,31 @@ def delete_fatman(
     plugin_engine.invoke_plugin_hook(PluginCore.post_fatman_delete, fatman, username_executor=username)
 
 
+def decommission_fatman_infrastructure(
+    fatman_name: str,
+    fatman_version: str,
+    infrastructure_target: str,
+    config: Config,
+    username: str,
+    plugin_engine: PluginEngine,
+):
+    fatman = read_fatman(fatman_name, fatman_version, config)  # raise 404 if not found
+    if fatman.status != FatmanStatus.LOST.value:
+        deployer = get_fatman_deployer(plugin_engine, infrastructure_target)
+        deployer.delete_fatman(fatman_name, fatman_version)
+
+    owner_username = fatman.deployed_by
+    AuditLogger().log_event(
+        AuditLogEventType.FATMAN_DELETED,
+        username_executor=username,
+        username_subject=owner_username,
+        fatman_name=fatman.name,
+        fatman_version=fatman.version,
+    )
+
+    plugin_engine.invoke_plugin_hook(PluginCore.post_fatman_delete, fatman, username_executor=username)
+
+
 def sync_registry_fatmen(config: Config, plugin_engine: PluginEngine):
     """Synchronize fatman stored in registry and confront it with Kubernetes source of truth"""
     logger.info("Synchronizing fatmen")
