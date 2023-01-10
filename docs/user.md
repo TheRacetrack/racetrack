@@ -212,7 +212,9 @@ Racetrack, and to help you get used to the core Racetrack concepts.
 
 1. A workstation with a sane operating system (currently, Debian and -
    grudgingly - Ubuntu are considered sane)
-1. Docker v20.10+
+1. [Docker v20.10+](https://docs.docker.com/engine/install/ubuntu/)
+  managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+1. [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
 1. bash
 1. python3 and python3-venv (Python 3.8+)
 1. [racetrack-client](https://pypi.org/project/racetrack-client/) (see section
@@ -260,6 +262,8 @@ Job.
 racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
+# Activate kubernetes infrastructure target in the Racetrack
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure http://localhost:7002
 # go to the sample directory
 cd sample/python-class/
 # deploy from the current directory (.) to the Racetrack service which is
@@ -655,6 +659,7 @@ make kind-up
 # Wait 10 minutes
 make kind-test
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure http://localhost:7002
 racetrack deploy sample/python-class http://localhost:7002
 ```
 
