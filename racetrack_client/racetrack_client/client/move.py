@@ -21,7 +21,7 @@ def move_fatman(workdir: str, lifecycle_url: Optional[str], version: Optional[st
 
     version = version or manifest.version
 
-    logger.debug(f'Moving fatman "{manifest.name}" v{version} to {new_infra_target} infrastructure...')
+    logger.info(f'Moving fatman "{manifest.name}" v{version} to {new_infra_target} infrastructure...')
     r = Requests.post(
         f'{lifecycle_url}/api/v1/fatman/{manifest.name}/{version}/move',
         json={

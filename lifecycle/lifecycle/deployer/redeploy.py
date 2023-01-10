@@ -108,7 +108,7 @@ def move_fatman(
         else:
             fatman_secrets = FatmanSecrets(git_credentials=None, secret_build_env={}, secret_runtime_env={})
 
-        with wrap_context('deploying fatman to new infrastructure'):
+        with wrap_context('deploying fatman to a new infrastructure'):
             provision_fatman(
                 config, manifest, fatman.image_tag, fatman_secrets.secret_build_env,
                 fatman_secrets.secret_runtime_env, deployment,
