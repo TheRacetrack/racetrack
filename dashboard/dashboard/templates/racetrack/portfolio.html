@@ -34,6 +34,7 @@
                         <th>Last calll time</th>
                         <th>Update time</th>
                         <th>Creation time</th>
+                        <th>Infrastructure target</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -54,6 +55,7 @@
                         <td>{{ fatman.last_call_time | timestamp_to_iso8601 }}</td>
                         <td>{{ fatman.update_time | timestamp_to_iso8601 }}</td>
                         <td>{{ fatman.create_time | timestamp_to_iso8601 }}</td>
+                        <td>{{ fatman.infrastructure_target }}</td>
                         <td>
                             <button type="button" class="btn btn-danger button-delete-fatman" fatman-name="{{ fatman.name }}" fatman-version="{{ fatman.version }}">Delete</button>
                         </td>
@@ -103,20 +105,21 @@ var tfConfig = {
     },
     status_bar: true,
     col_types: [
-        'string', // family name
-        'string', // version
-        'string', // status
-        'string', // job type version
-        'string', // deployed by
-        'number', // last updated ago
-        'number', // last called ago
-        'string', // purge reasons
-        'number', // purge score
-        'number', // newer versions
-        { type: 'date' }, // last call time
-        { type: 'date' }, // update time
-        { type: 'date' }, // creation time
-        'none', // actions
+        'string', // 0. family name
+        'string', // 1. version
+        'string', // 2. status
+        'string', // 3. job type version
+        'string', // 4. deployed by
+        'number', // 5. last updated ago
+        'number', // 6. last called ago
+        'string', // 7. purge reasons
+        'number', // 8. purge score
+        'number', // 9. newer versions
+        { type: 'date' }, // 10. last call time
+        { type: 'date' }, // 11. update time
+        { type: 'date' }, // 12. creation time
+        'string', // 13. infrastructure target
+        'none', // 14. actions
     ],
     col_12: 'none',
     no_results_message: {
@@ -124,7 +127,7 @@ var tfConfig = {
     },
     extensions: [{
         name: 'colsVisibility',
-        at_start: [10, 11, 12],
+        at_start: [6, 7, 8, 9, 10, 11, 12, 13, 14],
         text: 'Columns: ',
         enable_tick_all: true,
         tick_to_hide: false,
