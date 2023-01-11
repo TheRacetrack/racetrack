@@ -75,9 +75,9 @@ def main():
 
     # racetrack move
     parser_move = subparsers.add_parser('move', help='Move fatman from one infrastructure target to another fatman instance')
-    parser_move.add_argument('workdir', default='.', nargs='?', help='directory with fatman.yaml manifest')
-    parser_move.add_argument('racetrack_url', default='', nargs='?', help='URL to Racetrack server or alias name')
-    parser_move.add_argument('--version', nargs='?', type=str, help='fatman version to move out')
+    parser_move.add_argument('--origin', type=str, help='URL to Racetrack server or alias name')
+    parser_move.add_argument('--name', required=True, type=str, help='fatman name to move out')
+    parser_move.add_argument('--version', required=True, type=str, help='fatman version to move out')
     parser_move.add_argument('--infrastructure', required=True, type=str, help='infrastructure target to move on')
     parser_move.set_defaults(func=_move_fatman)
 
@@ -219,7 +219,7 @@ def _delete_fatman(args: argparse.Namespace):
 
 
 def _move_fatman(args: argparse.Namespace):
-    move_fatman(args.workdir, args.racetrack_url, args.version, args.infrastructure)
+    move_fatman(args.origin, args.name, args.version, args.infrastructure)
 
 
 def _show_config(args: argparse.Namespace):
