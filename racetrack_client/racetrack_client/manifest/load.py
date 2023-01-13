@@ -20,7 +20,7 @@ def load_manifest_from_yaml(path: Path) -> Manifest:
 
 def load_manifest_dict_from_yaml(path: Path) -> Dict:
     if not path.is_file():
-        raise FileNotFoundError(f"manifest file '{path}' doesn't exist")
+        raise FileNotFoundError(f"local manifest file '{path}' doesn't exist")
 
     with wrap_context('loading YAML'):
         with path.open() as file:
