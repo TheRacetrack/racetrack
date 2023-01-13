@@ -524,7 +524,7 @@ See [manifest-schema.md](manifest-schema.md)
 
 ### The Job Types<a name="job-types"></a>
 
-These links show how to use particular job types installed by the plugins:
+These links show how to use particular job types installed by the [plugins](./development/using-plugins.md):
 
 - [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
   designed for Python projects
