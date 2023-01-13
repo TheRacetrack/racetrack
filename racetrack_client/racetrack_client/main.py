@@ -1,5 +1,8 @@
 import argparse
 import sys
+from typing import Optional
+
+import typer
 
 from racetrack_client import __version__
 from racetrack_client.client.deploy import send_deploy_request, DeploymentError
@@ -21,8 +24,12 @@ from racetrack_client.utils.datamodel import datamodel_to_yaml_str
 
 logger = get_logger(__name__)
 
+cli = typer.Typer()
 
 def main():
+    cli()
+
+    return
     parser = argparse.ArgumentParser(description='CLI client tool for deploying workloads to Racetrack')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='enable verbose mode')
     subparsers = parser.add_subparsers()
@@ -186,8 +193,20 @@ def main():
         log_exception(e)
 
 
-def _deploy(args: argparse.Namespace):
-    send_deploy_request(args.workdir, lifecycle_url=args.racetrack_url, force=args.force, local_context=args.local_context)
+@cli.command()
+def deploy(
+    workdir: str,
+    racetrack_url: Optional[str] = typer.Argument(default=None, help="URL to Racetrack server or alias name"),
+    force: bool = False,
+    context_local: bool = False,
+    context_git: bool = False,
+):
+    local_context = None
+    if context_local:
+        local_context = True
+    if context_git:
+        local_context = False
+    send_deploy_request(workdir, lifecycle_url=racetrack_url, force=force, local_context=local_context)
 
 
 def _validate(args: argparse.Namespace):
