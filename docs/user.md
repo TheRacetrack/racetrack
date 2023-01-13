@@ -26,7 +26,7 @@
     1. [Jobs in Private or Protected git Repositories](#repo-tokens)
     1. [Setting aliases for Racetrack servers](config-aliases)
     1. [The Fatman Manifest File](#manifest-deep)
-    1. [The Default Job Types](#job-types)
+    1. [The Job Types](#job-types)
 1. [Guidelines](#guide)
 1. [FAQ](#faq)
 
@@ -522,13 +522,16 @@ and then you can use your short names instead of full `RACETRACK_URL` address wh
 
 See [manifest-schema.md](manifest-schema.md)
 
-### The Default Job Types<a name="job-types"></a>
+### The Job Types<a name="job-types"></a>
 
-See documentation for particular job types:
+These links show how to use particular job types installed by the plugins:
 
-- [python3](job_types/job_python3.md) - designed for Python projects
-- [golang](job_types/job_golang.md) - designed for Go projects
-- [docker-proxy](job_types/job_docker.md) - designed for any other Dockefile-based jobs
+- [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
+  designed for Python projects
+- [golang](https://github.com/TheRacetrack/plugin-go-job-type/blob/master/docs/job_golang.md) -
+  designed for Go projects
+- [docker-proxy](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md) -
+  designed for any other Dockefile-based jobs
 
 See the [sample/](../sample) directory for more examples.
 

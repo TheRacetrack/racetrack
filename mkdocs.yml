@@ -51,7 +51,6 @@ nav:
     - Quickstart: docs/quickstart.md
     - User Guide: docs/user.md
     - Fatman Manifest File Schema: docs/manifest-schema.md
-    - Python Job Type: docs/job_types/job_python3.md
     - Permission model: docs/permissions.md
   - Plugins:
     - Using plugins: docs/development/using-plugins.md
