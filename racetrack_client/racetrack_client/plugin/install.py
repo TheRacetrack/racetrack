@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from racetrack_client.client_config.alias import resolve_lifecycle_url
@@ -10,7 +10,7 @@ from racetrack_client.client_config.client_config import ClientConfig
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
-from racetrack_client.utils.request import parse_response, parse_response_object, Requests
+from racetrack_client.utils.request import parse_response, parse_response_object, parse_response_list, Requests
 from racetrack_client.utils.semver import SemanticVersion
 
 logger = get_logger(__name__)
@@ -72,7 +72,7 @@ def list_installed_plugins(lifecycle_url: Optional[str]) -> None:
         f'{lifecycle_url}/api/v1/plugin',
         headers=get_auth_request_headers(user_auth),
     )
-    plugin_manifests = parse_response_object(r, 'Lifecycle response error')
+    plugin_manifests: List[Dict] = parse_response_list(r, 'Lifecycle response error')
     plugin_infos = [f'{p["name"]}=={p["version"]}' for p in plugin_manifests]
 
     logger.info(f'Plugins currently installed on {lifecycle_url} ({len(plugin_infos)}):')
@@ -90,7 +90,7 @@ def list_available_job_types(lifecycle_url: Optional[str]) -> None:
         f'{lifecycle_url}/api/v1/plugin/job_type/versions',
         headers=get_auth_request_headers(user_auth),
     )
-    versions = parse_response_object(r, 'Lifecycle response error')
+    versions: List[str] = parse_response_list(r, 'Lifecycle response error')
 
     logger.info(f'Job type versions currently installed on {lifecycle_url} ({len(versions)}):')
     for version in versions:
@@ -166,7 +166,7 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
         },
     )
 
-    json_releases = parse_response_object(r, 'GitHub API response')
+    json_releases = parse_response_list(r, 'GitHub API response')
     releases = []
     for json_release in json_releases:
         version = json_release.get('tag_name')
