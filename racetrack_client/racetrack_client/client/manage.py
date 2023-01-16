@@ -22,6 +22,11 @@ def list_fatmen(remote: Optional[str]):
         headers=get_auth_request_headers(user_auth),
     )
     fatmen: List[Dict] = parse_response_list(r, 'Lifecycle response error')
+
+    if not fatmen:
+        logger.info(f'No fatmen deployed at {lifecycle_url}.')
+        return
+
     logger.info(f'List of all fatmen ({len(fatmen)}) deployed at {lifecycle_url}:')
     print('NAME VERSION STATUS')
     for fatman in fatmen:
