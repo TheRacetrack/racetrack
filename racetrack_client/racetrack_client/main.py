@@ -67,98 +67,37 @@ def _validate(
     validate_and_show_manifest(path)
 
 
-cli_config = typer.Typer(
-    no_args_is_help=True,
-    help='Manage local options for a Racetrack client',
-)
-cli.add_typer(cli_config, name="config")
-
-
-@cli_config.command('racetrack_url', deprecated=True)
-def _set_config_racetrack_url(
-    remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
-):
-    """Set default Racetrack URL address"""
-    set_config_setting('lifecycle_url', remote)
-
-
-@cli_config.command('remote')
-def _set_config_remote(
-    remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
-):
-    """Set default Racetrack URL address"""
-    set_config_setting('lifecycle_url', remote)
-
-
-@cli_config.command('show')
-def _show_config():
-    """Show racetrack config values"""
-    client_config = load_client_config()
-    print(datamodel_to_yaml_str(client_config))
-
-
-cli_config_credentials = typer.Typer(
-    no_args_is_help=True,
-    help='Manage credentials for git repository access',
-)
-cli_config.add_typer(cli_config_credentials, name="credentials")
-
-
-@cli_config_credentials.command('set')
-def _set_config_credentials(
-    repo_url: str = typer.Argument(..., show_default=False, help='git remote URL'),
-    username: str = typer.Argument(..., show_default=False, help='username for git authentication'),
-    token_password: str = typer.Argument(..., show_default=False, help='password or token for git authentication'),
-):
-    """Set credentials for reading git repository"""
-    set_credentials(repo_url, username, token_password)
-
-
-cli_config_alias = typer.Typer(
-    no_args_is_help=True,
-    help='Manage aliases for Racetrack server URLs',
-)
-cli_config.add_typer(cli_config_alias, name="alias")
-
-
-@cli_config_alias.command('set')
-def _set_config_url_alias(
-    alias: str = typer.Argument(..., show_default=False, help='short name for an environment'),
-    racetrack_url: str = typer.Argument(..., show_default=False, help='Racetrack server URL address'),
-):
-    """Set up an alias for Racetrack remote URL"""
-    set_config_url_alias(alias, racetrack_url)
-
-
 @cli.command('logs')
 def _logs(
-    workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    name: str = typer.Option(..., show_default=False, help='name of the fatman'),
+    version: str = typer.Option(..., show_default=False, help='version of the fatman'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     tail: int = typer.Option(20, '--tail', help='number of recent lines to show'),
     follow: bool = typer.Option(False, '--follow', '-f', help='follow logs output stream'),
 ):
-    """Show logs from fatman output"""
-    show_runtime_logs(workdir, remote, tail, follow)
+    """Show logs from the output of a running fatman"""
+    show_runtime_logs(name, version, remote, tail, follow)
 
 
 @cli.command('build-logs')
 def _build_logs(
-    workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    name: str = typer.Option(..., show_default=False, help='name of the fatman'),
+    version: str = typer.Option(..., show_default=False, help='version of the fatman'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     tail: int = typer.Option(0, '--tail', help='number of recent lines to show, all logs by default'),
 ):
     """Show build logs from fatman image building"""
-    show_build_logs(workdir, remote, tail)
+    show_build_logs(name, version, remote, tail)
 
 
 @cli.command('delete')
 def _delete_fatman(
-    workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
-    version: str = typer.Option(default=None, help='fatman version to delete'),
+    name: str = typer.Option(..., show_default=False, help='name of the fatman to delete'),
+    version: str = typer.Option(..., show_default=False, help='version of the fatman to delete'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
 ):
     """Delete fatman instance"""
-    delete_fatman(workdir, remote, version)
+    delete_fatman(name, version, remote)
 
 
 @cli.command('move')
@@ -166,17 +105,17 @@ def _move_fatman(
     name: str = typer.Option(..., show_default=False, help='name of the fatman to move out'),
     version: str = typer.Option(..., show_default=False, help='version of the fatman to move out'),
     infrastructure: str = typer.Option(..., show_default=False, help='infrastructure target to move on'),
-    remote: str = typer.Option(default=None, help='URL to Racetrack server or alias name'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
 ):
-    """Move fatman from one infrastructure target to another fatman instance"""
+    """Move fatman from one infrastructure target to another"""
     move_fatman(remote, name, version, infrastructure)
 
 
 @cli.command('run-local')
 def _run_local(
     workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
-    port: int = typer.Option(default=None, help='HTTP port to run the server on'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    port: int = typer.Option(default=None, show_default=False, help='HTTP port to run the server on'),
     context_local: bool = typer.Option(False, '--context-local', help='force building fatman from local files'),
     context_git: bool = typer.Option(False, '--context-git', help='force building fatman from git repository'),
 ):
@@ -212,17 +151,72 @@ def _logout(
     logout_user_auth(remote)
 
 
-cli_plugin = typer.Typer(
-    no_args_is_help=True,
-    help='Manage Racetrack plugins',
-)
+# racetrack config ...
+cli_config = typer.Typer(no_args_is_help=True, help='Manage local options for a Racetrack client')
+cli.add_typer(cli_config, name="config")
+
+
+@cli_config.command('remote')
+def _set_config_remote(
+    remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
+):
+    """Set default Racetrack URL address"""
+    set_config_setting('lifecycle_url', remote)
+
+
+@cli_config.command('racetrack_url', deprecated=True)
+def _set_config_racetrack_url(
+    remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
+):
+    """Set default Racetrack URL address"""
+    set_config_setting('lifecycle_url', remote)
+
+
+@cli_config.command('show')
+def _show_config():
+    """Show racetrack config values"""
+    client_config = load_client_config()
+    print(datamodel_to_yaml_str(client_config))
+
+
+# racetrack config credentials ...
+cli_config_credentials = typer.Typer(no_args_is_help=True, help='Manage credentials for git repository access')
+cli_config.add_typer(cli_config_credentials, name="credentials")
+
+
+@cli_config_credentials.command('set')
+def _set_config_credentials(
+    repo_url: str = typer.Argument(..., show_default=False, help='git remote URL'),
+    username: str = typer.Argument(..., show_default=False, help='username for git authentication'),
+    token_password: str = typer.Argument(..., show_default=False, help='password or token for git authentication'),
+):
+    """Set credentials for reading git repository"""
+    set_credentials(repo_url, username, token_password)
+
+
+# racetrack config alias ...
+cli_config_alias = typer.Typer(no_args_is_help=True, help='Manage aliases for Racetrack server URLs')
+cli_config.add_typer(cli_config_alias, name="alias")
+
+
+@cli_config_alias.command('set')
+def _set_config_url_alias(
+    alias: str = typer.Argument(..., show_default=False, help='short name for an environment'),
+    racetrack_url: str = typer.Argument(..., show_default=False, help='Racetrack server URL address'),
+):
+    """Set up an alias for Racetrack remote URL"""
+    set_config_url_alias(alias, racetrack_url)
+
+
+# racetrack plugin ...
+cli_plugin = typer.Typer(no_args_is_help=True, help='Manage Racetrack plugins')
 cli.add_typer(cli_plugin, name="plugin")
 
 
 @cli_plugin.command('install')
 def _install_plugin(
     plugin_uri: str = typer.Argument(..., show_default=False, help='location of the plugin file: local file path, URL to a remote HTTP file or repository name'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
 ):
     """Install a plugin to a remote Racetrack server"""
     install_plugin(plugin_uri, remote)
@@ -232,7 +226,7 @@ def _install_plugin(
 def _uninstall_plugin(
     plugin_name: str = typer.Argument(..., show_default=False, help='name of the plugin'),
     plugin_version: str = typer.Argument(..., show_default=False, help='version of the plugin'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     
 ):
     """Uninstall plugin from a remote Racetrack server"""
@@ -241,7 +235,7 @@ def _uninstall_plugin(
 
 @cli_plugin.command('list')
 def _list_installed_plugins(
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     job_types: bool = typer.Option(False, '--job-types', help='list available job type versions'),
 ):
     """List plugins installed on a remote Racetrack server"""
