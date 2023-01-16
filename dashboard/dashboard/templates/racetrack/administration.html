@@ -66,13 +66,19 @@
                 <ul>
                 {% for plugin in plugins %}
                     <li>
-                        <span>{{ plugin.name }} (version {{ plugin.version }})</span>
-                        {% if plugin.url %}
-                        <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
-                        {% endif %}
-                        {% if user.is_staff %}
-                        <a href="{% url 'dashboard:plugin_config_editor' plugin.name plugin.version %}" class="btn btn-primary align-self-start">Edit Config</a>
-                        <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
+                        <div class="row py-1">
+                            <div class="col-md-9">
+                                <span>{{ plugin.name }} (version {{ plugin.version }})</span>
+                            {% if plugin.url %}
+                                <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
+                            </div>
+                            {% endif %}
+                            {% if user.is_staff %}
+                            <div class="col-md-3 text-end">
+                                <a href="{% url 'dashboard:plugin_config_editor' plugin.name plugin.version %}" class="btn btn-primary">Edit Config</a>
+                                <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
+                            </div>
+                        </div>
                         {% endif %}
                     </li>
                 {% endfor %}
