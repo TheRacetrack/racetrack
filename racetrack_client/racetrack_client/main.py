@@ -2,12 +2,11 @@ import typer
 
 from racetrack_client import __version__
 from racetrack_client.client.deploy import send_deploy_request, DeploymentError
-from racetrack_client.client.delete import delete_fatman
-from racetrack_client.client.move import move_fatman
+from racetrack_client.client.manage import move_fatman, delete_fatman, list_fatmen
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
-from racetrack_client.client_config.update import set_credentials, set_config_setting, set_config_url_alias
+from racetrack_client.client_config.update import set_credentials, set_current_remote, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
 from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
 from racetrack_client.client.run import run_fatman_locally
@@ -75,7 +74,7 @@ def _logs(
     tail: int = typer.Option(20, '--tail', help='number of recent lines to show'),
     follow: bool = typer.Option(False, '--follow', '-f', help='follow logs output stream'),
 ):
-    """Show logs from the output of a running fatman"""
+    """Show runtime logs from the output of a fatman"""
     show_runtime_logs(name, version, remote, tail, follow)
 
 
@@ -88,6 +87,14 @@ def _build_logs(
 ):
     """Show build logs from fatman image building"""
     show_build_logs(name, version, remote, tail)
+
+
+@cli.command('list')
+def _list_fatmen(
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+):
+    """List all deployed fatmen"""
+    list_fatmen(remote)
 
 
 @cli.command('delete')
@@ -161,7 +168,7 @@ def _set_config_remote(
     remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
 ):
     """Set default Racetrack URL address"""
-    set_config_setting('lifecycle_url', remote)
+    set_current_remote(remote)
 
 
 @cli_config.command('racetrack_url', deprecated=True)
@@ -169,7 +176,7 @@ def _set_config_racetrack_url(
     remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
 ):
     """Set default Racetrack URL address"""
-    set_config_setting('lifecycle_url', remote)
+    set_current_remote(remote)
 
 
 @cli_config.command('show')

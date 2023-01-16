@@ -17,6 +17,11 @@ def set_credentials(repo_url: str, username: str, token_password: str):
     save_client_config(client_config)
 
 
+def set_current_remote(remote: str):
+    set_config_setting('lifecycle_url', remote)
+    logger.info(f'Current remote set to {remote}')
+
+
 def set_config_setting(setting_name: str, setting_value: str):
     client_config = load_client_config()
     config_dict = client_config.dict()
@@ -26,7 +31,6 @@ def set_config_setting(setting_name: str, setting_value: str):
     with wrap_context('converting setting to target data type'):
         client_config = ClientConfig.parse_obj(config_dict)
 
-    logger.info(f'Client setting "{setting_name}" set to: {setting_value}')
     save_client_config(client_config)
 
 
