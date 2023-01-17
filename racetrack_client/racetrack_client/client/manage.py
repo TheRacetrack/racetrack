@@ -6,6 +6,7 @@ from racetrack_client.client_config.io import load_client_config
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
 from racetrack_client.utils.request import parse_response, parse_response_list, Requests
+from racetrack_client.utils.table import print_table
 
 
 logger = get_logger(__name__)
@@ -28,12 +29,15 @@ def list_fatmen(remote: Optional[str]):
         return
 
     logger.info(f'List of all fatmen ({len(fatmen)}) deployed at {lifecycle_url}:')
-    print('NAME VERSION STATUS')
+    table: List[List[str]] = []
+    table.append(['NAME', 'VERSION', 'STATUS', 'DEPLOYED BY'])
     for fatman in fatmen:
-        name = fatman.get('name')
-        version = fatman.get('version')
+        name = fatman.get('name', '')
+        version = fatman.get('version', '')
         status = fatman.get('status', '').upper()
-        print(f'{name} {version} {status}')
+        deployed_by = fatman.get('deployed_by', '')
+        table.append([name, version, status, deployed_by])
+    print_table(table)
 
 
 def move_fatman(remote: Optional[str], fatman_name: str, fatman_version: str, new_infra_target: str):
