@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - A fatman can be moved from one infrastructure target to another by using a new CLI command.
   Check out `racetrack move --help`.
+- A new command `racetrack list` allows to fetch the list of all deployed fatmen with the selected columns.
+  See `racetrack list --help` for more details.
+
+### Changed
+- Syntax of Racetrack client has been rearranged.
+  Check out `racetrack --help` for more details.
+  Some notable changes:
+
+  - Racetrack URL is now called "remote" and can be usually set with an optional parameter `--remote alias`.
+  - You can set the current remote once with `racetrack config remote ALIAS_OR_URL`
+    and then you can omit `--remote` parameter in the next commands, eg. `racetrack list`.
+  - Although `racetrack deploy [WORKDIR] [REMOTE]` syntax is still supported,
+    it's deprecated and `racetrack deploy [WORKDIR] [--remote REMOTE]` should be used instead.
+  - Automatic completion can be activated by running `racetrack --install-completion`. Then, you'll see relevant prompts after hitting `Tab`.
+  - `racetrack logs` and `racetrack build-logs` has now one required argument `NAME` and optional parameters: `[--version TEXT]` ("latest" by default) and `[--remote TEXT]`.
+    No need to pass workdir with a manifest file any longer.
+  - `racetrack delete NAME --version TEXT [--remote TEXT]` - fatman name and version is required.
+    No need to pass workdir with a manifest file any longer.
+  - `racetrack plugin install PLUGIN_URI [--remote TEXT]` - now remote is an optional parameter instead of required argument.
 
 ## [2.7.0] - 2023-01-05
 ### Added

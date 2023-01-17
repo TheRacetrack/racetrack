@@ -45,12 +45,13 @@ def _startup(
 @cli.command('deploy')
 def _deploy(
     workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
+    _remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name (deprecated, use --remote)'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     force: bool = typer.Option(False, '--force', help='overwrite existing fatman'),
     build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building fatman from local files ("local") or from git repository ("git")'),
 ):
     """Send request deploying a Fatman to the Racetrack cluster"""
-    send_deploy_request(workdir, lifecycle_url=remote, force=force, build_context_method=build_context)
+    send_deploy_request(workdir, lifecycle_url=remote or _remote, force=force, build_context_method=build_context)
 
 
 @cli.command('validate')
@@ -183,7 +184,7 @@ cli_config.add_typer(cli_config_credentials, name="credentials")
 
 @cli_config_credentials.command('set')
 def _set_config_credentials(
-    repo_url: str = typer.Argument(..., show_default=False, help='git remote URL'),
+    repo_url: str = typer.Argument(..., show_default=False, help='URL of git remote for one of your fatmen'),
     username: str = typer.Argument(..., show_default=False, help='username for git authentication'),
     token_password: str = typer.Argument(..., show_default=False, help='password or token for git authentication'),
 ):
@@ -199,7 +200,7 @@ cli_config.add_typer(cli_config_alias, name="alias")
 @cli_config_alias.command('set')
 def _set_config_url_alias(
     alias: str = typer.Argument(..., show_default=False, help='short name for an environment'),
-    racetrack_url: str = typer.Argument(..., show_default=False, help='Racetrack server URL address'),
+    racetrack_url: str = typer.Argument(..., show_default=False, help='URL address of a remote Racetrack server'),
 ):
     """Set up an alias for Racetrack remote URL"""
     set_config_url_alias(alias, racetrack_url)
