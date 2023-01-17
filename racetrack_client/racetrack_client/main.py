@@ -1,8 +1,9 @@
+from typing import List
 import typer
 
 from racetrack_client import __version__
 from racetrack_client.client.deploy import send_deploy_request, DeploymentError
-from racetrack_client.client.manage import move_fatman, delete_fatman, list_fatmen
+from racetrack_client.client.manage import FatmenListColumn, move_fatman, delete_fatman, list_fatmen
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
@@ -92,9 +93,10 @@ def _build_logs(
 @cli.command('list')
 def _list_fatmen(
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    columns: List[FatmenListColumn] = typer.Option([], '--column', '-c', show_default=False, help='show additional columns'),
 ):
     """List all deployed fatmen"""
-    list_fatmen(remote)
+    list_fatmen(remote, columns)
 
 
 @cli.command('delete')

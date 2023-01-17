@@ -19,7 +19,7 @@ def set_credentials(repo_url: str, username: str, token_password: str):
 
 def set_current_remote(remote: str):
     set_config_setting('lifecycle_url', remote)
-    logger.info(f'Current remote set to {remote}')
+    logger.info(f'Current remote set to "{remote}"')
 
 
 def set_config_setting(setting_name: str, setting_value: str):
