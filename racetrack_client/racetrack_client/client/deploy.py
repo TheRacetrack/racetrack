@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 import tarfile
 import io
 from base64 import b64encode
+from enum import Enum
 
 import backoff
 
@@ -34,13 +35,19 @@ class DeploymentError(RuntimeError):
         return f'deployment error: {self.__cause__}'
 
 
+class BuildContextMethod(str, Enum):
+    local = "local"
+    git = "git"
+    default = "default"
+
+
 def send_deploy_request(
     workdir: str,
     manifest: Optional[Manifest] = None,
     client_config: Optional[ClientConfig] = None,
     lifecycle_url: Optional[str] = None,
     force: bool = False,
-    local_context: Optional[bool] = None,
+    build_context_method: BuildContextMethod = BuildContextMethod.default,
 ):
     """
     Send request deploying a new Fatman to running Lifecycle instance
@@ -49,9 +56,9 @@ def send_deploy_request(
     :param client_config: client configuration to use (if not the defaullt)
     :param lifecycle_url: URL to Racetrack server or alias name
     :param force: overwrite existing fatman without asking
-    :param local_context: decides whether to build from local files or from git:
-        True - build an image from local build context, 
-        False - build from git repository, 
+    :param build_context_method: decides whether to build from local files or from git:
+        local - build an image from local build context, 
+        git - build from git repository, 
         None - apply default strategy: 
             if working on local dev, local build context gets activated, otherwise git
     """
@@ -66,7 +73,7 @@ def send_deploy_request(
 
     logger.info(f'deploying workspace "{workdir}" (job {manifest.name} v{manifest.version}) to {lifecycle_url}')
 
-    build_context = get_build_context(lifecycle_url, workdir, manifest, local_context)
+    build_context = get_build_context(lifecycle_url, workdir, manifest, build_context_method)
     git_credentials = get_git_credentials(manifest, client_config)
     secret_vars = read_secret_vars(workdir, manifest)
 
@@ -149,26 +156,27 @@ def get_git_credentials(manifest: Manifest, client_config: ClientConfig) -> Opti
     return None
 
 
-def get_build_context(lifecycle_url: str, workdir: str, manifest: Manifest, local_context: Optional[bool]) -> Optional[str]:
+def get_build_context(lifecycle_url: str, workdir: str, manifest: Manifest, build_context_method: BuildContextMethod) -> Optional[str]:
     """
     Use compressed local build context in order to prevent the need to commit every change.
     """
-    if is_local_build_context_in_use(lifecycle_url, manifest, local_context):
+    if build_context_method == BuildContextMethod.default:
+        build_context_method = _determine_default_build_context_method(lifecycle_url, manifest)
+    if build_context_method == BuildContextMethod.local:
         return encode_build_context(workdir)
-    return None
+    else:
+        return None
 
 
-def is_local_build_context_in_use(lifecycle_url: str, manifest: Manifest, local_context: Optional[bool]) -> bool:
+def _determine_default_build_context_method(lifecycle_url: str, manifest: Manifest) -> BuildContextMethod:
     """
     Decide whether to use local build context or to fetch source from git.
     It avoids fetching from remote git when using samples from local project repository.
     """
-    if local_context is not None:
-        return local_context
     if _is_url_localhost(lifecycle_url) and manifest.owner_email == 'sample@example.com':
         logger.warning('transferring build context due to local development')
-        return True
-    return False
+        return BuildContextMethod.local
+    return BuildContextMethod.git
 
 
 def _is_url_localhost(url: str) -> bool:

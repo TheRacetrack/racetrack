@@ -18,8 +18,12 @@ def set_credentials(repo_url: str, username: str, token_password: str):
 
 
 def set_current_remote(remote: str):
-    set_config_setting('lifecycle_url', remote)
-    logger.info(f'Current remote set to "{remote}"')
+    if remote:
+        set_config_setting('lifecycle_url', remote)
+        logger.info(f'Current remote set to "{remote}"')
+    else:
+        client_config = load_client_config()
+        logger.info(f'Current remote is "{client_config.lifecycle_url}"')
 
 
 def set_config_setting(setting_name: str, setting_value: str):

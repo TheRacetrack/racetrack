@@ -2,8 +2,8 @@ from typing import List
 import typer
 
 from racetrack_client import __version__
-from racetrack_client.client.deploy import send_deploy_request, DeploymentError
-from racetrack_client.client.manage import FatmenListColumn, move_fatman, delete_fatman, list_fatmen
+from racetrack_client.client.deploy import BuildContextMethod, send_deploy_request, DeploymentError
+from racetrack_client.client.manage import FatmenTableColumn, move_fatman, delete_fatman, list_fatmen
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
@@ -45,18 +45,12 @@ def _startup(
 @cli.command('deploy')
 def _deploy(
     workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
-    remote: str = typer.Argument(default=None, show_default=False, help='URL to Racetrack server or alias name'),
+    remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     force: bool = typer.Option(False, '--force', help='overwrite existing fatman'),
-    context_local: bool = typer.Option(False, '--context-local', help='force building fatman from local files'),
-    context_git: bool = typer.Option(False, '--context-git', help='force building fatman from git repository'),
+    build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building fatman from local files ("local") or from git repository ("git")'),
 ):
     """Send request deploying a Fatman to the Racetrack cluster"""
-    local_context = None
-    if context_local:
-        local_context = True
-    if context_git:
-        local_context = False
-    send_deploy_request(workdir, lifecycle_url=remote, force=force, local_context=local_context)
+    send_deploy_request(workdir, lifecycle_url=remote, force=force, build_context_method=build_context)
 
 
 @cli.command('validate')
@@ -69,8 +63,8 @@ def _validate(
 
 @cli.command('logs')
 def _logs(
-    name: str = typer.Option(..., show_default=False, help='name of the fatman'),
-    version: str = typer.Option(..., show_default=False, help='version of the fatman'),
+    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
+    version: str = typer.Option('latest', show_default=True, help='version of the fatman'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     tail: int = typer.Option(20, '--tail', help='number of recent lines to show'),
     follow: bool = typer.Option(False, '--follow', '-f', help='follow logs output stream'),
@@ -81,8 +75,8 @@ def _logs(
 
 @cli.command('build-logs')
 def _build_logs(
-    name: str = typer.Option(..., show_default=False, help='name of the fatman'),
-    version: str = typer.Option(..., show_default=False, help='version of the fatman'),
+    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
+    version: str = typer.Option('latest', show_default=True, help='version of the fatman'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     tail: int = typer.Option(0, '--tail', help='number of recent lines to show, all logs by default'),
 ):
@@ -93,7 +87,7 @@ def _build_logs(
 @cli.command('list')
 def _list_fatmen(
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
-    columns: List[FatmenListColumn] = typer.Option([], '--column', '-c', show_default=False, help='show additional columns'),
+    columns: List[FatmenTableColumn] = typer.Option([], '--column', '-c', show_default=False, help='Choose additional columns to show. "all" selects all columns.'),
 ):
     """List all deployed fatmen"""
     list_fatmen(remote, columns)
@@ -101,7 +95,7 @@ def _list_fatmen(
 
 @cli.command('delete')
 def _delete_fatman(
-    name: str = typer.Option(..., show_default=False, help='name of the fatman to delete'),
+    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option(..., show_default=False, help='version of the fatman to delete'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
 ):
@@ -111,7 +105,7 @@ def _delete_fatman(
 
 @cli.command('move')
 def _move_fatman(
-    name: str = typer.Option(..., show_default=False, help='name of the fatman to move out'),
+    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option(..., show_default=False, help='version of the fatman to move out'),
     infrastructure: str = typer.Option(..., show_default=False, help='infrastructure target to move on'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
@@ -125,16 +119,10 @@ def _run_local(
     workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
     port: int = typer.Option(default=None, show_default=False, help='HTTP port to run the server on'),
-    context_local: bool = typer.Option(False, '--context-local', help='force building fatman from local files'),
-    context_git: bool = typer.Option(False, '--context-git', help='force building fatman from git repository'),
+    build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building fatman from local files ("local") or from git repository ("git")'),
 ):
     """Run fatman locally"""
-    local_context = None
-    if context_local:
-        local_context = True
-    if context_git:
-        local_context = False
-    run_fatman_locally(workdir, remote, local_context=local_context, port=port)
+    run_fatman_locally(workdir, remote, build_context_method=build_context, port=port)
 
 
 @cli.command('version')
@@ -146,9 +134,9 @@ def _version():
 @cli.command('login')
 def _login(
     remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
-    user_token: str = typer.Argument(..., show_default=False, help='User token from RT user profile'),
+    user_token: str = typer.Argument(..., show_default=False, help='Racetrack Auth Token from Racetrack\'s user profile'),
 ):
-    """Save user token for Racetrack server"""
+    """Save user's Racetrack Auth Token for Racetrack server"""
     login_user_auth(remote, user_token)
 
 
@@ -156,7 +144,7 @@ def _login(
 def _logout(
     remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
 ):
-    """Remove user token for Racetrack server"""
+    """Remove user's Racetrack Auth Token for Racetrack server"""
     logout_user_auth(remote)
 
 
@@ -167,9 +155,9 @@ cli.add_typer(cli_config, name="config")
 
 @cli_config.command('remote')
 def _set_config_remote(
-    remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
+    remote: str = typer.Argument('', show_default=False, help='URL to Racetrack server or alias name'),
 ):
-    """Set default Racetrack URL address"""
+    """Set current Racetrack URL address"""
     set_current_remote(remote)
 
 
@@ -177,7 +165,7 @@ def _set_config_remote(
 def _set_config_racetrack_url(
     remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
 ):
-    """Set default Racetrack URL address"""
+    """Set current Racetrack URL address"""
     set_current_remote(remote)
 
 
