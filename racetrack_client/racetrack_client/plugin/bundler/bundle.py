@@ -19,10 +19,10 @@ PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
 def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional[str]):
     """Turn local plugin code into ZIP file"""
     plugin_dir = Path(workdir)
-    assert (plugin_dir / PLUGIN_FILENAME).is_file(), f'plugin directory should contain {PLUGIN_FILENAME} file'
+    assert (plugin_dir / PLUGIN_FILENAME).is_file(), f'{plugin_dir / PLUGIN_FILENAME} file was not found in a plugin directory'
 
     plugin_manifest_file = plugin_dir / PLUGIN_MANIFEST_FILENAME
-    assert plugin_manifest_file.is_file(), f'plugin directory should contain {PLUGIN_MANIFEST_FILENAME} file'
+    assert plugin_manifest_file.is_file(), f'{plugin_manifest_file} file was not found in a plugin directory'
     plugin_manifest = _load_plugin_manifest(plugin_manifest_file)
 
     if plugin_version:

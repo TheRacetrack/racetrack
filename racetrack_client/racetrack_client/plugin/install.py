@@ -163,6 +163,8 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
         f'https://api.github.com/repos/{gh_user}/{gh_repo}/releases',
         headers={
             'User-Agent': 'request',
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
         },
     )
 

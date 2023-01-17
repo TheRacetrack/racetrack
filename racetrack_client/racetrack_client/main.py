@@ -107,7 +107,7 @@ def _delete_fatman(
 def _move_fatman(
     name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option(..., show_default=False, help='version of the fatman to move out'),
-    infrastructure: str = typer.Option(..., show_default=False, help='infrastructure target to move on'),
+    infrastructure: str = typer.Option(..., show_default=False, help='infrastructure target to move in'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
 ):
     """Move fatman from one infrastructure target to another"""
@@ -212,7 +212,7 @@ cli.add_typer(cli_plugin, name="plugin")
 
 @cli_plugin.command('install')
 def _install_plugin(
-    plugin_uri: str = typer.Argument(..., show_default=False, help='location of the plugin file: local file path, URL to a remote HTTP file or repository name'),
+    plugin_uri: str = typer.Argument(..., show_default=False, help='location of the plugin file: local file path, HTTP URL to a remote file or repository name'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
 ):
     """Install a plugin to a remote Racetrack server"""
@@ -222,12 +222,11 @@ def _install_plugin(
 @cli_plugin.command('uninstall')
 def _uninstall_plugin(
     plugin_name: str = typer.Argument(..., show_default=False, help='name of the plugin'),
-    plugin_version: str = typer.Argument(..., show_default=False, help='version of the plugin'),
+    version: str = typer.Option(..., show_default=False, help='version of the plugin'),
     remote: str = typer.Option(default=None, show_default=False, help='URL to Racetrack server or alias name'),
-    
 ):
     """Uninstall plugin from a remote Racetrack server"""
-    uninstall_plugin(plugin_name, plugin_version, remote)
+    uninstall_plugin(plugin_name, version, remote)
 
 
 @cli_plugin.command('list')
