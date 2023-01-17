@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-import pytz
-
 
 def datetime_to_timestamp(dt: datetime) -> int:
     """Convert datetime.datetime to integer timestamp in seconds"""
@@ -21,7 +19,7 @@ def datetime_to_str(dt: datetime) -> str:
 
 def now() -> datetime:
     """Return current datetime with UTC timezone set"""
-    return datetime.now(tz=pytz.UTC)
+    return datetime.now(timezone.utc)
 
 
 def timestamp_pretty_ago(timestamp: int) -> str:
