@@ -428,7 +428,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.3] - 2021-11-22
 ### Changed
-- Fatman "dashboard" renamed to "webview". See [python3: Custom Webview UI](job_types/job_python3.md#custom-webview-ui-webview_app-method) 
+- Fatman "dashboard" renamed to "webview". See Python Job Type docs: Custom Webview UI.
 - On local dev Racetrack there's no need to commit every job change prior to deployment
   (it gets the working directory snapshot).
 
@@ -441,7 +441,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Labels are shown on a dashboard page besides fatman name.
 - Example input data (shown on Swagger UI) can be defined for auxiliary endpoints 
   by implementing `docs_input_examples`.
-  See [python3: Auxiliary endpoints](job_types/job_python3.md#auxiliary-endpoints-auxiliary_endpoints-method) 
+  See Python Job Type docs: Auxiliary endpoints
   section and [python-auxiliary-endpoints sample](../sample/python-auxiliary-endpoints).
 
 ### Fixed
@@ -475,7 +475,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Environment vars can be configured in manifest (including build time env, runtime env and secrets).
   Therefore, pip dependencies can be installed from a private repository. 
-  See [python3 Environment variables](job_types/job_python3.md#environment-variables) section.
+  See Python Job Type docs: Environment variables section.
 - Swagger UI allows to set `X-Racetrack-Caller` header for making authorized Fatman calls.
 - Dashboard profile shows a user token 
 - Racetrack client `deploy` and `logs` commands enforces logging with token

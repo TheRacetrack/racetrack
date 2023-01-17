@@ -7,9 +7,6 @@ If you are:
 - Racetrack User, see:
     - [User Guidelines](./user.md) - what is Racetrack, getting started, tutorial
     - [Fatman Manifest File Schema](./manifest-schema.md) - list of available YAML fields
-    - [Python Job Type](./job_types/job_python3.md) - specifics for jobs written in Python
-    - [Dockerfile Job Type](./job_types/job_docker.md) - Dockerfile jobs specifics
-    - [Golang Job Type](./job_types/job_golang.md) - for jobs written in Go
     - [Using plugins](./development/using-plugins.md) - 
       how to install plugins
     - [Glossary](./glossary.md) - terminology explained
