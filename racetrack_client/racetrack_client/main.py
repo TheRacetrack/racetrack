@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 cli = typer.Typer(
     no_args_is_help=True,
     name='racetrack',
-    help='CLI client tool for deploying workloads to Racetrack',
+    help='CLI client tool for managing workloads in Racetrack',
 )
 
 def main():
