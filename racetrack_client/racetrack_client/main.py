@@ -78,7 +78,7 @@ def main():
     parser_move.add_argument('--remote', type=str, help='Racetrack server\'s URL or alias name')
     parser_move.add_argument('--name', required=True, type=str, help='fatman name to move out')
     parser_move.add_argument('--version', required=True, type=str, help='fatman version to move out')
-    parser_move.add_argument('--infrastructure', required=True, type=str, help='infrastructure target to move on')
+    parser_move.add_argument('--infrastructure', required=True, type=str, help='infrastructure target to move to')
     parser_move.set_defaults(func=_move_fatman)
 
     # racetrack run-local
