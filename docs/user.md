@@ -552,7 +552,7 @@ Repositories](#repo-tokens) it can store Project/Personal Access Tokens.
 It is also possible to store the address of the Racetrack server:
 
 ```bash
-racetrack config racetrack_url http://localhost:7002
+racetrack config remote http://localhost:7002
 ```
 
 Local client configuration is stored at `~/.racetrack/config.yaml`
