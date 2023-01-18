@@ -54,7 +54,7 @@ def send_deploy_request(
     :param workdir: directory with fatman.yaml manifest
     :param manifest: manifest to overwrite (if not taken from workdir)
     :param client_config: client configuration to use (if not the defaullt)
-    :param lifecycle_url: URL to Racetrack server or alias name
+    :param lifecycle_url: Racetrack server's URL or alias name
     :param force: overwrite existing fatman without asking
     :param build_context_method: decides whether to build from local files or from git:
         local - build an image from local build context, 
