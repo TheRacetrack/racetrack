@@ -126,12 +126,14 @@ def view_administration(request):
         context['plugins'] = plugin_client.get_plugins_info()
         context['job_type_versions'] = plugin_client.get_job_type_versions()
         context['infrastructure_targets'] = plugin_client.get_infrastructure_targets()
-        _dict: dict = collections.defaultdict(list)
+
+        #Collect instances running on the same infrastructure
+        _infrastructure_instances: dict = collections.defaultdict(list)
         for instance, infrastructure in context['infrastructure_targets'].items():
             _versioned_name: str = infrastructure['name'] + ' (' + infrastructure['version'] + ')'
-            _dict[_versioned_name].append(instance)
+            _infrastructure_instances[_versioned_name].append(instance)
+        infrastructure_instances: dict[str, List[str]] = sorted(_infrastructure_instances.items())
 
-        infrastructure_instances: dict[str, List[str]] = sorted(_dict.items())
         context['infrastructure_instances'] = infrastructure_instances
     except Exception as e:
         log_exception(ContextError('Getting plugins data failed', e))
