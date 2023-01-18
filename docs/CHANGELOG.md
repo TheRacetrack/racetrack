@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Syntax of Racetrack client has been rearranged.
   Check out `racetrack --help` for more details.
-  Some notable changes:
+  Notable changes:
 
   - Racetrack URL is now called "remote" and can be usually set with an optional parameter `--remote alias`.
   - You can set the current remote once with `racetrack config remote ALIAS_OR_URL`
@@ -22,11 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Although `racetrack deploy [WORKDIR] [REMOTE]` syntax is still supported,
     it's deprecated and `racetrack deploy [WORKDIR] [--remote REMOTE]` should be used instead.
   - Automatic completion can be activated by running `racetrack --install-completion`. Then, you'll see relevant prompts after hitting `Tab`.
-  - `racetrack logs` and `racetrack build-logs` has now one required argument `NAME` and optional parameters: `[--version TEXT]` ("latest" by default) and `[--remote TEXT]`.
+  - `racetrack logs` and `racetrack build-logs` has now one required argument `NAME` and optional parameters: `[--version VERSION]` ("latest" by default) and `[--remote REMOTE]`.
     No need to pass workdir with a manifest file any longer.
-  - `racetrack delete NAME --version TEXT [--remote TEXT]` - fatman name and version is required.
+  - `racetrack delete NAME --version VERSION [--remote REMOTE]` - fatman name and version is required.
     No need to pass workdir with a manifest file any longer.
-  - `racetrack plugin install PLUGIN_URI [--remote TEXT]` - now remote is an optional parameter instead of required argument.
+  - `racetrack plugin install PLUGIN_URI [--remote REMOTE]` - now remote is an optional parameter instead of required argument.
 
 ## [2.7.0] - 2023-01-05
 ### Added

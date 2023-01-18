@@ -260,15 +260,17 @@ Job.
 ```bash
 # Login to Racetrack prior to deploying a job
 racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+# Set the current Racetrack remote address
+racetrack config remote http://localhost:7002
 # Activate python3 job type in the Racetrack
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 # Activate kubernetes infrastructure target in the Racetrack
-racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
 # go to the sample directory
 cd sample/python-class/
 # deploy from the current directory (.) to the Racetrack service which is
 # sitting on localhost inside KinD, listening on port 7002
-racetrack deploy . http://localhost:7002
+racetrack deploy
 ```
 
 After a pretty short time, the `racetrack` command will exit successfully and let you
@@ -415,13 +417,13 @@ deploy` invocations. You will need to obtain the Racetrack address instead of
 `localhost:7002`, so that:
 
 ```bash
-racetrack deploy my/awesome/job http://localhost:7002
+racetrack deploy my/awesome/job --remote http://localhost:7002
 ```
 
 becomes
 
 ```bash
-racetrack deploy my/awesome/job http://racetrack.platform.example.com:12345/lifecycle
+racetrack deploy my/awesome/job --remote http://racetrack.platform.example.com:12345/lifecycle
 ```
 
 Other endpoints described in the tutorial will also change away from
@@ -516,7 +518,13 @@ racetrack config alias set kind http://localhost:7002
 racetrack config alias set docker http://localhost:7102
 ```
 
-and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy . dev`.
+and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy . --remote dev`.
+
+You can set the current remote with
+```shell
+racetrack config remote RACETRACK_URL_OR_ALIAS
+```
+and then you can omit `--remote` parameter in next commands.
 
 ### The Fatman Manifest File Schema<a name="manifest-deep"></a>
 
@@ -592,7 +600,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 ### I've submitted a job, where can I see if it's ready?
 
-When you invoke `racetrack deploy . https://racetrack.platform.example.com/lifecycle`, the client will
+When you invoke `racetrack deploy . --remote https://racetrack.platform.example.com/lifecycle`, the client will
 block while the deploy operation is in progress. When the command terminates,
 unless you are given an error message, your job has been deployed into a Fatman.
 
@@ -661,9 +669,10 @@ docker system prune -a
 make kind-up
 # Wait 10 minutes
 make kind-test
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
-racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure http://localhost:7002
-racetrack deploy sample/python-class http://localhost:7002
+racetrack config remote http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
+racetrack deploy sample/python-class
 ```
 
 If it doesn't work, diagnostic commands:

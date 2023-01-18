@@ -158,7 +158,7 @@ cli.add_typer(cli_config, name="config")
 def _set_config_remote(
     remote: str = typer.Argument('', show_default=False, help='URL to Racetrack server or alias name'),
 ):
-    """Set current Racetrack URL address"""
+    """Set current Racetrack remote address"""
     set_current_remote(remote)
 
 
@@ -166,7 +166,7 @@ def _set_config_remote(
 def _set_config_racetrack_url(
     remote: str = typer.Argument(..., show_default=False, help='URL to Racetrack server or alias name'),
 ):
-    """Set current Racetrack URL address"""
+    """Set current Racetrack remote address"""
     set_current_remote(remote)
 
 
