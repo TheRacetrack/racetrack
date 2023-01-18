@@ -112,7 +112,7 @@ def move_fatman(
             provision_fatman(
                 config, manifest, fatman.image_tag, fatman_secrets.secret_build_env,
                 fatman_secrets.secret_runtime_env, deployment,
-                auth_subject, None, plugin_engine,
+                auth_subject, None, plugin_engine
             )
 
         with wrap_context('deleting fatman from a former infrastructure'):
