@@ -52,13 +52,16 @@
         <div class="card-body">
             <h5 class="card-title">Info</h5>
             <p>
-                Lifecycle server address: <a href="{{ lifecycle_url }}" target="_blank"> {{ lifecycle_url }}</a>
+                Racetrack remote address: <a href="{{ lifecycle_url }}" target="_blank"> {{ lifecycle_url }}</a>
             </p>
             <p>
-                To deploy here, run <span class="badge bg-info">racetrack deploy [manifest_path] {{ lifecycle_url }}</span>
+                To add it as alias, run <span class="badge bg-info">racetrack config alias set ALIAS_NAME {{ lifecycle_url }}</span>
             </p>
             <p>
-                To add it as alias, run <span class="badge bg-info">racetrack config alias set [alias_name] {{ lifecycle_url }}</span>
+                To set current remote, run: <span class="badge bg-info">racetrack config remote {{ lifecycle_url }}</span>
+            </p>
+            <p>
+                To deploy here, run <span class="badge bg-info">racetrack deploy MANIFEST_PATH --remote {{ lifecycle_url }}</span>
             </p>
         </div>
     </div>

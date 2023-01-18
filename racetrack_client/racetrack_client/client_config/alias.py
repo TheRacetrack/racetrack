@@ -2,7 +2,10 @@ from typing import Optional
 from urllib.parse import urlsplit
 
 from racetrack_client.client_config.client_config import ClientConfig
+from racetrack_client.log.logs import get_logger
 
+
+logger = get_logger(__name__)
 
 DEFAULT_LIFECYCLE_SCHEME = 'https'
 DEFAULT_LIFECYCLE_PATH = '/lifecycle'
@@ -20,6 +23,7 @@ def resolve_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[
 
 def _resolve_short_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[str]) -> str:
     if not lifecycle_name:
+        logger.debug(f'Using current remote: {client_config.lifecycle_url}')
         if client_config.lifecycle_url in client_config.lifecycle_url_aliases:
             return client_config.lifecycle_url_aliases[client_config.lifecycle_url]
         return client_config.lifecycle_url
