@@ -47,8 +47,7 @@
             {% if infrastructure_targets|length > 0 %}
                 <ul>
                 {% for infrastructure, instances in infrastructure_instances %}
-                <span>{{ infrastructure }}</span>
-                    <li>
+                    <li><span>{{ infrastructure }}</span>
                         <ul>
                         {% for instance in instances %}
                             <li>
