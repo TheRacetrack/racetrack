@@ -85,8 +85,8 @@
                                 <a href="{% url 'dashboard:plugin_config_editor' plugin.name plugin.version %}" class="btn btn-primary">Edit Config</a>
                                 <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
                             </div>
-                        </div>
                         {% endif %}
+                        </div>
                     </li>
                 {% endfor %}
                 </ul>
