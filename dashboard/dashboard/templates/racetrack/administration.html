@@ -48,13 +48,15 @@
                 <ul>
                 {% for infrastructure, instances in infrastructure_instances %}
                 <span>{{ infrastructure }}</span>
-                    <ul>
-                    {% for instance in instances %}
-                        <li>
-                            {{ instance }}
-                        </li>
-                    {% endfor %}
-                    </ul>
+                    <li>
+                        <ul>
+                        {% for instance in instances %}
+                            <li>
+                                {{ instance }}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </li>
                 {% endfor %}
                 </ul>
             {% else %}
