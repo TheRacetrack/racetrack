@@ -131,7 +131,7 @@ def view_administration(request):
         _infrastructure_instances: dict = collections.defaultdict(list)
         for infrastructure_name, plugin_manifest in context['infrastructure_targets'].items():
             _infrastructure_instances[plugin_manifest['name']].append(infrastructure_name)
-        infrastructure_instances: dict[str, List[str]] = sorted(_infrastructure_instances.items())
+        infrastructure_instances: list[tuple[str, List[str]]] = sorted(_infrastructure_instances.items())
 
         context['infrastructure_instances'] = infrastructure_instances
     except Exception as e:
