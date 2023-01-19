@@ -18,12 +18,18 @@ def resolve_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[
     If the name was not provided, return default URL.
     """
     short_url = _resolve_short_lifecycle_url(client_config, lifecycle_name)
-    return _infer_full_lifecycle_url(short_url)
+    resolved_url = _infer_full_lifecycle_url(short_url)
+    if not lifecycle_name:
+        remote_name = client_config.lifecycle_url
+        if remote_name == resolved_url:
+            logger.info(f'Using current remote: {remote_name}')
+        else:
+            logger.info(f'Using current remote: {remote_name} - {resolved_url}')
+    return resolved_url
 
 
 def _resolve_short_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[str]) -> str:
     if not lifecycle_name:
-        logger.debug(f'Using current remote: {client_config.lifecycle_url}')
         if client_config.lifecycle_url in client_config.lifecycle_url_aliases:
             return client_config.lifecycle_url_aliases[client_config.lifecycle_url]
         return client_config.lifecycle_url

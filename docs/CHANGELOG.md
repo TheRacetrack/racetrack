@@ -39,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - To set read-access credentials for a git repository,
     use `racetrack set credentials REPO_URL USERNAME TOKEN_PASSWORD`
     (former `racetrack config credentials set`).
+  - To save user's Racetrack Auth Token for Racetrack server,
+    use `racetrack login USER_TOKEN [--remote REMOTE]`
+    (former `racetrack login RACETRACK_URL USER_TOKEN`).
+  - `racetrack logout [--remote REMOTE]`
+    (former `racetrack logout RACETRACK_URL`).
 
 ## [2.7.0] - 2023-01-05
 ### Added

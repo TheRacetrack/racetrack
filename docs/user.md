@@ -258,10 +258,10 @@ The source code ships with a range of sample Jobs; you can find them in the path
 Job.
 
 ```bash
-# Login to Racetrack prior to deploying a job
-racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Set the current Racetrack's remote address
 racetrack set remote http://localhost:7002
+# Login to Racetrack prior to deploying a job
+racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 # Activate kubernetes infrastructure target in the Racetrack
@@ -365,7 +365,7 @@ Authentication applies to both deploying a fatman and calling it:
 
 - In order to deploy a fatman (or use other management commands), run `racetrack login` command with your token in first place. For instance:
   ```bash
-  racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+  racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI --remote http://localhost:7002
   ```
 - In order to call a fatman (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
   ```bash
@@ -443,7 +443,7 @@ so manage it carefully. Then notify your admin that he should activate your user
 
 When he does that, you can **Login**, and in the top right corner click **Profile**.
 There will be your user token for racetrack client CLI, along with ready command
-to login. It will look like `racetrack login <racetrack_url> <token>`. When you
+to login. It will look like `racetrack login <token> [--remote <remote>]`. When you
 run this, then you can finally deploy your Fatman.
 
 If you need, you can log out with `racetrack logout <racetrack_url>`. To check your

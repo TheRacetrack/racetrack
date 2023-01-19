@@ -132,10 +132,10 @@ def _version():
     print(f'racetrack-client version {__version__}')
 
 
-@cli.command('login')
+@cli.command('login', no_args_is_help=True)
 def _login(
-    remote: str = typer.Argument(..., show_default=False, help="Racetrack server's URL or alias name"),
     user_token: str = typer.Argument(..., show_default=False, help='Racetrack Auth Token from Racetrack\'s user profile'),
+    remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
     """Save user's Racetrack Auth Token for Racetrack server"""
     login_user_auth(remote, user_token)
@@ -143,7 +143,7 @@ def _login(
 
 @cli.command('logout')
 def _logout(
-    remote: str = typer.Argument(..., show_default=False, help="Racetrack server's URL or alias name"),
+    remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
     """Remove user's Racetrack Auth Token for Racetrack server"""
     logout_user_auth(remote)

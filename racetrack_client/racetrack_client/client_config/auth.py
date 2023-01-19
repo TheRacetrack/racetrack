@@ -18,6 +18,7 @@ def login_user_auth(lifecycle_url: str, user_auth: str):
 
 def logout_user_auth(lifecycle_url: str):
     client_config: ClientConfig = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     set_user_auth(client_config, lifecycle_url, "")
     save_client_config(client_config)
     logger.info(f'Logged out from Racetrack: {lifecycle_url}')
@@ -43,6 +44,6 @@ def get_user_auth(client_config: ClientConfig, lifecycle_url: str) -> str:
         return client_config.user_auths[lifecycle_url]
 
     if is_auth_required(lifecycle_url):
-        raise AuthError(f"missing auth token for {lifecycle_url}. You need to do: racetrack login {lifecycle_url} <token>")
+        raise AuthError(f"missing auth token for {lifecycle_url}. You need to do: racetrack login <token> --remote {lifecycle_url}")
 
     return ''

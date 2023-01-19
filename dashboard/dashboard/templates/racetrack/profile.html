@@ -40,7 +40,7 @@
             <div class="form-group row">
                 <label for="racetrack-cli-login" class="form-label">Run this in CLI to deploy Fatmen to this Racetrack: </label>
                 <div class="d-flex">
-                    <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
+                    <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login --remote {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
                     <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'racetrack-cli-login')">Copy</button>
                 </div>
             </div>
