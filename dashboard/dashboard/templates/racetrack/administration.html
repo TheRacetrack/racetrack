@@ -46,9 +46,15 @@
             Available Infrastructure Targets:
             {% if infrastructure_targets|length > 0 %}
                 <ul>
-                {% for infrastructure_target, plugin_manifest in infrastructure_targets.items %}
-                    <li>
-                        <span><b>{{ infrastructure_target }}</b> (by plugin {{ plugin_manifest.name }} {{ plugin_manifest.version }})</span>
+                {% for infrastructure, instances in infrastructure_instances %}
+                    <li><span>{{ infrastructure }}</span>
+                        <ul>
+                        {% for instance in instances %}
+                            <li>
+                                {{ instance }}
+                            </li>
+                        {% endfor %}
+                        </ul>
                     </li>
                 {% endfor %}
                 </ul>
@@ -66,14 +72,20 @@
                 <ul>
                 {% for plugin in plugins %}
                     <li>
-                        <span>{{ plugin.name }} (version {{ plugin.version }})</span>
-                        {% if plugin.url %}
-                        <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
+                        <div class="row py-1">
+                            <div class="col-md-9">
+                                <span>{{ plugin.name }} (version {{ plugin.version }})</span>
+                            {% if plugin.url %}
+                                <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
+                            </div>
+                            {% endif %}
+                            {% if user.is_staff %}
+                            <div class="col-md-3 text-end">
+                                <a href="{% url 'dashboard:plugin_config_editor' plugin.name plugin.version %}" class="btn btn-primary">Edit Config</a>
+                                <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
+                            </div>
                         {% endif %}
-                        {% if user.is_staff %}
-                        <a href="{% url 'dashboard:plugin_config_editor' plugin.name plugin.version %}" class="btn btn-primary align-self-start">Edit Config</a>
-                        <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
-                        {% endif %}
+                        </div>
                     </li>
                 {% endfor %}
                 </ul>

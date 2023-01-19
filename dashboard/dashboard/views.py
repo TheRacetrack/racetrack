@@ -1,4 +1,5 @@
 import logging
+import collections
 from typing import Dict, List
 
 from django.conf import settings
@@ -125,6 +126,14 @@ def view_administration(request):
         context['plugins'] = plugin_client.get_plugins_info()
         context['job_type_versions'] = plugin_client.get_job_type_versions()
         context['infrastructure_targets'] = plugin_client.get_infrastructure_targets()
+
+        #Collect instances running on the same infrastructure
+        _infrastructure_instances: dict = collections.defaultdict(list)
+        for infrastructure_name, plugin_manifest in context['infrastructure_targets'].items():
+            _infrastructure_instances[plugin_manifest['name']].append(infrastructure_name)
+        infrastructure_instances: list[tuple[str, List[str]]] = sorted(_infrastructure_instances.items())
+
+        context['infrastructure_instances'] = infrastructure_instances
     except Exception as e:
         log_exception(ContextError('Getting plugins data failed', e))
         context['error'] = str(e)
