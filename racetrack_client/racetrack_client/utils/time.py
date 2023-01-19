@@ -64,6 +64,7 @@ def timestamp_pretty_ago(timestamp: int) -> str:
 
 
 def nullable_timestamp_pretty_ago(timestamp: Optional[int]) -> str:
+    """Convert past date to user-friendly description or "never" if it's empty"""
     if not timestamp:
         return 'never'
     return timestamp_pretty_ago(timestamp)

@@ -8,7 +8,6 @@ and you submit it to Racetrack. A short while after, the service calling your co
 
 # Installation
 Install racetrack-client using pip:
-
 ```bash
 pip3 install racetrack-client
 ```
@@ -20,13 +19,6 @@ python3.8 -m pip install racetrack-client
 ```
 
 This will install `racetrack` CLI tool. Verify installation by running `racetrack`.
-
-## Colorful output
-If you want to see the colorful output, install these additional packages:
-
-```shell
-pip3 install rich colorama shellingham
-```
 
 # Usage
 Run `racetrack --help` to see usage.

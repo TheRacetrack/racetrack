@@ -260,7 +260,7 @@ Job.
 ```bash
 # Login to Racetrack prior to deploying a job
 racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
-# Set the current Racetrack remote address
+# Set the current Racetrack's remote address
 racetrack config remote http://localhost:7002
 # Activate python3 job type in the Racetrack
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
@@ -524,7 +524,7 @@ You can set the current remote with
 ```shell
 racetrack config remote RACETRACK_URL_OR_ALIAS
 ```
-and then you can omit `--remote` parameter in next commands.
+and then you can omit `--remote` parameter in the next commands.
 
 ### The Fatman Manifest File Schema<a name="manifest-deep"></a>
 
