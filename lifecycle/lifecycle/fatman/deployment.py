@@ -39,7 +39,7 @@ def create_deployment(
 
 
 def check_for_concurrent_deployments(manifest: Manifest):
-    update_time_after = now() - timedelta(minutes=5)
+    update_time_after = now() - timedelta(minutes=1)
     deployments_queryset = models.Deployment.objects.filter(
         status=DeploymentStatus.IN_PROGRESS.value,
         fatman_name=manifest.name,
