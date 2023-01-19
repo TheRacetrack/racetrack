@@ -129,9 +129,9 @@ def view_administration(request):
 
         #Collect instances running on the same infrastructure
         _infrastructure_instances: dict = collections.defaultdict(list)
-        for instance, infrastructure in context['infrastructure_targets'].items():
-            _versioned_name: str = infrastructure['name'] + ' (' + infrastructure['version'] + ')'
-            _infrastructure_instances[_versioned_name].append(instance)
+        for infrastructure_name, plugin_manifest in context['infrastructure_targets'].items():
+            _versioned_name: str = plugin_manifest['name'] + ' (' + plugin_manifest['version'] + ')'
+            _infrastructure_instances[_versioned_name].append(infrastructure_name)
         infrastructure_instances: dict[str, List[str]] = sorted(_infrastructure_instances.items())
 
         context['infrastructure_instances'] = infrastructure_instances
