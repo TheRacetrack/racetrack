@@ -7,7 +7,7 @@ from racetrack_client.client.manage import FatmenTableColumn, move_fatman, delet
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
-from racetrack_client.client_config.update import set_credentials, set_current_remote, set_config_url_alias
+from racetrack_client.client_config.update import set_credentials, set_current_remote, get_current_remote, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
 from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
 from racetrack_client.client.run import run_fatman_locally
@@ -62,7 +62,7 @@ def _validate(
     validate_and_show_manifest(path)
 
 
-@cli.command('logs')
+@cli.command('logs', no_args_is_help=True)
 def _logs(
     name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option('latest', show_default=True, help='version of the fatman'),
@@ -74,7 +74,7 @@ def _logs(
     show_runtime_logs(name, version, remote, tail, follow)
 
 
-@cli.command('build-logs')
+@cli.command('build-logs', no_args_is_help=True)
 def _build_logs(
     name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option('latest', show_default=True, help='version of the fatman'),
@@ -94,7 +94,7 @@ def _list_fatmen(
     list_fatmen(remote, columns)
 
 
-@cli.command('delete')
+@cli.command('delete', no_args_is_help=True)
 def _delete_fatman(
     name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option(..., show_default=False, help='version of the fatman to delete'),
@@ -104,7 +104,7 @@ def _delete_fatman(
     delete_fatman(name, version, remote)
 
 
-@cli.command('move')
+@cli.command('move', no_args_is_help=True)
 def _move_fatman(
     name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
     version: str = typer.Option(..., show_default=False, help='version of the fatman to move out'),
@@ -149,69 +149,59 @@ def _logout(
     logout_user_auth(remote)
 
 
-# racetrack config ...
-cli_config = typer.Typer(no_args_is_help=True, help='Manage local options for a Racetrack client')
-cli.add_typer(cli_config, name="config")
+# racetrack set ...
+cli_set = typer.Typer(no_args_is_help=True, help='Set global options of the Racetrack client')
+cli.add_typer(cli_set, name="set")
 
-
-@cli_config.command('remote')
-def _set_config_remote(
+@cli_set.command('remote', no_args_is_help=True)
+def _set_remote(
     remote: str = typer.Argument('', show_default=False, help="Racetrack server's URL or alias name"),
 ):
-    """Set current Racetrack remote address"""
+    """Set current Racetrack's remote address"""
     set_current_remote(remote)
 
 
-@cli_config.command('racetrack_url', deprecated=True)
-def _set_config_racetrack_url(
-    remote: str = typer.Argument(..., show_default=False, help="Racetrack server's URL or alias name"),
-):
-    """Set current Racetrack remote address"""
-    set_current_remote(remote)
-
-
-@cli_config.command('show')
-def _show_config():
-    """Show racetrack config values"""
-    client_config = load_client_config()
-    print(datamodel_to_yaml_str(client_config))
-
-
-# racetrack config credentials ...
-cli_config_credentials = typer.Typer(no_args_is_help=True, help='Manage credentials for git repository access')
-cli_config.add_typer(cli_config_credentials, name="credentials")
-
-
-@cli_config_credentials.command('set')
-def _set_config_credentials(
+@cli_set.command('credentials', no_args_is_help=True)
+def _set_credentials(
     repo_url: str = typer.Argument(..., show_default=False, help='URL of git remote for one of your fatmen'),
     username: str = typer.Argument(..., show_default=False, help='username for git authentication'),
     token_password: str = typer.Argument(..., show_default=False, help='password or token for git authentication'),
 ):
-    """Set credentials for reading git repository"""
+    """Set read-access credentials for a git repository to build images from"""
     set_credentials(repo_url, username, token_password)
 
 
-# racetrack config alias ...
-cli_config_alias = typer.Typer(no_args_is_help=True, help='Manage aliases for Racetrack server URLs')
-cli_config.add_typer(cli_config_alias, name="alias")
-
-
-@cli_config_alias.command('set')
-def _set_config_url_alias(
+@cli_set.command('alias', no_args_is_help=True)
+def _set_alias(
     alias: str = typer.Argument(..., show_default=False, help='short name for an environment'),
     racetrack_url: str = typer.Argument(..., show_default=False, help='URL address of a remote Racetrack server'),
 ):
-    """Set up an alias for Racetrack remote URL"""
+    """Set up an alias for Racetrack's remote URL"""
     set_config_url_alias(alias, racetrack_url)
+
+
+# racetrack get ...
+cli_get = typer.Typer(no_args_is_help=True, help='Read global options of the Racetrack client')
+cli.add_typer(cli_get, name="get")
+
+@cli_get.command('remote')
+def _get_remote():
+    """Get current Racetrack's remote address"""
+    get_current_remote()
+
+
+@cli_get.command('config')
+def _get_config():
+    """Show all racetrack config values"""
+    client_config = load_client_config()
+    print(datamodel_to_yaml_str(client_config))
 
 
 # racetrack plugin ...
 cli_plugin = typer.Typer(no_args_is_help=True, help='Manage Racetrack plugins')
 cli.add_typer(cli_plugin, name="plugin")
 
-
-@cli_plugin.command('install')
+@cli_plugin.command('install', no_args_is_help=True)
 def _install_plugin(
     plugin_uri: str = typer.Argument(..., show_default=False, help='location of the plugin file: local file path, HTTP URL to a remote file or repository name'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
@@ -220,7 +210,7 @@ def _install_plugin(
     install_plugin(plugin_uri, remote)
 
 
-@cli_plugin.command('uninstall')
+@cli_plugin.command('uninstall', no_args_is_help=True)
 def _uninstall_plugin(
     plugin_name: str = typer.Argument(..., show_default=False, help='name of the plugin'),
     version: str = typer.Option(..., show_default=False, help='version of the plugin'),

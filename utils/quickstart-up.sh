@@ -34,7 +34,7 @@ echo "Logging in to Racetrack as admin user..."
 racetrack login http://localhost:7102 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 
 echo "Setting current Racetrack remote..."
-racetrack config remote http://localhost:7102
+racetrack set remote http://localhost:7102
 
 echo "Installing python3 job type in Racetrack..."
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type

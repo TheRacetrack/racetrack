@@ -43,8 +43,8 @@ Then, you can visit http://localhost:7103 to see the Racetrack Dashboard (defaul
 Lifecycle server runs on http://localhost:7102 (it's the URL you deploy your jobs there).
 Let's create a "dev" alias for it and set it as a current remote:
 ```bash
-racetrack config alias set dev http://localhost:7102
-racetrack config remote dev
+racetrack set alias dev http://localhost:7102
+racetrack set remote dev
 ```
 
 Login to Racetrack prior to deploying a job (you can find it in the "Profile" tab of the Dashboard):

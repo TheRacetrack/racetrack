@@ -87,7 +87,7 @@ where `plugin_uri` can be either:
 
 In first place, choose the current remote address so you can omit `--remote` parameter later on:
 ```shell
-racetrack config remote http://localhost:7002 # use local kind setup
+racetrack set remote http://localhost:7002 # use local kind setup
 ```
 
 For instance, use the following command to activate the latest python3 plugin:

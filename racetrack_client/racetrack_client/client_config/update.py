@@ -1,6 +1,7 @@
 from typing import Dict
 
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.io import load_client_config, save_client_config
 from racetrack_client.client_config.client_config import Credentials, ClientConfig
 from racetrack_client.utils.url import trim_url
@@ -18,12 +19,18 @@ def set_credentials(repo_url: str, username: str, token_password: str):
 
 
 def set_current_remote(remote: str):
-    if remote:
-        set_config_setting('lifecycle_url', remote)
-        logger.info(f'Current remote set to "{remote}"')
+    set_config_setting('lifecycle_url', remote)
+    logger.info(f'Current remote set to "{remote}"')
+
+
+def get_current_remote():
+    client_config = load_client_config()
+    remote_name = client_config.lifecycle_url
+    remote_url = resolve_lifecycle_url(client_config, remote_name)
+    if remote_name == remote_url:
+        logger.info(f'Current remote is "{remote_name}"')
     else:
-        client_config = load_client_config()
-        logger.info(f'Current remote is "{client_config.lifecycle_url}"')
+        logger.info(f'Current remote is "{remote_name}" - {remote_url}')
 
 
 def set_config_setting(setting_name: str, setting_value: str):
