@@ -21,8 +21,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 1,
-  "iteration": 1658224133400,
+  "id": 3,
+  "iteration": 1674230877281,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -135,35 +135,12 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false
           },
           "mappings": [],
           "thresholds": {
@@ -190,18 +167,15 @@
       },
       "id": 29,
       "options": {
-        "legend": {
-          "calcs": [
-            "last"
+        "footer": {
+          "fields": [],
+          "reducer": [
+            "sum"
           ],
-          "displayMode": "table",
-          "placement": "right",
-          "sortBy": "Last",
-          "sortDesc": true
+          "show": true
         },
-        "tooltip": {
-          "mode": "single"
-        }
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "8.3.3",
       "targets": [
@@ -210,15 +184,39 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "exemplar": true,
-          "expr": "endpoint_requests_started_total{job=~\"$job_name\"}",
+          "exemplar": false,
+          "expr": "max_over_time(endpoint_requests_started_total{job=~\"$job_name\"}[$__range]) - min_over_time(endpoint_requests_started_total{job=~\"$job_name\"}[$__range])",
+          "format": "table",
+          "hide": false,
+          "instant": true,
           "interval": "",
           "legendFormat": "{{job}} {{endpoint}}",
           "refId": "A"
         }
       ],
-      "title": "Total calls",
-      "type": "timeseries"
+      "title": "Total calls (in the selected range)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "instance": true
+            },
+            "indexByName": {
+              "Time": 3,
+              "Value": 2,
+              "endpoint": 1,
+              "instance": 4,
+              "job": 0
+            },
+            "renameByName": {
+              "Value": "Total calls"
+            }
+          }
+        }
+      ],
+      "type": "table"
     },
     {
       "fieldConfig": {
@@ -1175,7 +1173,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "15s",
+  "refresh": false,
   "schemaVersion": 34,
   "style": "dark",
   "tags": [],
