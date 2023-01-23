@@ -98,14 +98,14 @@ func handleProxyRequest(
 	}
 
 	targetUrl := TargetURL(cfg, fatman, c.Request.URL.Path)
-	ServeReverseProxy(targetUrl, c, fatmanName, fatman.Version, cfg, logger, requestId)
+	ServeReverseProxy(targetUrl, c, fatman, cfg, logger, requestId)
 	return 200, nil
 }
 
 func ServeReverseProxy(
 	target url.URL,
 	c *gin.Context,
-	fatmanName, fatmanVersion string,
+	fatman *FatmanDetails,
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
@@ -136,21 +136,22 @@ func ServeReverseProxy(
 
 		res.Header.Set(cfg.RequestTracingHeader, requestId)
 		logger.Info("Proxy request done", log.Ctx{
-			"fatmanName":    fatmanName,
-			"fatmanVersion": fatmanVersion,
+			"fatmanName":    fatman.Name,
+			"fatmanVersion": fatman.Version,
 			"fatmanPath":    target.Path,
 			"status":        res.StatusCode,
 		})
 		statusCode := strconv.Itoa(res.StatusCode)
-		metricFatmanProxyResponseCodes.WithLabelValues(fatmanName, fatmanVersion, statusCode).Inc()
+		metricFatmanProxyResponseCodes.WithLabelValues(fatman.Name, fatman.Version, statusCode).Inc()
 		return nil
 	}
 
 	errorHandler := func(res http.ResponseWriter, req *http.Request, err error) {
 		errorStr := err.Error()
 		logger.Error("Reverse proxy error", log.Ctx{
-			"fatmanName":    fatmanName,
-			"fatmanVersion": fatmanVersion,
+			"fatmanName":    fatman.Name,
+			"fatmanVersion": fatman.Version,
+			"fatmanStatus":  fatman.Status,
 			"host":          target.Host,
 			"path":          target.Path,
 			"error":         errorStr,
@@ -158,10 +159,9 @@ func ServeReverseProxy(
 		c.JSON(http.StatusBadGateway, gin.H{
 			"error":         fmt.Sprintf("Reverse proxy error: %s", errorStr),
 			"status":        http.StatusText(http.StatusBadGateway),
-			"fatmanName":    fatmanName,
-			"fatmanVersion": fatmanVersion,
-			"host":          target.Host,
-			"path":          target.Path,
+			"fatmanName":    fatman.Name,
+			"fatmanVersion": fatman.Version,
+			"fatmanStatus":  fatman.Status,
 			"requestId":     requestId,
 		})
 		metricFatmanProxyErrors.Inc()
@@ -173,15 +173,15 @@ func ServeReverseProxy(
 		ErrorHandler:   errorHandler,
 	}
 
-	metricFatmanProxyRequestsStarted.WithLabelValues(fatmanName, fatmanVersion).Inc()
+	metricFatmanProxyRequestsStarted.WithLabelValues(fatman.Name, fatman.Version).Inc()
 	fatmanCallStartTime := time.Now()
 
 	proxy.ServeHTTP(c.Writer, c.Request)
 
 	fatmanCallTime := time.Since(fatmanCallStartTime).Seconds()
-	metricFatmanCallResponseTimeHistogram.WithLabelValues(fatmanName, fatmanVersion).Observe(fatmanCallTime)
-	metricFatmanCallResponseTime.WithLabelValues(fatmanName, fatmanVersion).Add(fatmanCallTime)
-	metricFatmanProxyRequestsDone.WithLabelValues(fatmanName, fatmanVersion).Inc()
+	metricFatmanCallResponseTimeHistogram.WithLabelValues(fatman.Name, fatman.Version).Observe(fatmanCallTime)
+	metricFatmanCallResponseTime.WithLabelValues(fatman.Name, fatman.Version).Add(fatmanCallTime)
+	metricFatmanProxyRequestsDone.WithLabelValues(fatman.Name, fatman.Version).Inc()
 }
 
 func getRequestTracingId(req *http.Request, headerName string) string {
