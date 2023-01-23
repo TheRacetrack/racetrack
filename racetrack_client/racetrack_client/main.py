@@ -155,7 +155,7 @@ cli.add_typer(cli_set, name="set")
 
 @cli_set.command('remote', no_args_is_help=True)
 def _set_remote(
-    remote: str = typer.Argument('', show_default=False, help="Racetrack server's URL or alias name"),
+    remote: str = typer.Argument(..., show_default=False, help="Racetrack server's URL or alias name"),
 ):
     """Set current Racetrack's remote address"""
     set_current_remote(remote)
