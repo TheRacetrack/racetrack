@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -31,7 +32,11 @@ func proxyEndpoint(c *gin.Context, cfg *Config) {
 			"error":  errorStr,
 			"path":   c.Request.URL.Path,
 		})
-		http.Error(c.Writer, errorStr, statusCode)
+		c.JSON(statusCode, gin.H{
+			"error":     fmt.Sprintf("Proxy request error: %s", errorStr),
+			"status":    http.StatusText(statusCode),
+			"requestId": requestId,
+		})
 	}
 	metricOverallFatmanProxyResponseTime.Add(time.Since(startTime).Seconds())
 }
@@ -93,14 +98,13 @@ func handleProxyRequest(
 	}
 
 	targetUrl := TargetURL(cfg, fatman, c.Request.URL.Path)
-	ServeReverseProxy(targetUrl, c.Writer, c.Request, fatmanName, fatman.Version, cfg, logger, requestId)
+	ServeReverseProxy(targetUrl, c, fatmanName, fatman.Version, cfg, logger, requestId)
 	return 200, nil
 }
 
 func ServeReverseProxy(
 	target url.URL,
-	res http.ResponseWriter,
-	pubReq *http.Request,
+	c *gin.Context,
 	fatmanName, fatmanVersion string,
 	cfg *Config,
 	logger log.Logger,
@@ -111,7 +115,7 @@ func ServeReverseProxy(
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.URL.Path = target.Path
-		req.Host = pubReq.Host
+		req.Host = c.Request.Host
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Set(cfg.RequestTracingHeader, requestId)
 		req.RequestURI = ""
@@ -143,12 +147,22 @@ func ServeReverseProxy(
 	}
 
 	errorHandler := func(res http.ResponseWriter, req *http.Request, err error) {
+		errorStr := err.Error()
 		logger.Error("Reverse proxy error", log.Ctx{
 			"fatmanName":    fatmanName,
 			"fatmanVersion": fatmanVersion,
 			"host":          target.Host,
 			"path":          target.Path,
-			"error":         err.Error(),
+			"error":         errorStr,
+		})
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error":         fmt.Sprintf("Reverse proxy error: %s", errorStr),
+			"status":        http.StatusText(http.StatusBadGateway),
+			"fatmanName":    fatmanName,
+			"fatmanVersion": fatmanVersion,
+			"host":          target.Host,
+			"path":          target.Path,
+			"requestId":     requestId,
 		})
 		metricFatmanProxyErrors.Inc()
 	}
@@ -162,7 +176,7 @@ func ServeReverseProxy(
 	metricFatmanProxyRequestsStarted.WithLabelValues(fatmanName, fatmanVersion).Inc()
 	fatmanCallStartTime := time.Now()
 
-	proxy.ServeHTTP(res, pubReq)
+	proxy.ServeHTTP(c.Writer, c.Request)
 
 	fatmanCallTime := time.Since(fatmanCallStartTime).Seconds()
 	metricFatmanCallResponseTimeHistogram.WithLabelValues(fatmanName, fatmanVersion).Observe(fatmanCallTime)
