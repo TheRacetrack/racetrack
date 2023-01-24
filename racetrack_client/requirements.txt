@@ -2,3 +2,4 @@ PyYAML >= 5.4
 pydantic >= 1.9, < 2
 backoff >= 1.10
 python-socketio >= 5.4
+typer[all] >= 0.7.0

@@ -41,24 +41,25 @@ make compose-up
 Then, you can visit http://localhost:7103 to see the Racetrack Dashboard (default user/password: admin/admin).
 
 Lifecycle server runs on http://localhost:7102 (it's the URL you deploy your jobs there).
-Let's create a "dev" alias for it:
+Let's create a "dev" alias for it and set it as a current remote:
 ```bash
-racetrack config alias set dev http://localhost:7102
+racetrack set alias dev http://localhost:7102
+racetrack set remote dev
 ```
 
 Login to Racetrack prior to deploying a job (you can find it in the "Profile" tab of the Dashboard):
 ```bash
-racetrack login dev eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 ```
 
 Activate `python3` job type in the Racetrack by installing the plugin:
 ```bash
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type dev
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 ```
 
 Finally, you can deploy some jobs there, eg.:
 ```bash
-racetrack deploy sample/python-class dev
+racetrack deploy sample/python-class
 ```
 
 After all, run `make clean` to dismantle the local instance.
@@ -87,7 +88,7 @@ Notes:
 Submitting a job:
 
 ```bash
-racetrack deploy sample/python-class/ http://localhost:7202
+racetrack deploy sample/python-class/ --remote http://localhost:7202
 ```
 
 New container should be created. It can be accessed at http://localhost:7000
@@ -109,7 +110,7 @@ Fatmen can also run as local docker containers.
 Submitting a job:
 
 ```bash
-racetrack deploy sample/python-class/ http://localhost:7102
+racetrack deploy sample/python-class/ --remote http://localhost:7102
 # or: compose-deploy-sample
 ```
 
@@ -123,7 +124,7 @@ A Kubernetes cluster in a Docker container. `make kind-up` to set it up,
 Submitting a job:
 
 ```bash
-racetrack deploy sample/python-class/ http://localhost:7002
+racetrack deploy sample/python-class/ --remote http://localhost:7002
 # or make kind-deploy-sample
 ```
 
@@ -178,7 +179,7 @@ curl -k -X POST "https://<cluster ip>/pub/fatman/adder/latest/api/v1/perform" \
 Enter directory with `fatman.yaml` and issue:
 
 ```
-racetrack deploy . https://racetrack.<cluster name>/lifecycle
+racetrack deploy . --remote https://racetrack.<cluster name>/lifecycle
 ```
 
 See [User Guide](../user.md) for more details on how to deploy a job

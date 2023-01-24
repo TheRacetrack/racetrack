@@ -30,7 +30,7 @@ def list_fatmen_registry(config: Config, auth_subject: Optional[models.AuthSubje
         return list_permitted_fatmen(auth_subject, AuthScope.READ_FATMAN.value, fatmen)
 
 
-def list_fatman_families(auth_subject: Optional[models.AuthSubject] = None) -> Iterable[FatmanFamilyDto]:
+def list_fatman_families(auth_subject: Optional[models.AuthSubject] = None) -> List[FatmanFamilyDto]:
     """List fatmen getting results from registry (Database)"""
     if auth_subject is None:
         return [fatman_family_model_to_dto(family) for family in models_registry.list_fatman_family_models()]

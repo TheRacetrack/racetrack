@@ -8,7 +8,7 @@ from racetrack_client.manifest.load import load_manifest_dict_from_yaml, load_ma
 
 def load_merged_manifest(manifest_path: Path) -> Manifest:
     """Load manifest from YAML file, resolve overlay layer, merging it with base manifest"""
-    with wrap_context('loading manifest dict'):
+    with wrap_context('loading manifest'):
         manifest_dict = load_manifest_dict_from_yaml(manifest_path)
 
     extends = manifest_dict.get('extends')

@@ -73,7 +73,7 @@ To disable a plugin, click "Delete" button next to a plugin.
 
 ### From a racetrack-client
 Plugins can be installed by means of racetrack-client command
-`racetrack plugin install <plugin_uri> <racetrack_url>`,
+`racetrack plugin install <plugin_uri> [--remote <racetrack_url>]`,
 where `plugin_uri` can be either:
 
 - local file path (eg. `python3-job-type-2.4.0.zip`),
@@ -85,23 +85,22 @@ where `plugin_uri` can be either:
   it takes the ZIP file from the specific release.
   Pay attention to omit `https://` part.
 
-For instance, use the following command to activate the latest python3 plugin on your local kind setup:
+In first place, choose the current remote address so you can omit `--remote` parameter later on:
+```shell
+racetrack set remote http://localhost:7002 # use local kind setup
 ```
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
+
+For instance, use the following command to activate the latest python3 plugin:
+```shell
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 ```
 
 Plugins can be uninstalled with a command:
-```
-racetrack plugin uninstall <plugin_name> <plugin_version> <racetrack_url>
+```shell
+racetrack plugin uninstall <plugin_name> <plugin_version>
 ```
 
 List of currently installed plugins can be checked with:
-```
-racetrack plugin list <racetrack_url>
-```
-
-`<racetrack_url>` argument is not needed in above commands,
-once you specified the current remote address with:
-```
-racetrack config racetrack_url <name_or_url>
+```shell
+racetrack plugin list
 ```

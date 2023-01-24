@@ -4,7 +4,7 @@ import backoff
 from racetrack_client.utils.shell import CommandError, shell
 from racetrack_client.utils.time import datetime_to_timestamp, now
 
-from racetrack_client.client.deploy import DEPLOYMENT_TIMEOUT_SECS, DeploymentError, get_build_context, get_deploy_request_payload, get_git_credentials
+from racetrack_client.client.deploy import DEPLOYMENT_TIMEOUT_SECS, BuildContextMethod, DeploymentError, get_build_context, get_deploy_request_payload, get_git_credentials
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.manifest.validate import load_validated_manifest
 from racetrack_client.log.logs import get_logger
@@ -22,7 +22,7 @@ FATMAN_INTERNAL_PORT = 7000  # Fatman listening port seen from inside the contai
 def run_fatman_locally(
     workdir: str, 
     lifecycle_url: str, 
-    local_context: Optional[bool] = None,
+    build_context_method: BuildContextMethod = BuildContextMethod.default,
     port: Optional[int] = None,
 ):
     client_config = load_client_config()
@@ -33,7 +33,7 @@ def run_fatman_locally(
 
     logger.info(f'building workspace "{workdir}" (job {manifest.name} v{manifest.version}) by {lifecycle_url}')
 
-    build_context = get_build_context(lifecycle_url, workdir, manifest, local_context)
+    build_context = get_build_context(lifecycle_url, workdir, manifest, build_context_method)
     git_credentials = get_git_credentials(manifest, client_config)
     secret_vars = read_secret_vars(workdir, manifest)
 

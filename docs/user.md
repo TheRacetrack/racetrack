@@ -258,17 +258,19 @@ The source code ships with a range of sample Jobs; you can find them in the path
 Job.
 
 ```bash
+# Set the current Racetrack's remote address
+racetrack set remote http://localhost:7002
 # Login to Racetrack prior to deploying a job
-racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 # Activate kubernetes infrastructure target in the Racetrack
-racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
 # go to the sample directory
 cd sample/python-class/
 # deploy from the current directory (.) to the Racetrack service which is
 # sitting on localhost inside KinD, listening on port 7002
-racetrack deploy . http://localhost:7002
+racetrack deploy
 ```
 
 After a pretty short time, the `racetrack` command will exit successfully and let you
@@ -363,7 +365,7 @@ Authentication applies to both deploying a fatman and calling it:
 
 - In order to deploy a fatman (or use other management commands), run `racetrack login` command with your token in first place. For instance:
   ```bash
-  racetrack login http://localhost:7002 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+  racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI --remote http://localhost:7002
   ```
 - In order to call a fatman (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
   ```bash
@@ -415,13 +417,13 @@ deploy` invocations. You will need to obtain the Racetrack address instead of
 `localhost:7002`, so that:
 
 ```bash
-racetrack deploy my/awesome/job http://localhost:7002
+racetrack deploy my/awesome/job --remote http://localhost:7002
 ```
 
 becomes
 
 ```bash
-racetrack deploy my/awesome/job http://racetrack.platform.example.com:12345/lifecycle
+racetrack deploy my/awesome/job --remote http://racetrack.platform.example.com:12345/lifecycle
 ```
 
 Other endpoints described in the tutorial will also change away from
@@ -441,11 +443,11 @@ so manage it carefully. Then notify your admin that he should activate your user
 
 When he does that, you can **Login**, and in the top right corner click **Profile**.
 There will be your user token for racetrack client CLI, along with ready command
-to login. It will look like `racetrack login <racetrack_url> <token>`. When you
+to login. It will look like `racetrack login <token> [--remote <remote>]`. When you
 run this, then you can finally deploy your Fatman.
 
 If you need, you can log out with `racetrack logout <racetrack_url>`. To check your
-logged servers, there's `racetrack config show` command.
+logged servers, there's `racetrack get config` command.
 
 You can view the Fatman swagger page if you're logged to Racetrack Dashboard, on
 which Fatman is displayed. Session is maintained through cookie. 
@@ -490,7 +492,7 @@ In both cases it has to have `read_repository` privilege.
 Once you have this token, you need to register it with the `racetrack` CLI tool:
 
 ```bash
-racetrack config credentials set repo_url username token
+racetrack set credentials repo_url username token
 ```
 where:
 
@@ -504,19 +506,25 @@ where:
 
 You can set up aliases for Racetrack server URL addresses by issuing command:
 ```bash
-racetrack config alias set ALIAS RACETRACK_URL
+racetrack set alias ALIAS RACETRACK_URL
 ```
 
 If you operate with many environments, setting short names may come in handy. For instance:
 ```bash
-racetrack config alias set dev https://racetrack.dev.platform.example.com/lifecycle
-racetrack config alias set test https://racetrack.test.platform.example.com/lifecycle
-racetrack config alias set prod https://racetrack.prod.platform.example.com/lifecycle
-racetrack config alias set kind http://localhost:7002
-racetrack config alias set docker http://localhost:7102
+racetrack set alias dev https://racetrack.dev.platform.example.com/lifecycle
+racetrack set alias test https://racetrack.test.platform.example.com/lifecycle
+racetrack set alias prod https://racetrack.prod.platform.example.com/lifecycle
+racetrack set alias kind http://localhost:7002
+racetrack set alias docker http://localhost:7102
 ```
 
-and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy . dev`.
+and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy . --remote dev`.
+
+You can set the current remote with
+```shell
+racetrack set remote RACETRACK_URL_OR_ALIAS
+```
+and then you can omit `--remote` parameter in the next commands.
 
 ### The Fatman Manifest File Schema<a name="manifest-deep"></a>
 
@@ -544,7 +552,7 @@ Repositories](#repo-tokens) it can store Project/Personal Access Tokens.
 It is also possible to store the address of the Racetrack server:
 
 ```bash
-racetrack config racetrack_url http://localhost:7002
+racetrack set remote http://localhost:7002
 ```
 
 Local client configuration is stored at `~/.racetrack/config.yaml`
@@ -592,7 +600,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 ### I've submitted a job, where can I see if it's ready?
 
-When you invoke `racetrack deploy . https://racetrack.platform.example.com/lifecycle`, the client will
+When you invoke `racetrack deploy . --remote https://racetrack.platform.example.com/lifecycle`, the client will
 block while the deploy operation is in progress. When the command terminates,
 unless you are given an error message, your job has been deployed into a Fatman.
 
@@ -661,9 +669,10 @@ docker system prune -a
 make kind-up
 # Wait 10 minutes
 make kind-test
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7002
-racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure http://localhost:7002
-racetrack deploy sample/python-class http://localhost:7002
+racetrack set remote http://localhost:7002
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
+racetrack deploy sample/python-class
 ```
 
 If it doesn't work, diagnostic commands:

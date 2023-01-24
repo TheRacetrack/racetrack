@@ -3,7 +3,7 @@ import os
 from typing import Any
 
 from racetrack_client.utils.auth import RT_AUTH_HEADER
-from racetrack_client.utils.request import Requests, parse_response, parse_response_object
+from racetrack_client.utils.request import Requests, parse_response, parse_response_object, parse_response_list
 from racetrack_client.utils.url import trim_url
 
 
@@ -32,7 +32,7 @@ class LifecycleClient:
                              f'{self._lifecycle_api_url}{path}',
                              headers=self._get_auth_headers(),
                              **kwargs)
-        return parse_response_object(r, 'Lifecycle response')
+        return parse_response_list(r, 'Lifecycle response')
 
     def _get_auth_headers(self) -> dict[str, str | None]:
         return {
