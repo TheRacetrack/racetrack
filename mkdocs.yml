@@ -8,6 +8,7 @@ theme:
   name: material
   icon:
     repo: fontawesome/brands/github
+    logo: material/car-sports
   palette:
     - scheme: default
       primary: indigo
