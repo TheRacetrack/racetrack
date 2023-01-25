@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `racetrack logout [--remote REMOTE]`
     (former `racetrack logout RACETRACK_URL`).
 
+- In case of problems with reaching the Job,
+  PUB shows the error page (JSON with the meaningful reason), instead of a white page of death.
+- The "Open" button gets hidden on the Dashboard for jobs that are not *Running*.
+
 ## [2.7.0] - 2023-01-05
 ### Added
 - Every plugin can have its own configuration, stored in a YAML file.
