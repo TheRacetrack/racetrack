@@ -142,6 +142,6 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         }
 
     @api.get('/job_type/versions')
-    def _get_job_type_versions():
+    def _get_job_type_versions() -> List[str]:
         """List available job type versions"""
         return list_available_job_types(plugin_engine)

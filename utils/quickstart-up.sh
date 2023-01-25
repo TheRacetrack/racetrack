@@ -30,14 +30,17 @@ LIFECYCLE_URL=http://localhost:7102 bash wait-for-lifecycle.sh
 echo "Installing racetrack-client..."
 pip3 install --upgrade racetrack-client
 
+echo "Setting current Racetrack remote..."
+racetrack set remote http://localhost:7102
+
 echo "Logging in to Racetrack as admin user..."
-racetrack login http://localhost:7102 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 
 echo "Installing python3 job type in Racetrack..."
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type http://localhost:7102
+racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 
 echo "Installing docker infrastructure plugin in Racetrack..."
-racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure http://localhost:7102
+racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure
 
 echo "Preparing sample job to be deployed..."
 mkdir -p sample

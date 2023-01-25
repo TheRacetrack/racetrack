@@ -63,7 +63,7 @@ python:
 
 Finally, submit your job to Racetrack:
 ```shell
-racetrack deploy sample/ http://localhost:7102 --context-local
+racetrack deploy sample/ --remote http://localhost:7102
 ```
 
 This will convert your source code to a REST microservice workload, called "Fatman".

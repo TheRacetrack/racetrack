@@ -8,6 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - A fatman can be moved from one infrastructure target to another by using a new CLI command.
   Check out `racetrack move --help`.
+- A new command `racetrack list` allows to fetch the list of all deployed fatmen with the selected columns.
+  See `racetrack list --help` for more details.
+
+### Changed
+- Syntax of Racetrack client has been rearranged.
+  Check out `racetrack --help` for more details.
+  Notable changes:
+
+  - Racetrack URL is now called "remote" and it can be explicitly set with an optional parameter
+    `--remote alias` in most of the commands. "Remote" can be a direct URL or an alias.
+  - The current remote can be set once with `racetrack set remote ALIAS_OR_URL`
+    and then you can omit `--remote` parameter in the next commands like `racetrack list`.
+    Check your current remote with `racetrack get remote`.
+  - Although `racetrack deploy [WORKDIR] [REMOTE]` syntax is still supported,
+    it's deprecated now and `racetrack deploy [WORKDIR] [--remote REMOTE]` should be used instead.
+  - Automatic completion can be activated by running `racetrack --install-completion`.
+    Then, you'll see relevant prompts after hitting `Tab`.
+  - To show the runtime logs, use `racetrack logs NAME [--version VERSION] [--remote REMOTE]`.
+    No need to pass workdir with a manifest file any longer.
+  - To show the build logs, use `racetrack build-logs NAME [--version VERSION] [--remote REMOTE]`.
+    No need to pass workdir with a manifest file any longer.
+  - To delete a fatman, use new syntax: `racetrack delete NAME --version VERSION [--remote REMOTE]` -
+    fatman name and version is now required.
+    No need to pass workdir with a manifest file any longer.
+  - `racetrack plugin install PLUGIN_URI [--remote REMOTE]` -
+    "remote" is now an optional parameter instead of a required argument.
+  - To set up an alias for Racetrack's remote URL, use `racetrack set alias ALIAS RACETRACK_URL`
+    (former `racetrack config alias set`).
+  - To set read-access credentials for a git repository,
+    use `racetrack set credentials REPO_URL USERNAME TOKEN_PASSWORD`
+    (former `racetrack config credentials set`).
+  - To save user's Racetrack Auth Token for Racetrack server,
+    use `racetrack login USER_TOKEN [--remote REMOTE]`
+    (former `racetrack login RACETRACK_URL USER_TOKEN`).
+  - `racetrack logout [--remote REMOTE]`
+    (former `racetrack logout RACETRACK_URL`).
 
 ## [2.7.0] - 2023-01-05
 ### Added

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
@@ -16,6 +16,7 @@ from lifecycle.fatman.registry import (
 from lifecycle.fatman.public_endpoints import read_active_fatman_public_endpoints
 from lifecycle.fatman.logs import read_build_logs, read_runtime_logs
 from lifecycle.auth.authenticate import get_username_from_token
+from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 
@@ -90,13 +91,13 @@ def setup_fatman_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         infrastructure_target: str = Field(description='text content of configuration file')
 
     @api.get('/fatman')
-    def _list_all_fatmen(request: Request):
+    def _list_all_fatmen(request: Request) -> List[FatmanDto]:
         """Get list of deployed Fatman"""
         auth_subject = check_auth(request, scope=AuthScope.READ_FATMAN)
         return list_fatmen_registry(config, auth_subject)
 
     @api.get('/fatman_family')
-    def _get_fatman_family(request: Request):
+    def _get_fatman_family(request: Request) -> List[FatmanFamilyDto]:
         """Get list of deployed Fatman Families (names regardless version)"""
         auth_subject = check_auth(request, scope=AuthScope.READ_FATMAN)
         return list_fatman_families(auth_subject)

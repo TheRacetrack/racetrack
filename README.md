@@ -53,7 +53,7 @@ python:
 You can
 
 ```bash
-racetrack deploy . https://your-server.example.com
+racetrack deploy
 ```
 
 And the result is a micro-service with an API:

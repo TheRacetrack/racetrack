@@ -478,5 +478,5 @@ Don't forget to push the fatman code to a git repository.
 
 Finally, we can deploy this fatman to Racetrack:
 ```bash
-racetrack deploy . dev
+racetrack deploy
 ```

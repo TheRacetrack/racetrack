@@ -168,7 +168,7 @@ compose-down: docker-clean-fatman
 
 compose-deploy-sample:
 	LIFECYCLE_URL=http://localhost:7102 ./utils/wait-for-lifecycle.sh
-	racetrack deploy sample/python-class/ http://localhost:7102 --force
+	racetrack deploy sample/python-class/ --remote http://localhost:7102 --force
 
 compose-logs:
 	$(docker-compose) logs lifecycle lifecycle-supervisor image-builder dashboard pub -f
@@ -254,7 +254,7 @@ kind-logs:
 
 kind-deploy-sample:
 	LIFECYCLE_URL=http://localhost:7002 ./utils/wait-for-lifecycle.sh
-	racetrack deploy sample/python-class/ http://localhost:7002 --force
+	racetrack deploy sample/python-class/ --remote http://localhost:7002 --force
 
 clean: compose-down kind-down
 

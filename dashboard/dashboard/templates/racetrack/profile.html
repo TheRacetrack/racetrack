@@ -40,7 +40,7 @@
             <div class="form-group row">
                 <label for="racetrack-cli-login" class="form-label">Run this in CLI to deploy Fatmen to this Racetrack: </label>
                 <div class="d-flex">
-                    <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
+                    <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login --remote {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
                     <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'racetrack-cli-login')">Copy</button>
                 </div>
             </div>
@@ -52,13 +52,16 @@
         <div class="card-body">
             <h5 class="card-title">Info</h5>
             <p>
-                Lifecycle server address: <a href="{{ lifecycle_url }}" target="_blank"> {{ lifecycle_url }}</a>
+                Racetrack's remote address: <a href="{{ lifecycle_url }}" target="_blank"> {{ lifecycle_url }}</a>
             </p>
             <p>
-                To deploy here, run <span class="badge bg-info">racetrack deploy [manifest_path] {{ lifecycle_url }}</span>
+                To add it as alias, run <span class="badge bg-info">racetrack set alias ALIAS_NAME {{ lifecycle_url }}</span>
             </p>
             <p>
-                To add it as alias, run <span class="badge bg-info">racetrack config alias set [alias_name] {{ lifecycle_url }}</span>
+                To set the current remote, run: <span class="badge bg-info">racetrack set remote {{ lifecycle_url }}</span>
+            </p>
+            <p>
+                To deploy here, run <span class="badge bg-info">racetrack deploy MANIFEST_PATH --remote {{ lifecycle_url }}</span>
             </p>
         </div>
     </div>

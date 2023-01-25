@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, Request
 
-from racetrack_client.utils.request import Requests, parse_response_object
+from racetrack_client.utils.request import Requests, parse_response_list
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
@@ -21,7 +21,7 @@ class PluginUpdate(BaseModel):
 def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
 
     @api.get('/plugin', response_model=List[PluginManifest])
-    def _info_plugins():
+    def _info_plugins() -> List[PluginManifest]:
         """Get List of loaded plugins with their versions"""
         return plugin_engine.plugin_manifests
 
@@ -59,16 +59,16 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         check_staff_user(request)
         return plugin_engine.write_plugin_config(plugin_name, plugin_version, payload.config_data)
 
-    @api.get('/plugin/{plugin_name}/docs', response_model=Optional[str])
-    def _info_plugin_docs(plugin_name: str):
+    @api.get('/plugin/{plugin_name}/docs')
+    def _info_plugin_docs(plugin_name: str) -> Optional[str]:
         """Get documentation for this plugin in markdown format"""
         return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.markdown_docs)
 
     @api.get('/plugin/job_type/versions')
-    def _get_job_type_versions():
+    def _get_job_type_versions() -> list[str]:
         """List available job type versions"""
         r = Requests.get(f'{config.image_builder_url}/api/v1/job_type/versions')
-        return parse_response_object(r, 'Image builder API error')
+        return parse_response_list(r, 'Image builder API error')
 
     @api.get('/plugin/infrastructure_targets')
     def _get_infrastructure_targets() -> dict[str, PluginManifest]:

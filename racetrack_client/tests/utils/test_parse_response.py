@@ -1,7 +1,7 @@
 import pytest
 import httpretty
 
-from racetrack_client.utils.request import Requests, parse_response, parse_response_object
+from racetrack_client.utils.request import Requests, parse_response, parse_response_object, parse_response_list
 
 _url = 'http://localhost/blahblah'
 
@@ -20,6 +20,22 @@ def test_response_json():
     parsed = parse_response_object(response, 'deploying error')
 
     assert parsed == {'result': 'ok'}
+
+
+@httpretty.activate(verbose=True, allow_net_connect=False)
+def test_response_json_list():
+    httpretty.register_uri(
+        httpretty.GET,
+        _url,
+        status=200,
+        body='[{"result": "ok"}]',
+        content_type='application/json',
+    )
+
+    response = Requests.get(_url)
+    parsed = parse_response_list(response, 'deploying error')
+
+    assert parsed == [{'result': 'ok'}]
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)

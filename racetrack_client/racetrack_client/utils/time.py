@@ -63,6 +63,13 @@ def timestamp_pretty_ago(timestamp: int) -> str:
     return f"{day_diff // 365} years ago"
 
 
+def nullable_timestamp_pretty_ago(timestamp: Optional[int]) -> str:
+    """Convert past date to user-friendly description or "never" if it's empty"""
+    if not timestamp:
+        return 'never'
+    return timestamp_pretty_ago(timestamp)
+
+
 def days_ago(timestamp: Optional[int]) -> Optional[float]:
     """Return number of days ago from given timestamp"""
     if not timestamp:
