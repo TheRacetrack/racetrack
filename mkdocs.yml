@@ -52,6 +52,7 @@ nav:
     - User Guide: docs/user.md
     - Fatman Manifest File Schema: docs/manifest-schema.md
     - Permission model: docs/permissions.md
+    - CLI client: racetrack_client/README.md
   - Plugins:
     - Using plugins: docs/development/using-plugins.md
     - Developing plugins: docs/development/developing-plugins.md
