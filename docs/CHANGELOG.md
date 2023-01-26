@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.8.0] - 2023-01-26
 ### Added
-- A fatman can be moved from one infrastructure target to another by using a new CLI command.
+- A job can be moved from one infrastructure target to another by using a new CLI command.
   Check out `racetrack move --help`.
 - A new command `racetrack list` allows to fetch the list of all deployed fatmen with the selected columns.
   See `racetrack list --help` for more details.
@@ -29,8 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     No need to pass workdir with a manifest file any longer.
   - To show the build logs, use `racetrack build-logs NAME [--version VERSION] [--remote REMOTE]`.
     No need to pass workdir with a manifest file any longer.
-  - To delete a fatman, use new syntax: `racetrack delete NAME --version VERSION [--remote REMOTE]` -
-    fatman name and version is now required.
+  - To delete a job, use new syntax: `racetrack delete NAME --version VERSION [--remote REMOTE]` -
+    job name and version is now required.
     No need to pass workdir with a manifest file any longer.
   - `racetrack plugin install PLUGIN_URI [--remote REMOTE]` -
     "remote" is now an optional parameter instead of a required argument.
@@ -47,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - In case of problems with reaching the Job,
   PUB shows the error page (JSON with the meaningful reason), instead of a white page of death.
-- The "Open" button gets hidden on the Dashboard for jobs that are not *Running*.
+- The "Open" button gets deactivated on the Dashboard for jobs that are not *Running*.
 
 ## [2.7.0] - 2023-01-05
 ### Added
