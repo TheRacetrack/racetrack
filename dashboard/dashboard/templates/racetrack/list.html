@@ -83,7 +83,17 @@
 
                         <div class="mt-2">
                             <div class="btn-group" role="group">
-                                <a href="{{ external_pub_url }}/fatman/{{ fatman.name }}/{{ fatman.version }}" class="btn btn-outline-primary align-middle" target="_blank" rel="noopener noreferrer">Open</a>
+                                {% if fatman.status == "running" %}
+                                <a href="{{ external_pub_url }}/fatman/{{ fatman.name }}/{{ fatman.version }}"
+                                    class="btn btn-outline-primary align-middle"
+                                    target="_blank" rel="noopener noreferrer">Open</a>
+                                {% else %}
+                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Job isn't healthy">
+                                <a href="{{ external_pub_url }}/fatman/{{ fatman.name }}/{{ fatman.version }}"
+                                    class="btn btn-outline-primary align-middle disabled"
+                                    target="_blank" rel="noopener noreferrer" aria-disabled="true">Open</a>
+                                </span>
+                                {% endif %}
 
                                 <div class="btn-group" role="group">
                                     <button id="btnGroupLogs-{{ fatman.id }}" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
