@@ -102,7 +102,7 @@ See the [Documentation](https://theracetrack.github.io/racetrack/) for more deta
 
 ## About
 
-Racetrack is copyright The Danish Business Authority 2022.
+This software is copyright Erhvervsstyrelsen.
 It is published under the [Apache 2.0 License](./LICENSE).
 See [Copyright Notices](./docs/license/copyright-notices.md).
 

@@ -175,3 +175,92 @@ https://github.com/kubernetes/kubectl
 These files are available under Apache License 2.0 License, which you can find at https://github.com/kubernetes/kubectl/blob/master/LICENSE
 
 ----------------------------------------------------------------------
+
+This project uses pydantic (unmodified)
+
+https://github.com/pydantic/pydantic
+
+Copyright (c) 2017 - 2022 Samuel Colvin and other contributors
+
+These files are available under MIT License, which you can find at https://github.com/pydantic/pydantic/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses PyYAML (unmodified)
+
+https://github.com/yaml/pyyaml
+
+Copyright (c) 2017-2021 Ingy döt Net
+Copyright (c) 2006-2016 Kirill Simonov
+
+These files are available under MIT License, which you can find at https://github.com/yaml/pyyaml/blob/master/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses Jinja (unmodified)
+
+https://github.com/pallets/jinja/
+
+Copyright 2007 Pallets
+
+These files are available under BSD 3-Clause License, which you can find at https://github.com/pallets/jinja/blob/main/LICENSE.rst
+
+----------------------------------------------------------------------
+
+This project uses Typer (unmodified)
+
+https://github.com/tiangolo/typer
+
+Copyright (c) 2019 Sebastián Ramírez
+
+These files are available under MIT License, which you can find at https://github.com/tiangolo/typer/blob/master/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses Gin Web Framework (unmodified)
+
+https://github.com/gin-gonic/gin
+
+Copyright (c) 2014 Manuel Martínez-Almeida
+
+These files are available under MIT License, which you can find at https://github.com/gin-gonic/gin/blob/master/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses "errors" (unmodified)
+
+https://github.com/pkg/errors
+
+Copyright (c) 2015, Dave Cheney <dave@cheney.net>
+
+These files are available under BSD 2-Clause License, which you can find at https://github.com/pkg/errors/blob/master/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses OpenTelemetry-Go (unmodified)
+
+https://github.com/open-telemetry/opentelemetry-go
+
+These files are available under Apache License 2.0 License, which you can find at https://github.com/open-telemetry/opentelemetry-go/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses PyJWT (unmodified)
+
+https://github.com/jpadilla/pyjwt
+
+Copyright (c) 2015-2022 José Padilla
+
+These files are available under MIT License, which you can find at https://github.com/jpadilla/pyjwt/blob/master/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses Uvicorn (unmodified)
+
+https://github.com/encode/uvicorn
+
+Copyright © 2017-present, Encode OSS Ltd. All rights reserved.
+
+These files are available under BSD 3-Clause License, which you can find at https://github.com/encode/uvicorn/blob/master/LICENSE.md
+
+----------------------------------------------------------------------
