@@ -11,6 +11,8 @@ from urllib.parse import urlencode
 
 from racetrack_client.log.context_error import ContextError
 
+DEBUG_MODE = False  # print the actual bytes sent in requests and responses
+
 
 class RequestError(ContextError):
     """HTTP Request error due to network error, bad URL, unreachable address"""
@@ -190,7 +192,17 @@ class Requests:
         if timeout is not None:
             kwargs['timeout'] = timeout
 
+        if not req.has_header('User-Agent'):
+            req.add_header('User-Agent', 'request')
+
         kwargs['context'] = cls._get_ssl_context()
+
+        if DEBUG_MODE:
+            http_handler = request.HTTPHandler(debuglevel=2)
+            https_handler = request.HTTPSHandler(context=kwargs['context'], debuglevel=2)
+            opener = request.build_opener(http_handler, https_handler)
+            request.install_opener(opener)
+            del kwargs['context']
 
         try:
             http_response: HTTPResponse = request.urlopen(req, **kwargs)
@@ -265,7 +277,7 @@ def parse_response(response: Response, error_context: str) -> Optional[Union[Dic
 def parse_response_object(response: Response, error_context: str) -> Dict:
     try:
         if 'application/json' not in response.headers['content-type']:
-            raise RuntimeError('expected JSON response')
+            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}" for url: {response.url}')
 
         result = response.json()
 
@@ -283,7 +295,7 @@ def parse_response_object(response: Response, error_context: str) -> Dict:
 def parse_response_list(response: Response, error_context: str) -> List:
     try:
         if 'application/json' not in response.headers['content-type']:
-            raise RuntimeError('expected JSON response')
+            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}" for url: {response.url}')
 
         result = response.json()
 
