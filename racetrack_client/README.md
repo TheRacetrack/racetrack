@@ -65,13 +65,22 @@ racetrack set credentials https://github.com/YourUser/YourRepository USERNAME TO
 ### Installing plugins
 Extend Racetrack's possibilities by installing a bunch of plugins:
 ```shell
+# This plugin allows you to deploy jobs written in Python
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
+
+# This plugin allows you to deploy jobs to a local Docker infrastructure
 racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure
 ```
 
+Plugins can only be installed by admin users.
+
 ### Deploying a job
+When your code is ready and you pushed your changes to a repository, it's time to deploy it;
+that means, upload it to Racetrack so it can become a proper running Job.
+
 To deploy a job, just run it in the place where `fatman.yaml` is located:
 ```shell
+cd MuffinDestroyer
 racetrack deploy 
 ```
 
@@ -86,11 +95,11 @@ racetrack list
 ### Checking runtime logs
 Check the logs of a running job by means of:
 ```shell
-racetrack logs my-job-name
+racetrack logs MuffinDestroyer
 ```
 
 ### Deleting a job
-Decommission your running job with:
+Delete your running job with:
 ```shell
-racetrack delete my-job-name
+racetrack delete MuffinDestroyer
 ```
