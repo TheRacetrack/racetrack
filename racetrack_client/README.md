@@ -9,7 +9,7 @@ and you submit it to Racetrack. A short while after, the service calling your co
 ## Quickstart
 ```shell
 # Install racetrack-client
-pip3 install racetrack-client
+python3 -m pip install --upgrade racetrack-client
 
 # Set current remote
 racetrack set remote https://racetrack.platform.example.com
@@ -24,7 +24,7 @@ racetrack deploy
 ## Installation
 Install racetrack-client using pip:
 ```shell
-pip3 install racetrack-client
+python3 -m pip install --upgrade racetrack-client
 ```
 
 Python 3.8 (or higher) is required.
@@ -40,6 +40,9 @@ you can add this remote as an alias:
 ```shell
 racetrack set alias my-dev https://racetrack.platform.example.com/lifecycle
 ```
+
+Alias is a short, friendly name for the URL of your Racetrack server, which is also known as "remote".
+From now on, you can refer to your remote with an alias.
 
 ### Switching remotes
 Set your current remote with:

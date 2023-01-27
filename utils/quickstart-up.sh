@@ -28,7 +28,7 @@ echo "Waiting until Racetrack is operational..."
 LIFECYCLE_URL=http://localhost:7102 bash wait-for-lifecycle.sh
 
 echo "Installing racetrack-client..."
-pip3 install --upgrade racetrack-client
+python3 -m pip install --upgrade racetrack-client
 
 echo "Setting current Racetrack remote..."
 racetrack set remote http://localhost:7102
