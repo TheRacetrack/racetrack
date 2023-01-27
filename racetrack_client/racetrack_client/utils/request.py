@@ -202,6 +202,8 @@ class Requests:
             https_handler = request.HTTPSHandler(context=kwargs['context'], debuglevel=2)
             opener = request.build_opener(http_handler, https_handler)
             request.install_opener(opener)
+            # Passing 'context' argument to urllib.request.urlopen rebuilds the URL opener,
+            # not giving a chance to turn the debug mode on.
             del kwargs['context']
 
         try:
