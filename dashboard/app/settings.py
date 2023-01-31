@@ -143,5 +143,6 @@ SESSION_COOKIE_NAME = 'racetrack_sessionid'
 
 LOGIN_URL = '/dashboard/accounts/login'
 LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/dashboard/accounts/login'
 
 RUNNING_ON_LOCALHOST = (DJANGO_DB_TYPE == 'sqlite')
