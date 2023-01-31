@@ -81,6 +81,7 @@ services:
       DOCKER_TLS_CERTDIR: ''
       DOCKER_HOST: tcp://docker-engine:2375
       CONFIG_FILE: /etc/racetrack/image-builder/compose.yaml
+      LIFECYCLE_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY
 
   dashboard:
     container_name: dashboard
