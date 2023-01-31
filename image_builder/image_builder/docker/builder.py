@@ -58,44 +58,46 @@ class DockerBuilder(ImageBuilder):
             progress = f'({image_index+1}/{images_num})'
             build_progress = f'({image_index*2+1}/{images_num*2})'  # 2 actual builds (base + final) per job's image
 
-            with wrap_context(f'building base image {progress}'):
-                update_deployment_phase(config, deployment_id, f'building image {build_progress}')
-                base_image = _build_base_image(
-                    config, job_type, image_index, deployment_id, metric_labels, build_progress,
-                )
-
-            build_progress = f'({image_index*2+2}/{images_num*2})'
-            template_path = job_type.template_paths[image_index]
-            if template_path is None:
-                assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
-                dockerfile_path = workspace / manifest.docker.dockerfile_path
-            else:
-                with wrap_context(f'templating Dockerfile {progress}'):
-                    dockerfile_path = workspace / f'.fatman-{image_index}.Dockerfile'
-                    racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
-                    template_dockerfile(manifest, template_path, dockerfile_path, base_image,
-                                        git_version, racetrack_version, job_type.version, env_vars)
-
             try:
-                with wrap_context(f'building fatman image {progress}'):
+                with wrap_context(f'building base image {progress}'):
+                    update_deployment_phase(config, deployment_id, f'building image {build_progress}')
+                    base_image = _build_base_image(
+                        config, job_type, image_index, deployment_id, metric_labels, build_progress,
+                    )
+
+                build_progress = f'({image_index*2+2}/{images_num*2})'
+                template_path = job_type.template_paths[image_index]
+                if template_path is None:
+                    assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
+                    dockerfile_path = workspace / manifest.docker.dockerfile_path
+                else:
+                    with wrap_context(f'templating Dockerfile {progress}'):
+                        dockerfile_path = workspace / f'.fatman-{image_index}.Dockerfile'
+                        racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
+                        template_dockerfile(manifest, template_path, dockerfile_path, base_image,
+                                            git_version, racetrack_version, job_type.version, env_vars)
+
+                with wrap_context(f'building job image {progress}'):
                     fatman_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
-                    logger.info(f'building Fatman image {progress}: {fatman_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
+                    logger.info(f'building Job image {progress}: {fatman_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
                     update_deployment_phase(config, deployment_id, f'building image {build_progress}')
                     logs += build_container_image(
                         config, fatman_image, dockerfile_path, workspace, metric_labels,
                         logs_filename, deployment_id, build_progress,
                     )
-                    logger.info(f'Fatman image {progress} has been built: {fatman_image}')
-                        
+                    logger.info(f'Job image {progress} has been built: {fatman_image}')
+
                 built_images.append(fatman_image)
                 metric_images_built.inc()
-            except CommandError as e:
+            except ContextError as e:
                 metric_images_building_errors.inc()
-                logger.error(f'building Fatman image {progress}: {e}')
-                return built_images, e.stdout, f'building Fatman image {progress}: {e}'
+                if isinstance(e.__cause__, CommandError):
+                    logger.error(f'building Job image {progress}: {e}')
+                    return built_images, e.__cause__.stdout, f'building Job image {progress}: {e}'
+                raise ContextError(f'building Job image {progress}') from e
             except Exception as e:
                 metric_images_building_errors.inc()
-                raise ContextError(f'building Fatman image {progress}') from e
+                raise ContextError(f'building Job image {progress}') from e
 
         return built_images, logs, None
 
