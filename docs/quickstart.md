@@ -31,7 +31,7 @@ Racetrack is now ready to accept `python3` jobs at [localhost:7102](http://local
 
 Install `racetrack` CLI client:
 ```
-pip3 install --upgrade racetrack-client
+python3 -m pip install --upgrade racetrack-client
 ```
 
 ## 4. Deploy a Job

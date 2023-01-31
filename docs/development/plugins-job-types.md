@@ -428,7 +428,7 @@ Local source code of the plugin can be turned into a ZIP file
 by means of a `racetrack` client tool.
 Install it with: 
 ```shell
-pip3 install racetrack-client
+python3 -m pip install --upgrade racetrack-client
 ```
 
 Let's run `racetrack plugin bundle` in a directory where the plugin is located (`rust-job-type` dir)

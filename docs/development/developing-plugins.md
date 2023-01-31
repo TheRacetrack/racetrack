@@ -55,7 +55,7 @@ by means of a `racetrack` client tool.
 
 1. Install `racetrack` client:
   ```shell
-  pip3 install racetrack-client
+  python3 -m pip install --upgrade racetrack-client
   ```
 2. Go to the directory where your plugin is located.
 3. Make sure the plugin version inside `plugin-manifest.yaml` is up-to-date.
