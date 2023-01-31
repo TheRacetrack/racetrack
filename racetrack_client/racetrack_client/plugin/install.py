@@ -162,7 +162,7 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
     r = Requests.get(
         f'https://api.github.com/repos/{gh_user}/{gh_repo}/releases',
         headers={
-            'User-Agent': 'request',
+            'User-Agent': 'racetrack-client',
             'Accept': 'application/vnd.github+json',
             'X-GitHub-Api-Version': '2022-11-28',
         },
