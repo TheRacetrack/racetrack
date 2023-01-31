@@ -8,6 +8,7 @@ import backoff
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.template import template_dockerfile
+from image_builder.progress import update_deployment_phase
 from racetrack_commons.deploy.job_type import JobType, load_job_type
 from image_builder.metrics import (
     metric_images_built,
@@ -55,10 +56,15 @@ class DockerBuilder(ImageBuilder):
         images_num = len(job_type.template_paths)
         for image_index in range(images_num):
             progress = f'({image_index+1}/{images_num})'
+            image_progress = f'({image_index*2+1}/{images_num*2})'  # 2 actual images to build (base + job) per container
 
             with wrap_context(f'building base image {progress}'):
-                base_image = _build_base_image(config, job_type, image_index, deployment_id, metric_labels)
+                update_deployment_phase(config, deployment_id, f'building image {image_progress}')
+                base_image = _build_base_image(
+                    config, job_type, image_index, deployment_id, metric_labels, image_progress,
+                )
 
+            image_progress = f'({image_index*2+2}/{images_num*2})'
             template_path = job_type.template_paths[image_index]
             if template_path is None:
                 assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
@@ -71,11 +77,14 @@ class DockerBuilder(ImageBuilder):
                                         git_version, racetrack_version, job_type.version, env_vars)
 
             try:
-
-                fatman_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
-                logger.info(f'building Fatman image {progress}: {fatman_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
                 with wrap_context(f'building fatman image {progress}'):
-                    logs += build_container_image(fatman_image, dockerfile_path, workspace, metric_labels, logs_filename)
+                    fatman_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
+                    logger.info(f'building Fatman image {progress}: {fatman_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
+                    update_deployment_phase(config, deployment_id, f'building image {image_progress}')
+                    logs += build_container_image(
+                        config, fatman_image, dockerfile_path, workspace, metric_labels,
+                        logs_filename, deployment_id, image_progress,
+                    )
                     logger.info(f'Fatman image {progress} has been built: {fatman_image}')
                         
                 built_images.append(fatman_image)
@@ -97,6 +106,7 @@ def _build_base_image(
     image_index: int,
     deployment_id: str,
     metric_labels: dict[str, str],
+    image_progress: str,
 ) -> str:
     if job_type.base_image_paths[image_index] is None:
         return ''
@@ -110,22 +120,28 @@ def _build_base_image(
         logger.info(f'rebuilding base image {base_image}, '
                     f'deployment ID: {deployment_id}, keeping logs in {base_logs_filename}')
         build_container_image(
+            config,
             base_image,
             job_type.base_image_paths[image_index],
             job_type.base_image_paths[image_index].parent,
             metric_labels,
             base_logs_filename,
+            deployment_id,
+            image_progress,
         )
         logger.info(f'base Fatman image has been built and pushed: {base_image}')
     return base_image
 
 
 def build_container_image(
+    config: Config,
     image_name: str,
     dockerfile_path: Path,
     context_dir: Path,
     metric_labels: dict[str, str],
-    logs_filename: str | None = None,
+    logs_filename: str,
+    deployment_id: str,
+    image_progress: str,
 ) -> str:
     """Build OCI container image from Dockerfile and push it to registry. Return build logs output"""
     # Build with host network to propagate DNS settings (network is still isolated within an image-builder pod).
@@ -135,6 +151,7 @@ def build_container_image(
         output_filename=logs_filename,
     )
 
+    update_deployment_phase(config, deployment_id, f'pushing image {image_progress}')
     push_start_time = time.time()
     shell(f'docker push {image_name}', print_stdout=False, output_filename=logs_filename)
 
