@@ -104,10 +104,11 @@ def save_deployment_build_logs(deployment_id: str, build_logs: str):
 
 
 @db_access
-def save_deployment_phase(deployment_id: Optional[str], phase: str):
-    if not deployment_id:
-        return
-    deployment = models.Deployment.objects.get(id=deployment_id)
+def save_deployment_phase(deployment_id: str, phase: str):
+    try:
+        deployment = models.Deployment.objects.get(id=deployment_id)
+    except models.Deployment.DoesNotExist:
+        raise EntityNotFound(f'deployment with ID {deployment_id} was not found')
     deployment.phase = phase
     deployment.update_time = now()
     deployment.save()
