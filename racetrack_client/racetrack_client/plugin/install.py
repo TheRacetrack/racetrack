@@ -167,7 +167,6 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
     }
     if github_token := os.environ.get('GITHUB_TOKEN'):
         headers['Authorization'] = f'Bearer {github_token}'
-        print('GITHUB_TOKEN present')
 
     r = Requests.get(
         f'https://api.github.com/repos/{gh_user}/{gh_repo}/releases',
