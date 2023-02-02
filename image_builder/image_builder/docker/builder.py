@@ -39,7 +39,7 @@ class DockerBuilder(ImageBuilder):
         deployment_id: str,
         plugin_engine: PluginEngine,
     ) -> tuple[list[str], str, str | None]:
-        """Build image from manifest file in a workspace directory and return built image name"""
+        """Build images from manifest file in a workspace directory and return built image name"""
         job_type: JobType = load_job_type(plugin_engine, manifest.lang)
 
         _wait_for_docker_engine_ready()
@@ -51,44 +51,19 @@ class DockerBuilder(ImageBuilder):
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
 
-        logs: str = ''
+        logs: list[str] = []
         built_images: list[str] = []
         images_num = len(job_type.template_paths)
         for image_index in range(images_num):
             progress = f'({image_index+1}/{images_num})'
-            build_progress = f'({image_index*2+1}/{images_num*2})'  # 2 actual builds (base + final) per job's image
 
             try:
-                with wrap_context(f'building base image {progress}'):
-                    update_deployment_phase(config, deployment_id, f'building image {build_progress}')
-                    base_image = _build_base_image(
-                        config, job_type, image_index, deployment_id, metric_labels, build_progress,
-                    )
-
-                build_progress = f'({image_index*2+2}/{images_num*2})'
-                template_path = job_type.template_paths[image_index]
-                if template_path is None:
-                    assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
-                    dockerfile_path = workspace / manifest.docker.dockerfile_path
-                else:
-                    with wrap_context(f'templating Dockerfile {progress}'):
-                        dockerfile_path = workspace / f'.fatman-{image_index}.Dockerfile'
-                        racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
-                        template_dockerfile(manifest, template_path, dockerfile_path, base_image,
-                                            git_version, racetrack_version, job_type.version, env_vars)
-
-                with wrap_context(f'building job image {progress}'):
-                    fatman_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
-                    logger.info(f'building Job image {progress}: {fatman_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
-                    update_deployment_phase(config, deployment_id, f'building image {build_progress}')
-                    logs += build_container_image(
-                        config, fatman_image, dockerfile_path, workspace, metric_labels,
-                        logs_filename, deployment_id, build_progress,
-                    )
-                    logger.info(f'Job image {progress} has been built: {fatman_image}')
-
-                built_images.append(fatman_image)
+                _build_job_image(
+                    config, manifest, workspace, tag, git_version, env_vars, deployment_id, job_type,
+                    metric_labels, image_index, images_num, logs_filename, logs, built_images,
+                )
                 metric_images_built.inc()
+
             except ContextError as e:
                 metric_images_building_errors.inc()
                 if isinstance(e.__cause__, CommandError):
@@ -99,7 +74,58 @@ class DockerBuilder(ImageBuilder):
                 metric_images_building_errors.inc()
                 raise ContextError(f'building Job image {progress}') from e
 
-        return built_images, logs, None
+        return built_images, '\n'.join(logs), None
+
+
+def _build_job_image(
+    config: Config,
+    manifest: Manifest,
+    workspace: Path,
+    tag: str,
+    git_version: str,
+    env_vars: dict[str, str],
+    deployment_id: str,
+    job_type: JobType,
+    metric_labels: dict[str, str],
+    image_index: int,
+    images_num: int,
+    logs_filename: str,
+    logs: list[str],
+    built_images: list[str],
+):
+    progress = f'({image_index+1}/{images_num})'
+    build_progress = f'({image_index*2+1}/{images_num*2})'  # 2 actual builds (base + final) per job's image
+
+    with wrap_context(f'building base image {progress}'):
+        update_deployment_phase(config, deployment_id, f'building image {build_progress}')
+        base_image = _build_base_image(
+            config, job_type, image_index, deployment_id, metric_labels, build_progress,
+        )
+
+    build_progress = f'({image_index*2+2}/{images_num*2})'
+    template_path = job_type.template_paths[image_index]
+    if template_path is None:
+        assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
+        dockerfile_path = workspace / manifest.docker.dockerfile_path
+    else:
+        with wrap_context(f'templating Dockerfile {progress}'):
+            dockerfile_path = workspace / f'.fatman-{image_index}.Dockerfile'
+            racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
+            template_dockerfile(manifest, template_path, dockerfile_path, base_image,
+                                git_version, racetrack_version, job_type.version, env_vars)
+
+    with wrap_context(f'building job image {progress}'):
+        job_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
+        logger.info(f'building Job image {progress}: {job_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
+        update_deployment_phase(config, deployment_id, f'building image {build_progress}')
+        build_logs = build_container_image(
+            config, job_image, dockerfile_path, workspace, metric_labels,
+            logs_filename, deployment_id, build_progress,
+        )
+        logs.append(build_logs)
+        logger.info(f'Job image {progress} has been built: {job_image}')
+
+    built_images.append(job_image)
 
 
 def _build_base_image(
