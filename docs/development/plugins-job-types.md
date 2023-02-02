@@ -28,7 +28,7 @@ As an example, let's make a plugin to run jobs written in [Rust programming lang
 ### 1. Create a git repository
 Create a git repository (or use existing one) to keep the source code of the plugin.
 
-We're going to use https://github.com/TheRacetrack/plugin-rust-job-type 
+We're going to use https://github.com/LookACastle/plugin-rust-job-type 
 repository and we'll place the plugin inside `rust-job-type` subdirectory.
 
 ### 2. Initialize plugin manifest
@@ -39,7 +39,7 @@ and the URL of the plugin home page.
 ```yaml
 name: rust-job-type
 version: 1.0.0
-url: https://github.com/TheRacetrack/plugin-rust-job-type
+url: https://github.com/LookACastle/plugin-rust-job-type
 ```
 
 ### 3. Write the wrapper
@@ -470,7 +470,7 @@ owner_email: sample@example.com
 lang: rust
 
 git:
-  remote: https://github.com/TheRacetrack/plugin-rust-job-type
+  remote: https://github.com/LookACastle/plugin-rust-job-type
   directory: sample-rust-function
 ```
 

@@ -4,7 +4,7 @@ lang: python3:latest
 version: 0.0.2
 
 git:
-  remote: https://github.com/TheRacetrack/racetrack
+  remote: https://github.com/LookACastle/racetrack
   directory: sample/python-chain
 
 python:

@@ -45,7 +45,7 @@ Example:
 ```yaml
 name: skynet-watcher
 version: 1.2.3
-url: https://github.com/TheRacetrack/racetrack
+url: https://github.com/LookACastle/racetrack
 priority: -1
 ```
 

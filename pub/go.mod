@@ -1,4 +1,4 @@
-module github.com/TheRacetrack/racetrack/pub
+module github.com/LookACastle/racetrack/pub
 
 go 1.19
 

@@ -26,7 +26,7 @@ def test_deploy_job_chain():
     _configure_env()
     _wait_for_components()
 
-    _install_plugin('github.com/TheRacetrack/plugin-python-job-type')
+    _install_plugin('github.com/LookACastle/plugin-python-job-type')
     esc = _create_esc()
 
     _delete_workload('adder')
@@ -44,7 +44,7 @@ def test_deploy_unauthenticated():
     _configure_env()
     _wait_for_components()
 
-    _install_plugin('github.com/TheRacetrack/plugin-python-job-type')
+    _install_plugin('github.com/LookACastle/plugin-python-job-type')
     lifecycle_url = os.environ['LIFECYCLE_URL']
     expect_fail = is_auth_required(lifecycle_url)
     sample_path = 'sample/python-class'
@@ -66,7 +66,7 @@ def test_deploy_wrong_authentication():
     _configure_env()
     _wait_for_components()
 
-    _install_plugin('github.com/TheRacetrack/plugin-python-job-type')
+    _install_plugin('github.com/LookACastle/plugin-python-job-type')
     lifecycle_url = os.environ['LIFECYCLE_URL']
     sample_path = 'sample/python-class'
     print(f'Deploying with wrong authentication {sample_path} job...')

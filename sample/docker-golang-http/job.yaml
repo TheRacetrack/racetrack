@@ -3,7 +3,7 @@ owner_email: sample@example.com
 lang: docker-proxy:latest
 
 git:
-  remote: https://github.com/TheRacetrack/racetrack
+  remote: https://github.com/LookACastle/racetrack
   directory: sample/docker-golang-http
 
 docker:

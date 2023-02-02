@@ -15,7 +15,7 @@ owner_email: nobody@example.com
 lang: golang:latest
 
 git:
-  remote: https://github.com/TheRacetrack/racetrack
+  remote: https://github.com/LookACastle/racetrack
   directory: sample/golang-function
 
 resources:

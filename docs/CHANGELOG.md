@@ -113,9 +113,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `racetrack plugin install <plugin_uri> <racetrack_url>`,
   where `plugin_uri` can be either:
     - local file path (eg. `python3-job-type-2.4.0.zip`),
-    - URL to a remote HTTP file (eg. `https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
-    - GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) - it takes the ZIP file from the latest release.
-    - GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) - it takes the ZIP file from the specific release.
+    - URL to a remote HTTP file (eg. `https://github.com/LookACastle/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
+    - GitHub repository name (eg. `github.com/LookACastle/plugin-python-job-type`) - it takes the ZIP file from the latest release.
+    - GitHub repository name with version (eg. `github.com/LookACastle/plugin-python-job-type==2.4.0`) - it takes the ZIP file from the specific release.
 
 - Plugins can be uninstalled with a new command:
   `racetrack plugin uninstall <plugin_name> <plugin_version> <racetrack_url>`.
@@ -175,7 +175,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by default it's set to `racetrack`.
 - Hostname subdomain of Racetrack services is now configurable by means of
   `RACETRACK_SUBDOMAIN` environment variable, by default it's set to `racetrack`.
-- Golang job type has been moved to [Plugin - Go Job Type](https://github.com/TheRacetrack/plugin-go-job-type).
+- Golang job type has been moved to [Plugin - Go Job Type](https://github.com/LookACastle/plugin-go-job-type).
   Now it's not enabled by default in Racetrack.
 
 ## [2.1.2] - 2022-07-29
@@ -191,7 +191,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plugins can provide its own Fatman Deployers
   to deploy workloads to other types of platforms.
   See [developing-plugins.md](development/developing-plugins.md) and
-  [Docker Daemon Deployer Plugin](https://github.com/TheRacetrack/plugin-docker-daemon-deployer)
+  [Docker Daemon Deployer Plugin](https://github.com/LookACastle/plugin-docker-daemon-deployer)
 
 ### Changed
 - Fatman's metrics now contain number of requests and duration for each endpoint
@@ -221,7 +221,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Plugins can hook into the `post_job_delete` event to add their
   actions after deleting a fatman.
-  See [Teams Notifications Racetrack Plugin](https://github.com/TheRacetrack/plugin-teams-notifications)
+  See [Teams Notifications Racetrack Plugin](https://github.com/LookACastle/plugin-teams-notifications)
 
 - Response errors are also displayed in the logs 
   in addition to returning message in HTTP payload.
@@ -290,7 +290,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   referring to the same base manifest.
   See [overlays sample](../sample/overlays).
 - Job types can be extended with plugins.
-  Check out [sample job-type plugin](https://github.com/TheRacetrack/plugin-rust-job-type)
+  Check out [sample job-type plugin](https://github.com/LookACastle/plugin-rust-job-type)
   and [developing-plugins.md](development/developing-plugins.md) to see a guide how to create and activate plugins.
 - Racetrack documentation is now served at "Docs" tab in Dashboard.
   Check out "Home" page to get started.
