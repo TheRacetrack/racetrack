@@ -72,7 +72,7 @@ def test_get_latest_stable_version():
         Job('adder', '0.3.0-dev'),
     ]
 
-    latest_job = SemanticVersion.find_latest_stable(job, key=lambda f: f.version)
+    latest_job = SemanticVersion.find_latest_stable(jobs, key=lambda f: f.version)
     assert latest_job == Job('adder', '0.2.0'), 'latest stable ignores "-dev" versions'
 
     assert SemanticVersion.find_latest_stable([], key=lambda f: f.version) is None
@@ -84,7 +84,7 @@ def test_get_latest_version_wildcard():
         name: str
         version: str
 
-    job: List[Job] = [
+    jobs: List[Job] = [
         Job('adder', '1.0.1'),
         Job('adder', '2.0.0'),
         Job('adder', '2.0.4'),
