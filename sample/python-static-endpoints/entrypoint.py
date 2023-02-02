@@ -1,4 +1,4 @@
-class FatmanEntrypoint:
+class JobEntrypoint:
     def perform(self, x: float, y: float) -> float:
         """
         Add numbers.
@@ -12,6 +12,6 @@ class FatmanEntrypoint:
         """Dict of endpoint paths mapped to corresponding static files that ought be served."""
         return {
             '/xrai': 'xrai.yaml',
-            '/manifest': ('fatman.yaml', 'application/x-yaml'),
+            '/manifest': ('job.yaml', 'application/x-yaml'),
             '/docs/readme': 'README.md',
         }

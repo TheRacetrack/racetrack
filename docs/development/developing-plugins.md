@@ -68,31 +68,31 @@ See [plugin_sample](plugin_sample) for an example of a plugin.
 ## Supported hooks
 Supported hooks (events) that can be overriden in the plugin class:
 
-- `post_fatman_deploy` - Supplementary actions invoked after fatman is deployed
+- `post_job_deploy` - Supplementary actions invoked after job is deployed
 ```python
-def post_fatman_deploy(self, manifest: Manifest, fatman: FatmanDto, image_name: str, deployer_username: str = None):
+def post_job_deploy(self, manifest: Manifest, job: JobDto, image_name: str, deployer_username: str = None):
 ```
 
-- `fatman_runtime_env_vars` - Supplementary env vars dictionary added to runtime vars when deploying a Fatman
+- `job_runtime_env_vars` - Supplementary env vars dictionary added to runtime vars when deploying a Job
 ```python
-def fatman_runtime_env_vars(self) -> Optional[Dict[str, str]]:
+def job_runtime_env_vars(self) -> Optional[Dict[str, str]]:
 ```
 
-- `fatman_job_types` - Job types provided by this plugin
+- `job_types` - Job types provided by this plugin
 ```python
-def fatman_job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
     """
     Job types provided by this plugin
         :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
     """
 ```
 
-- `infrastructure_targets` - Infrastructure Targets (deployment targets for Fatmen) provided by this plugin.
+- `infrastructure_targets` - Infrastructure Targets (deployment targets for Jobs) provided by this plugin.
 ```python
 def infrastructure_targets(self) -> dict[str, Any]:
     """
-    Infrastructure Targets (deployment targets for Fatmen) provided by this plugin
-    Infrastructure Target should contain Fatman Deployer, Fatman Monitor and Fatman Logs Streamer.
+    Infrastructure Targets (deployment targets for Jobs) provided by this plugin
+    Infrastructure Target should contain Job Deployer, Job Monitor and Job Logs Streamer.
     :return dict of infrastructure name -> an instance of lifecycle.deployer.infra_target.InfrastructureTarget
     """
     return {}
@@ -103,11 +103,11 @@ def infrastructure_targets(self) -> dict[str, Any]:
 def markdown_docs(self) -> Optional[str]:
 ```
 
-- `post_fatman_delete` - Supplementary actions invoked after fatman is deleted
+- `post_job_delete` - Supplementary actions invoked after job is deleted
 ```python
-def post_fatman_delete(self, fatman: FatmanDto, username_executor: str = None):
+def post_job_delete(self, job: JobDto, username_executor: str = None):
     """
-    Supplementary actions invoked after fatman is deleted
-    :param username_executor: username of the user who deleted the fatman
+    Supplementary actions invoked after job is deleted
+    :param username_executor: username of the user who deleted the job
     """
 ```

@@ -80,9 +80,9 @@ Notes:
 
 - image_builder - Call `image_builder build` in `sample/python-class/` to
    test just building a job image.
-- pub - use `make send-payload-post` for testing the proxying of payload to Fatman
+- pub - use `make send-payload-post` for testing the proxying of payload to Job
 - dashboard - it will print out on which port a Django UI is available
-- fatman_wrapper - Call `fatman_wrapper run adder.py` in `sample/python-class/`
+- job_wrapper - Call `job_wrapper run adder.py` in `sample/python-class/`
   to just test a Python class wrapper.
 
 Submitting a job:
@@ -92,15 +92,15 @@ racetrack deploy sample/python-class/ --remote http://localhost:7202
 ```
 
 New container should be created. It can be accessed at http://localhost:7000
-You need to `docker rm` or `make docker-clean-fatman` to clean leftover fatman on your own.
-In case of errors, troubleshoot with `docker ps` and `docker logs -f <fatman-name>`.
+You need to `docker rm` or `make docker-clean-job` to clean leftover job on your own.
+In case of errors, troubleshoot with `docker ps` and `docker logs -f <job.name>`.
 
-Fatman can be accessed through the PUB at http://localhost:7205/pub/fatman/adder/latest,
-where "adder" is a name of a job from `fatman.yaml`.
+Job can be accessed through the PUB at http://localhost:7205/pub/job/adder/latest,
+where "adder" is a name of a job from `job.yaml`.
 
 ## Docker compose
 
-Fatmen can also run as local docker containers. 
+Jobs can also run as local docker containers. 
 
 - `make compose-up` - runs services in detached mode
 - `make compose-up-service service=dashboard` - rebuilds and reruns one selected service
@@ -114,7 +114,7 @@ racetrack deploy sample/python-class/ --remote http://localhost:7102
 # or: compose-deploy-sample
 ```
 
-Fatman management/access is the same as in **Localhost** case.
+Job management/access is the same as in **Localhost** case.
 
 ## Kind
 
@@ -128,7 +128,7 @@ racetrack deploy sample/python-class/ --remote http://localhost:7002
 # or make kind-deploy-sample
 ```
 
-Fatmen are deployed as k8s pods, and should be managed as such.
+Jobs are deployed as k8s pods, and should be managed as such.
 
 ## Dashboard
 
@@ -145,7 +145,7 @@ Fatmen are deployed as k8s pods, and should be managed as such.
 | Lifecycle            | 7002                | 7102                   | 7202              |
 | Image Builder        | 7001                | 7101                   | 7201              |
 | Dashboard            | 7003                | 7103                   | 7203              |
-| Fatman               | 7000                | 7100                   | 7200              |
+| Job                  | 7000                | 7100                   | 7200              |
 | PUB                  | 7005                | 7105                   | 7205              |
 | Lifecycle Supervisor | 7006                | 7106                   | 7202              |
 | postgres             | 5432                | 5532                   | --- (1)           |
@@ -157,7 +157,7 @@ Fatmen are deployed as k8s pods, and should be managed as such.
 On any of localhost setups:
 
 ```bash
-curl -X POST "http://localhost:7005/pub/fatman/adder/latest/api/v1/perform" \
+curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
@@ -168,7 +168,7 @@ The 7005 port needs to be adjusted according to dev setup, as in table above.
 Calling model on remote Racetrack instance:
 
 ```bash
-curl -k -X POST "https://<cluster ip>/pub/fatman/adder/latest/api/v1/perform" \
+curl -k -X POST "https://<cluster ip>/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
@@ -176,7 +176,7 @@ curl -k -X POST "https://<cluster ip>/pub/fatman/adder/latest/api/v1/perform" \
 
 ## Deploy Job to Kubernetes
 
-Enter directory with `fatman.yaml` and issue:
+Enter directory with `job.yaml` and issue:
 
 ```
 racetrack deploy . --remote https://racetrack.<cluster name>/lifecycle

@@ -11,7 +11,7 @@ from django.db import migrations
 
 def migrate_old_permissions(apps, schema_editor):
     UserProfile = apps.get_model('registry', 'UserProfile')
-    FatmanFamily = apps.get_model('registry', 'FatmanFamily')
+    JobFamily = apps.get_model('registry', 'JobFamily')
     Esc = apps.get_model('registry', 'Esc')
     AuthSubject = apps.get_model('registry', 'AuthSubject')
     AuthResourcePermission = apps.get_model('registry', 'AuthResourcePermission')
@@ -28,10 +28,10 @@ def migrate_old_permissions(apps, schema_editor):
             auth_subject.token = generate_auth_token(user.username, 'user')
         auth_subject.save()
 
-        grant_auth_permissions(auth_subject, AuthResourcePermission, 'read_fatman')
-        grant_auth_permissions(auth_subject, AuthResourcePermission, 'call_fatman')
+        grant_auth_permissions(auth_subject, AuthResourcePermission, 'read_job')
+        grant_auth_permissions(auth_subject, AuthResourcePermission, 'call_job')
         grant_auth_permissions(auth_subject, AuthResourcePermission, 'deploy_new_family')
-        grant_auth_permissions(auth_subject, AuthResourcePermission, 'deploy_fatman')
+        grant_auth_permissions(auth_subject, AuthResourcePermission, 'deploy_job')
 
     # ESC
     for esc in Esc.objects.all():
@@ -43,23 +43,23 @@ def migrate_old_permissions(apps, schema_editor):
         auth_subject.token = esc.esc_auth
         auth_subject.save()
 
-        for allowed_family in esc.allowed_fatman_families.all():
-            grant_auth_permissions_to_family(auth_subject, AuthResourcePermission, allowed_family, 'call_fatman')
+        for allowed_family in esc.allowed_job_families.all():
+            grant_auth_permissions_to_family(auth_subject, AuthResourcePermission, allowed_family, 'call_job')
 
-    # create Fatman Families auth subjects
-    for family in FatmanFamily.objects.all():
+    # create Job Families auth subjects
+    for family in JobFamily.objects.all():
         try:
-            auth_subject = AuthSubject.objects.get(fatman_family=family)
+            auth_subject = AuthSubject.objects.get(job_family=family)
         except AuthSubject.DoesNotExist:
             auth_subject = AuthSubject()
-            auth_subject.fatman_family = family
-        auth_subject.token = generate_auth_token(family.name, 'fatman_family')
+            auth_subject.job_family = family
+        auth_subject.token = generate_auth_token(family.name, 'job_family')
         auth_subject.save()
 
-    for family in FatmanFamily.objects.all():
-        for source_family in family.allowed_fatman_families.all():
-            source_subject = AuthSubject.objects.get(fatman_family=source_family)
-            grant_auth_permissions_to_family(source_subject, AuthResourcePermission, family, 'call_fatman')
+    for family in JobFamily.objects.all():
+        for source_family in family.allowed_job_families.all():
+            source_subject = AuthSubject.objects.get(job_family=source_family)
+            grant_auth_permissions_to_family(source_subject, AuthResourcePermission, family, 'call_job')
 
 
 def grant_auth_permissions(
@@ -78,13 +78,13 @@ def grant_auth_permissions(
 def grant_auth_permissions_to_family(
     auth_subject,
     AuthResourcePermission,
-    fatman_family,
+    job_family,
     scope: str,
 ):
     permission = AuthResourcePermission(
         auth_subject=auth_subject,
         all_resources=False,
-        fatman_family=fatman_family,
+        job_family=job_family,
         scope=scope,
     )
     permission.save()

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='fatmanfamily',
+            model_name='jobfamily',
             name='api_key',
             field=models.CharField(blank=True, max_length=36, null=True),
         ),

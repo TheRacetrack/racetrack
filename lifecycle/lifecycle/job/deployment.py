@@ -5,8 +5,8 @@ from datetime import timedelta
 from lifecycle.config import Config
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
-from lifecycle.fatman.dto_converter import deployment_model_to_dto, fatman_model_to_dto
-from lifecycle.fatman.models_registry import read_fatman_model
+from lifecycle.job.dto_converter import deployment_model_to_dto, job_model_to_dto
+from lifecycle.job.models_registry import read_job_model
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.manifest.manifest import Manifest
@@ -29,8 +29,8 @@ def create_deployment(
         create_time=now(),
         update_time=now(),
         manifest=datamodel_to_yaml_str(manifest),
-        fatman_name=manifest.name,
-        fatman_version=manifest.version,
+        job.name=manifest.name,
+        job.version=manifest.version,
         deployed_by=username,
         infrastructure_target=infrastructure_target,
     )
@@ -42,15 +42,15 @@ def check_for_concurrent_deployments(manifest: Manifest):
     update_time_after = now() - timedelta(minutes=1)
     deployments_queryset = models.Deployment.objects.filter(
         status=DeploymentStatus.IN_PROGRESS.value,
-        fatman_name=manifest.name,
-        fatman_version=manifest.version,
+        job.name=manifest.name,
+        job.version=manifest.version,
         update_time__gte=update_time_after,
     )
 
     ongoing_deployments = list(deployments_queryset)
     if ongoing_deployments:
         ongoing = ongoing_deployments[0]
-        raise RuntimeError(f'There\'s already ongoing deployment of fatman {manifest.name} {manifest.version}, '
+        raise RuntimeError(f'There\'s already ongoing deployment of job {manifest.name} {manifest.version}, '
                            f'recently updated at {ongoing.update_time}')
 
 
@@ -62,8 +62,8 @@ def check_deployment_result(deploy_id: str, config: Config) -> DeploymentDto:
         dto = deployment_model_to_dto(deployment)
         if deployment.status == DeploymentStatus.DONE.value:
             try:
-                fatman_model = read_fatman_model(deployment.fatman_name, deployment.fatman_version)
-                dto.fatman = fatman_model_to_dto(fatman_model, config)
+                job_model = read_job_model(deployment.job.name, deployment.job.version)
+                dto.job = job_model_to_dto(job_model, config)
             except EntityNotFound:
                 pass
         return dto

@@ -2,52 +2,52 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 from lifecycle.config import Config
-from lifecycle.deployer.secrets import FatmanSecrets
+from lifecycle.deployer.secrets import JobSecrets
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.manifest import Manifest
-from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 
 
-class FatmanDeployer(ABC):
+class JobDeployer(ABC):
     @abstractmethod
-    def deploy_fatman(
+    def deploy_job(
         self,
         manifest: Manifest,
         config: Config,
         plugin_engine: PluginEngine,
         tag: str,
         runtime_env_vars: Dict[str, str],
-        family: FatmanFamilyDto,
+        family: JobFamilyDto,
         containers_num: int = 1,
-    ) -> FatmanDto:
-        """Deploy a Fatman from a manifest file"""
+    ) -> JobDto:
+        """Deploy a Job from a manifest file"""
         raise NotImplementedError()
 
     @abstractmethod
-    def delete_fatman(self, fatman_name: str, fatman_version: str):
-        """Delete a fatman based on its name"""
+    def delete_job(self, job.name: str, job.version: str):
+        """Delete a Job based on its name"""
         raise NotImplementedError()
 
     @abstractmethod
-    def fatman_exists(self, fatman_name: str, fatman_version: str) -> bool:
-        """Tell whether a fatman already exists or not"""
+    def job_exists(self, job.name: str, job.version: str) -> bool:
+        """Tell whether a Job already exists or not"""
         raise NotImplementedError()
 
     @abstractmethod
-    def save_fatman_secrets(
+    def save_job_secrets(
         self,
-        fatman_name: str,
-        fatman_version: str,
-        fatman_secrets: FatmanSecrets,
+        job.name: str,
+        job.version: str,
+        job_secrets: JobSecrets,
     ):
-        """Create or update secrets needed to build and deploy a fatman"""
+        """Create or update secrets needed to build and deploy a Job"""
         raise NotImplementedError()
 
     @abstractmethod
-    def get_fatman_secrets(
+    def get_job_secrets(
         self,
-        fatman_name: str,
-        fatman_version: str,
-    ) -> FatmanSecrets:
-        """Retrieve secrets for building and deploying a fatman"""
+        job.name: str,
+        job.version: str,
+    ) -> JobSecrets:
+        """Retrieve secrets for building and deploying a Job"""
         raise NotImplementedError()

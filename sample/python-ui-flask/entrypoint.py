@@ -3,7 +3,7 @@ from typing import List
 from flask import render_template, Flask, request, jsonify
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def perform(self, numbers: List[float]) -> float:
         """Return sum of given numbers"""
         return sum(numbers)

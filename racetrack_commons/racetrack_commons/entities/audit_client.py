@@ -13,42 +13,42 @@ class AuditClient:
         response = self.lc_client.request_list('get', '/api/v1/audit/user_events')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
-    def list_user_fatman_family_events(self, fatman_name: str) -> List[AuditLogEventDto]:
-        response = self.lc_client.request_list('get', f'/api/v1/audit/user_events/fatman/{fatman_name}')
+    def list_user_job_family_events(self, job.name: str) -> List[AuditLogEventDto]:
+        response = self.lc_client.request_list('get', f'/api/v1/audit/user_events/job/{job.name}')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
-    def list_user_fatman_events(self, fatman_name: str, fatman_version: str) -> List[AuditLogEventDto]:
-        response = self.lc_client.request_list('get', f'/api/v1/audit/user_events/fatman/{fatman_name}/{fatman_version}')
+    def list_user_job_events(self, job.name: str, job.version: str) -> List[AuditLogEventDto]:
+        response = self.lc_client.request_list('get', f'/api/v1/audit/user_events/job/{job.name}/{job.version}')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
     def list_all_events(self) -> List[AuditLogEventDto]:
         response = self.lc_client.request_list('get', '/api/v1/audit/events')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
-    def list_fatman_family_events(self, fatman_name: str) -> List[AuditLogEventDto]:
-        response = self.lc_client.request_list('get', f'/api/v1/audit/events/fatman/{fatman_name}')
+    def list_job_family_events(self, job.name: str) -> List[AuditLogEventDto]:
+        response = self.lc_client.request_list('get', f'/api/v1/audit/events/job/{job.name}')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
-    def list_fatman_events(self, fatman_name: str, fatman_version: str) -> List[AuditLogEventDto]:
-        response = self.lc_client.request_list('get', f'/api/v1/audit/events/fatman/{fatman_name}/{fatman_version}')
+    def list_job_events(self, job.name: str, job.version: str) -> List[AuditLogEventDto]:
+        response = self.lc_client.request_list('get', f'/api/v1/audit/events/job/{job.name}/{job.version}')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
     def filter_events(self, 
         related_to_user: bool, 
-        fatman_name: Optional[str], 
-        fatman_version: Optional[str],
+        job.name: Optional[str], 
+        job.version: Optional[str],
     ) -> List[AuditLogEventDto]:
         if related_to_user:
-            if fatman_name and fatman_version:
-                return self.list_user_fatman_events(fatman_name, fatman_version)
-            elif fatman_name:
-                return self.list_user_fatman_family_events(fatman_name)
+            if job.name and job.version:
+                return self.list_user_job_events(job.name, job.version)
+            elif job.name:
+                return self.list_user_job_family_events(job.name)
             else:
                 return self.list_user_events()
         else:
-            if fatman_name and fatman_version:
-                return self.list_fatman_events(fatman_name, fatman_version)
-            elif fatman_name:
-                return self.list_fatman_family_events(fatman_name)
+            if job.name and job.version:
+                return self.list_job_events(job.name, job.version)
+            elif job.name:
+                return self.list_job_family_events(job.name)
             else:
                 return self.list_all_events()

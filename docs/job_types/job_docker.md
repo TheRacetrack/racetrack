@@ -5,7 +5,7 @@ specifically dedicated to your language if possible.
 "docker-proxy" job type is intended to handle the calls to your Web server written 
 in any programming language, enclosed in a docker image by Dockerfile recipe.
 
-Set `lang: docker-proxy` in your `fatman.yaml` manifest file in order to use this type of job.
+Set `lang: docker-proxy` in your `job.yaml` manifest file in order to use this type of job.
 
 # Job standards
 Let's assume you want to have a model running in a docker container and calculating
@@ -73,9 +73,9 @@ To sum up:
    (eg. load model data from external sources).
 
 # Manifest file
-When using `docker-proxy` job type, you MUST include the following fields in a `fatman.yaml` manifest file:
+When using `docker-proxy` job type, you MUST include the following fields in a `job.yaml` manifest file:
 - `name` - choose a meaningful text name for a job. It should be unique within the Racetrack cluster.
-- `owner_email` - email address of the Fatman's owner to reach out
+- `owner_email` - email address of the Job's owner to reach out
 - `lang` - Set base image to "docker-proxy"
 - `git.remote` - URL to your remote repo 
 
@@ -83,9 +83,9 @@ You MAY include the following fields:
 - `git.branch` - git branch name (if different from "master").
 - `git.directory` - subdirectory relative to git repo root where the project is
 - `docker.dockerfile_path` - relative path to a Dockerfile build recipe
-- `labels` - dictionary with metadata describing fatman for humans
+- `labels` - dictionary with metadata describing Job for humans
 
-The final `fatman.yaml` may look like this:
+The final `job.yaml` may look like this:
 ```yaml
 name: supersmart
 owner_email: nobody@example.com

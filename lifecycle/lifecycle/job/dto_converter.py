@@ -1,22 +1,22 @@
 import json
 from lifecycle.config import Config
 from lifecycle.django.registry import models
-from lifecycle.fatman.pub import get_fatman_pub_url
+from lifecycle.job.pub import get_job_pub_url
 from racetrack_client.manifest.load import parse_manifest_or_empty
 from racetrack_client.utils.time import datetime_to_timestamp
 from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointRequestDto, EscDto
-from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto, DeploymentDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto, DeploymentDto
 
 
-def fatman_family_model_to_dto(model: models.FatmanFamily) -> FatmanFamilyDto:
-    return FatmanFamilyDto(
+def job_family_model_to_dto(model: models.JobFamily) -> JobFamilyDto:
+    return JobFamilyDto(
         id=model.id,
         name=model.name,
     )
 
 
-def fatman_model_to_dto(model: models.Fatman, config: Config) -> FatmanDto:
-    return FatmanDto(
+def job_model_to_dto(model: models.Job, config: Config) -> JobDto:
+    return JobDto(
         id=model.id,
         name=model.name,
         version=model.version,
@@ -25,7 +25,7 @@ def fatman_model_to_dto(model: models.Fatman, config: Config) -> FatmanDto:
         update_time=datetime_to_timestamp(model.update_time),
         manifest=parse_manifest_or_empty(model.manifest),
         internal_name=model.internal_name,
-        pub_url=get_fatman_pub_url(model.name, model.version, config),
+        pub_url=get_job_pub_url(model.name, model.version, config),
         error=model.error,
         image_tag=model.image_tag,
         deployed_by=model.deployed_by,
@@ -39,7 +39,7 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         id=model.id,
         status=model.status,
         error=model.error,
-        fatman=None,
+        job=None,
         deployed_by=model.deployed_by,
         phase=model.phase,
         image_name=model.image_name,
@@ -56,8 +56,8 @@ def esc_model_to_dto(model: models.Esc) -> EscDto:
 
 def public_endpoint_request_model_to_dto(model: models.PublicEndpointRequest) -> PublicEndpointRequestDto:
     return PublicEndpointRequestDto(
-        fatman_name=model.fatman.name,
-        fatman_version=model.fatman.version,
+        job.name=model.job.name,
+        job.version=model.job.version,
         endpoint=model.endpoint,
         active=model.active,
     )
@@ -73,6 +73,6 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
         properties=properties,
         username_executor=model.username_executor,
         username_subject=model.username_subject,
-        fatman_name=model.fatman_name,
-        fatman_version=model.fatman_version,
+        job.name=model.job.name,
+        job.version=model.job.version,
     )

@@ -46,7 +46,7 @@ def read_auth_token_header(request: Request) -> Optional[str]:
     if not auth_token:
         auth_token = request.headers.get("X-Racetrack-User-Auth")
     if not auth_token:
-        auth_token = request.headers.get("X-Racetrack-Fatman-Auth")
+        auth_token = request.headers.get("X-Racetrack-Job-Auth")
     if not auth_token:
         auth_token = request.headers.get("X-Racetrack-Esc-Auth")
     return auth_token

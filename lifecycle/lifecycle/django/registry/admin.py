@@ -8,39 +8,39 @@ from django.contrib.admin.options import (
 )
 from django.contrib.admin import SimpleListFilter
 
-from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Fatman, Deployment, Esc, FatmanFamily, TrashFatman, AuditLogEvent
+from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent
 from ...auth.subject import regenerate_auth_token_by_id
 
 
-class FatmanFamilyAdmin(admin.ModelAdmin):
+class JobFamilyAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     search_fields = ['name']
 
 
-class FatmanAdmin(admin.ModelAdmin):
+class JobAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'version', 'status', 'update_time', 'deployed_by')
     search_fields = ['name', 'version', 'deployed_by']
     list_filter = ['status', 'deployed_by', 'name']
 
 
 class DeploymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fatman_name', 'fatman_version', 'status', 'create_time', 'deployed_by', 'phase')
-    search_fields = ['id', 'fatman_name', 'fatman_version', 'deployed_by']
-    list_filter = ['status', 'deployed_by', 'fatman_name']
+    list_display = ('id', 'job.name', 'job.version', 'status', 'create_time', 'deployed_by', 'phase')
+    search_fields = ['id', 'job.name', 'job.version', 'deployed_by']
+    list_filter = ['status', 'deployed_by', 'job.name']
 
 
 class PublicEndpointRequestAdmin(admin.ModelAdmin):
-    list_display = ('get_fatman_name', 'get_fatman_version', 'endpoint', 'active')
+    list_display = ('get_job.name', 'get_job.version', 'endpoint', 'active')
     search_fields = ['endpoint']
-    list_filter = ['fatman__name', 'endpoint', 'active']
+    list_filter = ['job__name', 'endpoint', 'active']
 
-    @admin.display(ordering='fatman__name', description='Fatman name')
-    def get_fatman_name(self, obj):
-        return obj.fatman.name
+    @admin.display(ordering='job__name', description='Job name')
+    def get_job.name(self, obj):
+        return obj.job.name
 
-    @admin.display(ordering='fatman__version', description='Fatman version')
-    def get_fatman_version(self, obj):
-        return obj.fatman.version
+    @admin.display(ordering='job__version', description='Job version')
+    def get_job.version(self, obj):
+        return obj.job.version
 
 
 class EscAdmin(admin.ModelAdmin):
@@ -52,22 +52,22 @@ class RacetrackUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'is_active', 'is_staff', 'is_superuser')
 
 
-class TrashFatmanAdmin(admin.ModelAdmin):
+class TrashJobAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days')
     search_fields = ['id', 'name', 'version', 'status', 'deployed_by']
     list_filter = ['status', 'deployed_by', 'name']
 
 
 class AuditLogEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'event_type', 'username_executor', 'fatman_name', 'fatman_version')
-    search_fields = ['id', 'event_type', 'username_executor', 'fatman_name', 'fatman_version']
-    list_filter = ['event_type', 'username_executor', 'fatman_name']
+    list_display = ('id', 'timestamp', 'event_type', 'username_executor', 'job.name', 'job.version')
+    search_fields = ['id', 'event_type', 'username_executor', 'job.name', 'job.version']
+    list_filter = ['event_type', 'username_executor', 'job.name']
 
 
 class AuthSubjectTypeFilter(SimpleListFilter):
     title = 'Subject type'
     parameter_name = 'subject_type'
-    possible_values = ['User', 'ESC', 'Fatman Family', 'Unknown']
+    possible_values = ['User', 'ESC', 'Job Family', 'Unknown']
 
     def lookups(self, request, model_admin):
         return [(value, value) for value in self.possible_values]
@@ -77,16 +77,16 @@ class AuthSubjectTypeFilter(SimpleListFilter):
             return queryset.filter(user__isnull=False)
         if self.value() == 'ESC':
             return queryset.filter(esc__isnull=False)
-        if self.value() == 'Fatman Family':
-            return queryset.filter(fatman_family__isnull=False)
+        if self.value() == 'Job Family':
+            return queryset.filter(job_family__isnull=False)
         if self.value() == 'Unknown':
-            return queryset.filter(user__isnull=True, esc__isnull=True, fatman_family__isnull=True)
+            return queryset.filter(user__isnull=True, esc__isnull=True, job_family__isnull=True)
         return queryset
 
 
 class AuthSubjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'subject_type', 'user', 'esc', 'fatman_family', 'active', 'expiry_time')
-    search_fields = ['user__username', 'esc__name', 'fatman_family__name', 'token']
+    list_display = ('id', 'subject_type', 'user', 'esc', 'job_family', 'active', 'expiry_time')
+    search_fields = ['user__username', 'esc__name', 'job_family__name', 'token']
     list_filter = ['active', AuthSubjectTypeFilter]
     change_form_template = 'admin/auth_subject_change_form.html'
 
@@ -107,7 +107,7 @@ class AuthSubjectAdmin(admin.ModelAdmin):
 class AuthResourcePermissionTypeFilter(SimpleListFilter):
     title = 'Subject type'
     parameter_name = 'subject_type'
-    possible_values = ['User', 'ESC', 'Fatman Family', 'Unknown']
+    possible_values = ['User', 'ESC', 'Job Family', 'Unknown']
 
     def lookups(self, request, model_admin):
         return [(value, value) for value in self.possible_values]
@@ -117,29 +117,29 @@ class AuthResourcePermissionTypeFilter(SimpleListFilter):
             return queryset.filter(auth_subject__user__isnull=False)
         if self.value() == 'ESC':
             return queryset.filter(auth_subject__esc__isnull=False)
-        if self.value() == 'Fatman Family':
-            return queryset.filter(auth_subject__fatman_family__isnull=False)
+        if self.value() == 'Job Family':
+            return queryset.filter(auth_subject__job_family__isnull=False)
         if self.value() == 'Unknown':
-            return queryset.filter(auth_subject__user__isnull=True, auth_subject__esc__isnull=True, auth_subject__fatman_family__isnull=True)
+            return queryset.filter(auth_subject__user__isnull=True, auth_subject__esc__isnull=True, auth_subject__job_family__isnull=True)
         return queryset
 
 
 class AuthResourcePermissionAdmin(admin.ModelAdmin):
-    list_display = ('auth_subject', 'scope', 'fatman_family', 'fatman', 'endpoint')
-    list_filter = [AuthResourcePermissionTypeFilter, 'scope', 'fatman_family', 'fatman', 'endpoint']
-    search_fields = ['auth_subject__user__username', 'auth_subject__esc__name', 'auth_subject__fatman_family__name', 'scope', 'endpoint']
-    autocomplete_fields = ['auth_subject', 'fatman_family', 'fatman']
+    list_display = ('auth_subject', 'scope', 'job_family', 'job', 'endpoint')
+    list_filter = [AuthResourcePermissionTypeFilter, 'scope', 'job_family', 'job', 'endpoint']
+    search_fields = ['auth_subject__user__username', 'auth_subject__esc__name', 'auth_subject__job_family__name', 'scope', 'endpoint']
+    autocomplete_fields = ['auth_subject', 'job_family', 'job']
 
 
 admin.site.unregister(User)
 admin.site.register(User, RacetrackUserAdmin)
 
-admin.site.register(Fatman, FatmanAdmin)
-admin.site.register(FatmanFamily, FatmanFamilyAdmin)
+admin.site.register(Job, JobAdmin)
+admin.site.register(JobFamily, JobFamilyAdmin)
 admin.site.register(Deployment, DeploymentAdmin)
 admin.site.register(Esc, EscAdmin)
 admin.site.register(PublicEndpointRequest, PublicEndpointRequestAdmin)
-admin.site.register(TrashFatman, TrashFatmanAdmin)
+admin.site.register(TrashJob, TrashJobAdmin)
 admin.site.register(AuditLogEvent, AuditLogEventAdmin)
 admin.site.register(AuthSubject, AuthSubjectAdmin)
 admin.site.register(AuthResourcePermission, AuthResourcePermissionAdmin)

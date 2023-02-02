@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RemoveField(
             model_name='esc',
-            name='allowed_fatman_families',
+            name='allowed_job_families',
         ),
         migrations.RemoveField(
             model_name='esc',
@@ -25,11 +25,11 @@ class Migration(migrations.Migration):
             name='esc_auth',
         ),
         migrations.RemoveField(
-            model_name='fatmanfamily',
-            name='allowed_fatman_families',
+            model_name='jobfamily',
+            name='allowed_job_families',
         ),
         migrations.RemoveField(
-            model_name='fatmanfamily',
+            model_name='jobfamily',
             name='api_key',
         ),
         migrations.DeleteModel(

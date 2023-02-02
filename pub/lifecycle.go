@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type FatmanDetails struct {
+type JobDetails struct {
 	Id           string      `json:"id"`
 	Name         string      `json:"name"`
 	Version      string      `json:"version"`
@@ -27,13 +27,13 @@ type lifecycleErrorResponse struct {
 }
 
 type PublicEndpointRequestDto struct {
-	FatmanName    string `json:"fatman_name"`
-	FatmanVersion string `json:"fatman_version"`
+	JobName    string `json:"job.name"`
+	JobVersion string `json:"job.version"`
 	Endpoint      string `json:"endpoint"`
 	Active        bool   `json:"active"`
 }
 
-var FatmanNotFound = errors.New("fatman was not found")
+var JobNotFound = errors.New("job was not found")
 
 type LifecycleClient struct {
 	lifecycleUrl         string
@@ -44,7 +44,7 @@ type LifecycleClient struct {
 	requestId            string
 }
 
-const AuthScopeCallFatman = "call_fatman"
+const AuthScopeCallJob = "call_job"
 
 func NewLifecycleClient(
 	lifecycleUrl string,
@@ -65,38 +65,38 @@ func NewLifecycleClient(
 	}
 }
 
-func (l *LifecycleClient) GetFatmanDetails(fatmanName string, fatmanVersion string) (*FatmanDetails, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/fatman/", fatmanName, "/", fatmanVersion)
-	fatman := &FatmanDetails{}
-	err := l.getRequest(url, true, "getting Fatman details", true, fatman)
+func (l *LifecycleClient) GetJobDetails(jobName string, jobVersion string) (*JobDetails, error) {
+	url := JoinURL(l.lifecycleUrl, "/api/v1/job/", jobName, "/", jobVersion)
+	job := &JobDetails{}
+	err := l.getRequest(url, true, "getting Job details", true, job)
 	if err != nil {
 		return nil, err
 	}
-	return fatman, nil
+	return job, nil
 }
 
-func (l *LifecycleClient) HasAccessToFatman(fatmanName, fatmanVersion string, scope string) (bool, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/fatman/", fatmanName, "/", fatmanVersion, "/scope/", scope)
-	err := l.getRequest(url, false, "checking access to call Fatman", false, nil)
+func (l *LifecycleClient) HasAccessToJob(jobName, jobVersion string, scope string) (bool, error) {
+	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/job/", jobName, "/", jobVersion, "/scope/", scope)
+	err := l.getRequest(url, false, "checking access to call Job", false, nil)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (l *LifecycleClient) HasAccessToFatmanEndpoint(fatmanName, fatmanVersion, endpoint string) (bool, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/fatman_endpoint/", fatmanName, "/", fatmanVersion, "/scope/", AuthScopeCallFatman, "/endpoint/", endpoint)
-	err := l.getRequest(url, false, "checking access to call Fatman endpoint", false, nil)
+func (l *LifecycleClient) HasAccessToJobEndpoint(jobName, jobVersion, endpoint string) (bool, error) {
+	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/job_endpoint/", jobName, "/", jobVersion, "/scope/", AuthScopeCallJob, "/endpoint/", endpoint)
+	err := l.getRequest(url, false, "checking access to call Job endpoint", false, nil)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (l *LifecycleClient) GetFatmanPublicEndpoints(fatmanName, fatmanVersion string) ([]string, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/fatman/", fatmanName, "/", fatmanVersion, "/public-endpoints")
+func (l *LifecycleClient) GetJobPublicEndpoints(jobName, jobVersion string) ([]string, error) {
+	url := JoinURL(l.lifecycleUrl, "/api/v1/job/", jobName, "/", jobVersion, "/public-endpoints")
 	result := []*PublicEndpointRequestDto{}
-	err := l.getRequest(url, true, "getting Fatman public endpoints", true, &result)
+	err := l.getRequest(url, true, "getting Job public endpoints", true, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -111,14 +111,14 @@ func (l *LifecycleClient) GetFatmanPublicEndpoints(fatmanName, fatmanVersion str
 	return publicPaths, nil
 }
 
-func (l *LifecycleClient) IsPathPublic(fatmanName, fatmanVersion, fatmanPath string) (bool, error) {
-	publicPaths, err := l.GetFatmanPublicEndpoints(fatmanName, fatmanVersion)
+func (l *LifecycleClient) IsPathPublic(jobName, jobVersion, jobPath string) (bool, error) {
+	publicPaths, err := l.GetJobPublicEndpoints(jobName, jobVersion)
 	if err != nil {
 		return false, err
 	}
 
 	for _, publicPath := range publicPaths {
-		if strings.HasPrefix(fatmanPath, publicPath) {
+		if strings.HasPrefix(jobPath, publicPath) {
 			return true, nil
 		}
 	}
@@ -126,14 +126,14 @@ func (l *LifecycleClient) IsPathPublic(fatmanName, fatmanVersion, fatmanPath str
 	return false, nil
 }
 
-func (l *LifecycleClient) AuthenticateCaller(path, fatmanName, fatmanVersion, fatmanPath string, debug bool) error {
+func (l *LifecycleClient) AuthenticateCaller(path, jobName, jobVersion, jobPath string, debug bool) error {
 	for _, unprotectedEndpoint := range unprotectedEndpoints {
-		if strings.HasPrefix(fatmanPath, unprotectedEndpoint) {
+		if strings.HasPrefix(jobPath, unprotectedEndpoint) {
 			return nil
 		}
 	}
 
-	public, err := l.IsPathPublic(fatmanName, fatmanVersion, fatmanPath)
+	public, err := l.IsPathPublic(jobName, jobVersion, jobPath)
 	if err != nil {
 		return errors.Wrap(err, "checking public paths")
 	}
@@ -149,12 +149,12 @@ func (l *LifecycleClient) AuthenticateCaller(path, fatmanName, fatmanVersion, fa
 		)
 	}
 
-	ok, err := l.HasAccessToFatmanEndpoint(fatmanName, fatmanVersion, fatmanPath)
+	ok, err := l.HasAccessToJobEndpoint(jobName, jobVersion, jobPath)
 	if err != nil {
 		return errors.Wrap(err, "Auth error")
 	}
 	if !ok {
-		return AuthFailure(nil, "Unauthorized to access this fatman", debug)
+		return AuthFailure(nil, "Unauthorized to access this job", debug)
 	}
 	return nil
 }
@@ -190,7 +190,7 @@ func (l *LifecycleClient) getRequest(
 	defer r.Body.Close()
 
 	if r.StatusCode == http.StatusNotFound {
-		return FatmanNotFound
+		return JobNotFound
 	}
 	if r.StatusCode >= 400 {
 		errorResp := &lifecycleErrorResponse{}

@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 def load_validated_manifest(path: str) -> Manifest:
     """
     Load and validate manifest from a path. Raise exception in case of a defect.
-    :param path path to a Fatman manifest file or to a directory with it
+    :param path path to a Job manifest file or to a directory with it
     :return loaded, valid Manifest
     """
     manifest_path = get_manifest_path(path)
@@ -32,7 +32,7 @@ def validate_manifest(manifest: Manifest):
     """Check whether manifest is valid. Raise exception in case of error"""
     assert re.match(r"[^@]+@[^@]+\.[^@]+", manifest.owner_email), '"owner_email" is not a valid email'
 
-    with wrap_context('parsing Fatman version'):
+    with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
 
     assert ':' in manifest.lang, '"lang" should specify the version in a format "name:version"'

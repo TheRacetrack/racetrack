@@ -163,7 +163,7 @@ compose-volumes:
 	mkdir -p .plugins && chmod ugo+rw .plugins
 	mkdir -p .plugins/metrics && chmod ugo+rw .plugins/metrics
 
-compose-down: docker-clean-fatman
+compose-down: docker-clean-job
 	$(docker-compose) --profile dev down
 	rm -rf .plugins
 
@@ -210,8 +210,8 @@ local-registry-push: docker-build
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,localhost:5000/racetrack/pub:latest)
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,localhost:5000/racetrack/pgbouncer:latest)
 
-docker-clean-fatman:
-	./utils/cleanup-fatmen-docker.sh
+docker-clean-job:
+	./utils/cleanup-jobs-docker.sh
 
 registry:
 	./utils/setup-registry.sh

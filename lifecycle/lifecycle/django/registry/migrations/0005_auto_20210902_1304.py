@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registry', '0004_fatman_image_tag'),
+        ('registry', '0004_job_image_tag'),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=256, null=True),
         ),
         migrations.AddField(
-            model_name='fatman',
+            model_name='job',
             name='deployed_by',
             field=models.CharField(max_length=256, null=True),
         ),

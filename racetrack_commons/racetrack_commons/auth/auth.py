@@ -4,7 +4,7 @@ from enum import Enum
 class AuthSubjectType(Enum):
     USER = 'user'
     ESC = 'esc'
-    FATMAN_FAMILY = 'fatman_family'
+    JOB_FAMILY = 'job_family'
     INTERNAL = 'internal'  # internal communication of Racetrack services
 
 

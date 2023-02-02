@@ -6,12 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registry', '0003_rename_job_fatman'),
+        ('registry', '0003_rename_job_job'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='fatman',
+            model_name='job',
             name='image_tag',
             field=models.CharField(max_length=256, null=True),
         ),

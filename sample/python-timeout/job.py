@@ -4,15 +4,15 @@ import logging
 from timeout import timeout
 
 
-class TimeoutFatman:
+class TimeoutJob:
     def __init__(self):
-        """fatman to either crash or timeout for testing purposes"""
+        """job to either crash or timeout for testing purposes"""
 
     def perform(self, mode: str = "timeout", t: int = 250) -> dict:
         """perform for timeouts or crashing
 
         Args:
-            mode: keyword for setting fatman mode, can be either
+            mode: keyword for setting job mode, can be either
             - 'timeout' (sleep for given seconds),
             - 'timeout_kill' (sleep for given seconds, but kill if too long)
             - 'crash' (raise exception)
@@ -20,7 +20,7 @@ class TimeoutFatman:
             t: timeout in s.
 
         Returns:
-            out: Dict with keys for whether the fatman is alive or not and the timeout used.
+            out: Dict with keys for whether the job is alive or not and the timeout used.
         """
 
         if mode == "timeout":

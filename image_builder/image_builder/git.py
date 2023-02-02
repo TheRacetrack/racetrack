@@ -37,9 +37,9 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
     return git_workspace
 
 
-def read_fatman_git_version(workspace: Path) -> str:
-    """Read version from fatman git history"""
-    with wrap_context('reading version from fatman git history'):
+def read_job_git_version(workspace: Path) -> str:
+    """Read version from job git history"""
+    with wrap_context('reading version from job git history'):
         git_version = shell_output('git describe --long --tags --dirty --always', workdir=workspace).strip()
         return git_version
 

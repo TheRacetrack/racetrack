@@ -51,7 +51,7 @@ func getAuthFromHeaderOrCookie(req *http.Request) string {
 	if authToken != "" {
 		return authToken
 	}
-	authToken = readRequestIdentity(req, "X-Racetrack-Fatman-Auth")
+	authToken = readRequestIdentity(req, "X-Racetrack-Job-Auth")
 	if authToken != "" {
 		return authToken
 	}

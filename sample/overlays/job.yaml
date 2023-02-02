@@ -1,4 +1,4 @@
-extends: fatman-base.yaml
+extends: job-base.yaml
 
 name: overlays-dev
 

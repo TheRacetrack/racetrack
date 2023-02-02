@@ -4,23 +4,23 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def initialize_fatman_families(apps, schema_editor):
-    Fatman = apps.get_model('registry', 'Fatman')
-    FatmanFamily = apps.get_model('registry', 'FatmanFamily')
+def initialize_job_families(apps, schema_editor):
+    Job = apps.get_model('registry', 'Job')
+    JobFamily = apps.get_model('registry', 'JobFamily')
 
-    for fatman in Fatman.objects.all():
-        fatman.family = create_fatman_family_if_not_exist(fatman.name, FatmanFamily)
-        if not fatman.version:
-            fatman.version = '0.0.1'
-        fatman.save()
+    for job in Job.objects.all():
+        job.family = create_job_family_if_not_exist(job.name, JobFamily)
+        if not job.version:
+            job.version = '0.0.1'
+        job.save()
 
 
-def create_fatman_family_if_not_exist(fatman_name: str, FatmanFamily):
+def create_job_family_if_not_exist(job.name: str, JobFamily):
     try:
-        return FatmanFamily.objects.get(name=fatman_name)
-    except FatmanFamily.DoesNotExist:
-        new_model = FatmanFamily(
-            name=fatman_name,
+        return JobFamily.objects.get(name=job.name)
+    except JobFamily.DoesNotExist:
+        new_model = JobFamily(
+            name=job.name,
         )
         new_model.save()
         return new_model
@@ -33,11 +33,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(initialize_fatman_families),
+        migrations.RunPython(initialize_job_families),
         # disallow null family
         migrations.AlterField(
-            model_name='fatman',
+            model_name='job',
             name='family',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='registry.fatmanfamily'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='registry.jobfamily'),
         ),
     ]

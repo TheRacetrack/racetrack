@@ -6,7 +6,7 @@ If you are:
 
 - Racetrack User, see:
     - [User Guidelines](./user.md) - what is Racetrack, getting started, tutorial
-    - [Fatman Manifest File Schema](./manifest-schema.md) - list of available YAML fields
+    - [Job Manifest File Schema](./manifest-schema.md) - list of available YAML fields
     - [Using plugins](./development/using-plugins.md) - 
       how to install plugins
     - [Glossary](./glossary.md) - terminology explained

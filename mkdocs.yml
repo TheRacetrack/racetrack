@@ -51,7 +51,7 @@ nav:
   - Using Racetrack:
     - Quickstart: docs/quickstart.md
     - User Guide: docs/user.md
-    - Fatman Manifest File Schema: docs/manifest-schema.md
+    - Job Manifest File Schema: docs/manifest-schema.md
     - Permission model: docs/permissions.md
     - CLI client: racetrack_client/README.md
   - Plugins:

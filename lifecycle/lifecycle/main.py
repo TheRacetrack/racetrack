@@ -18,7 +18,7 @@ def main():
     subparser.set_defaults(func=_serve)
 
     subparser = subparsers.add_parser(
-        'supervisor', help='run Lifecycle Supervisor process monitoring fatmen and scheduling tasks in background')
+        'supervisor', help='run Lifecycle Supervisor process monitoring job and scheduling tasks in background')
     subparser.set_defaults(func=_run_supervisor)
 
     subparser = subparsers.add_parser(

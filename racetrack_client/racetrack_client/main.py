@@ -3,14 +3,14 @@ import typer
 
 from racetrack_client import __version__
 from racetrack_client.client.deploy import BuildContextMethod, send_deploy_request, DeploymentError
-from racetrack_client.client.manage import FatmenTableColumn, move_fatman, delete_fatman, list_fatmen
+from racetrack_client.client.manage import JobTableColumn, move_job, delete_job, list_jobs
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_current_remote, get_current_remote, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
 from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
-from racetrack_client.client.run import run_fatman_locally
+from racetrack_client.client.run import run_job_locally
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.log.logs import get_logger
@@ -105,25 +105,25 @@ def _delete_fatman(
 
 
 @cli.command('move', no_args_is_help=True)
-def _move_fatman(
-    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
-    version: str = typer.Option(..., show_default=False, help='version of the fatman to move out'),
+def _move_job(
+    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    version: str = typer.Option(..., show_default=False, help='version of the job to move out'),
     infrastructure: str = typer.Option(..., show_default=False, help='infrastructure target to move to'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
-    """Move fatman from one infrastructure target to another"""
-    move_fatman(remote, name, version, infrastructure)
+    """Move job from one infrastructure target to another"""
+    move_job(remote, name, version, infrastructure)
 
 
 @cli.command('run-local')
 def _run_local(
-    workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
+    workdir: str = typer.Argument(default='.', help='directory with job.yaml manifest'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     port: int = typer.Option(default=None, show_default=False, help='HTTP port to run the server on'),
-    build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building fatman from local files ("local") or from git repository ("git")'),
+    build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building job from local files ("local") or from git repository ("git")'),
 ):
-    """Run fatman locally"""
-    run_fatman_locally(workdir, remote, build_context_method=build_context, port=port)
+    """Run job locally"""
+    run_job_locally(workdir, remote, build_context_method=build_context, port=port)
 
 
 @cli.command('version')

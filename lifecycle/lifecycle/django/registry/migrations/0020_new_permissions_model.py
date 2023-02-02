@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('registry', '0019_auditlogevent_trashfatman'),
+        ('registry', '0019_auditlogevent_trashjob'),
     ]
 
     operations = [
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='AuthResourcePermission',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('scope', models.CharField(choices=[('read_fatman', 'read_fatman'), ('deploy_fatman', 'deploy_fatman'), ('deploy_new_family', 'deploy_new_family'), ('delete_fatman', 'delete_fatman'), ('call_fatman', 'call_fatman'), ('call_admin_api', 'call_admin_api'), ('full_access', 'full_access')], max_length=32)),
+                ('scope', models.CharField(choices=[('read_job', 'read_job'), ('deploy_job', 'deploy_job'), ('deploy_new_family', 'deploy_new_family'), ('delete_job', 'delete_job'), ('call_job', 'call_job'), ('call_admin_api', 'call_admin_api'), ('full_access', 'full_access')], max_length=32)),
                 ('all_resources', models.BooleanField(default=False)),
             ],
         ),
@@ -38,8 +38,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='authsubject',
-            name='fatman_family',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.fatmanfamily'),
+            name='job_family',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.jobfamily'),
         ),
         migrations.AddField(
             model_name='authsubject',
@@ -53,12 +53,12 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='authresourcepermission',
-            name='fatman',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.fatman'),
+            name='job',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.job'),
         ),
         migrations.AddField(
             model_name='authresourcepermission',
-            name='fatman_family',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.fatmanfamily'),
+            name='job_family',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.jobfamily'),
         ),
     ]

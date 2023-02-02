@@ -20,9 +20,9 @@ class AdderModel:
         :return: Sum of the numbers.
         """
         rkclient = get_rkclient()
-        deployment_pem_id = os.environ.get("FATMAN_DEPLOYMENT_PEM_ID")
+        deployment_pem_id = os.environ.get("JOB_DEPLOYMENT_PEM_ID")
         if not deployment_pem_id:
-            print("Warning, not found FATMAN_DEPLOYMENT_PEM_ID")
+            print("Warning, not found JOB_DEPLOYMENT_PEM_ID")
         else:
             deployment_pem_id = uuid.UUID(deployment_pem_id)
 

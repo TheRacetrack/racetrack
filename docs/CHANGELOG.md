@@ -163,7 +163,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Golang job types serve interactive Swagger UI with API documentation on the home page.
 
 ### Changed
-- Function `fatman_job_types` of plugins changed its signature.
+- Function `job_types` of plugins changed its signature.
   Now the first parameter is a Docker Registry prefix to work well
   with different Docker registry namespaces.
   All job-type plugins has to be adjusted accordingly.
@@ -171,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A namespace for docker images in a Docker Registry is configurable
   so that Racetrack can be released to any Docker Registry.
 - A namespace for fatman workloads running on Kubernetes is now configurable
-  by means of `FATMAN_K8S_NAMESPACE` environment variable,
+  by means of `JOB_K8S_NAMESPACE` environment variable,
   by default it's set to `racetrack`.
 - Hostname subdomain of Racetrack services is now configurable by means of
   `RACETRACK_SUBDOMAIN` environment variable, by default it's set to `racetrack`.
@@ -219,7 +219,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - 2022-06-30
 ### Added
-- Plugins can hook into the `post_fatman_delete` event to add their
+- Plugins can hook into the `post_job_delete` event to add their
   actions after deleting a fatman.
   See [Teams Notifications Racetrack Plugin](https://github.com/TheRacetrack/plugin-teams-notifications)
 
@@ -271,7 +271,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Auth header has been unified and renamed to `X-Racetrack-Auth`.
   It should be used no matter if it's ESC, User or a Fatman.
   Old headers are still supported but may be abandoned in the future:
-  `X-Racetrack-User-Auth`, `X-Racetrack-Esc-Auth`, `X-Racetrack-Fatman-Auth`
+  `X-Racetrack-User-Auth`, `X-Racetrack-Esc-Auth`, `X-Racetrack-Job-Auth`
 
 - Racetrack services has been adjusted to the new URL format. 
   `/ikp-rt` prefix has been removed from all URLs.
@@ -279,7 +279,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   For instance, Racetrack Dashboard address is now: `https://ikp-rt.<cluster.address>/dashboard`.
   Lifecycle address is: `https://ikp-rt.<cluster.address>/lifecycle`.
   PUB runs on: `https://ikp-rt.<cluster.address>/pub`.
-  Thus, Fatman instances can be accessed at: `https://ikp-rt.<cluster.address>/pub/fatman/<name>/<version>/<path>`.
+  Thus, Fatman instances can be accessed at: `https://ikp-rt.<cluster.address>/pub/job/<name>/<version>/<path>`.
 
 ## [1.2.0] - 2022-05-31
 ### Added
@@ -520,7 +520,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fatman logs are displayed on Dashboard under option "Logs" / "Runtime logs". 
 
 ### Changed
-- Fatman base URL is changed to `/ikp-rt/pub/fatman/<fatman-name>/<version>/`. 
+- Fatman base URL is changed to `/ikp-rt/pub/job/<fatman-name>/<version>/`. 
   Version can be e.g. `0.0.1` or `latest`.
 
 ## [0.2.0] - 2021-10-11

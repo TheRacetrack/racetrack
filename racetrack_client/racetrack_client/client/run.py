@@ -16,10 +16,10 @@ from racetrack_client.utils.request import parse_response_object, Requests
 
 logger = get_logger(__name__)
 
-FATMAN_INTERNAL_PORT = 7000  # Fatman listening port seen from inside the container
+JOB_INTERNAL_PORT = 7000  # Job listening port seen from inside the container
 
 
-def run_fatman_locally(
+def run_job_locally(
     workdir: str, 
     lifecycle_url: str, 
     build_context_method: BuildContextMethod = BuildContextMethod.default,
@@ -48,50 +48,50 @@ def run_fatman_locally(
     logger.info(f'job buidling requested: {deployment_id}')
 
     try:
-        fatman_image_name = _wait_for_building_result(lifecycle_url, deployment_id, user_auth)
+        job_image_name = _wait_for_building_result(lifecycle_url, deployment_id, user_auth)
     except Exception as e:
         raise DeploymentError(e)
 
-    logger.info(f'Fatman image "{manifest.name}" v{manifest.version} has been built.')
+    logger.info(f'Job image "{manifest.name}" v{manifest.version} has been built.')
 
     try:
         shell(f'docker', print_stdout=False)
     except CommandError as e:
         raise RuntimeError('Docker is not installed in the system') from e
 
-    logger.info(f'Pulling image {fatman_image_name}')
-    docker_registry = extract_docker_registry(fatman_image_name)
+    logger.info(f'Pulling image {job_image_name}')
+    docker_registry = extract_docker_registry(job_image_name)
     logger.info(f'Logging in to Docker registry: {docker_registry}')
     shell(f'docker login {docker_registry}', read_bytes=True)
 
-    shell(f'docker pull {fatman_image_name}')
+    shell(f'docker pull {job_image_name}')
 
     port = port or 7000
-    container_name = f'local-fatman-{manifest.name}-v-{manifest.version}'.replace('.', '-')
+    container_name = f'local-job-{manifest.name}-v-{manifest.version}'.replace('.', '-')
 
     deployment_timestamp = datetime_to_timestamp(now())
     runtime_env_vars = merge_env_vars(manifest.runtime_env, secret_vars.runtime_env)
     build_env_vars = merge_env_vars(manifest.build_env, secret_vars.build_env)
     runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
     common_env_vars: Dict[str, str] = {
-        'FATMAN_NAME': manifest.name,
-        'FATMAN_DEPLOYMENT_TIMESTAMP': str(deployment_timestamp),
+        'JOB_NAME': manifest.name,
+        'JOB_DEPLOYMENT_TIMESTAMP': str(deployment_timestamp),
     }
     runtime_env_vars = merge_env_vars(runtime_env_vars, common_env_vars)
     env_vars_cmd = ' '.join([f'--env {env_name}="{env_val}"' for env_name, env_val in runtime_env_vars.items()])
 
-    fatman_url = f'http://127.0.0.1:{port}/pub/fatman/{manifest.name}/{manifest.version}/'
-    logger.info(f'Running fatman "{manifest.name}" v{manifest.version} locally. '
-                f'Check out {fatman_url} to access your fatman. CTRL-C to stop.')
+    job_url = f'http://127.0.0.1:{port}/pub/job/{manifest.name}/{manifest.version}/'
+    logger.info(f'Running job "{manifest.name}" v{manifest.version} locally. '
+                f'Check out {job_url} to access your job. CTRL-C to stop.')
     try:
         shell(
             f'docker run --rm -it'
             f' --name {container_name}'
-            f' -p {port}:{FATMAN_INTERNAL_PORT}'
+            f' -p {port}:{JOB_INTERNAL_PORT}'
             f' {env_vars_cmd}'
-            f' --label fatman-name={manifest.name}'
-            f' --label fatman-version={manifest.version}'
-            f' {fatman_image_name}'
+            f' --label job.name={manifest.name}'
+            f' --label job.version={manifest.version}'
+            f' {job_image_name}'
         )
     except CommandError as e:
         if e.returncode == 130:  # Container terminated by Control-C
@@ -123,5 +123,5 @@ def _wait_for_building_result(lifecycle_url: str, deployment_id: str, user_auth:
     raise TimeoutError('Building timeout error')
 
 
-def extract_docker_registry(fatman_image_name: str) -> str:
-    return fatman_image_name.split('/')[0]
+def extract_docker_registry(job_image_name: str) -> str:
+    return job_image_name.split('/')[0]

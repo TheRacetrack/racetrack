@@ -14,49 +14,49 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RemoveField(
             model_name='esc',
-            name='fatmen',
+            name='jobs',
         ),
         migrations.AddField(
             model_name='deployment',
-            name='fatman_version',
+            name='job.version',
             field=models.CharField(default='0.0.1', max_length=256),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='fatman',
+            model_name='job',
             name='version',
             field=models.CharField(default='0.0.1', max_length=256),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='fatman',
+            model_name='job',
             name='name',
             field=models.CharField(max_length=512),
         ),
         migrations.AlterUniqueTogether(
-            name='fatman',
+            name='job',
             unique_together={('name', 'version')},
         ),
         migrations.CreateModel(
-            name='FatmanFamily',
+            name='JobFamily',
             fields=[
                 ('id', models.CharField(default=lifecycle.django.registry.models.new_uuid, max_length=36, primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=512, unique=True)),
-                ('allowed_fatman_families', models.ManyToManyField(blank=True, to='registry.FatmanFamily')),
+                ('allowed_job_families', models.ManyToManyField(blank=True, to='registry.JobFamily')),
             ],
         ),
         migrations.RemoveField(
-            model_name='fatman',
-            name='allowed_fatmen',
+            model_name='job',
+            name='allowed_jobs',
         ),
         migrations.AddField(
             model_name='esc',
-            name='allowed_fatman_families',
-            field=models.ManyToManyField(blank=True, related_name='allowed_escs', to='registry.FatmanFamily'),
+            name='allowed_job_families',
+            field=models.ManyToManyField(blank=True, related_name='allowed_escs', to='registry.JobFamily'),
         ),
         migrations.AddField(
-            model_name='fatman',
+            model_name='job',
             name='family',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.fatmanfamily'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='registry.jobfamily'),
         ),
     ]

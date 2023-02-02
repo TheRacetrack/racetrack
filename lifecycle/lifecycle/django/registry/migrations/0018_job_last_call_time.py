@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='fatman',
+            model_name='job',
             name='last_call_time',
             field=models.DateTimeField(blank=True, null=True),
         ),

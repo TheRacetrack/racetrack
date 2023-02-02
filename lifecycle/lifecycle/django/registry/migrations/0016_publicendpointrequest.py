@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.CharField(default=lifecycle.django.registry.models.new_uuid, max_length=36, primary_key=True, serialize=False)),
                 ('endpoint', models.CharField(max_length=512)),
                 ('active', models.BooleanField(default=False)),
-                ('fatman', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='registry.fatman')),
+                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='registry.job')),
             ],
             options={
                 'verbose_name_plural': 'Public endpoint requests',

@@ -9,7 +9,7 @@ from racetrack_client.log.logs import get_logger
 
 logger = get_logger(__name__)
 
-FATMAN_MANIFEST_FILENAME = 'fatman.yaml'
+JOB_MANIFEST_FILENAME = 'job.yaml'
 
 
 def load_manifest_from_yaml(path: Path) -> Manifest:
@@ -40,12 +40,12 @@ def parse_manifest_or_empty(manifest_yaml: Optional[str]) -> Optional[Manifest]:
     try:
         return parse_yaml_datamodel(manifest_yaml, Manifest)
     except Exception as e:
-        logger.error(f'Fatman Manifest YAML contains syntax error: {e}')
+        logger.error(f'Job Manifest YAML contains syntax error: {e}')
         return None
 
 
 def get_manifest_path(workdir_or_file: str) -> Path:
     manifest_path = Path(workdir_or_file)
     if manifest_path.is_dir():
-        manifest_path = manifest_path / FATMAN_MANIFEST_FILENAME
+        manifest_path = manifest_path / JOB_MANIFEST_FILENAME
     return manifest_path

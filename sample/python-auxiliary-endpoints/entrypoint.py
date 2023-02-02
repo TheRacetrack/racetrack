@@ -2,7 +2,7 @@ import random
 from typing import Dict, Callable
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def perform(self, x: float, y: float) -> float:
         """
         Add numbers.
@@ -34,7 +34,7 @@ class FatmanEntrypoint:
         return random.uniform(start, end)
 
     def docs_input_examples(self) -> Dict[str, Dict]:
-        """Return mapping of Fatman's endpoints to corresponding exemplary inputs."""
+        """Return mapping of Job's endpoints to corresponding exemplary inputs."""
         return {
             '/perform': {
                 'x': 40,

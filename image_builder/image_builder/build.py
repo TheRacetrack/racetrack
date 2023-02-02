@@ -16,7 +16,7 @@ from racetrack_commons.dir import project_root
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.builder import DockerBuilder
-from image_builder.git import fetch_repository, read_fatman_git_version
+from image_builder.git import fetch_repository, read_job_git_version
 from image_builder.metrics import (metric_active_building_tasks,
                                    metric_image_building_request_duration,
                                    metric_image_building_requests,
@@ -31,7 +31,7 @@ image_builders: Dict[str, ImageBuilder] = {
 logger = get_logger(__name__)
 
 
-def build_fatman_image(
+def build_job_image(
         config: Config,
         manifest: Manifest,
         git_credentials: Optional[Credentials],
@@ -43,8 +43,8 @@ def build_fatman_image(
 ) -> Tuple[List[str], str, Optional[str]]:
     """Build image from given manifest and return built image name"""
     metric_labels = {
-        'fatman_name': manifest.name,
-        'fatman_version': manifest.version,
+        'job.name': manifest.name,
+        'job.version': manifest.version,
     }
     metric_image_building_requests.labels(**metric_labels).inc()
     metric_active_building_tasks.inc()
@@ -108,5 +108,5 @@ def prepare_workspace(
 
     with wrap_context('fetching job repo'):
         workspace = fetch_repository(repo_dir, manifest, git_credentials)
-        git_version = read_fatman_git_version(workspace)
+        git_version = read_job_git_version(workspace)
         return workspace, repo_dir, git_version

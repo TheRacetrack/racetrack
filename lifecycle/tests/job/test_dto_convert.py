@@ -1,10 +1,10 @@
 
 
 from racetrack_client.utils.datamodel import parse_dict_datamodels
-from racetrack_commons.entities.dto import FatmanDto
+from racetrack_commons.entities.dto import JobDto
 
 
-def test_convert_json_to_fatman_dto():
+def test_convert_json_to_job_dto():
     response = [
         {
             'name': 'skynet',
@@ -32,14 +32,14 @@ def test_convert_json_to_fatman_dto():
             'image_tag': None,
         },
     ]
-    fatmen = parse_dict_datamodels(response, FatmanDto)
-    fatman = fatmen[0]
+    jobs = parse_dict_datamodels(response, JobDto)
+    job = jobs[0]
 
-    assert fatman.name == 'skynet'
-    assert fatman.manifest.name == 'skynet'
-    assert fatman.error is None
-    assert str(fatman.manifest.resources.memory_min) == '1Gi'
-    assert fatman.manifest.resources.memory_min.plain_number == 1024**3
-    assert fatman.manifest.resources.memory_max is None
-    assert fatman.manifest.resources.cpu_min.plain_number == 1
-    assert fatman.manifest.resources.cpu_max is None
+    assert job.name == 'skynet'
+    assert job.manifest.name == 'skynet'
+    assert job.error is None
+    assert str(job.manifest.resources.memory_min) == '1Gi'
+    assert job.manifest.resources.memory_min.plain_number == 1024**3
+    assert job.manifest.resources.memory_max is None
+    assert job.manifest.resources.cpu_min.plain_number == 1
+    assert job.manifest.resources.cpu_max is None

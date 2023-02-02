@@ -8,4 +8,4 @@ git:
 
 python:
   entrypoint_path: 'entrypoint.py'
-  entrypoint_class: 'FatmanEntrypoint'
+  entrypoint_class: 'JobEntrypoint'

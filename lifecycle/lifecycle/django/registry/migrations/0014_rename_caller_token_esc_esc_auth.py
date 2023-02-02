@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registry', '0013_fatmanfamily_api_key'),
+        ('registry', '0013_jobfamily_api_key'),
     ]
 
     operations = [

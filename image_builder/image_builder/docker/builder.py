@@ -21,7 +21,7 @@ from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, CommandError, shell_output
 from racetrack_client.utils.url import join_paths
-from racetrack_commons.deploy.image import get_fatman_image
+from racetrack_commons.deploy.image import get_job_image
 from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
@@ -45,8 +45,8 @@ class DockerBuilder(ImageBuilder):
         _wait_for_docker_engine_ready()
 
         metric_labels = {
-            'fatman_name': manifest.name,
-            'fatman_version': manifest.version,
+            'job.name': manifest.name,
+            'job.version': manifest.version,
         }
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
@@ -213,7 +213,7 @@ def _wait_for_docker_engine_ready():
 def get_base_image_name(docker_registry: str, registry_namespace: str, name: str, tag: str, module_index: int = 0) -> str:
     """Return full name of Job entrypoint image"""
     if module_index == 0:
-        image_type = 'fatman-base'
+        image_type = 'job-base'
     else:
-        image_type = f'fatman-base-{module_index}'
+        image_type = f'job-base-{module_index}'
     return join_paths(docker_registry, registry_namespace, image_type, f'{name}:{tag}')

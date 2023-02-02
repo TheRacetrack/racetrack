@@ -13,14 +13,14 @@ logger = get_logger(__name__)
 
 
 def run_lifecycle_server():
-    """Serve API for deploying fatman from workspaces on demand"""
+    """Serve API for deploying job from workspaces on demand"""
     config, plugin_engine = _init_lifecycle()
     run_api_server(config, plugin_engine)
 
 
 def run_lifecycle_supervisor():
     """
-    Run Lifecycle Supervisor process monitoring fatmen and scheduling tasks in background
+    Run Lifecycle Supervisor process monitoring jobs and scheduling tasks in background
     """
     config, plugin_engine = _init_lifecycle()
     logger.info("Starting Lifecycle Supervisor")

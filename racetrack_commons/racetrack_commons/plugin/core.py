@@ -4,7 +4,7 @@ from typing import Any
 from pathlib import Path
 
 from racetrack_client.manifest import Manifest
-from racetrack_commons.entities.dto import FatmanDto
+from racetrack_commons.entities.dto import JobDto
 
 
 class PluginCore(ABC):
@@ -17,25 +17,25 @@ class PluginCore(ABC):
     - self.config_path: pathlib.Path - path to a file with plugin's config
     """
 
-    def post_fatman_deploy(
+    def post_job_deploy(
         self,
         manifest: Manifest,
-        fatman: FatmanDto,
+        job: JobDto,
         image_name: str,
         deployer_username: str | None = None,
     ):
         """
-        Supplementary actions invoked after fatman is deployed
-        :param image_name: full name of the fatman image
-        :param deployer_username: username of the user who deployed the fatman
+        Supplementary actions invoked after job is deployed
+        :param image_name: full name of the job image
+        :param deployer_username: username of the user who deployed the job
         """
         pass
 
-    def fatman_runtime_env_vars(self) -> dict[str, str] | None:
-        """Supplementary env vars dictionary added to runtime vars when deploying a Fatman"""
+    def job_runtime_env_vars(self) -> dict[str, str] | None:
+        """Supplementary env vars dictionary added to runtime vars when deploying a Job"""
         return None
 
-    def fatman_job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+    def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
         """
         Job types provided by this plugin
         :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
@@ -44,8 +44,8 @@ class PluginCore(ABC):
 
     def infrastructure_targets(self) -> dict[str, Any]:
         """
-        Infrastructure Targets (deployment targets for Fatmen) provided by this plugin
-        Infrastructure Target should contain Fatman Deployer, Fatman Monitor and Fatman Logs Streamer.
+        Infrastructure Targets (deployment targets for Jobs) provided by this plugin
+        Infrastructure Target should contain Job Deployer, Job Monitor and Job Logs Streamer.
         :return dict of infrastructure name -> an instance of lifecycle.deployer.infra_target.InfrastructureTarget
         """
         return {}
@@ -56,9 +56,9 @@ class PluginCore(ABC):
         """
         return None
 
-    def post_fatman_delete(self, fatman: FatmanDto, username_executor: str | None = None):
+    def post_job_delete(self, job: JobDto, username_executor: str | None = None):
         """
-        Supplementary actions invoked after fatman is deleted
-        :param username_executor: username of the user who deleted the fatman
+        Supplementary actions invoked after job is deleted
+        :param username_executor: username of the user who deleted the job
         """
         pass

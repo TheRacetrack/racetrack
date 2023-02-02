@@ -5,4 +5,4 @@ COPY main.py /src/
 WORKDIR /src/
 CMD python -u main.py
 
-LABEL racetrack-component="fatman"
+LABEL racetrack-component="job"

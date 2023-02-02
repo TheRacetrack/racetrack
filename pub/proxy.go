@@ -25,7 +25,7 @@ func proxyEndpoint(c *gin.Context, cfg *Config) {
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	statusCode, err := handleProxyRequest(c, cfg, logger, requestId)
 	if err != nil {
-		metricFatmanProxyRequestErrors.Inc()
+		metricJobProxyRequestErros.Inc()
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
 			"status": statusCode,
@@ -38,7 +38,7 @@ func proxyEndpoint(c *gin.Context, cfg *Config) {
 			"requestId": requestId,
 		})
 	}
-	metricOverallFatmanProxyResponseTime.Add(time.Since(startTime).Seconds())
+	metricOverallJobProxyResponseTime.Add(time.Since(startTime).Seconds())
 }
 
 func handleProxyRequest(
@@ -53,14 +53,14 @@ func handleProxyRequest(
 		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
 	}
 
-	fatmanName := c.Param("fatman")
-	if fatmanName == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract fatman name")
+	jobName := c.Param("job")
+	if jobName == "" {
+		return http.StatusBadRequest, errors.New("Couldn't extract job.name")
 	}
 
-	fatmanVersion := c.Param("version")
-	if fatmanVersion == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract fatman version")
+	jobVersion := c.Param("version")
+	if jobVersion == "" {
+		return http.StatusBadRequest, errors.New("Couldn't extract job.version")
 	}
 
 	if c.Request.Header.Get("Accept") == "" {
@@ -68,24 +68,24 @@ func handleProxyRequest(
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	fatmanPath := c.Param("path")
+	jobPath := c.Param("path")
 
 	authToken := getAuthFromHeaderOrCookie(c.Request)
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 
-	fatman, err := lifecycleClient.GetFatmanDetails(fatmanName, fatmanVersion)
+	job, err := lifecycleClient.GetJobDetails(jobName, jobVersion)
 	if err != nil {
-		if errors.Is(err, FatmanNotFound) {
+		if errors.Is(err, JobNotFound) {
 			return http.StatusNotFound, err
 		}
-		return http.StatusInternalServerError, errors.Wrap(err, "failed to get Fatman details")
+		return http.StatusInternalServerError, errors.Wrap(err, "failed to get Job details")
 	}
 
-	metricFatmanProxyRequests.WithLabelValues(fatmanName, fatman.Version).Inc()
+	metricJobProxyRequests.WithLabelValues(jobName, job.Version).Inc()
 
 	if cfg.AuthRequired {
-		err := lifecycleClient.AuthenticateCaller(c.Request.URL.Path, fatmanName, fatman.Version, fatmanPath, cfg.AuthDebug)
+		err := lifecycleClient.AuthenticateCaller(c.Request.URL.Path, jobName, job.Version, jobPath, cfg.AuthDebug)
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
@@ -97,15 +97,15 @@ func handleProxyRequest(
 		}
 	}
 
-	targetUrl := TargetURL(cfg, fatman, c.Request.URL.Path)
-	ServeReverseProxy(targetUrl, c, fatman, cfg, logger, requestId)
+	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId)
 	return 200, nil
 }
 
 func ServeReverseProxy(
 	target url.URL,
 	c *gin.Context,
-	fatman *FatmanDetails,
+	job *JobDetails,
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
@@ -136,22 +136,22 @@ func ServeReverseProxy(
 
 		res.Header.Set(cfg.RequestTracingHeader, requestId)
 		logger.Info("Proxy request done", log.Ctx{
-			"fatmanName":    fatman.Name,
-			"fatmanVersion": fatman.Version,
-			"fatmanPath":    target.Path,
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"jobPath":    target.Path,
 			"status":        res.StatusCode,
 		})
 		statusCode := strconv.Itoa(res.StatusCode)
-		metricFatmanProxyResponseCodes.WithLabelValues(fatman.Name, fatman.Version, statusCode).Inc()
+		metricJobProxyResponseCodes.WithLabelValues(job.Name, job.Version, statusCode).Inc()
 		return nil
 	}
 
 	errorHandler := func(res http.ResponseWriter, req *http.Request, err error) {
 		errorStr := err.Error()
 		logger.Error("Reverse proxy error", log.Ctx{
-			"fatmanName":    fatman.Name,
-			"fatmanVersion": fatman.Version,
-			"fatmanStatus":  fatman.Status,
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"jobStatus":  job.Status,
 			"host":          target.Host,
 			"path":          target.Path,
 			"error":         errorStr,
@@ -159,12 +159,12 @@ func ServeReverseProxy(
 		c.JSON(http.StatusBadGateway, gin.H{
 			"error":         fmt.Sprintf("Reverse proxy error: %s", errorStr),
 			"status":        http.StatusText(http.StatusBadGateway),
-			"fatmanName":    fatman.Name,
-			"fatmanVersion": fatman.Version,
-			"fatmanStatus":  fatman.Status,
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"jobStatus":  job.Status,
 			"requestId":     requestId,
 		})
-		metricFatmanProxyErrors.Inc()
+		metricJobProxyErrors.Inc()
 	}
 
 	proxy := &httputil.ReverseProxy{
@@ -173,15 +173,15 @@ func ServeReverseProxy(
 		ErrorHandler:   errorHandler,
 	}
 
-	metricFatmanProxyRequestsStarted.WithLabelValues(fatman.Name, fatman.Version).Inc()
-	fatmanCallStartTime := time.Now()
+	metricJobProxyRequestsStarted.WithLabelValues(job.Name, job.Version).Inc()
+	jobCallStartTime := time.Now()
 
 	proxy.ServeHTTP(c.Writer, c.Request)
 
-	fatmanCallTime := time.Since(fatmanCallStartTime).Seconds()
-	metricFatmanCallResponseTimeHistogram.WithLabelValues(fatman.Name, fatman.Version).Observe(fatmanCallTime)
-	metricFatmanCallResponseTime.WithLabelValues(fatman.Name, fatman.Version).Add(fatmanCallTime)
-	metricFatmanProxyRequestsDone.WithLabelValues(fatman.Name, fatman.Version).Inc()
+	jobCallTime := time.Since(jobCallStartTime).Seconds()
+	metricJobCallResponseTimeHistogram.WithLabelValues(job.Name, job.Version).Observe(jobCallTime)
+	metricJobCallResponseTime.WithLabelValues(job.Name, job.Version).Add(jobCallTime)
+	metricJobProxyRequestsDone.WithLabelValues(job.Name, job.Version).Inc()
 }
 
 func getRequestTracingId(req *http.Request, headerName string) string {

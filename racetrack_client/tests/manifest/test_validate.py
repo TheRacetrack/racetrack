@@ -42,9 +42,9 @@ resources:
 
 
 def test_directory_with_valid_manifest():
-    path = tempfile.mkdtemp(prefix='fatman-test')
+    path = tempfile.mkdtemp(prefix='job-test')
     try:
-        (Path(path) / 'fatman.yaml').write_text("""
+        (Path(path) / 'job.yaml').write_text("""
 name: golang-function
 owner_email: nobody@example.com
 lang: golang:latest
@@ -139,7 +139,7 @@ git:
 
 
 def validate_tmp_manifest(content: str) -> Manifest:
-    fd, path = tempfile.mkstemp(prefix='fatman', suffix='.yaml')
+    fd, path = tempfile.mkstemp(prefix='job', suffix='.yaml')
     try:
         with open(fd, 'w') as f:
             f.write(content)

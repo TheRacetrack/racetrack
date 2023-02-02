@@ -9,7 +9,7 @@ git:
 python:
   requirements_path: 'requirements.txt'
   entrypoint_path: 'entrypoint.py'
-  entrypoint_class: 'FatmanEntrypoint'
+  entrypoint_class: 'JobEntrypoint'
 
 public_endpoints:
   - '/api/v1/webview'
