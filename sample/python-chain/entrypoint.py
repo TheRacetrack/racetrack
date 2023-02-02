@@ -18,7 +18,7 @@ class JobEntrypoint:
 
     def call_job(
         self,
-        job.name: str,
+        job_name: str,
         path: str = '/api/v1/perform',
         payload: Dict = None,
         version: str = 'latest',
@@ -26,7 +26,7 @@ class JobEntrypoint:
         try:
             src_job = os.environ['JOB_NAME']
             internal_pub_url = os.environ['PUB_URL']
-            url = f'{internal_pub_url}/job/{job.name}/{version}{path}'
+            url = f'{internal_pub_url}/job/{job_name}/{version}{path}'
 
             tracing_header = os.environ.get('REQUEST_TRACING_HEADER', 'X-Request-Tracing-Id')
             if hasattr(self, 'request_context'):
@@ -43,6 +43,6 @@ class JobEntrypoint:
             return r.json()
             
         except requests.HTTPError as e:
-            raise RuntimeError(f'failed to call job "{job.name} {version}" by {src_job}: {e}: {e.response.text}') from e
+            raise RuntimeError(f'failed to call job "{job_name} {version}" by {src_job}: {e}: {e.response.text}') from e
         except BaseException as e:
-            raise RuntimeError(f'failed to call job "{job.name} {version}" by {src_job}: {e}') from e
+            raise RuntimeError(f'failed to call job "{job_name} {version}" by {src_job}: {e}') from e

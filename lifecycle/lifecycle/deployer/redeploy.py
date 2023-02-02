@@ -118,7 +118,7 @@ def move_job(
         with wrap_context('deleting job from a former infrastructure'):
             save_deployment_phase(deployment.id, 'deleting job from a former infrastructure')
             decommission_job_infrastructure(
-                job.name, job.version, old_infra_target, config, deployer_username, plugin_engine
+                job_name, job_version, old_infra_target, config, deployer_username, plugin_engine
             )
 
         save_deployment_result(deployment.id, DeploymentStatus.DONE)

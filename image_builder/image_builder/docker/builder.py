@@ -45,8 +45,8 @@ class DockerBuilder(ImageBuilder):
         _wait_for_docker_engine_ready()
 
         metric_labels = {
-            'job.name': manifest.name,
-            'job.version': manifest.version,
+            'job_name': manifest.name,
+            'job_version': manifest.version,
         }
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'

@@ -60,10 +60,10 @@ def assess_job_usability(job: JobDto, all_jobs: List[JobDto]) -> Tuple[float, Li
 def _count_job_newer_versions(job: JobDto, all_jobs: List[JobDto]) -> int:
     """Count how many job (from the same family) are newer than this one"""
     count = 0
-    job.version = SemanticVersion(job.version)
+    job_version = SemanticVersion(job.version)
     family_jobs = [f for f in all_jobs if f.name == job.name]
     for f in family_jobs:
-        if SemanticVersion(f.version) > job.version:
+        if SemanticVersion(f.version) > job_version:
             count += 1
     return count
 

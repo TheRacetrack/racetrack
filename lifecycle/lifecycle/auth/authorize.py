@@ -147,7 +147,7 @@ def has_scope_permission(
 
 
 @db_access
-def list_permitted_job(
+def list_permitted_jobs(
     auth_subject: models.AuthSubject,
     scope: str,
     all_job: List[JobDto],
@@ -168,7 +168,7 @@ def list_permitted_job(
     id_to_job = {f'{f.name} v{f.version}': f for f in all_job}
     family_to_ids = defaultdict(list)
     for job in all_jobs:
-        family_to_ids[job.name].append(f'{job.name} v{job.version}')
+        family_to_ids[job_name].append(f'{job_name} v{job_version}')
 
     job_ids = set()
     for permission in queryset:
@@ -176,7 +176,7 @@ def list_permitted_job(
             return all_jobs
 
         if permission.job is not None:
-            job_ids.add(f'{permission.job.name} v{permission.job.version}')
+            job_ids.add(f'{permission.job_name} v{permission.job_version}')
 
         if permission.job_family is not None:
             job_ids.update(family_to_ids[permission.job_family.name])
@@ -207,7 +207,7 @@ def list_permitted_families(
             return all_families
 
         if permission.job_family is not None:
-            family_names.add(permission.job.name)
+            family_names.add(permission.job_name)
 
     return [name_to_family[name] for name in sorted(family_names)]
 

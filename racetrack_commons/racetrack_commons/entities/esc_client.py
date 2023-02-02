@@ -14,9 +14,9 @@ class EscRegistryClient:
         response = self.lc_client.request_dict('post', '/api/v1/escs', json={'name': name, 'id': esc_id})
         return parse_dict_datamodel(response, EscDto)
 
-    def esc_allow_job(self, esc_id: str, job.name: str):
+    def esc_allow_job(self, esc_id: str, job_name: str):
         scope = AuthScope.CALL_JOB.value
-        self.lc_client.request('post', f'/api/v1/auth/allow/esc/{esc_id}/job/{job.name}/scope/{scope}')
+        self.lc_client.request('post', f'/api/v1/auth/allow/esc/{esc_id}/job/{job_name}/scope/{scope}')
 
     def get_esc_auth_token(self, esc_id: str) -> str:
         response = self.lc_client.request_dict('get', f'/api/v1/auth/token/esc/{esc_id}')

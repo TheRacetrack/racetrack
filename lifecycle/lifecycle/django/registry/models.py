@@ -64,8 +64,8 @@ class Deployment(models.Model):
     create_time = models.DateTimeField(default=now)
     update_time = models.DateTimeField(default=now)
     manifest = models.TextField()
-    job.name = models.CharField(max_length=512)
-    job.version = models.CharField(max_length=256)
+    job_name = models.CharField(max_length=512)
+    job_version = models.CharField(max_length=256)
     error = models.TextField(null=True, blank=True)
     deployed_by = models.CharField(max_length=256, null=True)
     build_logs = models.TextField(null=True, blank=True)
@@ -137,8 +137,8 @@ class AuditLogEvent(models.Model):
     properties = models.TextField(null=True)
     username_executor = models.CharField(max_length=512, null=True)
     username_subject = models.CharField(max_length=512, null=True)
-    job.name = models.CharField(max_length=512, null=True)
-    job.version = models.CharField(max_length=256, null=True)
+    job_name = models.CharField(max_length=512, null=True)
+    job_version = models.CharField(max_length=256, null=True)
 
 
 class AuthSubject(models.Model):

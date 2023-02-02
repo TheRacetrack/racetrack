@@ -1,9 +1,9 @@
 # Racetrack
 
-[![GitHub version (latest SemVer)](https://img.shields.io/github/v/tag/TheRacetrack/racetrack?label=github&sort=semver)](https://github.com/TheRacetrack/racetrack)
+[![GitHub version (latest SemVer)](https://img.shields.io/github/v/tag/LookACastle/racetrack?label=github&sort=semver)](https://github.com/LookACastle/racetrack)
 [![PyPI](https://img.shields.io/pypi/v/racetrack-client)](https://pypi.org/project/racetrack-client/)
-[![Github Pages](https://img.shields.io/badge/docs-github.io-blue)](https://theracetrack.github.io/racetrack)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/TheRacetrack/racetrack/test.yml?branch=master&label=tests)](https://github.com/TheRacetrack/racetrack/actions?query=workflow%3Atest)
+[![Github Pages](https://img.shields.io/badge/docs-github.io-blue)](https://lookacastle.github.io/racetrack)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LookACastle/racetrack/test.yml?branch=master&label=tests)](https://github.com/LookACastle/racetrack/actions?query=workflow%3Atest)
 
 Racetrack is an opinionated framework for deploying, managing, and serving
 application workloads.
@@ -80,25 +80,25 @@ please follow the [Tutorial](docs/user.md#tutorial).
 * [Developing plugins](docs/development/developing-plugins.md)
 * [Developing a new job type](docs/development/plugins-job-types.md)
 
-See the [Documentation](https://theracetrack.github.io/racetrack/) for more details.
+See the [Documentation](https://lookacastle.github.io/racetrack/) for more details.
 
 ## Currently supported
 
 ### What can we deploy?
 
-* [Python 3](https://github.com/TheRacetrack/plugin-python-job-type)
-* [Go](https://github.com/TheRacetrack/plugin-go-job-type)
-* [Rust](https://github.com/TheRacetrack/plugin-rust-job-type)
-* [Any language wrapped in a Dockerfile](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
-* [HUGO framework](https://github.com/TheRacetrack/plugin-hugo-job-type)
-* [Drupal](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/drupal)
-* [Sphinx](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/sphinx)
+* [Python 3](https://github.com/LookACastle/plugin-python-job-type)
+* [Go](https://github.com/LookACastle/plugin-go-job-type)
+* [Rust](https://github.com/LookACastle/plugin-rust-job-type)
+* [Any language wrapped in a Dockerfile](https://github.com/LookACastle/plugin-docker-proxy-job-type)
+* [HUGO framework](https://github.com/LookACastle/plugin-hugo-job-type)
+* [Drupal](https://github.com/LookACastle/plugin-docker-proxy-job-type/tree/master/sample/drupal)
+* [Sphinx](https://github.com/LookACastle/plugin-docker-proxy-job-type/tree/master/sample/sphinx)
 
 ### Where can we deploy to?
 
-* [Kubernetes](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure)
-* [local Docker](https://github.com/TheRacetrack/plugin-docker-infrastructure)
-* [remote Docker Daemon](https://github.com/TheRacetrack/plugin-docker-daemon-deployer)
+* [Kubernetes](https://github.com/LookACastle/plugin-kubernetes-infrastructure)
+* [local Docker](https://github.com/LookACastle/plugin-docker-infrastructure)
+* [remote Docker Daemon](https://github.com/LookACastle/plugin-docker-daemon-deployer)
 
 ## About
 

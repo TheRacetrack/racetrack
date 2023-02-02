@@ -24,22 +24,22 @@ class JobAdmin(admin.ModelAdmin):
 
 
 class DeploymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'job.name', 'job.version', 'status', 'create_time', 'deployed_by', 'phase')
-    search_fields = ['id', 'job.name', 'job.version', 'deployed_by']
-    list_filter = ['status', 'deployed_by', 'job.name']
+    list_display = ('id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase')
+    search_fields = ['id', 'job_name', 'job_version', 'deployed_by']
+    list_filter = ['status', 'deployed_by', 'job_name']
 
 
 class PublicEndpointRequestAdmin(admin.ModelAdmin):
-    list_display = ('get_job.name', 'get_job.version', 'endpoint', 'active')
+    list_display = ('get_job_name', 'get_job_version', 'endpoint', 'active')
     search_fields = ['endpoint']
     list_filter = ['job__name', 'endpoint', 'active']
 
     @admin.display(ordering='job__name', description='Job name')
-    def get_job.name(self, obj):
+    def get_job_name(self, obj):
         return obj.job.name
 
     @admin.display(ordering='job__version', description='Job version')
-    def get_job.version(self, obj):
+    def get_job_version(self, obj):
         return obj.job.version
 
 
@@ -59,9 +59,9 @@ class TrashJobAdmin(admin.ModelAdmin):
 
 
 class AuditLogEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'event_type', 'username_executor', 'job.name', 'job.version')
-    search_fields = ['id', 'event_type', 'username_executor', 'job.name', 'job.version']
-    list_filter = ['event_type', 'username_executor', 'job.name']
+    list_display = ('id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version')
+    search_fields = ['id', 'event_type', 'username_executor', 'job_name', 'job_version']
+    list_filter = ['event_type', 'username_executor', 'job_name']
 
 
 class AuthSubjectTypeFilter(SimpleListFilter):

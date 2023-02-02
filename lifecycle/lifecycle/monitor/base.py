@@ -55,7 +55,7 @@ class LogsStreamer(ABC):
         Start a session transmitting messages to client.
         Session should call `broadcast` method when next message arrives.
         :param session_id: ID of a client session to be referred when closing
-        :param resource_properties: properties describing a resource to be monitored (job.name, version, etc)
+        :param resource_properties: properties describing a resource to be monitored (job name, version, etc)
         """
         pass
 

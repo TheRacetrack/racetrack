@@ -89,8 +89,8 @@ def run_job_locally(
             f' --name {container_name}'
             f' -p {port}:{JOB_INTERNAL_PORT}'
             f' {env_vars_cmd}'
-            f' --label job.name={manifest.name}'
-            f' --label job.version={manifest.version}'
+            f' --label job-name={manifest.name}'
+            f' --label job-version={manifest.version}'
             f' {job_image_name}'
         )
     except CommandError as e:

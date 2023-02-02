@@ -108,7 +108,7 @@ def post_job_deploy(
     with wrap_context('registering public endpoint requests'):
         if manifest.public_endpoints:
             for endpoint in manifest.public_endpoints:
-                create_job_public_endpoint_if_not_exist(job.name, job.version, endpoint)
+                create_job_public_endpoint_if_not_exist(job_name, job_version, endpoint)
 
     if previous_job is None:
         AuditLogger().log_event(
@@ -122,8 +122,8 @@ def post_job_deploy(
             AuditLogEventType.JOB_REDEPLOYED,
             username_executor=deployment.deployed_by,
             username_subject=previous_job.deployed_by,
-            job_name=job.name,
-            job_version=job.version,
+            job_name=job_name,
+            job_version=job_version,
         )
 
 

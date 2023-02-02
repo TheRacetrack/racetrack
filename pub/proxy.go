@@ -55,12 +55,12 @@ func handleProxyRequest(
 
 	jobName := c.Param("job")
 	if jobName == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job.name")
+		return http.StatusBadRequest, errors.New("Couldn't extract job name")
 	}
 
 	jobVersion := c.Param("version")
 	if jobVersion == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job.version")
+		return http.StatusBadRequest, errors.New("Couldn't extract job version")
 	}
 
 	if c.Request.Header.Get("Accept") == "" {

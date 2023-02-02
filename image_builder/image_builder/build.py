@@ -43,8 +43,8 @@ def build_job_image(
 ) -> Tuple[List[str], str, Optional[str]]:
     """Build image from given manifest and return built image name"""
     metric_labels = {
-        'job.name': manifest.name,
-        'job.version': manifest.version,
+        'job_name': manifest.name,
+        'job_version': manifest.version,
     }
     metric_image_building_requests.labels(**metric_labels).inc()
     metric_active_building_tasks.inc()

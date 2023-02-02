@@ -93,7 +93,7 @@ racetrack deploy sample/python-class/ --remote http://localhost:7202
 
 New container should be created. It can be accessed at http://localhost:7000
 You need to `docker rm` or `make docker-clean-job` to clean leftover job on your own.
-In case of errors, troubleshoot with `docker ps` and `docker logs -f <job.name>`.
+In case of errors, troubleshoot with `docker ps` and `docker logs -f <job_name>`.
 
 Job can be accessed through the PUB at http://localhost:7205/pub/job/adder/latest,
 where "adder" is a name of a job from `job.yaml`.

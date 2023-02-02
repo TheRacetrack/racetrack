@@ -3,14 +3,14 @@ services:
 
   locust:
     container_name: locust
-    image: ghcr.io/theracetrack/racetrack/locust:latest
+    image: ghcr.io/lookacastle/racetrack/locust:latest
     build:
       context: ../..
       dockerfile: tests/stress/Dockerfile
     restart: unless-stopped
     environment:
       test_env: compose
-      job.name: adder
-      job.version: 0.0.1
+      job_name: adder
+      job_version: 0.0.1
       LIFECYCLE_URL: http://localhost:7102/lifecycle
     network_mode: "host"

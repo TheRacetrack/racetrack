@@ -23,7 +23,7 @@ The following request checks service's healthiness:
 ```bash
 curl "http://localhost:7105/pub/job/python-chain/latest/health" 
 # Expect:
-# {"service": "job", "job.name": "python-chain", "status": "pass"}
+# {"service": "job", "job_name": "python-chain", "status": "pass"}
 ```
 
 # API docs

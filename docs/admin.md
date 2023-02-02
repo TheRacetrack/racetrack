@@ -181,7 +181,7 @@ When restoring, just push the images back.
 Check out `image-builder` config to see what's the URL of the registry configured with your Racetrack instance:
 ```yaml
 docker_registry: ghcr.io
-docker_registry_namespace: theracetrack/racetrack
+docker_registry_namespace: lookacastle/racetrack
 ```
 
 ### Job Secrets

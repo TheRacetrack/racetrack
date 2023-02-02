@@ -62,11 +62,11 @@ def _wait_for_image_builder_ready():
         Requests.get(f'{image_builder_url}/health').raise_for_status()
 
 
-def _delete_workload(job.name: str):
-    print(f'Deleting remnant workloads of {job.name}...')
+def _delete_workload(job_name: str):
+    print(f'Deleting remnant workloads of {job_name}...')
     try:
         frc = JobRegistryClient(auth_token=ADMIN_AUTH_TOKEN)
-        frc.delete_deployed_job(job.name, job.version='0.0.1')
+        frc.delete_deployed_job(job_name, job_version='0.0.1')
     except ResponseError as e:
         if e.status_code not in {200, 404}:
             raise ContextError('deleting previous workloads') from e
@@ -83,18 +83,18 @@ def _create_esc() -> EscDto:
         if e.status_code not in {200, 409}:  # created or already exists
             raise ContextError('creating ESC') from e
 
-def _deploy_and_verify(sample_path: str, job.name: str, esc: EscDto):
+def _deploy_and_verify(sample_path: str, job_name: str, esc: EscDto):
     _deploy(sample_path)
 
-    print(f'Allowing a job {job.name} to ESC...')
+    print(f'Allowing a job {job_name} to ESC...')
     erc = EscRegistryClient(auth_token=INTERNAL_AUTH_TOKEN)
-    erc.esc_allow_job(esc_id=esc.id, job.name=job.name)
+    erc.esc_allow_job(esc_id=esc.id, job_name=job_name)
     esc_token = erc.get_esc_auth_token(esc.id)
 
-    if job.name == 'adder':
-        _verify_deployed_job_adder_response(job.name, esc_token)
+    if job_name == 'adder':
+        _verify_deployed_job_adder_response(job_name, esc_token)
 
-    _verify_job_logs(job.name, ADMIN_AUTH_TOKEN)
+    _verify_job_logs(job_name, ADMIN_AUTH_TOKEN)
 
 
 def _deploy(sample_path: str):
@@ -107,10 +107,10 @@ def _deploy(sample_path: str):
 
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=3, max_time=60, jitter=None)
-def _verify_deployed_job_adder_response(job.name: str, auth_token: str):
-    print(f'Verifying {job.name} job response...')
+def _verify_deployed_job_adder_response(job_name: str, auth_token: str):
+    print(f'Verifying {job_name} job response...')
     pub_url = os.environ['PUB_URL']
-    url = f'{pub_url}/job/{job.name}/latest/api/v1/perform'
+    url = f'{pub_url}/job/{job_name}/latest/api/v1/perform'
 
     headers = {}
     if auth_token:
@@ -123,10 +123,10 @@ def _verify_deployed_job_adder_response(job.name: str, auth_token: str):
 
 
 @backoff.on_exception(backoff.fibo, ResponseError, max_value=3, max_time=60, jitter=None)
-def _verify_job_logs(job.name: str, user_auth: str):
-    print(f'Verifying {job.name} logs...')
+def _verify_job_logs(job_name: str, user_auth: str):
+    print(f'Verifying {job_name} logs...')
     frc = JobRegistryClient(auth_token=user_auth)
-    logs = frc.get_runtime_logs(job.name, 'latest')
+    logs = frc.get_runtime_logs(job_name, 'latest')
     assert len(logs) > 1, 'Unexpected short log from Job'
 
 

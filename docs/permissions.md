@@ -67,7 +67,7 @@ If none of the fields is filled, the permission works on all of the resources (a
 
 Keep in mind that the permission may give an access not only to the existing resources, 
 but also for those that are yet to come up in future.
-For example, new job.version from the same family will be affected, while there is a permission covering the whole family.
+For example, new job version from the same family will be affected, while there is a permission covering the whole family.
 
 ## How to grant a permission?
 If you've run into an "Unauthorized" error like this:

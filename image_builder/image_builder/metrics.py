@@ -11,27 +11,27 @@ metric_images_building_errors = Counter(
 metric_image_building_requests = Counter(
     "image_building_requests",
     "Number of Job images requested for building",
-    labelnames=['job.name', 'job.version'],
+    labelnames=['job_name', 'job_version'],
 )
 metric_image_building_done_requests = Counter(
     "image_building_done_requests",
     "Number of building requests already processed",
-    labelnames=['job.name', 'job.version'],
+    labelnames=['job_name', 'job_version'],
 )
 metric_image_building_request_duration = Counter(
     "image_building_request_duration_seconds",
     "Total number of seconds spent on image building",
-    labelnames=['job.name', 'job.version'],
+    labelnames=['job_name', 'job_version'],
 )
 metric_images_pushed = Counter(
     "images_pushed",
     "Number of images pushed to registry",
-    labelnames=['job.name', 'job.version'],
+    labelnames=['job_name', 'job_version'],
 )
 metric_images_pushed_duration = Counter(
     "images_pushed_duration",
     "Total number of seconds spent on pushing images to registry",
-    labelnames=['job.name', 'job.version'],
+    labelnames=['job_name', 'job_version'],
 )
 
 metric_active_building_tasks = Gauge(

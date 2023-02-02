@@ -18,14 +18,14 @@ class JobRegistryClient:
         response = self.lc_client.request_list('get', '/api/v1/job_family')
         return parse_dict_datamodels(response, JobFamilyDto)
 
-    def delete_deployed_job(self, job.name: str, job.version: str):
-        self.lc_client.request('delete', f'/api/v1/job/{job.name}/{job.version}')
+    def delete_deployed_job(self, job_name: str, job_version: str):
+        self.lc_client.request('delete', f'/api/v1/job/{job_name}/{job_version}')
 
-    def redeploy_job(self, job.name: str, job.version: str):
-        self.lc_client.request('post', f'/api/v1/job/{job.name}/{job.version}/redeploy')
+    def redeploy_job(self, job_name: str, job_version: str):
+        self.lc_client.request('post', f'/api/v1/job/{job_name}/{job_version}/redeploy')
 
-    def reprovision_job(self, job.name: str, job.version: str):
-        self.lc_client.request('post', f'/api/v1/job/{job.name}/{job.version}/reprovision')
+    def reprovision_job(self, job_name: str, job_version: str):
+        self.lc_client.request('post', f'/api/v1/job/{job_name}/{job_version}/reprovision')
 
     def get_dependencies_graph(self) -> Dict:
         return self.lc_client.request_dict('get', '/api/v1/job_graph')
@@ -37,16 +37,16 @@ class JobRegistryClient:
         scope = AuthScope.CALL_JOB.value
         self.lc_client.request('post', f'/api/v1/auth/allow/job_family/{source_family_name}/job/{target_family_name}/scope/{scope}')
 
-    def get_runtime_logs(self, job.name: str, job.version: str, tail: int = 0) -> str:
+    def get_runtime_logs(self, job_name: str, job_version: str, tail: int = 0) -> str:
         params = {}
         if tail > 0:
             params['tail'] = tail
-        response = self.lc_client.request_dict('get', f'/api/v1/job/{job.name}/{job.version}/logs', params=params)
+        response = self.lc_client.request_dict('get', f'/api/v1/job/{job_name}/{job_version}/logs', params=params)
         return response['logs']
 
-    def get_build_logs(self, job.name: str, job.version: str, tail: int = 0) -> str:
+    def get_build_logs(self, job_name: str, job_version: str, tail: int = 0) -> str:
         params = {}
         if tail > 0:
             params['tail'] = tail
-        response = self.lc_client.request_dict('get', f'/api/v1/job/{job.name}/{job.version}/build-logs', params=params)
+        response = self.lc_client.request_dict('get', f'/api/v1/job/{job_name}/{job_version}/build-logs', params=params)
         return response['logs']

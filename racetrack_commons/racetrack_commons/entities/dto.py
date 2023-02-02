@@ -71,8 +71,8 @@ class UserProfileDto(BaseModel):
 
 
 class PublicEndpointRequestDto(BaseModel):
-    job.name: str
-    job.version: str
+    job_name: str
+    job_version: str
     endpoint: str
     active: bool
 
@@ -85,5 +85,5 @@ class AuditLogEventDto(BaseModel):
     properties: Optional[Dict] = None
     username_executor: Optional[str] = None
     username_subject: Optional[str] = None
-    job.name: Optional[str] = None
-    job.version: Optional[str] = None
+    job_name: Optional[str] = None
+    job_version: Optional[str] = None

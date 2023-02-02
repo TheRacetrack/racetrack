@@ -69,11 +69,11 @@ def get_auth_subject_by_job_family(job_family: models.JobFamily) -> models.AuthS
 
 
 @db_access
-def find_auth_subject_by_job_family_name(job.name: str) -> models.AuthSubject:
+def find_auth_subject_by_job_family_name(job_name: str) -> models.AuthSubject:
     try:
-        return models.AuthSubject.objects.get(job_family__name=job.name)
+        return models.AuthSubject.objects.get(job_family__name=job_name)
     except models.AuthSubject.DoesNotExist:
-        raise EntityNotFound(f'Auth subject for Job family {job.name} not found')
+        raise EntityNotFound(f'Auth subject for Job family {job_name} not found')
 
 
 @db_access

@@ -12,10 +12,10 @@ Assuming you are ESC developer who wants to call certain Job:
 ```
 racetrack_domain = 'https://...com"
 pub_url = racetrack_domain + '/pub/job'
-job.name = 'foobar'
+job_name = 'foobar'
 
 r = requests.post(
-      url=f'{pub_url}/{job.name}/{job.version}/api/v1/perform', 
+      url=f'{pub_url}/{job_name}/{job_version}/api/v1/perform', 
       json={'numbers': [40, 2]}, 
       headers={'X-Racetrack-Esc-Auth': esc_auth}
       )

@@ -18,15 +18,15 @@ logger = get_logger(__name__)
 
 def setup_auth_endpoints(api: APIRouter, config: Config):
 
-    @api.get('/auth/allowed/job/{job.name}/{job.version}/scope/{scope}')
-    def _auth_allowed_job(job.name: str, job.version: str, scope: str, request: Request):
+    @api.get('/auth/allowed/job/{job_name}/{job_version}/scope/{scope}')
+    def _auth_allowed_job(job_name: str, job_version: str, scope: str, request: Request):
         """Check if auth subject (read from token) has access to the job"""
         try:
             token_payload, auth_subject = authenticate_token(request)
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
-                authorize_internal_token(token_payload, scope, job.name, job.version)
+                authorize_internal_token(token_payload, scope, job_name, job_version)
             else:
-                authorize_resource_access(auth_subject, job.name, job.version, scope)
+                authorize_resource_access(auth_subject, job_name, job_version, scope)
 
         except UnauthorizedError as e:
             msg = e.describe(debug=config.auth_debug)
@@ -35,8 +35,8 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
 
         return Response(content='', status_code=202)
 
-    @api.get('/auth/allowed/job_endpoint/{job.name}/{job.version}/scope/{scope}/endpoint/{endpoint:path}')
-    def _auth_allowed_job_endpoint(job.name: str, job.version: str, scope: str, endpoint: str, request: Request):
+    @api.get('/auth/allowed/job_endpoint/{job_name}/{job_version}/scope/{scope}/endpoint/{endpoint:path}')
+    def _auth_allowed_job_endpoint(job_name: str, job_version: str, scope: str, endpoint: str, request: Request):
         """Check if auth subject (read from token) has access to the job endpoint"""
         if endpoint.endswith('/'):
             endpoint = endpoint[:-1]
@@ -45,9 +45,9 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         try:
             token_payload, auth_subject = authenticate_token(request)
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
-                authorize_internal_token(token_payload, scope, job.name, job.version, endpoint)
+                authorize_internal_token(token_payload, scope, job_name, job_version, endpoint)
             else:
-                authorize_resource_access(auth_subject, job.name, job.version, scope, endpoint)
+                authorize_resource_access(auth_subject, job_name, job_version, scope, endpoint)
 
         except UnauthorizedError as e:
             msg = e.describe(debug=config.auth_debug)
@@ -56,13 +56,13 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
 
         return Response(content='', status_code=202)
 
-    @api.post('/auth/allow/esc/{esc_id}/job/{job.name}/scope/{scope}')
-    def _auth_allow_esc_job_family(esc_id: str, job.name: str, scope: str, request: Request):
+    @api.post('/auth/allow/esc/{esc_id}/job/{job_name}/scope/{scope}')
+    def _auth_allow_esc_job_family(esc_id: str, job_name: str, scope: str, request: Request):
         """Grant ESC access to job family within a scope"""
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         esc_model = read_esc_model(esc_id)
         auth_subject = get_auth_subject_by_esc(esc_model)
-        grant_permission(auth_subject, job.name, None, scope)
+        grant_permission(auth_subject, job_name, None, scope)
 
     @api.post('/auth/allow/job_family/{source_family_name}/job/{target_family_name}/scope/{scope}')
     def _auth_allow_family(source_family_name: str, target_family_name: str, scope: str, request: Request):

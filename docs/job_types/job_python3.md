@@ -264,7 +264,7 @@ public_endpoints:
     Exempting a path `/foo` also exempts *any* path under it like `/foo/secret`. Use this feature with care.
 
 After deploying such Job, there will be created a request that needs to be approved by Racetrack admin.
-Such approval needs to be done once for every new job.version (with distinct `version` field).
+Such approval needs to be done once for every new job version (with distinct `version` field).
 
 See [python-ui-flask](../../sample/python-ui-flask) for an example.
 

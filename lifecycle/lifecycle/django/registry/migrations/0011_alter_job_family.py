@@ -9,18 +9,18 @@ def initialize_job_families(apps, schema_editor):
     JobFamily = apps.get_model('registry', 'JobFamily')
 
     for job in Job.objects.all():
-        job.family = create_job_family_if_not_exist(job.name, JobFamily)
-        if not job.version:
-            job.version = '0.0.1'
+        job.family = create_job_family_if_not_exist(job_name, JobFamily)
+        if not job_version:
+            job_version = '0.0.1'
         job.save()
 
 
-def create_job_family_if_not_exist(job.name: str, JobFamily):
+def create_job_family_if_not_exist(job_name: str, JobFamily):
     try:
-        return JobFamily.objects.get(name=job.name)
+        return JobFamily.objects.get(name=job_name)
     except JobFamily.DoesNotExist:
         new_model = JobFamily(
-            name=job.name,
+            name=job_name,
         )
         new_model.save()
         return new_model

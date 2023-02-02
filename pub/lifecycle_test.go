@@ -13,7 +13,7 @@ func TestCheckingPublicPaths(t *testing.T) {
 
 	httpmock.RegisterResponder("GET", "http://localhost:7202/lifecycle/api/v1/job/skynet/0.0.1/public-endpoints",
 		httpmock.NewStringResponder(200,
-			`[{"job.name": "skynet", "job.version": "0.0.1", "endpoint": "/api/v1/webview", "active": true}]`))
+			`[{"job_name": "skynet", "job_version": "0.0.1", "endpoint": "/api/v1/webview", "active": true}]`))
 
 	lifecycleClient := NewLifecycleClient("http://localhost:7202/lifecycle", "", "secret", "traceparent", "1")
 

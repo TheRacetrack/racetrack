@@ -81,8 +81,8 @@ def delete_job(
         AuditLogEventType.JOB_DELETED,
         username_executor=username,
         username_subject=owner_username,
-        job_name=job.name,
-        job_version=job.version,
+        job_name=job_name,
+        job_version=job_version,
     )
 
     models_registry.create_trashed_job(job)
@@ -109,8 +109,8 @@ def decommission_job_infrastructure(
         AuditLogEventType.JOB_DELETED,
         username_executor=username,
         username_subject=owner_username,
-        job_name=job.name,
-        job_version=job.version,
+        job_name=job_name,
+        job_version=job_version,
     )
 
     plugin_engine.invoke_plugin_hook(PluginCore.post_job_delete, job, username_executor=username)
@@ -180,4 +180,4 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
 
 
 def _generate_job_map(jobs: Iterable[JobDto]) -> Dict[str, JobDto]:
-    return {job_resource_name(job.name, job.version): job for job in jobs}
+    return {job_resource_name(job_name, job_version): job for job in jobs}

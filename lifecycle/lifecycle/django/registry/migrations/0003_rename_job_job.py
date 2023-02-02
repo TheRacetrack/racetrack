@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.RenameField(
             model_name='deployment',
             old_name='job_name',
-            new_name='job.name',
+            new_name='job_name',
         ),
         migrations.RenameField(
             model_name='esc',

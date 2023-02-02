@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='deployment',
-            name='job.version',
+            name='job_version',
             field=models.CharField(default='0.0.1', max_length=256),
             preserve_default=False,
         ),

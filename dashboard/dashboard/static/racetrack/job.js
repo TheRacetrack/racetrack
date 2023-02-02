@@ -7,9 +7,9 @@ function showAlert(message, type) {
 }
 
 function invokeJobAction(actionName, endpoint, that, csrf_token) {
-    var job.name = that.attr('job.name');
-    var job.version = that.attr('job.version');
-    var actionPrefix = actionName + ' ' + job.name + ' v' + job.version
+    var job_name = that.attr('job-name');
+    var job_version = that.attr('job-version');
+    var actionPrefix = actionName + ' ' + job_name + ' v' + job_version
     console.log(actionPrefix + '...');
     var previousHtml = that.html();
     that.prop("disabled", true);
@@ -17,7 +17,7 @@ function invokeJobAction(actionName, endpoint, that, csrf_token) {
         `<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>`
     );
     $.ajax({
-        url: '/dashboard/api/' + endpoint + '/' + job.name + '/' + job.version,
+        url: '/dashboard/api/' + endpoint + '/' + job_name + '/' + job_version,
         type: 'post',
         data: {
             csrfmiddlewaretoken: csrf_token

@@ -24,20 +24,20 @@ class JobDeployer(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def delete_job(self, job.name: str, job.version: str):
+    def delete_job(self, job_name: str, job_version: str):
         """Delete a Job based on its name"""
         raise NotImplementedError()
 
     @abstractmethod
-    def job_exists(self, job.name: str, job.version: str) -> bool:
+    def job_exists(self, job_name: str, job_version: str) -> bool:
         """Tell whether a Job already exists or not"""
         raise NotImplementedError()
 
     @abstractmethod
     def save_job_secrets(
         self,
-        job.name: str,
-        job.version: str,
+        job_name: str,
+        job_version: str,
         job_secrets: JobSecrets,
     ):
         """Create or update secrets needed to build and deploy a Job"""
@@ -46,8 +46,8 @@ class JobDeployer(ABC):
     @abstractmethod
     def get_job_secrets(
         self,
-        job.name: str,
-        job.version: str,
+        job_name: str,
+        job_version: str,
     ) -> JobSecrets:
         """Retrieve secrets for building and deploying a Job"""
         raise NotImplementedError()

@@ -21,7 +21,7 @@ CORE_RT_IMAGES = [
 ]
 LAST_IMAGES_SPARE = 10  # how many latest RT images to leave
 
-REGISTRY_IMAGE_PREFIX = 'ghcr.io/theracetrack/racetrack'
+REGISTRY_IMAGE_PREFIX = 'ghcr.io/lookacastle/racetrack'
 
 # List of live deployment environments to check what's running there
 DEPLOYMENT_ENVIRONMENTS = [
