@@ -230,7 +230,7 @@ Racetrack, and to help you get used to the core Racetrack concepts.
 Fetch the Racetrack sources:
 
 ```bash
-git clone https://github.com/LookACastle/racetrack.git
+git clone https://github.com/TheRacetrack/racetrack.git
 ```
 
 Execute the following:
@@ -534,11 +534,11 @@ See [manifest-schema.md](manifest-schema.md)
 
 These links show how to use particular job types installed by the [plugins](./development/using-plugins.md):
 
-- [python3](https://github.com/LookACastle/plugin-python-job-type/blob/master/docs/job_python3.md) -
+- [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
   designed for Python projects
-- [golang](https://github.com/LookACastle/plugin-go-job-type/blob/master/docs/job_golang.md) -
+- [golang](https://github.com/TheRacetrack/plugin-go-job-type/blob/master/docs/job_golang.md) -
   designed for Go projects
-- [docker-proxy](https://github.com/LookACastle/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md) -
+- [docker-proxy](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md) -
   designed for any other Dockefile-based jobs
 
 See the [sample/](../sample) directory for more examples.
