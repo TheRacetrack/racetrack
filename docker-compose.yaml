@@ -81,7 +81,7 @@ services:
       DOCKER_TLS_CERTDIR: ''
       DOCKER_HOST: tcp://docker-engine:2375
       CONFIG_FILE: /etc/racetrack/image-builder/compose.yaml
-      LIFECYCLE_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY
+      LIFECYCLE_AUTH_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY
 
   dashboard:
     container_name: dashboard
@@ -104,7 +104,7 @@ services:
       EXTERNAL_LIFECYCLE_URL: 'http://localhost:7102/lifecycle'
       EXTERNAL_PUB_URL: 'http://localhost:7105/pub'
       AUTH_REQUIRED: 'true'
-      LIFECYCLE_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4'
+      LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4'
     command: >
       bash -c "
       /src/dashboard/wait-for-postgres.sh && 
@@ -129,7 +129,7 @@ services:
       LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
       AUTH_REQUIRED: 'true'
       AUTH_DEBUG: 'true'
-      LIFECYCLE_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
+      LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
 
   postgres:
     image: postgres:13.1

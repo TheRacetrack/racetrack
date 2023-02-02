@@ -15,7 +15,7 @@ def update_deployment_phase(config: Config, deployment_id: str, phase: str):
             'phase': phase,
         },
         headers={
-            RT_AUTH_HEADER: os.environ.get('LIFECYCLE_TOKEN'),
+            RT_AUTH_HEADER: os.environ.get('LIFECYCLE_AUTH_TOKEN'),
         },
     )
     parse_response(r, 'Lifecycle API error')
