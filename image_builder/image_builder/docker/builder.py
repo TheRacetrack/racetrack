@@ -157,7 +157,7 @@ def _build_base_image(
             deployment_id,
             build_progress,
         )
-        logger.info(f'base Fatman image has been built and pushed: {base_image}')
+        logger.info(f'base Job image has been built and pushed: {base_image}')
     return base_image
 
 
@@ -211,7 +211,7 @@ def _wait_for_docker_engine_ready():
 
 
 def get_base_image_name(docker_registry: str, registry_namespace: str, name: str, tag: str, module_index: int = 0) -> str:
-    """Return full name of Fatman entrypoint image"""
+    """Return full name of Job entrypoint image"""
     if module_index == 0:
         image_type = 'fatman-base'
     else:
