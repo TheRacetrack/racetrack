@@ -16,7 +16,7 @@ from lifecycle.job.registry import (
 from lifecycle.job.public_endpoints import read_active_job_public_endpoints
 from lifecycle.job.logs import read_build_logs, read_runtime_logs
 from lifecycle.auth.authenticate import get_username_from_token
-from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 
@@ -91,12 +91,12 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         infrastructure_target: str = Field(description='text content of configuration file')
 
     @api.get('/job')
-    def _list_all_fatmen(request: Request) -> List[JobDto]:
+    def _list_all_jobs(request: Request) -> List[JobDto]:
         """Get list of deployed Jobs"""
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
         return list_job_registry(config, auth_subject)
 
-    @api.get('/fatman_family')
+    @api.get('/job_family')
     def _get_job_family(request: Request) -> List[JobFamilyDto]:
         """Get list of deployed Job Families (names regardless version)"""
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)

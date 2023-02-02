@@ -14,7 +14,7 @@ def read_runtime_logs(job_name: str, job_version: str, tail: int, config: Config
 
 
 def read_build_logs(job_name: str, job_version: str, tail: int) -> str:
-    """Read build logs from fatman image during latest job deployment"""
+    """Read build logs from job image during latest job deployment"""
     job_model = models_registry.resolve_job_model(job_name, job_version)
     deployments_queryset = models.Deployment.objects\
         .filter(job_name=job_model.name, job_version=job_model.version)\

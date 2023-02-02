@@ -44,64 +44,64 @@ def _startup(
 
 @cli.command('deploy')
 def _deploy(
-    workdir: str = typer.Argument(default='.', help='directory with fatman.yaml manifest'),
+    workdir: str = typer.Argument(default='.', help='directory with job.yaml manifest'),
     _remote: str = typer.Argument(default=None, show_default=False, help="Racetrack server's URL or alias name (deprecated, use --remote)"),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
-    force: bool = typer.Option(False, '--force', help='overwrite existing fatman'),
-    build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building fatman from local files ("local") or from git repository ("git")'),
+    force: bool = typer.Option(False, '--force', help='overwrite existing job'),
+    build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building job from local files ("local") or from git repository ("git")'),
 ):
-    """Send request deploying a Fatman to the Racetrack cluster"""
+    """Send request deploying a Job to the Racetrack cluster"""
     send_deploy_request(workdir, lifecycle_url=remote or _remote, force=force, build_context_method=build_context)
 
 
 @cli.command('validate')
 def _validate(
-    path: str = typer.Argument(default='.', help='path to a Fatman manifest file or to a directory with it'),
+    path: str = typer.Argument(default='.', help='path to a Job manifest file or to a directory with it'),
 ):
-    """Validate Fatman manifest file"""
+    """Validate Job manifest file"""
     validate_and_show_manifest(path)
 
 
 @cli.command('logs', no_args_is_help=True)
 def _logs(
-    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
-    version: str = typer.Option('latest', show_default=True, help='version of the fatman'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    version: str = typer.Option('latest', show_default=True, help='version of the job'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     tail: int = typer.Option(20, '--tail', help='number of recent lines to show'),
     follow: bool = typer.Option(False, '--follow', '-f', help='follow logs output stream'),
 ):
-    """Show runtime logs from the output of a fatman"""
+    """Show runtime logs from the output of a job"""
     show_runtime_logs(name, version, remote, tail, follow)
 
 
 @cli.command('build-logs', no_args_is_help=True)
 def _build_logs(
-    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
-    version: str = typer.Option('latest', show_default=True, help='version of the fatman'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    version: str = typer.Option('latest', show_default=True, help='version of the job'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     tail: int = typer.Option(0, '--tail', help='number of recent lines to show, all logs by default'),
 ):
-    """Show build logs from fatman image building"""
+    """Show build logs from job image building"""
     show_build_logs(name, version, remote, tail)
 
 
 @cli.command('list')
-def _list_fatmen(
+def _list_jobs(
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
-    columns: List[FatmenTableColumn] = typer.Option([], '--column', '-c', show_default=False, help='Choose additional columns to show. "all" selects all columns.'),
+    columns: List[JobTableColumn] = typer.Option([], '--column', '-c', show_default=False, help='Choose additional columns to show. "all" selects all columns.'),
 ):
-    """List all deployed fatmen"""
-    list_fatmen(remote, columns)
+    """List all deployed jobs"""
+    list_jobs(remote, columns)
 
 
 @cli.command('delete', no_args_is_help=True)
-def _delete_fatman(
-    name: str = typer.Argument(..., show_default=False, help='name of the fatman'),
-    version: str = typer.Option(..., show_default=False, help='version of the fatman to delete'),
+def _delete_job(
+    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    version: str = typer.Option(..., show_default=False, help='version of the job to delete'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
-    """Delete fatman instance"""
-    delete_fatman(name, version, remote)
+    """Delete job instance"""
+    delete_job(name, version, remote)
 
 
 @cli.command('move', no_args_is_help=True)
@@ -163,7 +163,7 @@ def _set_remote(
 
 @cli_set.command('credentials', no_args_is_help=True)
 def _set_credentials(
-    repo_url: str = typer.Argument(..., show_default=False, help='URL of git remote for one of your fatmen'),
+    repo_url: str = typer.Argument(..., show_default=False, help='URL of git remote for one of your jobs'),
     username: str = typer.Argument(..., show_default=False, help='username for git authentication'),
     token_password: str = typer.Argument(..., show_default=False, help='password or token for git authentication'),
 ):
