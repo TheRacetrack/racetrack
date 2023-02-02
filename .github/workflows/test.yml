@@ -37,6 +37,8 @@ jobs:
       - name: Build and Create Docker containers
         run: . venv/bin/activate && make compose-up
       - name: Run End-to-end tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: . venv/bin/activate && make compose-test-e2e
 
       - name: Collect docker logs on failure
