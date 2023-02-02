@@ -10,7 +10,7 @@ from lifecycle.fatman.graph import build_fatman_dependencies_graph
 from lifecycle.fatman.registry import (
     delete_fatman,
     list_fatman_families,
-    list_fatmen_registry,
+    list_job_registry,
     read_versioned_fatman,
 )
 from lifecycle.fatman.public_endpoints import read_active_fatman_public_endpoints
@@ -94,7 +94,7 @@ def setup_fatman_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _list_all_fatmen(request: Request) -> List[FatmanDto]:
         """Get list of deployed Fatman"""
         auth_subject = check_auth(request, scope=AuthScope.READ_FATMAN)
-        return list_fatmen_registry(config, auth_subject)
+        return list_job_registry(config, auth_subject)
 
     @api.get('/fatman_family')
     def _get_fatman_family(request: Request) -> List[FatmanFamilyDto]:

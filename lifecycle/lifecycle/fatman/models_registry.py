@@ -1,5 +1,5 @@
 from typing import Iterable, List, Optional
-from lifecycle.auth.subject import get_auth_subject_by_fatman_family
+from lifecycle.auth.subject import get_auth_subject_by_job_family
 
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
@@ -8,202 +8,202 @@ from racetrack_client.utils.datamodel import datamodel_to_yaml_str
 from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_client.log.logs import get_logger
-from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 
 logger = get_logger(__name__)
 
 
 @db_access
-def list_fatmen_models() -> Iterable[models.Fatman]:
-    """List deployed fatman stored in registry database"""
-    return models.Fatman.objects.all().order_by('-update_time', 'name')
+def list_job_models() -> Iterable[models.Job]:
+    """List deployed jobs stored in registry database"""
+    return models.Job.objects.all().order_by('-update_time', 'name')
 
 
 @db_access
-def list_fatman_family_models() -> Iterable[models.FatmanFamily]:
-    """List deployed fatman families stored in registry database"""
-    return models.FatmanFamily.objects.all().order_by('name')
+def list_job_family_models() -> Iterable[models.JobFamily]:
+    """List deployed job families stored in registry database"""
+    return models.JobFamily.objects.all().order_by('name')
 
 
 @db_access
-def read_fatman_model(fatman_name: str, fatman_version: str) -> models.Fatman:
+def read_job_model(job_name: str, job_version: str) -> models.Job:
     try:
-        return models.Fatman.objects.get(name=fatman_name, version=fatman_version)
-    except models.Fatman.DoesNotExist:
-        raise EntityNotFound(f'Fatman with name {fatman_name} and version {fatman_version} was not found')
+        return models.Job.objects.get(name=job_name, version=job_version)
+    except models.Job.DoesNotExist:
+        raise EntityNotFound(f'Job with name {job_name} and version {job_version} was not found')
 
 
-def fatman_exists(fatman_name: str, fatman_version: str) -> bool:
+def job_exists(job_name: str, job_version: str) -> bool:
     try:
-        read_fatman_model(fatman_name, fatman_version)
+        read_job_model(job_name, job_version)
         return True
     except EntityNotFound:
         return False
 
 
-def fatman_family_exists(fatman_name: str) -> bool:
+def job_family_exists(job_name: str) -> bool:
     try:
-        read_fatman_family_model(fatman_name)
+        read_job_family_model(job_name)
         return True
     except EntityNotFound:
         return False
 
 
-def resolve_fatman_model(fatman_name: str, fatman_version: str) -> models.Fatman:
+def resolve_job_model(job_name: str, job_version: str) -> models.Job:
     """
-    Find fatman by name and version, accepting version aliases
-    :param fatman_version: Exact fatman version or an alias ("latest" or wildcard)
-    :return: Fatman database model
+    Find job by name and version, accepting version aliases
+    :param job_version: Exact job version or an alias ("latest" or wildcard)
+    :return: Job database model
     """
-    if fatman_version == 'latest':
-        return read_latest_fatman_model(fatman_name)
-    elif SemanticVersionPattern.is_wildcard_pattern(fatman_version):
-        return read_latest_wildcard_fatman_model(fatman_name, fatman_version)
+    if job_version == 'latest':
+        return read_latest_job_model(job_name)
+    elif SemanticVersionPattern.is_wildcard_pattern(job_version):
+        return read_latest_wildcard_job_model(job_name, job_version)
     else:
-        return read_fatman_model(fatman_name, fatman_version)
+        return read_job_model(job_name, job_version)
 
 
 @db_access
-def read_latest_fatman_model(fatman_name: str) -> models.Fatman:
-    fatmen_queryset = models.Fatman.objects.filter(name=fatman_name)
-    if fatmen_queryset.count() == 0:
-        raise EntityNotFound(f'No fatman named {fatman_name}')
-    fatmen: List[models.Fatman] = list(fatmen_queryset)
+def read_latest_job_model(job_name: str) -> models.Job:
+    job_queryset = models.Job.objects.filter(name=job_name)
+    if job_queryset.count() == 0:
+        raise EntityNotFound(f'No job named {job_name}')
+    jobs: List[models.Job] = list(job_queryset)
 
-    latest_fatman = SemanticVersion.find_latest_stable(fatmen, key=lambda f: f.version)
-    if latest_fatman is None:
+    latest_job = SemanticVersion.find_latest_stable(jobs, key=lambda f: f.version)
+    if latest_job is None:
         raise EntityNotFound("No stable version found")
 
-    return latest_fatman
+    return latest_job
 
 
 @db_access
-def read_latest_wildcard_fatman_model(fatman_name: str, version_wildcard: str) -> models.Fatman:
+def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> models.Job:
     """
     :param version_wildcard: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
     """
     version_pattern = SemanticVersionPattern(version_wildcard)
 
-    fatmen_queryset = models.Fatman.objects.filter(name=fatman_name)
-    if fatmen_queryset.count() == 0:
-        raise EntityNotFound(f'No fatman named {fatman_name}')
-    fatmen: List[models.Fatman] = list(fatmen_queryset)
+    job_queryset = models.Job.objects.filter(name=job_name)
+    if job_queryset.count() == 0:
+        raise EntityNotFound(f'No job named {job_name}')
+    jobs: List[models.Job] = list(job_queryset)
 
-    latest_fatman = SemanticVersion.find_latest_wildcard(version_pattern, fatmen, key=lambda f: f.version)
-    if latest_fatman is None:
+    latest_job = SemanticVersion.find_latest_wildcard(version_pattern, jobs, key=lambda f: f.version)
+    if latest_job is None:
         raise EntityNotFound(f"Not found any stable version matching pattern: {version_wildcard}")
 
-    return latest_fatman
+    return latest_job
 
 
 @db_access
-def read_fatman_family_model(fatman_family: str) -> models.FatmanFamily:
+def read_job_family_model(job_family: str) -> models.JobFamily:
     try:
-        return models.FatmanFamily.objects.get(name=fatman_family)
-    except models.FatmanFamily.DoesNotExist:
-        raise EntityNotFound(f'Fatman Family with name {fatman_family} was not found')
+        return models.JobFamily.objects.get(name=job_family)
+    except models.JobFamily.DoesNotExist:
+        raise EntityNotFound(f'Job Family with name {job_family} was not found')
 
 
 @db_access
-def delete_fatman_model(fatman_name: str, fatman_version: str):
-    models.Fatman.objects.get(name=fatman_name, version=fatman_version).delete()
+def delete_job_model(job_name: str, job_version: str):
+    models.Job.objects.get(name=job_name, version=job_version).delete()
 
 
 @db_access
-def create_fatman_model(fatman_dto: FatmanDto) -> models.Fatman:
-    fatman_family = create_fatman_family_if_not_exist(fatman_dto.name)
-    new_fatman = models.Fatman(
-        name=fatman_dto.name,
-        version=fatman_dto.version,
-        family=fatman_family,
-        status=fatman_dto.status,
-        create_time=timestamp_to_datetime(fatman_dto.create_time),
-        update_time=timestamp_to_datetime(fatman_dto.update_time),
-        manifest=datamodel_to_yaml_str(fatman_dto.manifest) if fatman_dto.manifest is not None else None,
-        internal_name=fatman_dto.internal_name,
-        error=fatman_dto.error,
-        image_tag=fatman_dto.image_tag,
-        deployed_by=fatman_dto.deployed_by,
-        infrastructure_target=fatman_dto.infrastructure_target,
+def create_job_model(job_dto: JobDto) -> models.Job:
+    job_family = create_job_family_if_not_exist(job_dto.name)
+    new_job = models.Job(
+        name=job_dto.name,
+        version=job_dto.version,
+        family=job_family,
+        status=job_dto.status,
+        create_time=timestamp_to_datetime(job_dto.create_time),
+        update_time=timestamp_to_datetime(job_dto.update_time),
+        manifest=datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None,
+        internal_name=job_dto.internal_name,
+        error=job_dto.error,
+        image_tag=job_dto.image_tag,
+        deployed_by=job_dto.deployed_by,
+        infrastructure_target=job_dto.infrastructure_target,
     )
-    new_fatman.save()
-    return new_fatman
+    new_job.save()
+    return new_job
 
 
 @db_access
-def create_fatman_family_model(fatman_family_dto: FatmanFamilyDto) -> models.FatmanFamily:
-    new_model = models.FatmanFamily(
-        name=fatman_family_dto.name,
+def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
+    new_model = models.JobFamily(
+        name=job_family_dto.name,
     )
     new_model.save()
-    get_auth_subject_by_fatman_family(new_model)
+    get_auth_subject_by_job_family(new_model)
     return new_model
 
 
 @db_access
-def update_fatman_model(fatman: models.Fatman, fatman_dto: FatmanDto):
-    fatman.status = fatman_dto.status
-    fatman.update_time = timestamp_to_datetime(fatman_dto.update_time)
-    fatman.manifest = datamodel_to_yaml_str(fatman_dto.manifest) if fatman_dto.manifest is not None else None
-    fatman.internal_name = fatman_dto.internal_name
-    fatman.error = fatman_dto.error
-    fatman.image_tag = fatman_dto.image_tag
-    fatman.deployed_by = fatman_dto.deployed_by
-    fatman.last_call_time = timestamp_to_datetime(fatman_dto.last_call_time) if fatman_dto.last_call_time is not None else None
-    fatman.infrastructure_target = fatman_dto.infrastructure_target
-    fatman.save()
+def update_job_model(job: models.Job, job_dto: JobDto):
+    job.status = job_dto.status
+    job.update_time = timestamp_to_datetime(job_dto.update_time)
+    job.manifest = datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None
+    job.internal_name = job_dto.internal_name
+    job.error = job_dto.error
+    job.image_tag = job_dto.image_tag
+    job.deployed_by = job_dto.deployed_by
+    job.last_call_time = timestamp_to_datetime(job_dto.last_call_time) if job_dto.last_call_time is not None else None
+    job.infrastructure_target = job_dto.infrastructure_target
+    job.save()
 
 
 @db_access
-def save_fatman_model(fatman_dto: FatmanDto) -> models.Fatman:
-    """Create or update existing fatman"""
+def save_job_model(job_dto: JobDto) -> models.Job:
+    """Create or update existing job"""
     try:
-        fatman_model = read_fatman_model(fatman_dto.name, fatman_dto.version)
-        update_fatman_model(fatman_model, fatman_dto)
-        return fatman_model
+        job_model = read_job_model(job_dto.name, job_dto.version)
+        update_job_model(job_model, job_dto)
+        return job_model
     except EntityNotFound:
-        return create_fatman_model(fatman_dto)
+        return create_job_model(job_dto)
 
 
 @db_access
-def create_fatman_family_if_not_exist(fatman_family: str) -> models.FatmanFamily:
+def create_job_family_if_not_exist(job_family: str) -> models.JobFamily:
     try:
-        return read_fatman_family_model(fatman_family)
+        return read_job_family_model(job_family)
     except EntityNotFound:
-        return create_fatman_family_model(FatmanFamilyDto(name=fatman_family))
+        return create_job_family_model(JobFamilyDto(name=job_family))
 
 
 @db_access
-def create_trashed_fatman(fatman_dto: FatmanDto) -> models.TrashFatman:
-    age_days = days_ago(fatman_dto.create_time)
-    new_fatman = models.TrashFatman(
-        id=fatman_dto.id,
-        name=fatman_dto.name,
-        version=fatman_dto.version,
-        status=fatman_dto.status,
-        create_time=timestamp_to_datetime(fatman_dto.create_time),
-        update_time=timestamp_to_datetime(fatman_dto.update_time),
+def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
+    age_days = days_ago(job_dto.create_time)
+    new_job = models.TrashJob(
+        id=job_dto.id,
+        name=job_dto.name,
+        version=job_dto.version,
+        status=job_dto.status,
+        create_time=timestamp_to_datetime(job_dto.create_time),
+        update_time=timestamp_to_datetime(job_dto.update_time),
         delete_time=now(),
-        manifest=datamodel_to_yaml_str(fatman_dto.manifest) if fatman_dto.manifest is not None else None,
-        internal_name=fatman_dto.internal_name,
-        error=fatman_dto.error,
-        image_tag=fatman_dto.image_tag,
-        deployed_by=fatman_dto.deployed_by,
-        last_call_time=timestamp_to_datetime(fatman_dto.last_call_time) if fatman_dto.last_call_time is not None else None,
-        infrastructure_target=fatman_dto.infrastructure_target,
+        manifest=datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None,
+        internal_name=job_dto.internal_name,
+        error=job_dto.error,
+        image_tag=job_dto.image_tag,
+        deployed_by=job_dto.deployed_by,
+        last_call_time=timestamp_to_datetime(job_dto.last_call_time) if job_dto.last_call_time is not None else None,
+        infrastructure_target=job_dto.infrastructure_target,
         age_days=age_days,
     )
-    new_fatman.save()
-    return new_fatman
+    new_job.save()
+    return new_job
 
 
 @db_access
-def find_deleted_fatman(
-    fatman_name: str,
-    fatman_version: str,
-) -> Optional[models.TrashFatman]:
-    queryset = models.TrashFatman.objects.filter(
-        name=fatman_name, version=fatman_version,
+def find_deleted_job(
+    job_name: str,
+    job_version: str,
+) -> Optional[models.TrashJob]:
+    queryset = models.TrashJob.objects.filter(
+        name=job_name, version=job_version,
     )
     if queryset.count() == 0:
         return None

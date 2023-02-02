@@ -11,13 +11,13 @@
     1. [Prerequisites](#tut-prereq)
     1. [Installing Racetrack Locally](#tut-install)
     1. [Submitting a Python Class](#tut-submit)
-    1. [Testing the Resulting Fatman](#tut-test)
-        1. [Using the Fatman](#tut-test-foo)
-        1. [Checking the Fatman Swagger](#tut-test-swagger)
-        1. [Checking the Fatman Health](#tut-test-health)
-        1. [Checking Fatman logs](#tut-logs)
-        1. [Inspecting the Fatman in the Racetrack Dashboard](#tut-test-dashb)
-        1. [(optional) Inspecting the Fatman inside KinD Using k9s](#tut-test-k9s)
+    1. [Testing the Resulting Job](#tut-test)
+        1. [Using the Job](#tut-test-foo)
+        1. [Checking the Job Swagger](#tut-test-swagger)
+        1. [Checking the Job Health](#tut-test-health)
+        1. [Checking Job logs](#tut-logs)
+        1. [Inspecting the Job in the Racetrack Dashboard](#tut-test-dashb)
+        1. [(optional) Inspecting the Job inside KinD Using k9s](#tut-test-k9s)
     1. [Authentication](#tut-auth)
     1. [Tearing it down](#tut-teardown)
 1. [Developing Your Own Jobs](#developing)
@@ -25,7 +25,7 @@
         1. [Authentication](#racetrack-authentication)
     1. [Jobs in Private or Protected git Repositories](#repo-tokens)
     1. [Setting aliases for Racetrack servers](config-aliases)
-    1. [The Fatman Manifest File](#manifest-deep)
+    1. [The Job Manifest File](#manifest-deep)
     1. [The Job Types](#job-types)
 1. [Guidelines](#guide)
 1. [FAQ](#faq)
@@ -62,8 +62,8 @@ actions involved in using Racetrack:
   choose to develop your job in
 * Job submission: when you're happy with your code, and you push it to Racetrack
   to be deployed
-* Fatman: when a job is submitted to Racetrack, Racetrack converts it to a
-  workload and deploys it. This workload is called a Fatman
+* Job: when a job is submitted to Racetrack, Racetrack converts it to a
+  workload and deploys it. This workload is called a Job
 * Convention: when you pick your Job Type, you will be asked to follow a specific
   style for that type which Racetrack understands; that style is a Convention
 * Manifest: a YAML file in the root of your Job, which specifies the job type
@@ -75,11 +75,11 @@ To tie all of these terms together:
 > model **Job** in. I wrote my Job according to the Job Type **convention**. I
 > composed a **Manifest** in which I specified the Job Type I used, and in it I
 > tweaked a few specific parameters for this Job Type. I **submitted** the job
-> to Racetrack, after which it was deployed as a **Fatman**.
+> to Racetrack, after which it was deployed as a **Job**.
 
 ### Conventions<a name="conventions"></a>
 
-For Racetrack to convert your Job to a Fatman, you have to follow a specific
+For Racetrack to convert your Job to a Job, you have to follow a specific
 style for your Job Type: a Convention. Broadly speaking, the purpose of this
 convention is to guide Racetrack:
 
@@ -98,7 +98,7 @@ described.
 Conventions for any Job Type are simple, easy to follow, and very few. Some
 examples are:
 
-* For the Python 3 Job Type, you must have a `Class FatmanEntrypoint` with a
+* For the Python 3 Job Type, you must have a `Class JobEntrypoint` with a
   method `perform()` for the Python 3 function which receives input and gives
   output (e.g. receiving a vector, and returning it normalized). Racetrack will
   then know to wrap this in a HTTP server and expose it.
@@ -120,8 +120,8 @@ def AddEmUp(x, y):
 And refactored to meet the Racetrack Python 3 Job Type Convention:
 
 ```python
-# file: fatman_entrypoint.py
-class FatmanEntrypoint:
+# file: job_entrypoint.py
+class JobEntrypoint:
 	def perform(self, x, y):
 		return AddEmUp(x, y)
 
@@ -135,17 +135,17 @@ def AddEmUp(x, y):
 Having picked our Job Type and followed its Convention, the only thing we're
 missing is to inform Racetrack what Job Type we're submitting, and apply any
 special configuration supported by that Job Type. We do this by creating a file
-named `fatman.yaml` in the root directory of our Job source tree.
+named `job.yaml` in the root directory of our Job source tree.
 
 This file is YAML formatted. The documentation for each Job Type describes how
 it should be formed.
 
-A typical `fatman.yaml` will look like this:
+A typical `job.yaml` will look like this:
 
 ```yaml
 name: my_fantabulous_skynet_AI
 owner_email: nobody@example.com
-lang: python3:latest  # this would be your Fatman Type
+lang: python3:latest  # this would be your Job Type
 
 git:
   remote: https://github.com/racetrack/supersmart-model
@@ -153,7 +153,7 @@ git:
 
 python:
   requirements_path: 'supersmart/requirements.txt'
-  entrypoint_path: 'fatman_entrypoint.py'
+  entrypoint_path: 'job_entrypoint.py'
 
 resources:
   memory_max: 2Gi
@@ -171,7 +171,7 @@ resources:
 ```
 
 Please refer to the more comprehensive section
-[The Fatman Manifest File](manifest-schema.md) for more detail.
+[The Job Manifest File](manifest-schema.md) for more detail.
 
 ### Submitting a Job<a name="submitting"></a>
 
@@ -192,7 +192,7 @@ As a Racetrack user, your workflow will typically look similar to this:
 1. Write a piece of code doing something useful
 1. Pick the appropriate Racetrack Job Type
 1. Refactor your code to follow the Convention
-1. Compose an appropriate `fatman.yaml`
+1. Compose an appropriate `job.yaml`
 1. Push it to GitLab or Github
 1. Standing in the root directory of your code, submit the Job using the
    Racetrack command line client
@@ -277,80 +277,80 @@ After a pretty short time, the `racetrack` command will exit successfully and le
 know the Job is deployed, giving you the URL.
 Before opening this URL, open [Dashboard page](http://localhost:7003/dashboard/)
 and log in with default `admin` username and `admin` password.
-That will set up a session allowing you to access fatmen through your browser.
+That will set up a session allowing you to access Jobs through your browser.
 
 The code in the [sample/python-class/adder.py](../sample/python-class/adder.py)
 module has been converted by Racetrack into a
-fully functional and well-formed Kubernetes micro-service; our Fatman. Please
+fully functional and well-formed Kubernetes micro-service; our Job. Please
 examine this file [sample/python-class/adder.py](../sample/python-class/adder.py) 
 in order to understand what to expect.
 
-### Testing the Resulting Fatman<a name="tut-test"></a>
+### Testing the Resulting Job<a name="tut-test"></a>
 
 You now have the following running on your developer workstation:
 
 1. A KinD cluster
 1. Racetrack deployed inside it
-1. A Python 3 micro-service converted to a Fatman, running inside this Racetrack
+1. A Python 3 micro-service converted to a Job, running inside this Racetrack
 
-There are several ways you can interact with Racetrack and this Fatman:
+There are several ways you can interact with Racetrack and this Job:
 
-#### Using the Fatman<a name="tut-test-foo"></a>
+#### Using the Job<a name="tut-test-foo"></a>
 
 The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this (as described in the [Job Type documentation](../sample/python-class/README.md):
 
 ```bash
-curl -X POST "http://localhost:7005/pub/fatman/adder/latest/api/v1/perform" \
+curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
 ```
 
-#### Checking the Fatman Swagger<a name="tut-test-swagger"></a>
+#### Checking the Job Swagger<a name="tut-test-swagger"></a>
 
 Racetrack generates free [Swagger API documentation](https://swagger.io/). You
 can access it in your web browser
-[here](http://localhost:7005/pub/fatman/adder/latest), 
+[here](http://localhost:7005/pub/job/adder/latest), 
 but first you need to authenticate in order to make requests through your browser.
 Open [Dashboard page](http://localhost:7003/dashboard/) and log in with default `admin` username and `admin` password.
-That will set up a session allowing you to call fatmen.
+That will set up a session allowing you to call Jobs.
 
-#### Checking the Fatman Health<a name="tut-test-health"></a>
+#### Checking the Job Health<a name="tut-test-health"></a>
 
 You also get a free [service health
 endpoint](https://kubernetes.io/docs/reference/using-api/health-checks/):
 
 ```bash
-curl "http://localhost:7005/pub/fatman/adder/latest/health"
+curl "http://localhost:7005/pub/job/adder/latest/health"
 # Expect:
-# {"service": "fatman", "fatman_name": "adder", "status": "pass"}
+# {"service": "job", "job_name": "adder", "status": "pass"}
 ```
 
-#### Checking Fatman logs<a name="tut-logs"></a>
+#### Checking Job logs<a name="tut-logs"></a>
 
-To see recent logs from your Fatman output, run `racetrack logs` command:
+To see recent logs from your Job output, run `racetrack logs` command:
 ```bash
 racetrack logs . http://localhost:7002
 ```
 
 `racetrack logs [WORKDIR] [RACETRACK_URL]` has 2 arguments:
 
-- `WORKDIR` - a place where the `fatman.yaml` is, by default it's current directory
-- `RACETRACK_URL` - URL address to Racetrack server, where the Fatman is deployed.
+- `WORKDIR` - a place where the `job.yaml` is, by default it's current directory
+- `RACETRACK_URL` - URL address to Racetrack server, where the Job is deployed.
 
-#### Inspecting the Fatman in the Racetrack Dashboard<a name="tut-test-dashb"></a>
+#### Inspecting the Job in the Racetrack Dashboard<a name="tut-test-dashb"></a>
 
 Racetrack ships with a dashboard. In production, it will be the admin who has
 access to this, but you're testing locally so you can see it
 [here](http://localhost:7003/dashboard) and you can see your adder job.
 
-#### (optional) Inspecting the Fatman inside KinD Using k9s<a name="tut-test-k9s"></a>
+#### (optional) Inspecting the Job inside KinD Using k9s<a name="tut-test-k9s"></a>
 
 Invoke k9s on your command line and navigate to the pods view using `:pods`. Hit
 `0` to display all Kubernetes namespaces. Under the `racetrack` namespace, you
-should see `fatman-adder-blabla-bla`.
+should see `job-adder-blabla-bla`.
 
 ### Authentication<a name="tut-auth"></a>
 
@@ -361,15 +361,15 @@ Once the Racetrack is started, it is recommended to create other users, and deac
 
 Then visit your Profile page to see your auth token.
 
-Authentication applies to both deploying a fatman and calling it:
+Authentication applies to both deploying a Job and calling it:
 
-- In order to deploy a fatman (or use other management commands), run `racetrack login` command with your token in first place. For instance:
+- In order to deploy a Job (or use other management commands), run `racetrack login` command with your token in first place. For instance:
   ```bash
   racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI --remote http://localhost:7002
   ```
-- In order to call a fatman (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
+- In order to call a Job (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
   ```bash
-  curl -X POST "http://localhost:7005/pub/fatman/adder/latest/api/v1/perform" \
+  curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
     -H "Content-Type: application/json" \
     -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
     -d '{"numbers": [40, 2]}'
@@ -434,7 +434,7 @@ your local Racetrack admin to get these endpoints.
 #### Authentication<a name="racetrack-authentication"></a>
 
 Before you can deploy a job to production Racetrack server or even view the list
-of Fatmen on RT Dashboard, you need to create user there.
+of Job on RT Dashboard, you need to create user there.
 
 Visit your `https://racetrack.platform.example.com/dashboard/`
 (or local http://localhost:7003/dashboard), click link to **Register**.
@@ -444,20 +444,20 @@ so manage it carefully. Then notify your admin that he should activate your user
 When he does that, you can **Login**, and in the top right corner click **Profile**.
 There will be your user token for racetrack client CLI, along with ready command
 to login. It will look like `racetrack login <token> [--remote <remote>]`. When you
-run this, then you can finally deploy your Fatman.
+run this, then you can finally deploy your Job.
 
 If you need, you can log out with `racetrack logout <racetrack_url>`. To check your
 logged servers, there's `racetrack get config` command.
 
-You can view the Fatman swagger page if you're logged to Racetrack Dashboard, on
-which Fatman is displayed. Session is maintained through cookie. 
+You can view the Job swagger page if you're logged to Racetrack Dashboard, on
+which Job is displayed. Session is maintained through cookie. 
 
-When viewing Fatman swagger page, you can run there the `/perform` method without specifying
+When viewing Job swagger page, you can run there the `/perform` method without specifying
 additional credentials, because auth data in cookie from Racetrack Dashboard is 
 used as credential. However, if you copy the code to curl in CLI like this:
 ```
 curl -X 'POST' \
-  'https://racetrack.platform.example.com/pub/fatman/adder/0.0.1/api/v1/perform' \
+  'https://racetrack.platform.example.com/pub/job/adder/0.0.1/api/v1/perform' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -468,7 +468,7 @@ curl -X 'POST' \
 }'
 ```
 Then it won't work, because there's no auth data specified: 
-`Unauthenticated: no header X-Racetrack-Esc-Auth, X-Racetrack-Fatman-Auth or 
+`Unauthenticated: no header X-Racetrack-Esc-Auth, X-Racetrack-Job-Auth or 
 X-Racetrack-Auth: not logged in`
 
 You will need to include it in curl using `-H 'X-Racetrack-Auth: <token>`.
@@ -476,7 +476,7 @@ You will need to include it in curl using `-H 'X-Racetrack-Auth: <token>`.
 
 ### Jobs in Private or Protected git Repositories<a name="repo-tokens"></a>
 
-As you noticed earlier, Racetrack requires in the `fatman.yaml` a git URL from
+As you noticed earlier, Racetrack requires in the `job.yaml` a git URL from
 which to fetch the Job source code. If this repo is private or protected, you
 will need to issue a token for the `racetrack` CLI tool to work. In GitLab, there
 are two kinds of tokens (either of them can be used):
@@ -526,7 +526,7 @@ racetrack set remote RACETRACK_URL_OR_ALIAS
 ```
 and then you can omit `--remote` parameter in the next commands.
 
-### The Fatman Manifest File Schema<a name="manifest-deep"></a>
+### The Job Manifest File Schema<a name="manifest-deep"></a>
 
 See [manifest-schema.md](manifest-schema.md)
 
@@ -569,11 +569,11 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 ### Should
 
-1. The call path should be kept shallow. We prefer a bit bigger Fatmen over
+1. The call path should be kept shallow. We prefer a bit bigger Job over
    small that creates a deep call path.
-1. If part of the functionality of your fatman becomes useful to a Service
+1. If part of the functionality of your Job becomes useful to a Service
    Consumer *other* than the current set of Service Consumers, consider if this
-   part of its functionality should be split out into a separate Fatman. This is
+   part of its functionality should be split out into a separate Job. This is
    usually only a good idea of this part of the functionality is expensive in
    time or physical resources.
 
@@ -581,7 +581,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 1. You are discouraged from creating code boundaries by splitting a RT job up
    into several, if they all serve the same request. While Racetrack supports
-   chaining fatmen, it prefers tight coupling in fatmen serving single business
+   chaining Jobs, it prefers tight coupling in Jobs serving single business
    purposes.
 1. The user should not use the Dockerfile job type. It's preferable to use one
    of the more specialised job types, or to coordinate with the RT developers to
@@ -602,9 +602,9 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 When you invoke `racetrack deploy . --remote https://racetrack.platform.example.com/lifecycle`, the client will
 block while the deploy operation is in progress. When the command terminates,
-unless you are given an error message, your job has been deployed into a Fatman.
+unless you are given an error message, your job has been deployed into a Job.
 
-It will be added to the list of running Fatmen in the Racetrack dashboard; you
+It will be added to the list of running Jobs in the Racetrack dashboard; you
 can see it there yourself, or if you don't have access, check with the local
 Racetrack admin.
 
@@ -613,49 +613,49 @@ Racetrack admin.
 If the error relates to the deployment action, the racetrack CLI tool will
 display an error for you. You can also see it on Racetrack Dashboard.
 
-If the error occurred in the process of converting the Job to a Fatman, your
+If the error occurred in the process of converting the Job to a Job, your
 Racetrack admin can help you.
 
-### My fatman produces raw output, I need it in another format
+### My Job produces raw output, I need it in another format
 
-Racetrack supports chained fatmen; you can retain the original fatman, and
-deploy a supplemental "handler" fatman which calls the original and transforms
+Racetrack supports chained Jobs; you can retain the original Job, and
+deploy a supplemental "handler" Job which calls the original and transforms
 its output to your desired format. Then you can simply call your handler.
 
-### My fatman takes config parameters, I don't want to pass them every call
+### My Job takes config parameters, I don't want to pass them every call
 
 You have several options.
 
-You could use the handler pattern, placing a fatman in front with the parameters
+You could use the handler pattern, placing a Job in front with the parameters
 baked in. This means every time you need to change the parameters, you need to
 update and redeploy the handler. This option is good for very slowly changing
 parameters.
 
-Another option is to build a fatman with a web UI for tweaking the configuration
-parameters, and then placing this one in front of your original fatman. This
+Another option is to build a Job with a web UI for tweaking the configuration
+parameters, and then placing this one in front of your original Job. This
 way, you change parameters at runtime rather than build-time. This option is
 more work, but suits parameters which change a little more frequently.
 
 As a third option, consider if you could "bake in" the parameters in your
 original model. Time to deployment in Racetrack is very quick, and you might be
-fine just redeploying the same fatman with different config parameters when they
+fine just redeploying the same Job with different config parameters when they
 change.
 
-### I need to combine the results of multiple fatmen
+### I need to combine the results of multiple Job
 
-Develop a "handler" fatman which calls the other fatmen whose results you want
+Develop a "handler" Job which calls the other Jobs whose results you want
 to combine.
 
-Racetrack supports chaining of fatmen for this purpose.
+Racetrack supports chaining of Jobs for this purpose.
 
-### I need to have one or more versions of a fatman running at the same time
+### I need to have one or more versions of a Job running at the same time
 
-You could use something similar as the handler pattern where you place a fatman in 
-front of the fatmen you would like to call. The handler is responsible for calling all 
-versions of the fatman involved in the call and save the result for later evaluation,
-but only the result from the active fatman should be returned.
+You could use something similar as the handler pattern where you place a Job in 
+front of the Jobs you would like to call. The handler is responsible for calling all 
+versions of the Job involved in the call and save the result for later evaluation,
+but only the result from the active Job should be returned.
 
-***NB*** This might evolve to a standard fatman you can deploy and just configure.
+***NB*** This might evolve to a standard Job you can deploy and just configure.
 
 ### I have other problem running Racetrack locally, please help debug.
 
@@ -691,10 +691,10 @@ to developer channel.
 The way to implement this is to create your own handler that can give you your answers
 asynchronously. A simple way of archiving this would be to provide a callback URL in the ESC query. 
 
-So you would send the request to the Fatman from your ESC; as soon as the Fatman
+So you would send the request to the Job from your ESC; as soon as the Job
 receives the request, the request terminates successfully; it does *not* wait to 
 provide a response. Then your ESC listens on a defined webhook endpoint - the path
-which was for example provided in the request - and when the Fatman has finished 
+which was for example provided in the request - and when the Job has finished 
 processing the request and is ready with a response, it POSTs this to the endpoint
 on the ESC. Obviously, asynchronous calls require you to do some work on the ESC side as well.
 

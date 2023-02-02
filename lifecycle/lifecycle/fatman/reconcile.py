@@ -1,6 +1,6 @@
 from lifecycle.config import Config
 from lifecycle.deployer.redeploy import reprovision_fatman
-from lifecycle.fatman.registry import list_fatmen_registry
+from lifecycle.fatman.registry import list_job_registry
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.log.exception import log_exception
@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 def reconcile_fatmen(config: Config, plugin_engine: PluginEngine):
     """Redeploy fatmen missing in a cluster"""
     with wrap_context('reconciling fatmen'):
-        for fatman in list_fatmen_registry(config):
+        for fatman in list_job_registry(config):
             try:
                 if is_fatman_reconcile_eligible(fatman):
                     logger.info(f'reconciling lost fatman {fatman}...')

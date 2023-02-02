@@ -5,7 +5,7 @@ from lifecycle.auth.authorize import list_permitted_fatmen
 from lifecycle.auth.subject import find_auth_subject_by_esc_id, find_auth_subject_by_fatman_family_name
 from lifecycle.config.config import Config
 from lifecycle.fatman.esc import list_escs
-from lifecycle.fatman.registry import list_fatmen_registry
+from lifecycle.fatman.registry import list_job_registry
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.entities.dto import EscDto, FatmanDto
 from racetrack_commons.urls import get_external_pub_url
@@ -37,7 +37,7 @@ class FatmanGraph:
 
 
 def build_fatman_dependencies_graph(config: Config, auth_subject: Optional[models.AuthSubject]) -> FatmanGraph:
-    fatmen: List[FatmanDto] = list_fatmen_registry(config, auth_subject)
+    fatmen: List[FatmanDto] = list_job_registry(config, auth_subject)
     family_names = _group_fatman_families(fatmen)
     escs: List[EscDto] = list(list_escs())
 

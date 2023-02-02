@@ -9,7 +9,7 @@ from request import get_request
 from settings import PROJECT_ID, GITLAB_API_URL
 from images import RegistryImage, ImageTag, ImageRemovalSummary, \
     list_registry_images, images_to_tags, \
-    get_latest_racetrack_tags, get_deployed_racetrack_tags, get_deployed_fatman_tags, \
+    get_latest_racetrack_tags, get_deployed_racetrack_tags, get_deployed_job_tags, \
     group_removal_candidates, delete_image_tag
 
 logger = get_logger(__name__)
@@ -51,15 +51,15 @@ def _list(args: argparse.Namespace):
     
     latest_rt_tags: Set[str] = set(get_latest_racetrack_tags(images)) & all_tag_paths
     deployed_rt_tags: Set[str] = set(get_deployed_racetrack_tags()) & all_tag_paths
-    deployed_fatman_tags: Set[str] = set(get_deployed_fatman_tags()) & all_tag_paths
+    deployed_job_tags: Set[str] = set(get_deployed_job_tags()) & all_tag_paths
 
-    removal_names: Set[str] = all_tag_paths - latest_rt_tags - deployed_rt_tags - deployed_fatman_tags
+    removal_names: Set[str] = all_tag_paths - latest_rt_tags - deployed_rt_tags - deployed_job_tags
     removal_candidates: List[ImageTag] = [path_to_tag[path] for path in sorted(removal_names)]
     removal_summaries: List[ImageRemovalSummary] = group_removal_candidates(removal_candidates, tags)
 
     logger.info(f'Keeping latest core Racetrack images in a registry: {len(latest_rt_tags)} tags')
     logger.info(f'Keeping deployed core Racetrack images: {len(deployed_rt_tags)} tags')
-    logger.info(f'Keeping deployed Fatman images: {len(deployed_fatman_tags)} tags')
+    logger.info(f'Keeping deployed Job images: {len(deployed_job_tags)} tags')
     logger.info(f'All tags found in a registry: {len(tags)} tags')
     logger.info(f'Removal candidates: {len(removal_candidates)} tags')
 
