@@ -31,11 +31,10 @@ scrape_configs:
       - targets:
           - "pub:7105"
 
-  - job_name: fatman-v-0-0-1
+  - job_name: racetrack-job
     scheme: http
     metrics_path: /metrics
-    dns_sd_configs:
-      - names: 
-          - 'fatman-adder-v-0-0-1'
-        type: A
-        port: 7000
+    file_sd_configs:
+      - files:
+        - '/mnt/plugins/prometheus/sd_config_jobs.yaml'
+        refresh_interval: 5m
