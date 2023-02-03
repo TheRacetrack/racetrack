@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Dict
+from typing import List, Optional, Dict
 from urllib.parse import urlsplit
 import tarfile
 import io
@@ -88,7 +88,7 @@ def send_deploy_request(
     logger.info(f'job deployment requested: {deploy_id}')
 
     try:
-        fatman_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth)
+        fatman_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth, [])
     except Exception as e:
         raise DeploymentError(e)
 
@@ -112,9 +112,9 @@ def get_deploy_request_payload(
 
 
 @backoff.on_exception(
-    backoff.fibo, TimeoutError, max_value=5, max_time=DEPLOYMENT_TIMEOUT_SECS, jitter=None, logger=None
+    backoff.fibo, TimeoutError, max_value=3, max_time=DEPLOYMENT_TIMEOUT_SECS, jitter=None, logger=None
 )
-def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: str) -> str:
+def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: str, phases: List[Optional[str]]) -> str:
     # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::DeployIdEndpoint` for server-side implementation
     r = Requests.get(
         f'{lifecycle_url}/api/v1/deploy/{deploy_id}',
@@ -128,10 +128,12 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
         return response.get('fatman', {}).get('pub_url')
 
     phase = response.get('phase')
-    if phase:
-        logger.info(f'deployment in progress: {phase}...')
-    else:
-        logger.info(f'deployment in progress...')
+    if not phases or phases[-1] != phase:  # don't print the same phase again
+        phases.append(phase)
+        if phase:
+            logger.info(f'deployment in progress: {phase}...')
+        else:
+            logger.info(f'deployment in progress...')
     raise TimeoutError('Deployment timeout error')
 
 

@@ -16,6 +16,9 @@ class Config(BaseModel, extra=Extra.forbid):
     # Docker Registry where to push built images
     docker_registry: str = 'localhost:5000'
 
+    # Lifecycle address
+    lifecycle_url: str = 'http://localhost:7202'
+
     # A namespace for docker images in a Docker Registry (prefix for image names)
     docker_registry_namespace: str = 'racetrack'
 

@@ -23,7 +23,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
     if created and not instance.is_staff:
         try:
-            UserRegistryClient(settings.LIFECYCLE_TOKEN).init_user_profile(instance.username)
+            UserRegistryClient(settings.LIFECYCLE_AUTH_TOKEN).init_user_profile(instance.username)
         except ResponseError as err:
             if settings.RUNNING_ON_LOCALHOST and "User has no profile" in str(err):
                 # Expected and can't do anything about it because Dashboard doesn't share db with Lifecycle
@@ -41,7 +41,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(user_logged_in)
 def on_login(sender, user, request, **kwargs):
-    urc = UserRegistryClient(settings.LIFECYCLE_TOKEN)
+    urc = UserRegistryClient(settings.LIFECYCLE_AUTH_TOKEN)
     profile = urc.get_user_profile(request.user.username)
     token = profile.token
     decode_jwt(token)
