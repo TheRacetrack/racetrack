@@ -141,11 +141,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_requests{fatman_name=~\"$fatman_name\"}[$__rate_interval])) by (fatman_name, fatman_version)",
+          "expr": "sum(irate(pub_fatman_proxy_requests{fatman_name=~\"$fatman_name\"}[5m])) by (fatman_name, fatman_version)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -362,8 +364,9 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(idelta(pub_fatman_call_response_time_histogram_bucket{fatman_name=~\"$fatman_name\"}[$__rate_interval])) by (le)",
+          "expr": "sum(idelta(pub_fatman_call_response_time_histogram_bucket{fatman_name=~\"$fatman_name\"}[5m])) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -550,10 +553,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "(sum(pub_fatman_call_response_time{fatman_name=~\"$fatman_name\"}) by (fatman_name, fatman_version)) / (sum(pub_fatman_proxy_requests_done{fatman_name=~\"$fatman_name\"}) by (fatman_name, fatman_version))",
           "interval": "",
           "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -688,10 +693,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_response_codes{status_code=\"200\",fatman_name=~\"$fatman_name\"}[$__rate_interval])) by (status_code, fatman_name, fatman_version)",
+          "expr": "sum(irate(pub_fatman_proxy_response_codes{status_code=\"200\",fatman_name=~\"$fatman_name\"}[5m])) by (status_code, fatman_name, fatman_version)",
           "interval": "",
           "legendFormat": "{{status_code}} - {{fatman_name}} {{fatman_version}}",
+          "range": true,
           "refId": "A"
         },
         {
@@ -699,11 +706,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_response_codes{status_code!=\"200\",fatman_name=~\"$fatman_name\"}[$__rate_interval])) by (status_code, fatman_name, fatman_version)",
+          "expr": "sum(irate(pub_fatman_proxy_response_codes{status_code!=\"200\",fatman_name=~\"$fatman_name\"}[5m])) by (status_code, fatman_name, fatman_version)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{status_code}} - {{fatman_name}} {{fatman_version}}",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -935,11 +944,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_health_requests[$__rate_interval]))",
+          "expr": "sum(irate(pub_health_requests[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "health-check rate",
+          "range": true,
           "refId": "F"
         },
         {
@@ -947,11 +958,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_errors[$__rate_interval]))",
+          "expr": "sum(irate(pub_fatman_proxy_errors[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "reverse proxy errors",
+          "range": true,
           "refId": "C"
         },
         {
@@ -959,11 +972,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_lifecycle_calls[$__rate_interval]))",
+          "expr": "sum(irate(pub_lifecycle_calls[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "lifecycle calls rate",
+          "range": true,
           "refId": "E"
         },
         {
@@ -971,11 +986,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_requests[$__rate_interval]))",
+          "expr": "sum(irate(pub_fatman_proxy_requests[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "total fatman proxy rate",
+          "range": true,
           "refId": "H"
         },
         {
@@ -983,11 +1000,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_request_errors[$__rate_interval]))",
+          "expr": "sum(irate(pub_fatman_proxy_request_errors[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "proxy request errors",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1085,10 +1104,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(pub_overall_fatman_proxy_response_time[$__rate_interval])) / sum(increase(pub_fatman_proxy_requests[$__rate_interval]))",
+          "expr": "sum(increase(pub_overall_fatman_proxy_response_time[5m])) / sum(increase(pub_fatman_proxy_requests[5m]))",
           "interval": "",
           "legendFormat": "overall Fatman proxy",
+          "range": true,
           "refId": "A"
         },
         {
@@ -1096,11 +1117,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(pub_lifecycle_call_time[$__rate_interval])) / sum(increase(pub_fatman_proxy_requests[$__rate_interval]))",
+          "expr": "sum(increase(pub_lifecycle_call_time[5m])) / sum(increase(pub_fatman_proxy_requests[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "lifecycle calls",
+          "range": true,
           "refId": "B"
         },
         {
@@ -1108,11 +1131,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(pub_fatman_call_response_time[$__rate_interval])) / sum(increase(pub_fatman_proxy_requests[$__rate_interval]))",
+          "expr": "sum(increase(pub_fatman_call_response_time[5m])) / sum(increase(pub_fatman_proxy_requests[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "fatman call",
+          "range": true,
           "refId": "C"
         }
       ],
@@ -1202,10 +1227,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_auth_failed[$__rate_interval]))",
+          "expr": "sum(irate(pub_auth_failed[5m]))",
           "interval": "",
           "legendFormat": "failed",
+          "range": true,
           "refId": "A"
         },
         {
@@ -1213,11 +1240,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_auth_successful[$__rate_interval]))",
+          "expr": "sum(irate(pub_auth_successful[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "successful",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -1354,7 +1383,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "15s",
+  "refresh": "30s",
   "schemaVersion": 37,
   "style": "dark",
   "tags": [],
@@ -1382,7 +1411,7 @@
       {
         "allValue": ".+",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -1410,7 +1439,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -1431,6 +1460,6 @@
   "timezone": "",
   "title": "PUB",
   "uid": "Ya0SU7Lnk",
-  "version": 2,
+  "version": 4,
   "weekStart": ""
 }

@@ -26,7 +26,7 @@
   "graphTooltip": 1,
   "id": 7,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
     {
       "collapsed": false,
@@ -136,7 +136,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "irate(requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])",
+          "expr": "irate(requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[5m])",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}}",
@@ -285,7 +285,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max_over_time(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__range]) - min_over_time(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__range])",
+          "expr": "sum by(job_name,job_version,endpoint) (max_over_time(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__range])) - \nsum by(job_name,job_version,endpoint) (min_over_time(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__range]))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -417,7 +417,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) by (job_name, job_version, endpoint)",
+          "expr": "sum(irate(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[5m])) by (job_name, job_version, endpoint)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}} {{endpoint}}",
@@ -635,7 +635,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(idelta(request_duration_bucket{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) by (le)",
+          "expr": "sum(idelta(request_duration_bucket{job_name=~\"$job_name\",job_version=~\"$job_version\"}[5m])) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -721,12 +721,13 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum(request_duration_bucket{job_name=~\"$job_name\",job_version=~\"$job_version\"}) by (le)",
+          "exemplar": false,
+          "expr": "sum by(le) (request_duration_bucket{job_name=~\"$job_name\",job_version=~\"$job_version\"})",
           "format": "heatmap",
           "instant": false,
           "interval": "",
           "legendFormat": "{{le}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1129,7 +1130,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(python_gc_collections_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval]))",
+          "expr": "sum(rate(python_gc_collections_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "GC collections rate",
@@ -1339,7 +1340,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "rate(process_cpu_seconds_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])",
+          "expr": "rate(process_cpu_seconds_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[1m])",
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}}",
           "range": true,
@@ -1350,7 +1351,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "30s",
   "schemaVersion": 37,
   "style": "dark",
   "tags": [],
@@ -1371,7 +1372,7 @@
       {
         "allValue": ".+",
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "All",
           "value": "$__all"
         },
@@ -1448,6 +1449,6 @@
   "timezone": "",
   "title": "Jobs",
   "uid": "KZoFMs_nz",
-  "version": 12,
+  "version": 21,
   "weekStart": ""
 }
