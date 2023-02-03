@@ -1369,37 +1369,9 @@
         "type": "adhoc"
       },
       {
-        "allValue": "job-.+",
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
-        "definition": "label_values(requests_started_total, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "job_name",
-        "multi": false,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(requests_started_total, job)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
         "allValue": ".+",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -1427,7 +1399,7 @@
       {
         "allValue": ".+",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -1455,7 +1427,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -1476,6 +1448,6 @@
   "timezone": "",
   "title": "Jobs",
   "uid": "KZoFMs_nz",
-  "version": 8,
+  "version": 12,
   "weekStart": ""
 }
