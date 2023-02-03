@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import re
 from typing import Dict, List, Optional, Tuple
@@ -159,13 +160,17 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
     gh_user = match.group(1)
     gh_repo = match.group(2)
 
+    headers = {
+        'User-Agent': 'racetrack-client',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+    }
+    if github_token := os.environ.get('GITHUB_TOKEN'):
+        headers['Authorization'] = f'Bearer {github_token}'
+
     r = Requests.get(
         f'https://api.github.com/repos/{gh_user}/{gh_repo}/releases',
-        headers={
-            'User-Agent': 'racetrack-client',
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-        },
+        headers=headers,
     )
 
     json_releases = parse_response_list(r, 'GitHub API response')
