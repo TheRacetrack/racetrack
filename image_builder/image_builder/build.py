@@ -5,6 +5,7 @@ import time
 from base64 import b64decode
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
+from image_builder.progress import update_deployment_phase
 
 from racetrack_client.client.env import merge_env_vars
 from racetrack_client.client_config.client_config import Credentials
@@ -49,6 +50,7 @@ def build_fatman_image(
     metric_active_building_tasks.inc()
     start_time = time.time()
     try:
+        update_deployment_phase(config, deployment_id, 'fetching the source code')
         with wrap_context('preparing workspace'):
             logger.debug(f'preparing workspace for {manifest.name} {manifest.version}, deployment ID: {deployment_id}')
 
@@ -63,10 +65,11 @@ def build_fatman_image(
 
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
 
+        update_deployment_phase(config, deployment_id, 'building image')
         logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
                     f'deployment ID: {deployment_id}, git version: {git_version}')
         image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
-                                                      build_env_vars, deployment_id, plugin_engine)
+                                                       build_env_vars, deployment_id, plugin_engine)
 
         if config.clean_up_workspaces:
             with wrap_context('cleaning up the workspace'):

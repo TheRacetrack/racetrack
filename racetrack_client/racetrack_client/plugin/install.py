@@ -161,7 +161,7 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
     gh_repo = match.group(2)
 
     headers = {
-        'User-Agent': 'request',
+        'User-Agent': 'racetrack-client',
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
     }

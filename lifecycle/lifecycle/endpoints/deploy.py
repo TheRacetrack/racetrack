@@ -6,7 +6,7 @@ from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.config import Config
 from lifecycle.deployer.builder import build_fatman_in_background
 from lifecycle.deployer.deploy import deploy_fatman_in_background
-from lifecycle.fatman.deployment import check_deployment_result
+from lifecycle.fatman.deployment import check_deployment_result, save_deployment_phase
 from lifecycle.server.metrics import metric_requested_fatman_deployments
 from pydantic import BaseModel, Field
 from racetrack_commons.plugin.engine import PluginEngine
@@ -102,3 +102,12 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         """Check deployment status/result by its ID"""
         check_auth(request)
         return check_deployment_result(deploy_id, config)
+
+    class DeploymentPhase(BaseModel):
+        phase: str = Field(description='phase of the deployment')
+
+    @api.put('/deploy/{deploy_id}/phase')
+    def _update_deployment_phase(deploy_id: str, payload: DeploymentPhase, request: Request):
+        """Update deployment's phase"""
+        check_auth(request)
+        return save_deployment_phase(deploy_id, payload.phase)

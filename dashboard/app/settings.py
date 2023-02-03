@@ -29,7 +29,7 @@ if not AUTH_REQUIRED:
 ALLOWED_HOSTS = ['*']
 
 # Auth Token to call Lifecycle API
-LIFECYCLE_TOKEN = os.environ.get('LIFECYCLE_TOKEN')
+LIFECYCLE_AUTH_TOKEN = os.environ.get('LIFECYCLE_AUTH_TOKEN')
 
 # Application definition
 

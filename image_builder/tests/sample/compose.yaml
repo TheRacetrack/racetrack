@@ -5,3 +5,4 @@ build_logs_dir: /var/log/racetrack/image-builder/build-logs
 plugins_dir: /etc/racetrack/image-builder/plugins
 clean_up_workspaces: false
 cache_base_images: false
+lifecycle_url: http://lifecycle:7102
