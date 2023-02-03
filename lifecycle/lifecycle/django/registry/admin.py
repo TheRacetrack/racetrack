@@ -8,7 +8,7 @@ from django.contrib.admin.options import (
 )
 from django.contrib.admin import SimpleListFilter
 
-from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent
+from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Fatman, Deployment, Esc, FatmanFamily, TrashFatman, AuditLogEvent
 from ...auth.subject import regenerate_auth_token_by_id
 
 
@@ -24,21 +24,21 @@ class JobAdmin(admin.ModelAdmin):
 
 
 class DeploymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase')
-    search_fields = ['id', 'job_name', 'job_version', 'deployed_by']
-    list_filter = ['status', 'deployed_by', 'job_name']
+    list_display = ('id', 'fatman_name', 'fatman_version', 'status', 'create_time', 'deployed_by', 'phase')
+    search_fields = ['id', 'fatman_name', 'fatman_version', 'deployed_by']
+    list_filter = ['status', 'deployed_by', 'fatman_name']
 
 
 class PublicEndpointRequestAdmin(admin.ModelAdmin):
     list_display = ('get_job_name', 'get_job_version', 'endpoint', 'active')
     search_fields = ['endpoint']
-    list_filter = ['job__name', 'endpoint', 'active']
+    list_filter = ['fatman__name', 'endpoint', 'active']
 
-    @admin.display(ordering='job__name', description='Job name')
+    @admin.display(ordering='fatman__name', description='Job name')
     def get_job_name(self, obj):
         return obj.job.name
 
-    @admin.display(ordering='job__version', description='Job version')
+    @admin.display(ordering='fatman__version', description='Job version')
     def get_job_version(self, obj):
         return obj.job.version
 
@@ -59,9 +59,9 @@ class TrashJobAdmin(admin.ModelAdmin):
 
 
 class AuditLogEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version')
-    search_fields = ['id', 'event_type', 'username_executor', 'job_name', 'job_version']
-    list_filter = ['event_type', 'username_executor', 'job_name']
+    list_display = ('id', 'timestamp', 'event_type', 'username_executor', 'fatman_name', 'fatman_version')
+    search_fields = ['id', 'event_type', 'username_executor', 'fatman_name', 'fatman_version']
+    list_filter = ['event_type', 'username_executor', 'fatman_name']
 
 
 class AuthSubjectTypeFilter(SimpleListFilter):
@@ -85,8 +85,8 @@ class AuthSubjectTypeFilter(SimpleListFilter):
 
 
 class AuthSubjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'subject_type', 'user', 'esc', 'job_family', 'active', 'expiry_time')
-    search_fields = ['user__username', 'esc__name', 'job_family__name', 'token']
+    list_display = ('id', 'subject_type', 'user', 'esc', 'fatman_family', 'active', 'expiry_time')
+    search_fields = ['user__username', 'esc__name', 'fatman_family__name', 'token']
     list_filter = ['active', AuthSubjectTypeFilter]
     change_form_template = 'admin/auth_subject_change_form.html'
 
@@ -125,21 +125,21 @@ class AuthResourcePermissionTypeFilter(SimpleListFilter):
 
 
 class AuthResourcePermissionAdmin(admin.ModelAdmin):
-    list_display = ('auth_subject', 'scope', 'job_family', 'job', 'endpoint')
-    list_filter = [AuthResourcePermissionTypeFilter, 'scope', 'job_family', 'job', 'endpoint']
-    search_fields = ['auth_subject__user__username', 'auth_subject__esc__name', 'auth_subject__job_family__name', 'scope', 'endpoint']
-    autocomplete_fields = ['auth_subject', 'job_family', 'job']
+    list_display = ('auth_subject', 'scope', 'fatman_family', 'fatman', 'endpoint')
+    list_filter = [AuthResourcePermissionTypeFilter, 'scope', 'fatman_family', 'fatman', 'endpoint']
+    search_fields = ['auth_subject__user__username', 'auth_subject__esc__name', 'auth_subject__fatman_family__name', 'scope', 'endpoint']
+    autocomplete_fields = ['auth_subject', 'fatman_family', 'fatman']
 
 
 admin.site.unregister(User)
 admin.site.register(User, RacetrackUserAdmin)
 
-admin.site.register(Job, JobAdmin)
-admin.site.register(JobFamily, JobFamilyAdmin)
+admin.site.register(Fatman, JobAdmin)
+admin.site.register(FatmanFamily, JobFamilyAdmin)
 admin.site.register(Deployment, DeploymentAdmin)
 admin.site.register(Esc, EscAdmin)
 admin.site.register(PublicEndpointRequest, PublicEndpointRequestAdmin)
-admin.site.register(TrashJob, TrashJobAdmin)
+admin.site.register(TrashFatman, TrashJobAdmin)
 admin.site.register(AuditLogEvent, AuditLogEventAdmin)
 admin.site.register(AuthSubject, AuthSubjectAdmin)
 admin.site.register(AuthResourcePermission, AuthResourcePermissionAdmin)

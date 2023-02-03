@@ -8,14 +8,14 @@ from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointReque
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, DeploymentDto
 
 
-def job_family_model_to_dto(model: models.JobFamily) -> JobFamilyDto:
+def job_family_model_to_dto(model: models.FatmanFamily) -> JobFamilyDto:
     return JobFamilyDto(
         id=model.id,
         name=model.name,
     )
 
 
-def job_model_to_dto(model: models.Job, config: Config) -> JobDto:
+def job_model_to_dto(model: models.Fatman, config: Config) -> JobDto:
     return JobDto(
         id=model.id,
         name=model.name,

@@ -240,7 +240,7 @@ def grant_permission(
         return
 
     if job_name and job_version:
-        job_model = models.job.objects.get(name=job_name, version=job_version)
+        job_model = models.fatman.objects.get(name=job_name, version=job_version)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
             job=job_model,
@@ -248,7 +248,7 @@ def grant_permission(
         )
         resource_description = f'job "{job_name} v{job_version}"'
     elif job_name:
-        job_family_model = models.JobFamily.objects.get(name=job_name)
+        job_family_model = models.FatmanFamily.objects.get(name=job_name)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
             job_family=job_family_model,

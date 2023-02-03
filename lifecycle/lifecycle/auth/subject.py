@@ -51,7 +51,7 @@ def get_auth_subject_by_esc(esc_model: models.Esc) -> models.AuthSubject:
 
 
 @db_access
-def get_auth_subject_by_job_family(job_family: models.JobFamily) -> models.AuthSubject:
+def get_auth_subject_by_job_family(job_family: models.FatmanFamily) -> models.AuthSubject:
     """Get or Create (if not exists) an auth subject for the given Job Family"""
     try:
         return models.AuthSubject.objects.get(job_family=job_family)
