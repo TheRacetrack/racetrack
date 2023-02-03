@@ -13,8 +13,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RenameField(
             model_name='esc',
-            old_name='job',
-            new_name='jobs',
+            old_name='fatman',
+            new_name='fatmen',
         ),
         migrations.AlterField(
             model_name='esc',

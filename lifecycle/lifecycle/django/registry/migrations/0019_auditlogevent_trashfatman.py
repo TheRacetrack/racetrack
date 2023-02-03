@@ -8,7 +8,7 @@ import racetrack_client.utils.time
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registry', '0018_job_last_call_time'),
+        ('registry', '0018_fatman_last_call_time'),
     ]
 
     operations = [
@@ -22,12 +22,12 @@ class Migration(migrations.Migration):
                 ('properties', models.TextField(null=True)),
                 ('username_executor', models.CharField(max_length=512, null=True)),
                 ('username_subject', models.CharField(max_length=512, null=True)),
-                ('job_name', models.CharField(max_length=512, null=True)),
-                ('job_version', models.CharField(max_length=256, null=True)),
+                ('fatman_name', models.CharField(max_length=512, null=True)),
+                ('fatman_version', models.CharField(max_length=256, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='TrashJob',
+            name='TrashFatman',
             fields=[
                 ('id', models.CharField(default=lifecycle.django.registry.models.new_uuid, max_length=36, primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=512)),
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('age_days', models.DecimalField(decimal_places=3, max_digits=6)),
             ],
             options={
-                'verbose_name_plural': 'Trash Jobs',
+                'verbose_name_plural': 'Trash Fatmen',
             },
         ),
     ]

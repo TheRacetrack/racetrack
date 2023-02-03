@@ -13,21 +13,21 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RenameModel(
             old_name='Job',
-            new_name='Job',
+            new_name='Fatman',
         ),
         migrations.RenameField(
             model_name='deployment',
             old_name='job_name',
-            new_name='job_name',
+            new_name='fatman_name',
         ),
         migrations.RenameField(
             model_name='esc',
             old_name='jobs',
-            new_name='job',
+            new_name='fatman',
         ),
         migrations.RenameField(
-            model_name='job',
+            model_name='fatman',
             old_name='allowed_jobs',
-            new_name='allowed_jobs',
+            new_name='allowed_fatmen',
         ),
     ]

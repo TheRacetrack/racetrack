@@ -16,12 +16,12 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=256, null=True),
         ),
         migrations.AddField(
-            model_name='job',
+            model_name='fatman',
             name='infrastructure_target',
             field=models.CharField(max_length=256, null=True),
         ),
         migrations.AddField(
-            model_name='trashjob',
+            model_name='trashfatman',
             name='infrastructure_target',
             field=models.CharField(max_length=256, null=True),
         ),

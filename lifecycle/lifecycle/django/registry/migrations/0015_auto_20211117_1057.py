@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
             options={'verbose_name': 'External service consumer', 'verbose_name_plural': 'External service consumers'},
         ),
         migrations.AlterModelOptions(
-            name='job',
-            options={'verbose_name_plural': 'Jobs'},
+            name='fatman',
+            options={'verbose_name_plural': 'Fatmen'},
         ),
         migrations.AlterModelOptions(
-            name='jobfamily',
-            options={'verbose_name_plural': 'Job families'},
+            name='fatmanfamily',
+            options={'verbose_name_plural': 'Fatman families'},
         ),
     ]
