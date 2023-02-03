@@ -213,7 +213,7 @@ services:
     command: --config.file=/etc/prometheus/prometheus.yaml
     volumes:
       - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
-      - ./.plugins/prometheus:/mnt/plugins/prometheus
+      - ./.plugins/metrics:/mnt/plugins/metrics
     logging:
       driver: none
 

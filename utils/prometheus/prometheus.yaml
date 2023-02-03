@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 5s
+  scrape_interval: 30s
   evaluation_interval: 1m
 
 scrape_configs:
@@ -36,5 +36,5 @@ scrape_configs:
     metrics_path: /metrics
     file_sd_configs:
       - files:
-        - '/mnt/plugins/prometheus/sd_config_jobs.yaml'
-        refresh_interval: 5m
+        - '/mnt/plugins/metrics/sd_config_jobs.yaml'
+        refresh_interval: 1m
