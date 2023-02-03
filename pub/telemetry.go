@@ -17,7 +17,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
-const providerId = "github.com/LookACastle/racetrack/pub"
+const providerId = "github.com/TheRacetrack/racetrack/pub"
 
 var tracer = otel.Tracer(providerId)
 

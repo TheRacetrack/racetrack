@@ -3,7 +3,7 @@ services:
 
   locust:
     container_name: locust
-    image: ghcr.io/lookacastle/racetrack/locust:latest
+    image: ghcr.io/theracetrack/racetrack/locust:latest
     build:
       context: ../..
       dockerfile: tests/stress/Dockerfile

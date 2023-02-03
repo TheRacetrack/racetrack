@@ -3,8 +3,8 @@
 # docker tag of images
 TAG ?= 2.8.1
 DOCKER_REGISTRY ?= ghcr.io
-DOCKER_REGISTRY_NAMESPACE ?= lookacastle/racetrack
-GHCR_PREFIX = ghcr.io/lookacastle/racetrack
+DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
+GHCR_PREFIX = ghcr.io/theracetrack/racetrack
 DOCKER_GID=$(shell (getent group docker || echo 'docker:x:0') | cut -d: -f3 )
 
 docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false DOCKER_GID=${DOCKER_GID} \

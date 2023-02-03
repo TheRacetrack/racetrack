@@ -3,7 +3,7 @@ owner_email: sample@example.com
 lang: docker-proxy:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/docker-python-flask
 
 docker:

@@ -15,7 +15,7 @@ setuptools.setup(
     description="CLI client tool for deploying workloads to Racetrack",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/LookACastle/racetrack",
+    url="https://github.com/TheRacetrack/racetrack",
     packages=setuptools.find_packages(exclude=["tests.*", "tests", "plugins"]),
     classifiers=[
         'Programming Language :: Python :: 3',

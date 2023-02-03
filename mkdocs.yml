@@ -1,7 +1,7 @@
 site_name: Racetrack
-repo_name: LookACastle/racetrack
-repo_url: https://github.com/LookACastle/racetrack
-site_author: LookACastle
+repo_name: TheRacetrack/racetrack
+repo_url: https://github.com/TheRacetrack/racetrack
+site_author: TheRacetrack
 docs_dir: .
 edit_uri: ''
 theme:
@@ -43,7 +43,7 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/LookACastle/racetrack
+      link: https://github.com/TheRacetrack/racetrack
       name: Racetrack on GitHub
 
 nav:

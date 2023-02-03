@@ -22,7 +22,7 @@ python3 -m venv venv
 
 Start Racetrack components with an utility script:
 ```shell
-curl -fsSL https://raw.githubusercontent.com/LookACastle/racetrack/master/utils/quickstart-up.sh | bash -s
+curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash -s
 ```
 
 Racetrack is now ready to accept `python3` jobs at [localhost:7102](http://localhost:7102).
@@ -54,7 +54,7 @@ owner_email: sample@example.com
 lang: python3:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
 
 python:
   entrypoint_path: 'entrypoint.py'
@@ -92,5 +92,5 @@ curl -X POST "http://localhost:7105/pub/job/adder/latest/api/v1/perform" \
 
 Tear down all the components:
 ```shell
-curl -fsSL https://raw.githubusercontent.com/LookACastle/racetrack/master/utils/quickstart-down.sh | bash -s
+curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-down.sh | bash -s
 ```

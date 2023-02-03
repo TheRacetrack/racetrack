@@ -3,7 +3,7 @@ owner_email: sample@example.com
 lang: python3:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/python-metrics
 
 python:

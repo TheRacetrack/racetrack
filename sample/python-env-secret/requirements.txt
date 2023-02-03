@@ -1,1 +1,1 @@
-git+https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@github.com/LookACastle/racetrack
+git+https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@github.com/TheRacetrack/racetrack

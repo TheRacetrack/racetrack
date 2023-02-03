@@ -127,14 +127,14 @@ TAG ?= 1.2.16
 
         lifecycle = (Path(path) / 'lifecycle.yaml')
         lc_pre = """
-            image: ghcr.io/lookacastle/racetrack/lifecycle:1.2.16
+            image: ghcr.io/theracetrack/racetrack/lifecycle:1.2.16
         """
         lifecycle.write_text(lc_pre)
 
         replace_in_files(cur_ver, new_ver, [lifecycle])
 
         lc_expected = """
-            image: ghcr.io/lookacastle/racetrack/lifecycle:1.2.17
+            image: ghcr.io/theracetrack/racetrack/lifecycle:1.2.17
         """
         assert lifecycle.read_text() == lc_expected
 
@@ -158,20 +158,20 @@ TAG?=1.2.1
 
         lifecycle = (Path(path) / 'lifecycle.yaml')
         lc_pre = """
-            image: ghcr.io/lookacastle/racetrack/lifecycle:1.2.1
+            image: ghcr.io/theracetrack/racetrack/lifecycle:1.2.1
         """
         lifecycle.write_text(lc_pre)
 
         bump_version_in_files(makefile, args, [makefile, lifecycle], [])
         lc_expected = """
-            image: ghcr.io/lookacastle/racetrack/lifecycle:1.2.1-87-1
+            image: ghcr.io/theracetrack/racetrack/lifecycle:1.2.1-87-1
         """
         assert lifecycle.read_text() == lc_expected
 
         args.mr = 0
         bump_version_in_files(makefile, args, [makefile, lifecycle], [])
         lc_expected = """
-            image: ghcr.io/lookacastle/racetrack/lifecycle:1.2.1-87-2
+            image: ghcr.io/theracetrack/racetrack/lifecycle:1.2.1-87-2
         """
         assert lifecycle.read_text() == lc_expected
 

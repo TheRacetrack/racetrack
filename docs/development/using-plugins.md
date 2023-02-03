@@ -6,60 +6,60 @@ customized, tailored functionality to a generic Racetrack.
 These are the known, public Racetrack plugins that are commonly available to be installed:
 
 - Job types:
-    - [github.com/LookACastle/plugin-python-job-type](https://github.com/LookACastle/plugin-python-job-type) -
+    - [github.com/TheRacetrack/plugin-python-job-type](https://github.com/TheRacetrack/plugin-python-job-type) -
       Python 3 Job Type
       ```
-      racetrack plugin install github.com/LookACastle/plugin-python-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
       ```
 
-    - [github.com/LookACastle/plugin-docker-proxy-job-type](https://github.com/LookACastle/plugin-docker-proxy-job-type) -
+    - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
       Dockerfile-based Job Type (any language or app wrapped in a Dockerfile like Drupal or Sphinx)
       ```
-      racetrack plugin install github.com/LookACastle/plugin-docker-proxy-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-docker-proxy-job-type
       ```
 
-    - [github.com/LookACastle/plugin-go-job-type](https://github.com/LookACastle/plugin-go-job-type) -
+    - [github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type) -
       Golang (Go) Job Type
       ```
-      racetrack plugin install github.com/LookACastle/plugin-go-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-go-job-type
       ```
 
-    - [github.com/LookACastle/plugin-rust-job-type](https://github.com/LookACastle/plugin-rust-job-type) -
+    - [github.com/TheRacetrack/plugin-rust-job-type](https://github.com/TheRacetrack/plugin-rust-job-type) -
       Rust Job Type
       ```
-      racetrack plugin install github.com/LookACastle/plugin-rust-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-rust-job-type
       ```
 
-    - [https://github.com/LookACastle/plugin-hugo-job-type](https://github.com/LookACastle/plugin-hugo-job-type) -
+    - [https://github.com/TheRacetrack/plugin-hugo-job-type](https://github.com/TheRacetrack/plugin-hugo-job-type) -
       HUGO Job Type
       ```
-      racetrack plugin install github.com/LookACastle/plugin-hugo-job-type
+      racetrack plugin install github.com/TheRacetrack/plugin-hugo-job-type
       ```
 
 - Infrastructure Targets:
-    - [github.com/LookACastle/plugin-docker-daemon-deployer](https://github.com/LookACastle/plugin-docker-daemon-deployer) -
+    - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
       deploys to remote Docker Daemon
       ```
-      racetrack plugin install github.com/LookACastle/plugin-docker-daemon-deployer
+      racetrack plugin install github.com/TheRacetrack/plugin-docker-daemon-deployer
       ```
 
-    - [github.com/LookACastle/plugin-docker-infrastructure](https://github.com/LookACastle/plugin-docker-infrastructure) -
+    - [github.com/TheRacetrack/plugin-docker-infrastructure](https://github.com/TheRacetrack/plugin-docker-infrastructure) -
       deploys to a local Docker
       ```
-      racetrack plugin install github.com/LookACastle/plugin-docker-infrastructure
+      racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure
       ```
 
-    - [github.com/LookACastle/plugin-kubernetes-infrastructure](https://github.com/LookACastle/plugin-kubernetes-infrastructure) -
+    - [github.com/TheRacetrack/plugin-kubernetes-infrastructure](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure) -
       deploys to Kubernetes
       ```
-      racetrack plugin install github.com/LookACastle/plugin-kubernetes-infrastructure
+      racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
       ```
 
 - Others:
-    - [github.com/LookACastle/plugin-teams-notifications](https://github.com/LookACastle/plugin-teams-notifications) -
+    - [github.com/TheRacetrack/plugin-teams-notifications](https://github.com/TheRacetrack/plugin-teams-notifications) -
       Sending notifications to Teams channel
       ```
-      racetrack plugin install github.com/LookACastle/plugin-teams-notifications
+      racetrack plugin install github.com/TheRacetrack/plugin-teams-notifications
       ```
 
 ## Installing / Uninstalling plugin
@@ -77,11 +77,11 @@ Plugins can be installed by means of racetrack-client command
 where `plugin_uri` can be either:
 
 - local file path (eg. `python3-job-type-2.4.0.zip`),
-- URL to a remote HTTP file (eg. `https://github.com/LookACastle/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
-- GitHub repository name (eg. `github.com/LookACastle/plugin-python-job-type`) -
+- URL to a remote HTTP file (eg. `https://github.com/TheRacetrack/plugin/releases/download/2.4.0/python3-job-type-2.4.0.zip`),
+- GitHub repository name (eg. `github.com/TheRacetrack/plugin-python-job-type`) -
   it takes the ZIP file from the latest release.
   Pay attention to omit `https://` part.
-- GitHub repository name with version (eg. `github.com/LookACastle/plugin-python-job-type==2.4.0`) -
+- GitHub repository name with version (eg. `github.com/TheRacetrack/plugin-python-job-type==2.4.0`) -
   it takes the ZIP file from the specific release.
   Pay attention to omit `https://` part.
 

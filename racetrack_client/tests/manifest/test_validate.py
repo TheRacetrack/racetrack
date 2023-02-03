@@ -17,7 +17,7 @@ owner_email: nobody@example.com
 lang: golang:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 """)
 
@@ -29,7 +29,7 @@ owner_email: nobody@example.com
 lang: golang:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 
 resources:
@@ -50,7 +50,7 @@ owner_email: nobody@example.com
 lang: golang:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 """)
         load_validated_manifest(path)
@@ -74,7 +74,7 @@ def test_missing_required_field():
         validate_tmp_manifest("""
 owner_email: nobody@example.com
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 """)
     assert "name\n  field required" in str(excinfo.value)
@@ -89,7 +89,7 @@ owner_email: nobody@example.com
 lang: golang:latest
 
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 """)
     assert 'surname\n  extra fields not permitted' in str(excinfo.value)
@@ -102,7 +102,7 @@ name: golang-function
 owner_email: moron
 lang: golang:latest
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
 """)
     assert '"owner_email" is not a valid email' in str(excinfo.value)
 
@@ -120,7 +120,7 @@ name: skynet
 owner_email: nobody@example.com
 lang: python3:latest
 git:
-  remote: https://github.com/LookACastle/racetrack
+  remote: https://github.com/TheRacetrack/racetrack
 replicas: 100
 """)
     assert 'replicas count out of allowed range' in str(excinfo.value)
@@ -133,7 +133,7 @@ name: skynet
 owner_email: nobody@example.com
 lang: python3:latest
 git:
-  remote: git@github.com:LookACastle/racetrack.git
+  remote: git@github.com:TheRacetrack/racetrack.git
 """)
     assert 'git remote URL should be HTTPS' in str(excinfo.value)
 
