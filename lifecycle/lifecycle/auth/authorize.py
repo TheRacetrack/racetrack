@@ -150,7 +150,7 @@ def has_scope_permission(
 def list_permitted_jobs(
     auth_subject: models.AuthSubject,
     scope: str,
-    all_job: List[JobDto],
+    all_jobs: List[JobDto],
 ) -> List[JobDto]:
     """
     List jobs that auth subject has permissions to access.
@@ -165,21 +165,21 @@ def list_permitted_jobs(
         subject_filter & scope_filter
     )
 
-    id_to_job = {f'{f.name} v{f.version}': f for f in all_job}
+    id_to_job = {f'{f.name} v{f.version}': f for f in all_jobs}
     family_to_ids = defaultdict(list)
     for job in all_jobs:
         family_to_ids[job_name].append(f'{job_name} v{job_version}')
 
     job_ids = set()
-    for permission in queryset:
-        if permission.job_family is None and permission.job is None:
+    for permission in queryset: 
+        if permission.fatman_family is None and permission.fatman is None:
             return all_jobs
 
-        if permission.job is not None:
-            job_ids.add(f'{permission.job_name} v{permission.job_version}')
+        if permission.fatman is not None:
+            job_ids.add(f'{permission.fatman_name} v{permission.fatman_version}')
 
-        if permission.job_family is not None:
-            job_ids.update(family_to_ids[permission.job_family.name])
+        if permission.fatman_family is not None:
+            job_ids.update(family_to_ids[permission.fatman_family.name])
 
     return [id_to_job[fid] for fid in sorted(job_ids)]
 
@@ -203,11 +203,11 @@ def list_permitted_families(
     name_to_family = {f.name: f for f in all_families}
     family_names = set()
     for permission in queryset:
-        if permission.job_family is None and permission.job is None:
+        if permission.fatman_family is None and permission.fatman is None:
             return all_families
 
-        if permission.job_family is not None:
-            family_names.add(permission.job_name)
+        if permission.fatman_family is not None:
+            family_names.add(permission.fatman_name)
 
     return [name_to_family[name] for name in sorted(family_names)]
 
