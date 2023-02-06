@@ -10,8 +10,6 @@ Workloads:
 - **Job Type** - one of the languages and frameworks supported by Racetrack that user choose to develop a job in
 - **Job Type Version** - the specific revision of the job standard including the way of handling the requests and its features.
   Language Wrappers are installed in Racetrack to support particular Job Type Versions.
-- **Job** - A blueprint for creating Job, 
-  consisting of source code (written in the style required by Racetrack) and Job Manifest file.
 - **ML Model** - An application using Machine Learning algorithms created by Data Scentists or
   Developers, transforming input data & parameters into results.
 
