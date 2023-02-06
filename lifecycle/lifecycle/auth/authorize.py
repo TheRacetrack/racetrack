@@ -168,7 +168,7 @@ def list_permitted_jobs(
     id_to_job = {f'{f.name} v{f.version}': f for f in all_jobs}
     family_to_ids = defaultdict(list)
     for job in all_jobs:
-        family_to_ids[fatman_name].append(f'{job_name} v{job_version}')
+        family_to_ids[job_name].append(f'{job.name} v{job.version}')
 
     job_ids = set()
     for permission in queryset: 
@@ -176,7 +176,7 @@ def list_permitted_jobs(
             return all_jobs
 
         if permission.fatman is not None:
-            job_ids.add(f'{permission.fatman_name} v{permission.fatman_version}')
+            job_ids.add(f'{permission.fatman.name} v{permission.fatman.version}')
 
         if permission.fatman_family is not None:
             job_ids.update(family_to_ids[permission.fatman_family.name])
@@ -207,7 +207,7 @@ def list_permitted_families(
             return all_families
 
         if permission.fatman_family is not None:
-            family_names.add(permission.fatman_name)
+            family_names.add(permission.fatman.name)
 
     return [name_to_family[name] for name in sorted(family_names)]
 
@@ -240,10 +240,10 @@ def grant_permission(
         return
 
     if job_name and job_version:
-        job_model = models.fatman.objects.get(name=job_name, version=job_version)
+        job_model = models.Fatman.objects.get(name=job_name, version=job_version)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            job=job_model,
+            fatman=job_model,
             scope=scope,
         )
         resource_description = f'job "{job_name} v{job_version}"'
@@ -251,7 +251,7 @@ def grant_permission(
         job_family_model = models.FatmanFamily.objects.get(name=job_name)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            job_family=job_family_model,
+            fatman_family=job_family_model,
             scope=scope,
         )
         resource_description = f'job family "{job_name}"'
