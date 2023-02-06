@@ -51,29 +51,29 @@ def get_auth_subject_by_esc(esc_model: models.Esc) -> models.AuthSubject:
 
 
 @db_access
-def get_auth_subject_by_job_family(job_family: models.FatmanFamily) -> models.AuthSubject:
+def get_auth_subject_by_job_family(fatman_family: models.FatmanFamily) -> models.AuthSubject:
     """Get or Create (if not exists) an auth subject for the given Job Family"""
     try:
-        return models.AuthSubject.objects.get(job_family=job_family)
+        return models.AuthSubject.objects.get(fatman_family=fatman_family)
     except models.AuthSubject.DoesNotExist:
         pass
 
     auth_subject = models.AuthSubject()
-    auth_subject.job_family = job_family
+    auth_subject.fatman_family = fatman_family
     auth_subject.token = ''
     auth_subject.active = True
     auth_subject.save()
     regenerate_auth_token(auth_subject)
-    logger.info(f'Created auth subject for Job Family {job_family}')
+    logger.info(f'Created auth subject for Job Family {fatman_family}')
     return auth_subject
 
 
 @db_access
-def find_auth_subject_by_job_family_name(job_name: str) -> models.AuthSubject:
+def find_auth_subject_by_job_family_name(fatman_name: str) -> models.AuthSubject:
     try:
-        return models.AuthSubject.objects.get(job_family__name=job_name)
+        return models.AuthSubject.objects.get(fatman_family__name=fatman_name)
     except models.AuthSubject.DoesNotExist:
-        raise EntityNotFound(f'Auth subject for Job family {job_name} not found')
+        raise EntityNotFound(f'Auth subject for Job family {fatman_name} not found')
 
 
 @db_access
@@ -119,7 +119,7 @@ def _get_subject_type_from_auth_subject(auth_subject: models.AuthSubject) -> Aut
         return AuthSubjectType.USER
     elif auth_subject.esc is not None:
         return AuthSubjectType.ESC
-    elif auth_subject.job_family is not None:
+    elif auth_subject.fatman_family is not None:
         return AuthSubjectType.JOB_FAMILY
     else:
         raise ValueError("Unknown auth_subject type")
@@ -130,8 +130,8 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
         return auth_subject.user.username
     elif auth_subject.esc is not None:
         return auth_subject.esc.id
-    elif auth_subject.job_family is not None:
-        return auth_subject.job_family.name
+    elif auth_subject.fatman_family is not None:
+        return auth_subject.fatman_family.name
     else:
         raise ValueError("Unknown auth_subject type")
 
@@ -145,7 +145,7 @@ def regenerate_all_user_tokens():
 
 
 def regenerate_all_job_family_tokens():
-    auth_subject_queryset = models.AuthSubject.objects.filter(Q(job_family__isnull=False))
+    auth_subject_queryset = models.AuthSubject.objects.filter(Q(fatman_family__isnull=False))
     for auth_subject in auth_subject_queryset:
         regenerate_auth_token(auth_subject)
     count = auth_subject_queryset.count()

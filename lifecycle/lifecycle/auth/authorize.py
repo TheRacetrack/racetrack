@@ -104,8 +104,8 @@ def has_endpoint_permission(
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    job_name_filter = Q(job_family__name=job_name) | Q(job_family__isnull=True)
-    job_version_filter = Q(job__version=job_version) | Q(job__isnull=True)
+    job_name_filter = Q(fatman_family__name=job_name) | Q(fatman_family__isnull=True)
+    job_version_filter = Q(fatman__version=job_version) | Q(fatman__isnull=True)
     endpoint_filter = Q(endpoint=endpoint) | Q(endpoint__isnull=True)
     resource_filter = job_name_filter & job_version_filter & endpoint_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
@@ -123,8 +123,8 @@ def has_resource_permission(
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    job_name_filter = Q(job_family__name=job_name) | Q(job_family__isnull=True)
-    job_version_filter = Q(job__version=job_version) | Q(job__isnull=True)
+    job_name_filter = Q(fatman_family__name=job_name) | Q(fatman_family__isnull=True)
+    job_version_filter = Q(fatman__version=job_version) | Q(fatman__isnull=True)
     resource_filter = job_name_filter & job_version_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
     queryset = models.AuthResourcePermission.objects.filter(
@@ -168,7 +168,7 @@ def list_permitted_jobs(
     id_to_job = {f'{f.name} v{f.version}': f for f in all_jobs}
     family_to_ids = defaultdict(list)
     for job in all_jobs:
-        family_to_ids[job_name].append(f'{job_name} v{job_version}')
+        family_to_ids[fatman_name].append(f'{job_name} v{job_version}')
 
     job_ids = set()
     for permission in queryset: 
@@ -226,11 +226,11 @@ def grant_permission(
     subject_filter = Q(auth_subject=auth_subject)
     scope_filter = Q(scope=scope)
     if job_name and job_version:
-        resource_filter = Q(job__name=job_name, job__version=job_version)
+        resource_filter = Q(fatman__name=job_name, fatman__version=job_version)
     elif job_name:
-        resource_filter = Q(job_family__name=job_name, job__isnull=True)
+        resource_filter = Q(fatman_family__name=job_name, fatman__isnull=True)
     else:
-        resource_filter = Q(job_family__isnull=True, job__isnull=True)
+        resource_filter = Q(fatman_family__isnull=True, fatman__isnull=True)
 
     queryset = models.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter

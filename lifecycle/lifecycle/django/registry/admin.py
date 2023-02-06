@@ -78,9 +78,9 @@ class AuthSubjectTypeFilter(SimpleListFilter):
         if self.value() == 'ESC':
             return queryset.filter(esc__isnull=False)
         if self.value() == 'Job Family':
-            return queryset.filter(job_family__isnull=False)
+            return queryset.filter(fatman_family__isnull=False)
         if self.value() == 'Unknown':
-            return queryset.filter(user__isnull=True, esc__isnull=True, job_family__isnull=True)
+            return queryset.filter(user__isnull=True, esc__isnull=True, fatman_family__isnull=True)
         return queryset
 
 
@@ -118,9 +118,9 @@ class AuthResourcePermissionTypeFilter(SimpleListFilter):
         if self.value() == 'ESC':
             return queryset.filter(auth_subject__esc__isnull=False)
         if self.value() == 'Job Family':
-            return queryset.filter(auth_subject__job_family__isnull=False)
+            return queryset.filter(auth_subject__fatman_family__isnull=False)
         if self.value() == 'Unknown':
-            return queryset.filter(auth_subject__user__isnull=True, auth_subject__esc__isnull=True, auth_subject__job_family__isnull=True)
+            return queryset.filter(auth_subject__user__isnull=True, auth_subject__esc__isnull=True, auth_subject__fatman_family__isnull=True)
         return queryset
 
 

@@ -20,7 +20,7 @@ def read_active_job_public_endpoints(
     resolved_version = job_model.version
 
     queryset = models.PublicEndpointRequest.objects.filter(
-        job__name=job_name, job__version=resolved_version, active=True
+        fatman__name=job_name, fatman__version=resolved_version, active=True
     )
     return [public_endpoint_request_model_to_dto(model) for model in queryset]
 

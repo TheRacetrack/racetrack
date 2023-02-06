@@ -73,6 +73,6 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
         properties=properties,
         username_executor=model.username_executor,
         username_subject=model.username_subject,
-        job_name=model.job_name,
+        job_name=model.fatman_name,
         job_version=model.job_version,
     )
