@@ -11,6 +11,8 @@ resources:
   - dashboard.yaml
   - pub.yaml
   - postgres.yaml
+  - prometheus.yaml
+  - grafana.yaml
 
 configMapGenerator:
   - name: postgres-env
@@ -33,3 +35,7 @@ configMapGenerator:
     namespace: racetrack
     files:
       - config.yaml=image-builder.config.yaml
+  - name: prometheus-config
+    namespace: racetrack
+    files:
+      - prometheus.yaml=config/prometheus/prometheus.yaml
