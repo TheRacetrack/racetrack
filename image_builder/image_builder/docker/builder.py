@@ -115,7 +115,7 @@ def _build_job_image(
                                 git_version, racetrack_version, job_type.version, env_vars)
 
     with wrap_context(f'building job image {progress}'):
-        job_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
+        job_image = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
         logger.info(f'building Job image {progress}: {job_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
         update_deployment_phase(config, deployment_id, f'building image {build_progress}')
         build_logs = build_container_image(
