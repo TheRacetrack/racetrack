@@ -210,7 +210,7 @@ services:
     networks:
       - racetrack_default
     restart: unless-stopped
-    user: '100000:100000'
+    user: '65534:65534'
     command: --config.file=/etc/prometheus/prometheus.yaml
     volumes:
       - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
@@ -226,7 +226,7 @@ services:
     networks:
       - racetrack_default
     restart: unless-stopped
-    user: '100000:100000'
+    user: '472:472'
     volumes:
       - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml

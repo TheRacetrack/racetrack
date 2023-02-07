@@ -598,7 +598,7 @@
           "mode": "scheme",
           "reverse": false,
           "scale": "exponential",
-          "scheme": "Inferno",
+          "scheme": "OrRd",
           "steps": 128
         },
         "exemplars": {

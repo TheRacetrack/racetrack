@@ -36,6 +36,8 @@ spec:
               mountPath: /etc/grafana/provisioning/datasources
             - name: grafana-config-dashboards
               mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
       volumes:
         - name: grafana-config-datasources
           configMap:
@@ -49,6 +51,9 @@ spec:
             items:
             - key: all.yml
               path: all.yml
+        - name: grafana-dashboards
+          hostPath:
+            path: /src/utils/grafana/dashboards
 
 ---
 apiVersion: v1
