@@ -39,3 +39,8 @@ configMapGenerator:
     namespace: racetrack
     files:
       - prometheus.yaml=config/prometheus/prometheus.yaml
+  - name: grafana-config
+    namespace: racetrack
+    files:
+      - datasource.yml=config/grafana/datasource.yaml
+      - all.yml=config/grafana/dashboards-all.yaml

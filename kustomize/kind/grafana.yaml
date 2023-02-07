@@ -15,10 +15,6 @@ spec:
       labels:
         app.kubernetes.io/name: grafana
     spec:
-      securityContext:
-        fsGroup: 100000
-        runAsUser: 100000
-        runAsGroup: 100000
       serviceAccountName: null
       priorityClassName: high-priority
       containers:
@@ -28,6 +24,31 @@ spec:
           ports:
             - containerPort: 3000
           tty: true
+          env:
+            - name: GF_AUTH_BASIC_ENABLED
+              value: 'false'
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: 'true'
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: 'Admin'
+          volumeMounts:
+            - name: grafana-config-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-config-dashboards
+              mountPath: /etc/grafana/provisioning/dashboards
+      volumes:
+        - name: grafana-config-datasources
+          configMap:
+            name: grafana-config
+            items:
+            - key: datasource.yml
+              path: datasource.yml
+        - name: grafana-config-dashboards
+          configMap:
+            name: grafana-config
+            items:
+            - key: all.yml
+              path: all.yml
 
 ---
 apiVersion: v1
