@@ -26,8 +26,6 @@ spec:
           volumeMounts:
             - name: image-builder-config
               mountPath: /etc/racetrack/image-builder/
-            - name: git-root
-              mountPath: /src/.git
             - name: racetrack-plugins
               mountPath: /etc/racetrack/image-builder/plugins
           env:
@@ -56,9 +54,6 @@ spec:
         - name: image-builder-config
           configMap:
             name: image-builder-config
-        - name: git-root
-          hostPath:
-            path: /src/.git
         - name: racetrack-plugins
           persistentVolumeClaim:
             claimName: racetrack-plugins-pvc
