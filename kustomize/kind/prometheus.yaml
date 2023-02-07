@@ -15,7 +15,6 @@ spec:
       labels:
         app.kubernetes.io/name: prometheus
     spec:
-      serviceAccountName: null
       priorityClassName: high-priority
       containers:
         - name: prometheus
