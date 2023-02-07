@@ -206,10 +206,11 @@ services:
     image: prom/prometheus:v2.42.0
     container_name: prometheus
     ports:
-      - "9092:9090"
+      - "9192:9090"
     networks:
       - racetrack_default
     restart: unless-stopped
+    user: '100000:100000'
     command: --config.file=/etc/prometheus/prometheus.yaml
     volumes:
       - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
@@ -221,11 +222,11 @@ services:
     image: grafana/grafana:9.3.6
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "3100:3000"
     networks:
       - racetrack_default
     restart: unless-stopped
-    user: 1000:1000
+    user: '100000:100000'
     volumes:
       - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
