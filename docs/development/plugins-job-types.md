@@ -389,7 +389,7 @@ depending on the functionality that it targets to provide.
 See [developing-plugins.md](./developing-plugins.md) for the list of all supported hooks.
 
 We want to provide job types with this plugin,
-so let's implement `job_job_types` method.
+so let's implement `job_types` method.
 It defines what's the name of our new job type (`'rust'`).
 Also it has the reference to the base Dockerfile path
 and the dockerfile template path we created earlier.
@@ -400,7 +400,7 @@ from pathlib import Path
 
 
 class Plugin:
-    def job_job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+    def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
         """
         Job types provided by this plugin
         :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
