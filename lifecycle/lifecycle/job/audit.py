@@ -32,8 +32,8 @@ class AuditLogger:
             properties=properties_json,
             username_executor=username_executor,
             username_subject=username_subject,
-            job_name=job_name,
-            job_version=job_version,
+            fatman_name=job_name,
+            fatman_version=job_version,
         )
         ale.save()
 

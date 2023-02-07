@@ -62,7 +62,7 @@ def check_deployment_result(deploy_id: str, config: Config) -> DeploymentDto:
         dto = deployment_model_to_dto(deployment)
         if deployment.status == DeploymentStatus.DONE.value:
             try:
-                job_model = read_job_model(deployment.fatman_name, deployment.job_version)
+                job_model = read_job_model(deployment.fatman_name, deployment.fatman_version)
                 dto.job = job_model_to_dto(job_model, config)
             except EntityNotFound:
                 pass
