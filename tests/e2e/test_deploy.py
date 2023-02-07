@@ -5,11 +5,11 @@ def test_deploy_model():
     environment = _configure_env()
     _wait_for_components()
 
-    _install_plugin('/home/thokik/Repos/plugin-python-job-type/python3-job-type-2.5.11.zip')
+    _install_plugin('github.com/TheRacetrack/plugin-python-job-type==2.5.8')
     if environment == 'docker':
-        _install_plugin('/home/thokik/Repos/plugin-docker-daemon-deployer/docker-daemon-deployer-1.4.1.zip')
+        _install_plugin('github.com/TheRacetrack/plugin-docker-infrastructure==1.1.0')
     elif environment == 'kind':
-        _install_plugin('/home/thokik/Repos/plugin-kubernetes-infrastructure/kubernetes-infrastructure-1.1.0.zip')
+        _install_plugin('github.com/TheRacetrack/plugin-kubernetes-infrastructure==1.1.0')
 
     esc = _create_esc()
 
