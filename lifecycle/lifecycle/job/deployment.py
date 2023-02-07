@@ -29,8 +29,8 @@ def create_deployment(
         create_time=now(),
         update_time=now(),
         manifest=datamodel_to_yaml_str(manifest),
-        job_name=manifest.name,
-        job_version=manifest.version,
+        fatman_name=manifest.name,
+        fatman_version=manifest.version,
         deployed_by=username,
         infrastructure_target=infrastructure_target,
     )
@@ -42,8 +42,8 @@ def check_for_concurrent_deployments(manifest: Manifest):
     update_time_after = now() - timedelta(minutes=1)
     deployments_queryset = models.Deployment.objects.filter(
         status=DeploymentStatus.IN_PROGRESS.value,
-        job_name=manifest.name,
-        job_version=manifest.version,
+        fatman_name=manifest.name,
+        fatman_version=manifest.version,
         update_time__gte=update_time_after,
     )
 

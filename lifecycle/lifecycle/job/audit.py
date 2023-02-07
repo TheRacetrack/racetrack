@@ -49,8 +49,8 @@ class AuditLogger:
 @db_access
 def read_audit_log_user_events(
     username: Optional[str] = None,
-    job_name: Optional[str] = None,
-    job_version: Optional[str] = None,
+    fatman_name: Optional[str] = None,
+    fatman_version: Optional[str] = None,
 ) -> List[AuditLogEventDto]:
     """
     Get list of active public endpoints that can be accessed
@@ -58,8 +58,8 @@ def read_audit_log_user_events(
     :param job_version: Exact job version or an alias ("latest" or wildcard)
     """
     username_filter = Q(username_executor=username) | Q(username_subject=username) if username else Q()
-    job_name_filter = Q(job_name=job_name) if job_name else Q()
-    job_version_filter = Q(job_version=job_version) if job_version else Q()
+    job_name_filter = Q(fatman_name=fatman_name) if fatman_name else Q()
+    job_version_filter = Q(fatman_version=fatman_version) if fatman_version else Q()
     queryset = models.AuditLogEvent.objects.filter(
         username_filter & job_name_filter & job_version_filter
     ).order_by('-timestamp')[:100]

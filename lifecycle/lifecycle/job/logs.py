@@ -17,7 +17,7 @@ def read_build_logs(job_name: str, job_version: str, tail: int) -> str:
     """Read build logs from job image during latest job deployment"""
     job_model = models_registry.resolve_job_model(job_name, job_version)
     deployments_queryset = models.Deployment.objects\
-        .filter(job_name=job_model.name, job_version=job_model.version)\
+        .filter(fatman_name=job_model.name, fatman_version=job_model.version)\
         .order_by('-update_time')
     if deployments_queryset.count() == 0:
         raise EntityNotFound(f'No deployment matching to a job {job_name}')
