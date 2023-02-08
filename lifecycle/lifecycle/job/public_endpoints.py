@@ -36,7 +36,7 @@ def create_job_public_endpoint_if_not_exist(
         )
     except models.PublicEndpointRequest.DoesNotExist:
         new_model = models.PublicEndpointRequest(
-            job=job_model,
+            fatman=job_model,
             endpoint=endpoint,
             active=False,
         )
