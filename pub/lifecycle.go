@@ -44,7 +44,7 @@ type LifecycleClient struct {
 	requestId            string
 }
 
-const AuthScopeCallJob = "call_job"
+const AuthScopeCallJob = "call_fatman"
 
 func NewLifecycleClient(
 	lifecycleUrl string,
