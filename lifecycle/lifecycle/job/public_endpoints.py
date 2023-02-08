@@ -32,7 +32,7 @@ def create_job_public_endpoint_if_not_exist(
     job_model = read_job_model(job_name, job_version)
     try:
         return models.PublicEndpointRequest.objects.get(
-            job=job_model, endpoint=endpoint
+            fatman=job_model, endpoint=endpoint
         )
     except models.PublicEndpointRequest.DoesNotExist:
         new_model = models.PublicEndpointRequest(
