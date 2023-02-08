@@ -49,9 +49,9 @@ def get_manifest_path(workdir_or_file: str) -> Path:
         manifest_path = Path(workdir_or_file) / JOB_MANIFEST_FILENAME
         if manifest_path.is_file():
             return manifest_path
-
+        
         former_path = Path(workdir_or_file) / FORMER_MANIFEST_FILENAME
-        elif former_path.is_file():
+        if former_path.is_file():
             logger.warning(f'You are using old manifest file name "{FORMER_MANIFEST_FILENAME}". Please rename it to "{JOB_MANIFEST_FILENAME}"')
             return former_path
         

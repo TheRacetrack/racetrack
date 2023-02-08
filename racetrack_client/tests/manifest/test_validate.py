@@ -108,7 +108,7 @@ git:
 
 
 def test_missing_file():
-    with pytest.raises(RuntimeError) as excinfo:
+    with pytest.raises(FileNotFoundError) as excinfo:
         load_validated_manifest('not-existing-path')
     assert "manifest file 'not-existing-path' doesn't exist" in str(excinfo.value)
 
