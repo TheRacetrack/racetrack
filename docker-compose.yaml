@@ -226,7 +226,7 @@ services:
     networks:
       - racetrack_default
     restart: unless-stopped
-    user: '472:472'
+    user: '100000:100000'
     volumes:
       - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
