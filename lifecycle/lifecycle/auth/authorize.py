@@ -168,7 +168,7 @@ def list_permitted_jobs(
     id_to_job = {f'{f.name} v{f.version}': f for f in all_jobs}
     family_to_ids = defaultdict(list)
     for job in all_jobs:
-        family_to_ids[job_name].append(f'{job.name} v{job.version}')
+        family_to_ids[job.name].append(f'{job.name} v{job.version}')
 
     job_ids = set()
     for permission in queryset: 
