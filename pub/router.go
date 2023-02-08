@@ -23,6 +23,14 @@ func ListenAndServe(cfg *Config) error {
 		baseIngressPath,
 	}
 	for _, baseUrl := range baseUrls {
+        // Backwards compatability endpoints
+        router.Any(baseUrl+"/fatman/:job/:version/*path", func(c *gin.Context) {
+            proxyEndpoint(c, cfg)
+        })
+        router.Any(baseUrl+"/fatman/:job/:version", func(c *gin.Context) {
+            proxyEndpoint(c, cfg)
+        })
+        
 		router.Any(baseUrl+"/job/:job/:version/*path", func(c *gin.Context) {
 			proxyEndpoint(c, cfg)
 		})
