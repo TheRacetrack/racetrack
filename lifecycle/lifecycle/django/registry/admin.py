@@ -30,17 +30,17 @@ class DeploymentAdmin(admin.ModelAdmin):
 
 
 class PublicEndpointRequestAdmin(admin.ModelAdmin):
-    list_display = ('get_job_name', 'get_job_version', 'endpoint', 'active')
+    list_display = ('get_fatman_name', 'get_fatman_version', 'endpoint', 'active')
     search_fields = ['endpoint']
     list_filter = ['fatman__name', 'endpoint', 'active']
 
-    @admin.display(ordering='fatman__name', description='Job name')
-    def get_job_name(self, obj):
-        return obj.job.name
+    @admin.display(ordering='fatman__name', description='Fatman name')
+    def get_fatman_name(self, obj):
+        return obj.fatman.name
 
-    @admin.display(ordering='fatman__version', description='Job version')
-    def get_job_version(self, obj):
-        return obj.job.version
+    @admin.display(ordering='fatman__version', description='Fatman version')
+    def get_fatman_version(self, obj):
+        return obj.fatman.version
 
 
 class EscAdmin(admin.ModelAdmin):
