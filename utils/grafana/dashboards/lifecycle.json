@@ -29,10 +29,6 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -94,7 +90,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "max"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -114,10 +110,23 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "requested_fatman_deployments_total",
+          "expr": "sum(increase(requested_fatman_deployments_total[1m]))",
+          "hide": false,
           "interval": "",
-          "legendFormat": "total deployments",
+          "legendFormat": "requested deployments growth",
           "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "requested_fatman_deployments_total",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "requested deployments",
           "refId": "A"
         },
         {
@@ -125,17 +134,15 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(requested_fatman_deployments_total[1m]))",
+          "expr": "deployed_fatman_total",
           "hide": false,
           "interval": "",
-          "legendFormat": "growth",
-          "range": true,
-          "refId": "B"
+          "legendFormat": "successful deployments",
+          "refId": "C"
         }
       ],
-      "title": "Requested deployments",
+      "title": "Deployments",
       "type": "timeseries"
     },
     {
@@ -263,6 +270,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 2,
+  "version": 4,
   "weekStart": ""
 }

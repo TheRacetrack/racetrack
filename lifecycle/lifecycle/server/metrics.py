@@ -4,8 +4,6 @@ from prometheus_client import Counter
 from prometheus_client.core import REGISTRY
 from prometheus_client.metrics_core import GaugeMetricFamily
 
-from lifecycle.django.registry.database import db_access
-
 
 metric_requested_fatman_deployments = Counter('requested_fatman_deployments', 'Number of requests to deploy fatman')
 metric_deployed_fatman = Counter('deployed_fatman', 'Number of Fatman deployed successfully')
@@ -24,7 +22,6 @@ class DatabaseConnectionCollector:
         yield prometheus_metric
 
 
-@db_access
 def is_database_connected() -> bool:
     try:
         close_old_connections()
