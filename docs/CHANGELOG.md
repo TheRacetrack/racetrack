@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   including image building steps.
 - Racetrack comes with standalone Prometheus and Grafana.
   It contains dedicated dashboards for monitoring the jobs and internal services.
+- Database connection is being monitored closely by Lifecycle and displayed on a Grafana dashboard.
 
 ## [2.8.1] - 2023-01-27
 ### Changed

@@ -23,8 +23,8 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": 3,
+  "graphTooltip": 1,
+  "id": 2,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -84,7 +84,33 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "growth: requested deployments",
+                  "growth: successful deployments"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -96,7 +122,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "max"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -116,9 +142,24 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "requested_fatman_deployments_total",
+          "expr": "sum(idelta(requested_fatman_deployments_total[5m]))",
+          "hide": false,
           "interval": "",
-          "legendFormat": "total deployments",
+          "legendFormat": "growth: requested deployments",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "requested_fatman_deployments_total",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "total: requested deployments",
           "range": true,
           "refId": "A"
         },
@@ -129,19 +170,148 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(requested_fatman_deployments_total[1m]))",
+          "expr": "deployed_fatman_total",
           "hide": false,
           "interval": "",
-          "legendFormat": "growth",
+          "legendFormat": "total: successful deployments",
           "range": true,
-          "refId": "B"
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum(idelta(deployed_fatman_total[5m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "growth: successful deployments",
+          "range": true,
+          "refId": "D"
         }
       ],
-      "title": "Requested deployments",
+      "title": "Deployments",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "down"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "up"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "lifecycle_database_connected",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "is_connected",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Database connection",
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 37,
   "style": "dark",
   "tags": [],
@@ -156,6 +326,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 4,
+  "version": 3,
   "weekStart": ""
 }

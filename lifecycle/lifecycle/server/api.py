@@ -17,6 +17,7 @@ from lifecycle.endpoints.deploy import setup_deploy_endpoints
 from lifecycle.endpoints.esc import setup_esc_endpoints
 from lifecycle.endpoints.fatman import setup_fatman_endpoints
 from lifecycle.endpoints.user import setup_user_endpoints
+from lifecycle.server.metrics import setup_lifecycle_metrics
 from lifecycle.server.socketio import SocketIOServer
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
@@ -53,6 +54,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
 
     setup_health_endpoint(fastapi_app, config)
     setup_metrics_endpoint(fastapi_app)
+    setup_lifecycle_metrics()
 
     api_router = APIRouter(tags=['API'])
     setup_api_endpoints(api_router, config, plugin_engine)
