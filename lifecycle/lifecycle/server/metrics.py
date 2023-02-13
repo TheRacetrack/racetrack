@@ -1,3 +1,7 @@
+import socket
+import os
+
+from django.conf import settings
 from django.db import connection, close_old_connections
 from django.db.utils import OperationalError
 from prometheus_client import Counter
@@ -24,8 +28,26 @@ class DatabaseConnectionCollector:
 
 def is_database_connected() -> bool:
     try:
+        DJANGO_DB_TYPE = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+        if DJANGO_DB_TYPE == 'postgres':
+            host = settings.DATABASES['default']['HOST']
+            port = settings.DATABASES['default']['PORT']
+            if not is_port_open(host, int(port)):
+                return False
+
         close_old_connections()
         connection.cursor().execute("select 1")
         return True
     except OperationalError:
+        return False
+
+
+def is_port_open(ip: str, port: int) -> bool:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(3)
+    try:
+        s.connect((ip, port))
+        s.shutdown(2)
+        return True
+    except:
         return False
