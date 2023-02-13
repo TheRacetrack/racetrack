@@ -47,7 +47,7 @@ def is_port_open(ip: str, port: int) -> bool:
     s.settimeout(3)
     try:
         s.connect((ip, port))
-        s.shutdown(2)
+        s.shutdown(socket.SHUT_RDWR)
         return True
     except:
         return False
