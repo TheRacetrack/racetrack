@@ -211,7 +211,9 @@ services:
       - racetrack_default
     restart: unless-stopped
     user: '65534:65534'
-    command: --config.file=/etc/prometheus/prometheus.yaml
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.retention.time=60d'
     volumes:
       - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
       - ./.plugins/metrics:/mnt/plugins/metrics

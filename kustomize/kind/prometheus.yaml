@@ -30,6 +30,7 @@ spec:
               mountPath: /mnt/plugins
           args:
             - '--config.file=/etc/prometheus/prometheus.yaml'
+            - '--storage.tsdb.retention.time=60d'
       volumes:
         - name: prometheus-config
           configMap:
