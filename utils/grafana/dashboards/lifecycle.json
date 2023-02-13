@@ -23,18 +23,24 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": 4,
+  "graphTooltip": 1,
+  "id": 2,
   "links": [],
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -78,7 +84,33 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "growth: requested deployments",
+                  "growth: successful deployments"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -110,10 +142,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(requested_fatman_deployments_total[1m]))",
+          "expr": "sum(idelta(requested_fatman_deployments_total[5m]))",
           "hide": false,
           "interval": "",
-          "legendFormat": "requested deployments growth",
+          "legendFormat": "growth: requested deployments",
           "range": true,
           "refId": "B"
         },
@@ -122,11 +154,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "requested_fatman_deployments_total",
           "hide": false,
           "interval": "",
-          "legendFormat": "requested deployments",
+          "legendFormat": "total: requested deployments",
+          "range": true,
           "refId": "A"
         },
         {
@@ -134,24 +168,46 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "deployed_fatman_total",
           "hide": false,
           "interval": "",
-          "legendFormat": "successful deployments",
+          "legendFormat": "total: successful deployments",
+          "range": true,
           "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum(idelta(deployed_fatman_total[5m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "growth: successful deployments",
+          "range": true,
+          "refId": "D"
         }
       ],
       "title": "Deployments",
       "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -225,9 +281,9 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
+          "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "mode": "multi",
@@ -255,8 +311,8 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
-  "schemaVersion": 34,
+  "refresh": "30s",
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -270,6 +326,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 4,
+  "version": 3,
   "weekStart": ""
 }
