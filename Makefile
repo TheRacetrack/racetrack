@@ -161,6 +161,7 @@ compose-up-docker-daemon: registry docker-build compose-volumes
 
 compose-volumes:
 	mkdir -p .plugins && chmod ugo+rw .plugins
+	mkdir -p .plugins/metrics && chmod ugo+rw .plugins/metrics
 
 compose-down: docker-clean-fatman
 	$(docker-compose) --profile dev down

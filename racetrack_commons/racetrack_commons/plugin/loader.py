@@ -32,7 +32,7 @@ def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
     Loaded plugins will be sorted by priority, then by plugin version ascending.
     """
     plugins_path = Path(plugins_dir)
-    _ensure_dir_exists(plugins_path)
+    ensure_dir_exists(plugins_path)
 
     plugins_data: List[PluginData] = []
 
@@ -49,12 +49,12 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
         assert plugin_zip_path.is_file(), f'no such file {plugin_zip_path}'
         
         extracted_plugins_dir = plugin_zip_path.parent / EXTRACTED_PLUGINS_DIR
-        _ensure_dir_exists(extracted_plugins_dir)
+        ensure_dir_exists(extracted_plugins_dir)
         extracted_plugin_path = extracted_plugins_dir / plugin_zip_path.stem
 
         plugins_config_dir = plugin_zip_path.parent / PLUGINS_CONFIG_DIR
-        _ensure_dir_exists(plugins_config_dir)
-        _ensure_dir_exists(plugins_config_dir / plugin_zip_path.stem)
+        ensure_dir_exists(plugins_config_dir)
+        ensure_dir_exists(plugins_config_dir / plugin_zip_path.stem)
         config_file = plugins_config_dir / plugin_zip_path.stem / PLUGIN_CONFIG_FILENAME
         if not config_file.is_file():
             config_file.touch()
@@ -155,7 +155,7 @@ def _load_plugin_class(plugin_dir: Path, config_path: Path, plugin_manifest: Plu
     return plugin
 
 
-def _ensure_dir_exists(path: Path):
+def ensure_dir_exists(path: Path):
     if not path.is_dir():
         path.mkdir(parents=True, exist_ok=True)
         try:

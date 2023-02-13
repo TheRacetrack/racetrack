@@ -6,7 +6,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
 from lifecycle.server.api import run_api_server
 from lifecycle.server.scheduler import schedule_tasks_async
-from lifecycle.server.supervisor import startup_check
+from lifecycle.supervisor.startup import startup_check
 
 
 logger = get_logger(__name__)

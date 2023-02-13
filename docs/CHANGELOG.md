@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Deployment phases, shown by a racetrack client, are more granular,
   including image building steps.
+- Racetrack comes with standalone Prometheus and Grafana.
+  It contains dedicated dashboards for monitoring the jobs and internal services.
 
 ## [2.8.1] - 2023-01-27
 ### Changed

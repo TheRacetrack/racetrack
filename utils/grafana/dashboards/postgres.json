@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -21,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 5,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -30,6 +33,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -56,7 +63,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -70,10 +77,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "pg_up",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{instance}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -112,6 +121,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -138,7 +151,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -242,6 +255,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "description": "pg_stat_activity_count",
       "fill": 1,
       "fillGradient": 0,
@@ -269,7 +286,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -283,10 +300,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "sum(pg_stat_activity_count) by (state)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{state}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -325,6 +344,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -351,7 +374,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -365,10 +388,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "sum(pg_stat_database_xact_commit) by (datname)",
           "interval": "",
-          "legendFormat": "transactions commited {{datname}}",
+          "legendFormat": "commited @{{datname}}",
+          "range": true,
           "refId": "A"
         },
         {
@@ -376,11 +401,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "sum(pg_stat_database_xact_rollback) by (datname)",
           "hide": false,
           "interval": "",
-          "legendFormat": "transaction rollbacks {{datname}}",
+          "legendFormat": "rollbacks @{{datname}}",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -419,6 +446,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -445,7 +476,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -498,7 +529,7 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 34,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -512,6 +543,6 @@
   "timezone": "",
   "title": "Postgres",
   "uid": "Nb746Zonz",
-  "version": 5,
+  "version": 2,
   "weekStart": ""
 }
