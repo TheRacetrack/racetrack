@@ -201,32 +201,34 @@ services:
     restart: unless-stopped
     logging:
       driver: none
-    profiles: ["dev"]
 
   prometheus:
-    image: prom/prometheus:v2.32.1
+    image: prom/prometheus:v2.42.0
     container_name: prometheus
     ports:
-      - "9092:9090"
+      - "9192:9090"
     networks:
       - racetrack_default
     restart: unless-stopped
-    command: --config.file=/etc/prometheus/prometheus.yaml
+    user: '65534:65534'
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.retention.time=60d'
     volumes:
       - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
-    profiles: ["dev"]
+      - ./.plugins/metrics:/mnt/plugins/metrics
     logging:
       driver: none
 
   grafana:
-    image: grafana/grafana:8.3.3
+    image: grafana/grafana:9.3.6
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "3100:3000"
     networks:
       - racetrack_default
     restart: unless-stopped
-    user: 1000:1000
+    user: '100000:100000'
     volumes:
       - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
@@ -235,7 +237,6 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    profiles: ["dev"]
     logging:
       driver: none
 
