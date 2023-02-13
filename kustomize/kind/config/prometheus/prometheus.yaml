@@ -31,7 +31,7 @@ scrape_configs:
       - targets:
           - "pub:7005"
 
-  - job_name: racetrack-job
+  - job_name: racetrack-jobs
     scheme: http
     metrics_path: /metrics
     file_sd_configs:
