@@ -35,7 +35,7 @@ class JobRegistryClient:
         It will make target job be callable from source job.
         """
         scope = AuthScope.CALL_JOB.value
-        self.lc_client.request('post', f'/api/v1/auth/allow/fatman_family/{source_family_name}/fatman/{target_family_name}/scope/{scope}')
+        self.lc_client.request('post', f'/api/v1/auth/allow/job_family/{source_family_name}/job/{target_family_name}/scope/{scope}')
 
     def get_runtime_logs(self, job_name: str, job_version: str, tail: int = 0) -> str:
         params = {}

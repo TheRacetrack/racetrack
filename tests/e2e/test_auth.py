@@ -26,7 +26,7 @@ def test_deploy_job_chain():
     _configure_env()
     _wait_for_components()
 
-    _install_plugin('github.com/TheRacetrack/plugin-python-job-type')
+    _install_plugin('github.com/TheRacetrack/plugin-python-job-type==2.6.0')
     esc = _create_esc()
 
     _delete_workload('adder')

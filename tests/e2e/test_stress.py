@@ -14,7 +14,7 @@ suite_full = pytest.mark.skipif(
 @suite_full
 def test_deploy_delete_stress():
     _configure_env()
-    _install_plugin('github.com/TheRacetrack/plugin-python-job-type')
+    _install_plugin('github.com/TheRacetrack/plugin-python-job-type==2.6.0')
 
     start = time.time()
 
