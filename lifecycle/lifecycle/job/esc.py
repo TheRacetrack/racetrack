@@ -3,7 +3,7 @@ from lifecycle.auth.subject import get_auth_subject_by_esc, regenerate_auth_toke
 
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
-from lifecycle.fatman.dto_converter import esc_model_to_dto
+from lifecycle.job.dto_converter import esc_model_to_dto
 from racetrack_client.log.errors import EntityNotFound, AlreadyExists
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.dto import EscDto

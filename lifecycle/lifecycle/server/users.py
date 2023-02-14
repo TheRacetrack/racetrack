@@ -40,10 +40,10 @@ def init_user_profile(username: str) -> UserProfileDto:
     auth_subject = create_auth_subject_for_user(user)
 
     # grant default user permisssions
-    grant_permission(auth_subject, AuthScope.READ_FATMAN.value)
-    grant_permission(auth_subject, AuthScope.CALL_FATMAN.value)
+    grant_permission(auth_subject, AuthScope.READ_JOB.value)
+    grant_permission(auth_subject, AuthScope.CALL_JOB.value)
     grant_permission(auth_subject, AuthScope.DEPLOY_NEW_FAMILY.value)
-    grant_permission(auth_subject, AuthScope.DEPLOY_FATMAN.value)
+    grant_permission(auth_subject, AuthScope.DEPLOY_JOB.value)
 
     logger.info(f"Created Auth Subject for user {username}")
     return UserProfileDto(
@@ -71,4 +71,4 @@ def grant_permission(
         scope=scope,
     )
     permission.save()
-    logger.info(f'"{auth_subject}" has been granted permission to all fatmen within {scope} scope')
+    logger.info(f'"{auth_subject}" has been granted permission to all jobs within {scope} scope')

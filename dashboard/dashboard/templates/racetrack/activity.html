@@ -20,10 +20,10 @@
         <div class="card-body">
 
             <div class="input-group mb-3">
-                <span class="input-group-text">Fatman name:</span>
-                <input type="text" class="form-control" placeholder="Fatman name to filter by family" aria-label="Fatman name to filter by family" id="activity-fatman-name" value="{{filter_fatman_name}}">
-                <span class="input-group-text">Fatman version:</span>
-                <input type="text" class="form-control" placeholder="Fatman version to filter by" aria-label="Fatman version to filter by" id="activity-fatman-version" value="{{filter_fatman_version}}">
+                <span class="input-group-text">Job name:</span>
+                <input type="text" class="form-control" placeholder="Job name to filter by family" aria-label="Job name to filter by family" id="activity-job-name" value="{{filter_job_name}}">
+                <span class="input-group-text">Job version:</span>
+                <input type="text" class="form-control" placeholder="Job version to filter by" aria-label="Job version to filter by" id="activity-job-version" value="{{filter_job_version}}">
 
                 <div class="input-group-text">
                     <label>
@@ -70,13 +70,13 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
 })
 
-$('#activity-fatman-name').keypress(function (e) {
+$('#activity-job-name').keypress(function (e) {
     if (e.which == 13) {
         filterActivity();
         return false;
     }
 });
-$('#activity-fatman-version').keypress(function (e) {
+$('#activity-job-version').keypress(function (e) {
     if (e.which == 13) {
         filterActivity();
         return false;
@@ -87,14 +87,14 @@ $("#button-filter-activity").click(function () {
 });
 
 function filterActivity() {
-    var fatman_name = $('#activity-fatman-name').val();
-    var fatman_version = $('#activity-fatman-version').val();
+    var job_name = $('#activity-job-name').val();
+    var job_version = $('#activity-job-version').val();
     var related_to_me = document.getElementById('activity-related-to-me').checked;
     var url = window.location.href.split("?")[0] + "?q=1";
-    if (fatman_name != "" && fatman_version != "") {
-        url = url + "&fatman_name=" + fatman_name + "&fatman_version=" + fatman_version;
-    } else if (fatman_name != "") {
-        url = url + "&fatman_name=" + fatman_name;
+    if (job_name != "" && job_version != "") {
+        url = url + "&job_name=" + job_name + "&job_version=" + job_version;
+    } else if (job_name != "") {
+        url = url + "&job_name=" + job_name;
     }
     if (related_to_me) {
         url = url + "&related_to_me=1";

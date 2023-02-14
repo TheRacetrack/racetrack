@@ -3,7 +3,7 @@ from typing import Optional, Dict
 
 from jinja2 import Template
 
-from racetrack_commons.deploy.resource import fatman_resource_name
+from racetrack_commons.deploy.resource import job_resource_name
 from racetrack_client.manifest import Manifest
 
 
@@ -19,18 +19,18 @@ def template_dockerfile(
 ):
     """
     Create Dockerfile from Jinja template and manifest data
-    :param manifest: Fatman manifest data
+    :param manifest: Job manifest data
     :param template_path: Path to Jinja template file
     :param dockerfile_path: Path to output Dockerfile that will be created from template
     :param base_image: Full name of base image
-    :param git_version: version name from Fatman git history
-    :param deployed_by_racetrack_version: Version of Racetrack the Fatman was deployed with
-    :param job_type_version: Version of Job Type used to build the Fatman's image
+    :param git_version: version name from Job git history
+    :param deployed_by_racetrack_version: Version of Racetrack the Job was deployed with
+    :param job_type_version: Version of Job Type used to build the Job's image
     :param env_vars: environment variables that should be set during building
     """
     template_content = Path(template_path).read_text()
     template = Template(template_content)
-    resource_name = fatman_resource_name(manifest.name, manifest.version)
+    resource_name = job_resource_name(manifest.name, manifest.version)
     render_vars = {
         'manifest': manifest,
         'base_image': base_image,

@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     environment:
       test_env: compose
-      fatman_name: adder
-      fatman_version: 0.0.1
+      job_name: adder
+      job_version: 0.0.1
       LIFECYCLE_URL: http://localhost:7102/lifecycle
     network_mode: "host"

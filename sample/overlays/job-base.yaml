@@ -1,12 +1,15 @@
-name: docs-formatter
+name: overlays-base
 owner_email: sample@example.com
 lang: python3:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
-  directory: sample/docs-formatter
+  directory: sample/overlays
 
 python:
-  requirements_path: 'requirements.txt'
   entrypoint_path: 'entrypoint.py'
-  entrypoint_class: 'FatmanEntrypoint'
+  entrypoint_class: 'JobEntrypoint'
+
+resources:
+  cpu_min: 10m
+  cpu_max: 1000m

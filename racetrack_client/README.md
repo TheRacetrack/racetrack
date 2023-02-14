@@ -78,7 +78,7 @@ Plugins can only be installed by admin users.
 When your code is ready and you pushed your changes to a repository, it's time to deploy it;
 that means, upload it to Racetrack so it can become a proper running Job.
 
-To deploy a job, just run it in the place where `fatman.yaml` is located:
+To deploy a job, just run it in the place where `job.yaml` is located:
 ```shell
 cd MuffinDestroyer
 racetrack deploy 

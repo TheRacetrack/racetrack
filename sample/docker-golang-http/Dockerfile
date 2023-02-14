@@ -5,4 +5,4 @@ WORKDIR /src/
 RUN go mod download && go get ./...
 CMD dummy-server
 
-LABEL racetrack-component="fatman"
+LABEL racetrack-component="job"

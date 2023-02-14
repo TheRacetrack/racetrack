@@ -6,10 +6,10 @@ from racetrack_client.manifest.validate import load_validated_manifest
 
 
 def test_extend_base_manifest():
-    path = tempfile.mkdtemp(prefix='fatman-test')
+    path = tempfile.mkdtemp(prefix='job-test')
     try:
 
-        (Path(path) / 'fatman-base.yaml').write_text("""
+        (Path(path) / 'job-base.yaml').write_text("""
 name: golang-function
 owner_email: nobody@example.com
 lang: golang:latest
@@ -22,8 +22,8 @@ resources:
   cpu_min: 10m
   cpu_max: 1000m
 """)
-        (Path(path) / 'fatman-overlay.yaml').write_text("""
-extends: fatman-base.yaml
+        (Path(path) / 'job-overlay.yaml').write_text("""
+extends: job-base.yaml
 
 name: overlay-example
 
@@ -33,7 +33,7 @@ resources:
   memory_min: 500M
 """)
 
-        manifest = load_validated_manifest(Path(path) / 'fatman-overlay.yaml')
+        manifest = load_validated_manifest(Path(path) / 'job-overlay.yaml')
         assert manifest.extends is None
         assert manifest.name == 'overlay-example'
         assert manifest.lang == 'golang:latest'

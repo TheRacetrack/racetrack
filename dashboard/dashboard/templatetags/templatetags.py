@@ -6,11 +6,11 @@ from pydantic import BaseModel
 
 from racetrack_client.utils.datamodel import datamodel_to_yaml_str
 from racetrack_client.utils.time import timestamp_to_datetime, datetime_to_str, timestamp_pretty_ago
-from racetrack_commons.entities.dto import FatmanDto
+from racetrack_commons.entities.dto import JobDto
 
 register = template.Library()
 
-FatmanLabel = namedtuple('FatmanLabel', ['name', 'value'])
+JobLabel = namedtuple('JobLabel', ['name', 'value'])
 
 
 def timestamp_to_iso8601(timestamp: Optional[int]) -> Optional[str]:
@@ -38,14 +38,14 @@ def datamodel_to_yaml(dt: Optional[BaseModel]) -> str:
 
 
 @register.simple_tag
-def fatman_labels(fatman: FatmanDto) -> List[FatmanLabel]:
-    """Get fatman labels to display (metadata for humans)"""
-    if not fatman.manifest:
+def job_labels(job: JobDto) -> List[JobLabel]:
+    """Get job labels to display (metadata for humans)"""
+    if not job.manifest:
         return []
-    if not fatman.manifest.labels:
+    if not job.manifest.labels:
         return []
-    names = sorted(fatman.manifest.labels.keys())
-    return [FatmanLabel(name, fatman.manifest.labels[name]) for name in names]
+    names = sorted(job.manifest.labels.keys())
+    return [JobLabel(name, job.manifest.labels[name]) for name in names]
 
 
 register.filter(timestamp_to_iso8601)

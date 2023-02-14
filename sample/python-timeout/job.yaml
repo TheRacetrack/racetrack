@@ -7,7 +7,7 @@ git:
   directory: sample/python-timeout
   
 python:
-  entrypoint_path: 'fatman.py'
-  entrypoint_class: TimeoutFatman
+  entrypoint_path: 'job.py'
+  entrypoint_class: TimeoutJob
 
 version: '0.0.1'

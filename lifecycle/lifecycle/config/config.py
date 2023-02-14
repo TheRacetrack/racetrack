@@ -38,15 +38,15 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # Path to a directory with plugins to be loaded from
     plugins_dir: str = '.plugins'
 
-    # Max allowed memory of a Fatman that can ever be requested in a cluster.
-    # Hard limit of "memory_max" value demanded by Fatman in bytes
-    max_fatman_memory_limit: Quantity = Quantity('8Gi')
+    # Max allowed memory of a Job that can ever be requested in a cluster.
+    # Hard limit of "memory_max" value demanded by Job in bytes
+    max_job_memory_limit: Quantity = Quantity('8Gi')
 
-    # default ranges of resources to allocate to Fatmen
-    default_fatman_memory_min: Quantity = Quantity('256Mi')
-    default_fatman_memory_max: Quantity = Quantity('1Gi')
-    default_fatman_cpu_min: Quantity = Quantity('10m')
-    default_fatman_cpu_max: Quantity = Quantity('1000m')
+    # default ranges of resources to allocate to Jobs
+    default_job_memory_min: Quantity = Quantity('256Mi')
+    default_job_memory_max: Quantity = Quantity('1Gi')
+    default_job_cpu_min: Quantity = Quantity('10m')
+    default_job_cpu_max: Quantity = Quantity('1000m')
 
     # OpenTelemetry
     open_telemetry_enabled: bool = False
@@ -56,11 +56,11 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     infrastructure_target: Optional[str] = None
 
     @validator(
-        'max_fatman_memory_limit',
-        'default_fatman_memory_min',
-        'default_fatman_memory_max',
-        'default_fatman_cpu_min',
-        'default_fatman_cpu_max',
+        'max_job_memory_limit',
+        'default_job_memory_min',
+        'default_job_memory_max',
+        'default_job_cpu_min',
+        'default_job_cpu_max',
         pre=True)
     def _validate_quantity(cls, v):
         if v is None:

@@ -6,10 +6,10 @@ function showAlert(message, type) {
     document.getElementById('alerts-placeholder').append(wrapper)
 }
 
-function invokeFatmanAction(actionName, endpoint, that, csrf_token) {
-    var fatman_name = that.attr('fatman-name');
-    var fatman_version = that.attr('fatman-version');
-    var actionPrefix = actionName + ' ' + fatman_name + ' v' + fatman_version
+function invokeJobAction(actionName, endpoint, that, csrf_token) {
+    var job_name = that.attr('job-name');
+    var job_version = that.attr('job-version');
+    var actionPrefix = actionName + ' ' + job_name + ' v' + job_version
     console.log(actionPrefix + '...');
     var previousHtml = that.html();
     that.prop("disabled", true);
@@ -17,7 +17,7 @@ function invokeFatmanAction(actionName, endpoint, that, csrf_token) {
         `<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>`
     );
     $.ajax({
-        url: '/dashboard/api/' + endpoint + '/' + fatman_name + '/' + fatman_version,
+        url: '/dashboard/api/' + endpoint + '/' + job_name + '/' + job_version,
         type: 'post',
         data: {
             csrfmiddlewaretoken: csrf_token

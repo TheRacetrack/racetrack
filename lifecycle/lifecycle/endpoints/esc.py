@@ -6,7 +6,7 @@ from racetrack_client.utils.datamodel import parse_dict_datamodel
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.entities.dto import EscDto
 from lifecycle.config import Config
-from lifecycle.fatman.esc import list_escs, create_esc
+from lifecycle.job.esc import list_escs, create_esc
 from lifecycle.auth.check import check_auth
 
 

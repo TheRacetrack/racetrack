@@ -51,8 +51,8 @@ def get_auth_subject_by_esc(esc_model: models.Esc) -> models.AuthSubject:
 
 
 @db_access
-def get_auth_subject_by_fatman_family(fatman_family: models.FatmanFamily) -> models.AuthSubject:
-    """Get or Create (if not exists) an auth subject for the given Fatman Family"""
+def get_auth_subject_by_job_family(fatman_family: models.FatmanFamily) -> models.AuthSubject:
+    """Get or Create (if not exists) an auth subject for the given Job Family"""
     try:
         return models.AuthSubject.objects.get(fatman_family=fatman_family)
     except models.AuthSubject.DoesNotExist:
@@ -64,16 +64,16 @@ def get_auth_subject_by_fatman_family(fatman_family: models.FatmanFamily) -> mod
     auth_subject.active = True
     auth_subject.save()
     regenerate_auth_token(auth_subject)
-    logger.info(f'Created auth subject for Fatman Family {fatman_family}')
+    logger.info(f'Created auth subject for Job Family {fatman_family}')
     return auth_subject
 
 
 @db_access
-def find_auth_subject_by_fatman_family_name(fatman_name: str) -> models.AuthSubject:
+def find_auth_subject_by_job_family_name(fatman_name: str) -> models.AuthSubject:
     try:
         return models.AuthSubject.objects.get(fatman_family__name=fatman_name)
     except models.AuthSubject.DoesNotExist:
-        raise EntityNotFound(f'Auth subject for fatman family {fatman_name} not found')
+        raise EntityNotFound(f'Auth subject for Job family {fatman_name} not found')
 
 
 @db_access
@@ -120,7 +120,7 @@ def _get_subject_type_from_auth_subject(auth_subject: models.AuthSubject) -> Aut
     elif auth_subject.esc is not None:
         return AuthSubjectType.ESC
     elif auth_subject.fatman_family is not None:
-        return AuthSubjectType.FATMAN_FAMILY
+        return AuthSubjectType.JOB_FAMILY
     else:
         raise ValueError("Unknown auth_subject type")
 
@@ -144,12 +144,12 @@ def regenerate_all_user_tokens():
     logger.info(f'Regenerated tokens of all {count} Users')
 
 
-def regenerate_all_fatman_family_tokens():
+def regenerate_all_job_family_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(fatman_family__isnull=False))
     for auth_subject in auth_subject_queryset:
         regenerate_auth_token(auth_subject)
     count = auth_subject_queryset.count()
-    logger.info(f'Regenerated tokens of all {count} Fatman Families')
+    logger.info(f'Regenerated tokens of all {count} Job Families')
 
 
 def regenerate_all_esc_tokens():

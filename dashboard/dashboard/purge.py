@@ -1,69 +1,69 @@
 from typing import Dict, List, Tuple
 from racetrack_client.utils.semver import SemanticVersion
 from racetrack_client.utils.time import days_ago
-from racetrack_commons.entities.dto import FatmanDto, FatmanStatus
+from racetrack_commons.entities.dto import JobDto, JobStatus
 
 
-def enrich_fatmen_purge_info(fatmen: List[FatmanDto]) -> List[Dict]:
-    """Enrich fatmen with removal candidates info: score and reasons"""
-    fatman_dicts = []
-    for fatman in fatmen:
-        score, reasons = assess_fatman_usability(fatman, fatmen)
-        fatman_dict = fatman.dict()
-        fatman_dict['purge_score'] = -score
-        fatman_dict['purge_reasons'] = '\n'.join(reasons)
-        fatman_dict['purge_newer_versions'] = _count_fatman_newer_versions(fatman, fatmen)
-        fatman_dicts.append(fatman_dict)
-    return sorted(fatman_dicts, key=lambda f: -f['purge_score'])
+def enrich_jobs_purge_info(jobs: List[JobDto]) -> List[Dict]:
+    """Enrich jobs with removal candidates info: score and reasons"""
+    job_dicts = []
+    for job in jobs:
+        score, reasons = assess_job_usability(job, jobs)
+        job_dict = job.dict()
+        job_dict['purge_score'] = -score
+        job_dict['purge_reasons'] = '\n'.join(reasons)
+        job_dict['purge_newer_versions'] = _count_job_newer_versions(job, jobs)
+        job_dicts.append(job_dict)
+    return sorted(job_dicts, key=lambda f: -f['purge_score'])
 
 
-def assess_fatman_usability(fatman: FatmanDto, all_fatmen: List[FatmanDto]) -> Tuple[float, List[str]]:
+def assess_job_usability(job: JobDto, all_jobs: List[JobDto]) -> Tuple[float, List[str]]:
     """
-    Assess usability of a fatman.
+    Assess usability of a job.
     Return score number representing penalty points with descriptions of reasons.
     A lower value means a better candidate for removal.
-    Positive score means the fatman shouldn't be removed.
+    Positive score means the job shouldn't be removed.
     """
     score: float = 0
     reasons = []
 
-    if fatman.status == FatmanStatus.ORPHANED.value:
+    if job.status == JobStatus.ORPHANED.value:
         score -= 100
-        reasons.append('Orphaned fatman is most likely a useless remnant.')
-    elif fatman.status == FatmanStatus.LOST.value:
+        reasons.append('Orphaned job is most likely a useless remnant.')
+    elif job.status == JobStatus.LOST.value:
         score -= 50
-        reasons.append('Fatman is lost - can\'t be found in a cluster. It should be redeployed or removed.')
-    elif fatman.status == FatmanStatus.ERROR.value:
+        reasons.append('Job is lost - can\'t be found in a cluster. It should be redeployed or removed.')
+    elif job.status == JobStatus.ERROR.value:
         score -= 20
-        reasons.append('Fatman is failing. It should be fixed or removed.')
+        reasons.append('Job is failing. It should be fixed or removed.')
 
-    deployed_days_ago = days_ago(fatman.update_time)
+    deployed_days_ago = days_ago(job.update_time)
     if deployed_days_ago >= 1:  # wait a day until we decide it was never called
-        never_called = fatman.last_call_time is None or fatman.last_call_time == 0
+        never_called = job.last_call_time is None or job.last_call_time == 0
         if never_called:
             score -= 10
-            reasons.append('Fatman seems to be unused as it was never called.')
+            reasons.append('Job seems to be unused as it was never called.')
         else:
-            last_call_days_ago = days_ago(fatman.last_call_time)
+            last_call_days_ago = days_ago(job.last_call_time)
             if last_call_days_ago > 1:
                 score -= 10 * _interpolate(last_call_days_ago, 0, 30)
-                reasons.append(f'Fatman hasn\'t been called for {last_call_days_ago:.1f} days.')
+                reasons.append(f'Job hasn\'t been called for {last_call_days_ago:.1f} days.')
 
-    newer_versions = _count_fatman_newer_versions(fatman, all_fatmen)
+    newer_versions = _count_job_newer_versions(job, all_jobs)
     if newer_versions > 0:
         score -= 1 * newer_versions
-        reasons.append(f'Fatman has {newer_versions} newer versions.')
+        reasons.append(f'Job has {newer_versions} newer versions.')
 
     return score, reasons
 
 
-def _count_fatman_newer_versions(fatman: FatmanDto, all_fatmen: List[FatmanDto]) -> int:
-    """Count how many fatman (from the same family) are newer than this one"""
+def _count_job_newer_versions(job: JobDto, all_jobs: List[JobDto]) -> int:
+    """Count how many job (from the same family) are newer than this one"""
     count = 0
-    fatman_version = SemanticVersion(fatman.version)
-    family_fatmen = [f for f in all_fatmen if f.name == fatman.name]
-    for f in family_fatmen:
-        if SemanticVersion(f.version) > fatman_version:
+    job_version = SemanticVersion(job.version)
+    family_jobs = [f for f in all_jobs if f.name == job.name]
+    for f in family_jobs:
+        if SemanticVersion(f.version) > job_version:
             count += 1
     return count
 

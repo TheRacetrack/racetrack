@@ -8,8 +8,8 @@ from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.auth.token import AuthTokenPayload
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
-from lifecycle.fatman.models_registry import resolve_fatman_model
-from racetrack_commons.entities.dto import FatmanDto, FatmanFamilyDto
+from lifecycle.job.models_registry import resolve_job_model
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 from racetrack_client.log.logs import get_logger
 from racetrack_client.log.errors import EntityNotFound
 
@@ -30,36 +30,36 @@ def authorize_subject_type(
 
 def authorize_resource_access(
     auth_subject: models.AuthSubject,
-    fatman_name: str,
-    fatman_version: str,
+    job_name: str,
+    job_version: str,
     scope: str,
     endpoint: Optional[str] = None,
 ):
     """
     Check if auth subject has permissions to access the resource
-    (fatman, fatman family) within requested scope
-    :param fatman_version: Exact fatman version or an alias ("latest" or wildcard)
+    (job, job family) within requested scope
+    :param job_version: Exact job version or an alias ("latest" or wildcard)
     :raise UnauthorizedError: If auth subject has no permissions to access the resource
     """
     try:
-        fatman_model = resolve_fatman_model(fatman_name, fatman_version)
-        resolved_version = fatman_model.version
+        job_model = resolve_job_model(job_name, job_version)
+        resolved_version = job_model.version
     except EntityNotFound:
         resolved_version = ''
 
     if endpoint:
-        if not has_endpoint_permission(auth_subject, fatman_name, resolved_version, endpoint, scope):
+        if not has_endpoint_permission(auth_subject, job_name, resolved_version, endpoint, scope):
             raise UnauthorizedError(
                 'no permission to do this operation',
                 f'auth subject "{auth_subject}" does not have permission to access '
-                f'endpoint {endpoint} at resource "{fatman_name} v{resolved_version}" with scope "{scope}"'
+                f'endpoint {endpoint} at resource "{job_name} v{resolved_version}" with scope "{scope}"'
             )
     else:
-        if not has_resource_permission(auth_subject, fatman_name, resolved_version, scope):
+        if not has_resource_permission(auth_subject, job_name, resolved_version, scope):
             raise UnauthorizedError(
                 'no permission to do this operation',
                 f'auth subject "{auth_subject}" does not have permission to access '
-                f'resource "{fatman_name} v{resolved_version}" with scope "{scope}"'
+                f'resource "{job_name} v{resolved_version}" with scope "{scope}"'
             )
 
 
@@ -81,8 +81,8 @@ def authorize_scope_access(
 def authorize_internal_token(
     token_payload: AuthTokenPayload,
     scope: Optional[str] = None,
-    fatman_name: Optional[str] = None,
-    fatman_version: Optional[str] = None,
+    job_name: Optional[str] = None,
+    job_version: Optional[str] = None,
     endpoint: Optional[str] = None,
 ):
     if token_payload.scopes:
@@ -98,16 +98,16 @@ def authorize_internal_token(
 @db_access
 def has_endpoint_permission(
     auth_subject: models.AuthSubject,
-    fatman_name: str,
-    fatman_version: str,
+    job_name: str,
+    job_version: str,
     endpoint: str,
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    fatman_name_filter = Q(fatman_family__name=fatman_name) | Q(fatman_family__isnull=True)
-    fatman_version_filter = Q(fatman__version=fatman_version) | Q(fatman__isnull=True)
+    job_name_filter = Q(fatman_family__name=job_name) | Q(fatman_family__isnull=True)
+    job_version_filter = Q(fatman__version=job_version) | Q(fatman__isnull=True)
     endpoint_filter = Q(endpoint=endpoint) | Q(endpoint__isnull=True)
-    resource_filter = fatman_name_filter & fatman_version_filter & endpoint_filter
+    resource_filter = job_name_filter & job_version_filter & endpoint_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
     queryset = models.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter
@@ -118,14 +118,14 @@ def has_endpoint_permission(
 @db_access
 def has_resource_permission(
     auth_subject: models.AuthSubject,
-    fatman_name: str,
-    fatman_version: str,
+    job_name: str,
+    job_version: str,
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    fatman_name_filter = Q(fatman_family__name=fatman_name) | Q(fatman_family__isnull=True)
-    fatman_version_filter = Q(fatman__version=fatman_version) | Q(fatman__isnull=True)
-    resource_filter = fatman_name_filter & fatman_version_filter
+    job_name_filter = Q(fatman_family__name=job_name) | Q(fatman_family__isnull=True)
+    job_version_filter = Q(fatman__version=job_version) | Q(fatman__isnull=True)
+    resource_filter = job_name_filter & job_version_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
     queryset = models.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter
@@ -147,17 +147,17 @@ def has_scope_permission(
 
 
 @db_access
-def list_permitted_fatmen(
+def list_permitted_jobs(
     auth_subject: models.AuthSubject,
     scope: str,
-    all_fatmen: List[FatmanDto],
-) -> List[FatmanDto]:
+    all_jobs: List[JobDto],
+) -> List[JobDto]:
     """
-    List fatmen that auth subject has permissions to access.
-    Expand permissions for all resources and whole fatman families,
-    map them to list of individual fatmen from a database.
+    List jobs that auth subject has permissions to access.
+    Expand permissions for all resources and whole job families,
+    map them to list of individual jobs from a database.
     :param scope: Scope of the access (see AuthScope)
-    :return: List of fatmen that auth subject has permissions to access (with no duplicates)
+    :return: List of jobs that auth subject has permissions to access (with no duplicates)
     """
     subject_filter = Q(auth_subject=auth_subject)
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
@@ -165,33 +165,33 @@ def list_permitted_fatmen(
         subject_filter & scope_filter
     )
 
-    id_to_fatman = {f'{f.name} v{f.version}': f for f in all_fatmen}
+    id_to_job = {f'{f.name} v{f.version}': f for f in all_jobs}
     family_to_ids = defaultdict(list)
-    for fatman in all_fatmen:
-        family_to_ids[fatman.name].append(f'{fatman.name} v{fatman.version}')
+    for job in all_jobs:
+        family_to_ids[job.name].append(f'{job.name} v{job.version}')
 
-    fatman_ids = set()
-    for permission in queryset:
+    job_ids = set()
+    for permission in queryset: 
         if permission.fatman_family is None and permission.fatman is None:
-            return all_fatmen
+            return all_jobs
 
         if permission.fatman is not None:
-            fatman_ids.add(f'{permission.fatman.name} v{permission.fatman.version}')
+            job_ids.add(f'{permission.fatman.name} v{permission.fatman.version}')
 
         if permission.fatman_family is not None:
-            fatman_ids.update(family_to_ids[permission.fatman_family.name])
+            job_ids.update(family_to_ids[permission.fatman_family.name])
 
-    return [id_to_fatman[fid] for fid in sorted(fatman_ids)]
+    return [id_to_job[fid] for fid in sorted(job_ids)]
 
 
 @db_access
 def list_permitted_families(
     auth_subject: models.AuthSubject,
     scope: str,
-    all_families: List[FatmanFamilyDto],
-) -> List[FatmanFamilyDto]:
+    all_families: List[JobFamilyDto],
+) -> List[JobFamilyDto]:
     """
-    List fatman families that auth subject has permissions to access.
+    List job families that auth subject has permissions to access.
     :param scope: Scope of the access (see AuthScope)
     """
     subject_filter = Q(auth_subject=auth_subject)
@@ -215,20 +215,20 @@ def list_permitted_families(
 @db_access
 def grant_permission(
     auth_subject: models.AuthSubject,
-    fatman_name: Optional[str],
-    fatman_version: Optional[str],
+    job_name: Optional[str],
+    job_version: Optional[str],
     scope: str,
 ):
     """
-    Grant permission to access the resource (fatman, fatman family) within requested scope
-    :param fatman_version: Exact fatman version or an alias ("latest" or wildcard)
+    Grant permission to access the resource (job, job family) within requested scope
+    :param job_version: Exact job version or an alias ("latest" or wildcard)
     """
     subject_filter = Q(auth_subject=auth_subject)
     scope_filter = Q(scope=scope)
-    if fatman_name and fatman_version:
-        resource_filter = Q(fatman__name=fatman_name, fatman__version=fatman_version)
-    elif fatman_name:
-        resource_filter = Q(fatman_family__name=fatman_name, fatman__isnull=True)
+    if job_name and job_version:
+        resource_filter = Q(fatman__name=job_name, fatman__version=job_version)
+    elif job_name:
+        resource_filter = Q(fatman_family__name=job_name, fatman__isnull=True)
     else:
         resource_filter = Q(fatman_family__isnull=True, fatman__isnull=True)
 
@@ -236,31 +236,31 @@ def grant_permission(
         subject_filter & resource_filter & scope_filter
     )
     if queryset.exists():
-        logger.warning(f'Permission for {auth_subject} to {fatman_name} {fatman_version} (scope {scope}) is already granted')
+        logger.warning(f'Permission for {auth_subject} to {job_name} {job_version} (scope {scope}) is already granted')
         return
 
-    if fatman_name and fatman_version:
-        fatman_model = models.Fatman.objects.get(name=fatman_name, version=fatman_version)
+    if job_name and job_version:
+        job_model = models.Fatman.objects.get(name=job_name, version=job_version)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            fatman=fatman_model,
+            fatman=job_model,
             scope=scope,
         )
-        resource_description = f'fatman "{fatman_name} v{fatman_version}"'
-    elif fatman_name:
-        fatman_family_model = models.FatmanFamily.objects.get(name=fatman_name)
+        resource_description = f'job "{job_name} v{job_version}"'
+    elif job_name:
+        job_family_model = models.FatmanFamily.objects.get(name=job_name)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            fatman_family=fatman_family_model,
+            fatman_family=job_family_model,
             scope=scope,
         )
-        resource_description = f'fatman family "{fatman_name}"'
+        resource_description = f'job family "{job_name}"'
     else:
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
             scope=scope,
         )
-        resource_description = 'all fatmen'
+        resource_description = 'all jobs'
 
     permission.save()
     logger.info(f'"{auth_subject}" has been granted permission to {resource_description} within {scope} scope')

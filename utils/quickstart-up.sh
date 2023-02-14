@@ -51,7 +51,7 @@ class Entrypoint:
         return a + b
 EOF
 
-cat << EOF > sample/fatman.yaml
+cat << EOF > sample/job.yaml
 name: adder
 owner_email: sample@example.com
 lang: python3:latest

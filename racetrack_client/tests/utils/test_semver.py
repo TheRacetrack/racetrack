@@ -62,57 +62,57 @@ def test_version_ordering():
 
 def test_get_latest_stable_version():
     @dataclass
-    class Fatman:
+    class Job:
         name: str
         version: str
 
-    fatmen: List[Fatman] = [
-        Fatman('adder', '0.0.1'),
-        Fatman('adder', '0.2.0'),
-        Fatman('adder', '0.3.0-dev'),
+    jobs: List[Job] = [
+        Job('adder', '0.0.1'),
+        Job('adder', '0.2.0'),
+        Job('adder', '0.3.0-dev'),
     ]
 
-    latest_fatman = SemanticVersion.find_latest_stable(fatmen, key=lambda f: f.version)
-    assert latest_fatman == Fatman('adder', '0.2.0'), 'latest stable ignores "-dev" versions'
+    latest_job = SemanticVersion.find_latest_stable(jobs, key=lambda f: f.version)
+    assert latest_job == Job('adder', '0.2.0'), 'latest stable ignores "-dev" versions'
 
     assert SemanticVersion.find_latest_stable([], key=lambda f: f.version) is None
 
 
 def test_get_latest_version_wildcard():
     @dataclass
-    class Fatman:
+    class Job:
         name: str
         version: str
 
-    fatmen: List[Fatman] = [
-        Fatman('adder', '1.0.1'),
-        Fatman('adder', '2.0.0'),
-        Fatman('adder', '2.0.4'),
-        Fatman('adder', '2.1.5'),
-        Fatman('adder', '2.2.2-dev'),
-        Fatman('adder', '3.3.0'),
-        Fatman('adder', '1500.100.900'),
+    jobs: List[Job] = [
+        Job('adder', '1.0.1'),
+        Job('adder', '2.0.0'),
+        Job('adder', '2.0.4'),
+        Job('adder', '2.1.5'),
+        Job('adder', '2.2.2-dev'),
+        Job('adder', '3.3.0'),
+        Job('adder', '1500.100.900'),
     ]
 
     pattern = SemanticVersionPattern('2.x')
-    latest_fatman = SemanticVersion.find_latest_wildcard(pattern, fatmen, key=lambda f: f.version)
-    assert latest_fatman == Fatman('adder', '2.1.5'), 'A.x pattern finds highest stable major version'
+    latest_job = SemanticVersion.find_latest_wildcard(pattern, jobs, key=lambda f: f.version)
+    assert latest_job == Job('adder', '2.1.5'), 'A.x pattern finds highest stable major version'
 
     pattern = SemanticVersionPattern('2.x.x')
-    latest_fatman = SemanticVersion.find_latest_wildcard(pattern, fatmen, key=lambda f: f.version)
-    assert latest_fatman == Fatman('adder', '2.1.5'), 'A.x.x pattern finds highest stable major version'
+    latest_job = SemanticVersion.find_latest_wildcard(pattern, jobs, key=lambda f: f.version)
+    assert latest_job == Job('adder', '2.1.5'), 'A.x.x pattern finds highest stable major version'
 
     pattern = SemanticVersionPattern('2.0.x')
-    latest_fatman = SemanticVersion.find_latest_wildcard(pattern, fatmen, key=lambda f: f.version)
-    assert latest_fatman == Fatman('adder', '2.0.4'), 'A.B.x pattern finds highest minor version'
+    latest_job = SemanticVersion.find_latest_wildcard(pattern, jobs, key=lambda f: f.version)
+    assert latest_job == Job('adder', '2.0.4'), 'A.B.x pattern finds highest minor version'
 
     pattern = SemanticVersionPattern('x')
-    latest_fatman = SemanticVersion.find_latest_wildcard(pattern, fatmen, key=lambda f: f.version)
-    assert latest_fatman == Fatman('adder', '1500.100.900'), 'x pattern returns latest'
+    latest_job = SemanticVersion.find_latest_wildcard(pattern, jobs, key=lambda f: f.version)
+    assert latest_job == Job('adder', '1500.100.900'), 'x pattern returns latest'
 
     pattern = SemanticVersionPattern('x.x.x')
-    latest_fatman = SemanticVersion.find_latest_wildcard(pattern, fatmen, key=lambda f: f.version)
-    assert latest_fatman == Fatman('adder', '1500.100.900'), 'x.x.x pattern returns latest'
+    latest_job = SemanticVersion.find_latest_wildcard(pattern, jobs, key=lambda f: f.version)
+    assert latest_job == Job('adder', '1500.100.900'), 'x.x.x pattern returns latest'
 
 
 def test_valid_semver_pattern():

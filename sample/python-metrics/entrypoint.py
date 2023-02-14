@@ -3,7 +3,7 @@ import random
 from typing import Dict, List
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def __init__(self):
         self._start_time = datetime.datetime.now()
         self._positives = 0
@@ -22,12 +22,12 @@ class FatmanEntrypoint:
         """Collect current metrics values"""
         return [
             {
-                'name': 'fatman_wasted_seconds',
+                'name': 'job_wasted_seconds',
                 'description': 'Seconds you have wasted here',
                 'value': self._uptime(),
             },
             {
-                'name': 'fatman_positives',
+                'name': 'job_positives',
                 'description': 'Number of positive results',
                 'value': self._positives,
                 'labels': {

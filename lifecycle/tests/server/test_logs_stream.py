@@ -19,7 +19,7 @@ def test_streaming_logs():
         fetched_logs = []
         consumer = LogsConsumer(f'http://localhost:{port}',
                                 socketio_path='lifecycle/socket.io',
-                                resource_properties={'fatman_name': 'adder'},
+                                resource_properties={'job_name': 'adder'},
                                 on_next_line=lambda line: fetched_logs.append(line))
         with consumer.connect_async():
             _wait_until_equal(fetched_logs, ['hello adder'], 'fetching past logs failed')
@@ -31,8 +31,8 @@ def test_streaming_logs():
 class SayHelloLogsStreamer(LogsStreamer):
     def create_session(self, session_id: str, resource_properties: Dict[str, str]):
         self.last_session_id = session_id
-        fatman_name = resource_properties.get('fatman_name')
-        self.broadcast(session_id, f'hello {fatman_name}')
+        job_name = resource_properties.get('job_name')
+        self.broadcast(session_id, f'hello {job_name}')
 
 
 @backoff.on_exception(backoff.expo, AssertionError, factor=0.1, max_time=10, jitter=None)

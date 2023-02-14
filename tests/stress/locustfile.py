@@ -8,16 +8,16 @@ from racetrack_commons.entities.esc_client import EscRegistryClient
 from racetrack_commons.entities.dto import EscDto
 
 
-def _create_esc(fatman_name: str, esc_name: str, admin_auth_token: str) -> str:
+def _create_esc(job_name: str, esc_name: str, admin_auth_token: str) -> str:
     print('Creating ESC...')
     erc = EscRegistryClient(auth_token=admin_auth_token)
     esc: EscDto = erc.create_esc(esc_name)
-    erc.esc_allow_fatman(esc_id=esc.id, fatman_name=fatman_name)
+    erc.esc_allow_job(esc_id=esc.id, job_name=job_name)
     esc_token = erc.get_esc_auth_token(esc.id)
     return esc_token
 
 
-class FatmanStressUser(HttpUser):
+class JobStressUser(HttpUser):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,15 +35,15 @@ class FatmanStressUser(HttpUser):
             self.base_url = os.environ['external_pub_url']
             is_localhost = False
 
-        fatman_name = os.environ['fatman_name']
-        fatman_version = os.environ['fatman_version']
-        self.url = f"{self.base_url}/fatman/{fatman_name}/{fatman_version}"
+        job_name = os.environ['job_name']
+        job_version = os.environ['job_version']
+        self.url = f"{self.base_url}/job/{job_name}/{job_version}"
         print(f"url to hit: {self.url}")
 
         esc_name = os.environ.get('create_esc')
         if is_localhost and esc_name:
             admin_auth_token = os.environ.get('admin_auth_token')
-            auth_token = _create_esc(fatman_name, esc_name, admin_auth_token)
+            auth_token = _create_esc(job_name, esc_name, admin_auth_token)
         else:
             auth_token = os.environ['auth_token']
 

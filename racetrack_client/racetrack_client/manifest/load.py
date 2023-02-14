@@ -9,8 +9,8 @@ from racetrack_client.log.logs import get_logger
 
 logger = get_logger(__name__)
 
-FATMAN_MANIFEST_FILENAME = 'fatman.yaml'
-
+JOB_MANIFEST_FILENAME = 'job.yaml'
+FORMER_MANIFEST_FILENAME = 'fatman.yaml'
 
 def load_manifest_from_yaml(path: Path) -> Manifest:
     """Load Manifest from a YAML file. Data types validation happens here when parsing YAML."""
@@ -40,12 +40,29 @@ def parse_manifest_or_empty(manifest_yaml: Optional[str]) -> Optional[Manifest]:
     try:
         return parse_yaml_datamodel(manifest_yaml, Manifest)
     except Exception as e:
-        logger.error(f'Fatman Manifest YAML contains syntax error: {e}')
+        logger.error(f'Job Manifest YAML contains syntax error: {e}')
         return None
 
 
 def get_manifest_path(workdir_or_file: str) -> Path:
-    manifest_path = Path(workdir_or_file)
-    if manifest_path.is_dir():
-        manifest_path = manifest_path / FATMAN_MANIFEST_FILENAME
-    return manifest_path
+    if Path(workdir_or_file).is_dir():
+        manifest_path = Path(workdir_or_file) / JOB_MANIFEST_FILENAME
+        if manifest_path.is_file():
+            return manifest_path
+        
+        former_path = Path(workdir_or_file) / FORMER_MANIFEST_FILENAME
+        if former_path.is_file():
+            logger.warning(f'You are using old manifest file name "{FORMER_MANIFEST_FILENAME}". Please rename it to "{JOB_MANIFEST_FILENAME}"')
+            return former_path
+        
+        raise FileNotFoundError(f"local manifest file '{manifest_path}' doesn't exist")
+
+    else:
+        manifest_path = Path(workdir_or_file)
+        if not manifest_path.is_file():
+            raise FileNotFoundError(f"local manifest file '{manifest_path}' doesn't exist")
+
+        if manifest_path.name == FORMER_MANIFEST_FILENAME:
+            logger.warning(f'You are using old manifest file name "{FORMER_MANIFEST_FILENAME}". Please rename it to "{JOB_MANIFEST_FILENAME}"')
+            
+        return manifest_path

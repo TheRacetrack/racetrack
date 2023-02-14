@@ -57,9 +57,9 @@ class SocketIOServer:
 
     @staticmethod
     def get_session_id(client_id: str, resource_properties: Dict[str, str]) -> str:
-        fatman_name = resource_properties.get('fatman_name')
-        fatman_version = resource_properties.get('fatman_version')
-        return f'{client_id}_{fatman_name}_{fatman_version}'
+        job_name = resource_properties.get('job_name')
+        job_version = resource_properties.get('job_version')
+        return f'{client_id}_{job_name}_{job_version}'
 
     def broadcast_logs_nextline(self, session_id: str, message: str):
         for client_id, resource_properties in self.client_resources.copy().items():

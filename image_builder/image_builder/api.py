@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from image_builder.config import Config
-from image_builder.build import build_fatman_image
+from image_builder.build import build_job_image
 from image_builder.health import health_response
 from image_builder.scheduler import schedule_tasks_async
 from racetrack_client.client_config.io import load_credentials_from_dict
@@ -39,7 +39,7 @@ def configure_api(config: Config, plugin_engine: PluginEngine) -> FastAPI:
     """Create FastAPI app and register all endpoints without running a server"""
     fastapi_app = create_fastapi(
         title='Image Builder',
-        description='Builder of Fatman images',
+        description='Builder of Job images',
         request_access_log=True,
         response_access_log=True,
     )
@@ -70,7 +70,7 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
 
     class BuildPayloadModel(BaseModel, arbitrary_types_allowed=True):
         manifest: Dict[str, Any] = Field(
-            description='Manifest - build recipe for a Fatman',
+            description='Manifest - build recipe for a Job',
             example={
                 'name': 'adder',
                 'lang': 'python3',
@@ -110,7 +110,7 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
     class BuildingResultModel(BaseModel):
         image_names: List[str] = Field(
             description='List of full names of built images',
-            example=['ghcr.io/racetrack/fatman-entrypoint/adder:latest'],
+            example=['ghcr.io/racetrack/job-entrypoint/adder:latest'],
         )
         logs: str = Field(
             description='build logs output',
@@ -124,14 +124,14 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
 
     @api.post('/build', response_model=BuildingResultModel)
     def _build(payload: BuildPayloadModel):
-        """Build Fatman image from a manifest"""
+        """Build Job image from a manifest"""
         manifest = load_manifest_from_dict(payload.manifest)
         git_credentials = load_credentials_from_dict(payload.git_credentials)
         tag = payload.tag
         secret_build_env = payload.secret_build_env or {}
         build_context = payload.build_context
         deployment_id = payload.deployment_id
-        image_names, logs, error = build_fatman_image(
+        image_names, logs, error = build_job_image(
             config, manifest, git_credentials, secret_build_env, tag,
             build_context, deployment_id, plugin_engine,
         )

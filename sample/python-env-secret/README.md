@@ -1,5 +1,5 @@
-# Deploying a Fatman
-This Fatman makes use of secret vars, it should be filled out before attempting to deploy.
+# Deploying a Job
+This Job makes use of secret vars, it should be filled out before attempting to deploy.
 1. Copy env file from a template:
 ```
 cp .env.dist .env
@@ -8,11 +8,11 @@ cp .env.dist .env
 1. Ensure the secret file is ignored by git.
 1. Deploy the sample.
 
-# Calling a Fatman
-The Fatman generates random number and prints env vars configured in fatman.yaml and loaded from secret .env file. 
+# Calling a Job
+The Job generates random number and prints env vars configured in job.yaml and loaded from secret .env file. 
 The following request performs its functionality:
 ```bash
-curl -X POST "http://localhost:7005/pub/fatman/python-env-secret/latest/api/v1/perform" \
+curl -X POST "http://localhost:7005/pub/job/python-env-secret/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -d '{}'
 # Expect:

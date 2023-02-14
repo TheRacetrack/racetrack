@@ -6,20 +6,20 @@ from pydantic import BaseModel
 from racetrack_client.manifest import Manifest
 
 
-class FatmanStatus(Enum):
-    CREATED = 'created'  # fatman created but didnt appear in cluster yet
+class JobStatus(Enum):
+    CREATED = 'created'  # job created but didnt appear in cluster yet
     RUNNING = 'running'
     ERROR = 'error'  # found in cluster but has failing status
     ORPHANED = 'orphaned'  # found in cluster but LC doesn't recall to create that
     LOST = 'lost'  # expected but not found in cluster
 
 
-class FatmanFamilyDto(BaseModel):
+class JobFamilyDto(BaseModel):
     name: str
     id: Optional[str] = None
 
 
-class FatmanDto(BaseModel, arbitrary_types_allowed=True):
+class JobDto(BaseModel, arbitrary_types_allowed=True):
     name: str
     version: str
     status: str
@@ -30,7 +30,7 @@ class FatmanDto(BaseModel, arbitrary_types_allowed=True):
     # placeholder for the name of the resource seen internally by a cluster
     # (may contain port number depending on cluster type)
     internal_name: Optional[str] = None
-    # public url of a fatman
+    # public url of a job
     pub_url: Optional[str] = None
     error: Optional[str] = None
     image_tag: Optional[str] = None
@@ -45,7 +45,7 @@ class FatmanDto(BaseModel, arbitrary_types_allowed=True):
 
 class DeploymentStatus(Enum):
     IN_PROGRESS = 'in_progress'  # deployment started, still in progress
-    DONE = 'done'  # fatman deployed successfully
+    DONE = 'done'  # job deployed successfully
     FAILED = 'failed'  # deployment failed with an error
 
 
@@ -53,7 +53,7 @@ class DeploymentDto(BaseModel, arbitrary_types_allowed=True):
     id: str
     status: str
     error: Optional[str] = None
-    fatman: Optional[FatmanDto] = None  # successfully deployed fatman related to it
+    job: Optional[JobDto] = None  # successfully deployed job related to it
     deployed_by: Optional[str] = None  # username of the last deployer
     phase: Optional[str] = None  # phase (step) of the deployment
     image_name: Optional[str] = None
@@ -71,8 +71,8 @@ class UserProfileDto(BaseModel):
 
 
 class PublicEndpointRequestDto(BaseModel):
-    fatman_name: str
-    fatman_version: str
+    job_name: str
+    job_version: str
     endpoint: str
     active: bool
 
@@ -85,5 +85,5 @@ class AuditLogEventDto(BaseModel):
     properties: Optional[Dict] = None
     username_executor: Optional[str] = None
     username_subject: Optional[str] = None
-    fatman_name: Optional[str] = None
-    fatman_version: Optional[str] = None
+    job_name: Optional[str] = None
+    job_version: Optional[str] = None

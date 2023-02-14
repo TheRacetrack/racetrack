@@ -42,7 +42,7 @@ function colorOfNodeByType(nodeType) {
 }
 
 var nodeStructs = [
-{% for node in fatman_graph.nodes %}
+{% for node in job_graph.nodes %}
     {
         id: "{{ node.id }}",
         label: "{{ node.title | escapejs }}", 
@@ -56,7 +56,7 @@ var nodes = new vis.DataSet(nodeStructs);
 
 
 var edgeStructs = [
-{% for edge in fatman_graph.edges %}
+{% for edge in job_graph.edges %}
     {
         from: "{{ edge.from_id }}",
         to: "{{ edge.to_id }}",

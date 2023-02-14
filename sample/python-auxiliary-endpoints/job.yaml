@@ -1,15 +1,11 @@
-name: overlays-base
+name: python-auxiliary-endpoints
 owner_email: sample@example.com
 lang: python3:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
-  directory: sample/overlays
+  directory: sample/python-auxiliary-endpoints
 
 python:
   entrypoint_path: 'entrypoint.py'
-  entrypoint_class: 'FatmanEntrypoint'
-
-resources:
-  cpu_min: 10m
-  cpu_max: 1000m
+  entrypoint_class: 'JobEntrypoint'

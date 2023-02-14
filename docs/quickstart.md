@@ -46,7 +46,7 @@ class Entrypoint:
         return a + b
 ```
 
-And a `sample/fatman.yaml` file describing what's inside:
+And a `sample/job.yaml` file describing what's inside:
 
 ```yaml
 name: adder
@@ -66,22 +66,22 @@ Finally, submit your job to Racetrack:
 racetrack deploy sample/ --remote http://localhost:7102
 ```
 
-This will convert your source code to a REST microservice workload, called "Fatman".
+This will convert your source code to a REST microservice workload, called "Job".
 
-## 5. Call a fatman
+## 5. Call a Job
 
 You can find your application on the Racetrack Dashboard,
 which is available at [http://localhost:7103/dashboard](http://localhost:7103/dashboard)
 (use default login `admin` with password `admin`).
 
-Also, you should get the link to your Fatman from the `racetrack` client output.
-Check it out at [http://localhost:7105/pub/fatman/adder/0.0.1](http://localhost:7105/pub/fatman/adder/0.0.1).
+Also, you should get the link to your Job from the `racetrack` client output.
+Check it out at [http://localhost:7105/pub/job/adder/0.0.1](http://localhost:7105/pub/job/adder/0.0.1).
 This opens a SwaggerUI page, from which you can call your function
 (try `/perform` endpoint with `{"a": 40, "b": 2}` body).
 
 You can do it from CLI with an HTTP client as well:
 ```shell
-curl -X POST "http://localhost:7105/pub/fatman/adder/latest/api/v1/perform" \
+curl -X POST "http://localhost:7105/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
   -d '{"a": 40, "b": 2}'

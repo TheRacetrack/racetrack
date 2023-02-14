@@ -1,9 +1,9 @@
-# The Fatman Manifest File Schema
+# The Job Manifest File Schema
 
 To deploy a Job, the Developer should provide a build recipe called a Manifest,
 describing how to build, run, and deploy.
 
-The Manifest should be kept in `fatman.yaml` file located in the root of a Job's
+The Manifest should be kept in `job.yaml` file located in the root of a Job's
 repository. Some fields are required, while optional ones will be assigned a
 default value if not provided. The YAML manifest file can have the following
 fields:
@@ -16,16 +16,16 @@ fields:
 - `git` (**required**) - the object describes the place where the source code can be
   found using git VCS.
     - `remote` (**required**) - **HTTPS** URL of git remote. This is also root of your
-      git repo, which will become the "current working directory" at runtime of Fatman.
+      git repo, which will become the "current working directory" at runtime of Job.
       SSH remote URLs are NOT supported.
     - `branch` - name of the branch (if other than master)
     - `directory` - subdirectory relative to git repo root where the project is
-- `owner_email` (**required**) - email address of the Fatman's owner to reach out
+- `owner_email` (**required**) - email address of the Job's owner to reach out
 - `extends` - relative path to base manifest file, which will be extended by this manifest
-- `version` - Version of the Fatman. It should adhere to Semantic Versioning standard.
+- `version` - Version of the Job. It should adhere to Semantic Versioning standard.
 - `python` - Manifest for Python projects
     - `requirements_path` - path to `requirements.txt` relative to `git.directory`
-    - `entrypoint_path` - relative path to a file with Fatman Entrypoint class
+    - `entrypoint_path` - relative path to a file with Job Entrypoint class
     - `entrypoint_class` - name of Python entrypoint class
 - `golang` - Manifest for Go projects
     - `gomod` - relative path to `go.mod` requirements
@@ -34,15 +34,15 @@ fields:
 - `build_env` - dictionary of environment variables that should be set when building the image
 - `image_type` - type of deployed image. Only `docker` is currently available.
 - `infrastructure_target` - Back-end platform where to deploy the service.
-- `labels` - dictionary with metadata describing fatman for humans
-- `public_endpoints` - list of public fatman endpoints that can be accessed without authentication
-- `replicas` - number of running instances of the Fatman to deploy
-- `resources` - resources demands to allocate to the Fatman
+- `labels` - dictionary with metadata describing job for humans
+- `public_endpoints` - list of public job endpoints that can be accessed without authentication
+- `replicas` - number of running instances of the Job to deploy
+- `resources` - resources demands to allocate to the Job
     - `memory_min` - minimum memory amount in bytes, eg. 256Mi
     - `memory_max` (**required**) - maximum memory amount in bytes, eg. 1Gi
     - `cpu_min` - minimum CPU consumption in cores, eg. 10m
     - `cpu_max` - maximum CPU consumption in cores, eg. 1000m
-- `runtime_env` - dictionary of environment variables that should be set when running Fatman
+- `runtime_env` - dictionary of environment variables that should be set when running Job
 - `secret_build_env_file` - path to a secret file (on a client machine) with build environment variables
 - `secret_runtime_env_file` - path to a secret file (on a client machine) with runtime environment variables
 - `system_dependencies` - list of system-wide packages that should be installed with package manager
@@ -58,12 +58,12 @@ git:
   branch: master
   directory: 'examples/skynet'
 owner_email: arnold@skynet.com
-extends: './base/fatman.yaml'
+extends: './base/job.yaml'
 version: '1.2.3-alpha'
 python:
   requirements_path: 'python/requirements.txt'
   entrypoint_path: 'python/entrypoint.py'
-  entrypoint_class: 'FatmanClazz'
+  entrypoint_class: 'JobClazz'
 golang:
   gomod: 'golang/go.mod'
 docker:
