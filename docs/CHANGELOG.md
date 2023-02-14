@@ -5,15 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.9.0] - 2023-02-14
 ### Added
 - Deployment phases, shown by a racetrack client, are more granular,
   including image building steps.
 - Racetrack comes with standalone Prometheus and Grafana.
   It contains dedicated dashboards for monitoring the jobs and internal services.
 - Database connection is being monitored closely by Lifecycle and displayed on a Grafana dashboard.
+
 ### Changed
-- Fatman is being renamed to Job. This change has not yet propogated
-  to the database. `fatman.yaml` is thus deprecated in favour of `job.yaml`
+- *Fatman* is renamed to *Job*.
+  `fatman.yaml` is thus deprecated in favour of `job.yaml` file name.
+  Although the endpoint for calling the Job has changed to `/pub/job/NAME/VERSION/PATH`,
+  the old endpoint `/pub/fatman/NAME/VERSION/PATH` is still supported for backward compatibility.
 
 ## [2.8.1] - 2023-01-27
 ### Changed
