@@ -24,7 +24,7 @@ def redeploy_job(
     """Deploy (rebuild and reprovision) Job once again without knowing secrets"""
     job = read_job(job_name, job_version, config)
     manifest = job.manifest
-    assert job.manifest is not None, "job doesn't have Manifest data specified"
+    assert manifest is not None, "job doesn't have Manifest data specified"
 
     infra_target = job.infrastructure_target
     deployment = create_deployment(manifest, deployer_username, infra_target)
@@ -58,7 +58,7 @@ def reprovision_job(
     """Reprovision already built Job image once again to a cluster"""
     job = read_job(job_name, job_version, config)
     manifest = job.manifest
-    assert job.manifest is not None, "job doesn't have Manifest data specified"
+    assert manifest is not None, "job doesn't have Manifest data specified"
     assert job.image_tag is not None, "latest image tag is unknown"
 
     infra_target = job.infrastructure_target
@@ -96,7 +96,7 @@ def move_job(
     job = read_job(job_name, job_version, config)
     manifest = job.manifest
     old_infra_target = job.infrastructure_target
-    assert job.manifest is not None, "job doesn't have Manifest data specified"
+    assert manifest is not None, "job doesn't have Manifest data specified"
     assert job.image_tag is not None, "job's image tag is unknown"
     assert new_infra_target, "infrastructure target has to be specified"
     assert new_infra_target != old_infra_target, "new infrastructure target has to be different from the current one"

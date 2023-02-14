@@ -57,7 +57,7 @@ func SetupOpenTelemetry(router *gin.Engine, cfg *Config) (*trace.TracerProvider,
 	otel.SetTracerProvider(tp)
 
 	telemetryMiddleware := func(c *gin.Context) {
-		
+
 		endpointName := fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.Path)
 		_, isExcluded := telemetryExcludedEndpoints[endpointName]
 
@@ -80,7 +80,7 @@ func SetupOpenTelemetry(router *gin.Engine, cfg *Config) (*trace.TracerProvider,
 			)
 			defer span.End()
 		}
-	
+
 		c.Next()
 	}
 

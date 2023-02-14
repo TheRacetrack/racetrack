@@ -127,7 +127,7 @@ def view_administration(request):
         context['job_type_versions'] = plugin_client.get_job_type_versions()
         context['infrastructure_targets'] = plugin_client.get_infrastructure_targets()
 
-        #Collect instances running on the same infrastructure
+        # Collect instances running on the same infrastructure
         _infrastructure_instances: dict = collections.defaultdict(list)
         for infrastructure_name, plugin_manifest in context['infrastructure_targets'].items():
             _infrastructure_instances[plugin_manifest['name']].append(infrastructure_name)
