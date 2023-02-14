@@ -15,11 +15,11 @@ class JobMonitor(ABC):
 
     @abstractmethod
     def check_job_condition(self,
-                               job: JobDto,
-                               deployment_timestamp: int = 0,
-                               on_job_alive: Callable = None,
-                               logs_on_error: bool = True,
-                               ):
+                            job: JobDto,
+                            deployment_timestamp: int = 0,
+                            on_job_alive: Callable = None,
+                            logs_on_error: bool = True,
+                            ):
         """
         Verify if deployed Job is really operational. If not, raise exception with reason
         :param job: job data
