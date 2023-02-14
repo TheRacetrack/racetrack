@@ -1,7 +1,7 @@
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.time import datetime_to_timestamp, days_ago, now
 from racetrack_commons.entities.dto import DeploymentStatus
-from lifecycle.fatman.deployment import list_deployments_by_status
+from lifecycle.job.deployment import list_deployments_by_status
 
 logger = get_logger(__name__)
 

@@ -4,10 +4,10 @@ from typing import Dict, Any, List
 import requests
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def perform(self, numbers: List[float]) -> float:
         """Round result from another model"""
-        partial = self.call_fatman('adder', '/api/v1/perform', {'numbers': numbers})
+        partial = self.call_job('adder', '/api/v1/perform', {'numbers': numbers})
         return round(partial)
 
     def docs_input_example(self) -> dict:
@@ -16,17 +16,17 @@ class FatmanEntrypoint:
             'numbers': [0.2, 0.9],
         }
 
-    def call_fatman(
+    def call_job(
         self,
-        fatman_name: str,
+        job_name: str,
         path: str = '/api/v1/perform',
         payload: Dict = None,
         version: str = 'latest',
     ) -> Any:
         try:
-            src_fatman = os.environ['FATMAN_NAME']
+            src_job = os.environ['JOB_NAME']
             internal_pub_url = os.environ['PUB_URL']
-            url = f'{internal_pub_url}/fatman/{fatman_name}/{version}{path}'
+            url = f'{internal_pub_url}/job/{job_name}/{version}{path}'
 
             tracing_header = os.environ.get('REQUEST_TRACING_HEADER', 'X-Request-Tracing-Id')
             if hasattr(self, 'request_context'):
@@ -43,6 +43,6 @@ class FatmanEntrypoint:
             return r.json()
             
         except requests.HTTPError as e:
-            raise RuntimeError(f'failed to call fatman "{fatman_name} {version}" by {src_fatman}: {e}: {e.response.text}') from e
+            raise RuntimeError(f'failed to call job "{job_name} {version}" by {src_job}: {e}: {e.response.text}') from e
         except BaseException as e:
-            raise RuntimeError(f'failed to call fatman "{fatman_name} {version}" by {src_fatman}: {e}') from e
+            raise RuntimeError(f'failed to call job "{job_name} {version}" by {src_job}: {e}') from e

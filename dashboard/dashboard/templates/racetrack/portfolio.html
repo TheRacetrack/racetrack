@@ -16,20 +16,20 @@
     <div class="card">
         <div class="card-body">
 
-            <h5 class="card-title">Fatmen Portfolio</h5>
+            <h5 class="card-title">Jobs Portfolio</h5>
 
             <table id="table-filter-1">
                 <thead>
                     <tr>
                         <th>Family name</th>
-                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Revision of the source code of the service">Fatman version</th>
+                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Revision of the source code of the service">Job version</th>
                         <th>Status</th>
                         <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Revision of the language wrapper standard">Job type version</th>
                         <th>Deployed by</th>
                         <th>Last updated ago [days]</th>
                         <th>Last called ago [days]</th>
-                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Suggestions explaining why fatman is a candidate for removal">Purge reasons</th>
-                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assessed penalty points representing usability of a fatman. A higher value means a better candidate for removal">Purge score</th>
+                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Suggestions explaining why job is a candidate for removal">Purge reasons</th>
+                        <th data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assessed penalty points representing usability of a job. A higher value means a better candidate for removal">Purge score</th>
                         <th>Newer versions</th>
                         <th>Last calll time</th>
                         <th>Update time</th>
@@ -40,24 +40,24 @@
                 </thead>
                 <tbody>
 
-                    {% for fatman in fatmen %}
+                    {% for job in jobs %}
                     <tr>
-                        <td>{{ fatman.name }}</td>
-                        <td>{{ fatman.version }}</td>
-                        <td>{{ fatman.status | upper }}</td>
-                        <td>{{ fatman.job_type_version }}</td>
-                        <td>{{ fatman.deployed_by | default_if_none:'' }}</td>
-                        <td>{{ fatman.update_time_days_ago | floatformat:"-2" }}</td>
-                        <td>{{ fatman.last_call_time_days_ago | floatformat:"-2" }}</td>
-                        <td>{{ fatman.purge_reasons }}</td>
-                        <td>{{ fatman.purge_score | floatformat:"-2" }}</td>
-                        <td>{{ fatman.purge_newer_versions }}</td>
-                        <td>{{ fatman.last_call_time | timestamp_to_iso8601 }}</td>
-                        <td>{{ fatman.update_time | timestamp_to_iso8601 }}</td>
-                        <td>{{ fatman.create_time | timestamp_to_iso8601 }}</td>
-                        <td>{{ fatman.infrastructure_target }}</td>
+                        <td>{{ job.name }}</td>
+                        <td>{{ job.version }}</td>
+                        <td>{{ job.status | upper }}</td>
+                        <td>{{ job.job_type_version }}</td>
+                        <td>{{ job.deployed_by | default_if_none:'' }}</td>
+                        <td>{{ job.update_time_days_ago | floatformat:"-2" }}</td>
+                        <td>{{ job.last_call_time_days_ago | floatformat:"-2" }}</td>
+                        <td>{{ job.purge_reasons }}</td>
+                        <td>{{ job.purge_score | floatformat:"-2" }}</td>
+                        <td>{{ job.purge_newer_versions }}</td>
+                        <td>{{ job.last_call_time | timestamp_to_iso8601 }}</td>
+                        <td>{{ job.update_time | timestamp_to_iso8601 }}</td>
+                        <td>{{ job.create_time | timestamp_to_iso8601 }}</td>
+                        <td>{{ job.infrastructure_target }}</td>
                         <td>
-                            <button type="button" class="btn btn-danger button-delete-fatman" fatman-name="{{ fatman.name }}" fatman-version="{{ fatman.version }}">Delete</button>
+                            <button type="button" class="btn btn-danger button-delete-job" job.name="{{ job.name }}" job.version="{{ job.version }}">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -73,10 +73,10 @@
 
 {% block javascript %}
 <script>
-$(".button-delete-fatman").click(function () {
+$(".button-delete-job").click(function () {
     that = $(this)
-    showModal("Delete Fatman", "Are you sure you want to delete this fatman?", function () {
-        invokeFatmanAction('Deleting fatman', 'delete-fatman', that, '{{ csrf_token }}')
+    showModal("Delete Job", "Are you sure you want to delete this job?", function () {
+        invokeJobAction('Deleting job', 'delete-job', that, '{{ csrf_token }}')
     });
 });
 

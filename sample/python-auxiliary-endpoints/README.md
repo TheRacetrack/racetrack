@@ -1,8 +1,8 @@
-# Calling a Fatman
+# Calling a Job
 The model sums up given numbers. 
 The following request performs its functionality:
 ```bash
-curl -X POST "http://localhost:7005/pub/fatman/python-auxiliary-endpoints/latest/api/v1/perform" \
+curl -X POST "http://localhost:7005/pub/job/python-auxiliary-endpoints/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -d '{"x": 40, "y": 2}'
 # Expect:
@@ -13,7 +13,7 @@ curl -X POST "http://localhost:7005/pub/fatman/python-auxiliary-endpoints/latest
 The model has one auxiliary endpoint configured: `/explain`. 
 It works similarly to `/perform` endpoint, but returns different result based on custom method implementation:
 ```bash
-curl -X POST "http://localhost:7005/pub/fatman/python-auxiliary-endpoints/latest/api/v1/explain" \
+curl -X POST "http://localhost:7005/pub/job/python-auxiliary-endpoints/latest/api/v1/explain" \
   -H "Content-Type: application/json" \
   -d '{"x": 40, "y": 2}'
 # Expect:

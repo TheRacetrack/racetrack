@@ -21,7 +21,7 @@ from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, CommandError, shell_output
 from racetrack_client.utils.url import join_paths
-from racetrack_commons.deploy.image import get_fatman_image
+from racetrack_commons.deploy.image import get_job_image
 from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
@@ -45,8 +45,8 @@ class DockerBuilder(ImageBuilder):
         _wait_for_docker_engine_ready()
 
         metric_labels = {
-            'fatman_name': manifest.name,
-            'fatman_version': manifest.version,
+            'job_name': manifest.name,
+            'job_version': manifest.version,
         }
         Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
         logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
@@ -115,7 +115,7 @@ def _build_job_image(
                                 git_version, racetrack_version, job_type.version, env_vars)
 
     with wrap_context(f'building job image {progress}'):
-        job_image = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
+        job_image = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
         logger.info(f'building Job image {progress}: {job_image}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
         update_deployment_phase(config, deployment_id, f'building image {build_progress}')
         build_logs = build_container_image(
@@ -213,7 +213,7 @@ def _wait_for_docker_engine_ready():
 def get_base_image_name(docker_registry: str, registry_namespace: str, name: str, tag: str, module_index: int = 0) -> str:
     """Return full name of Job entrypoint image"""
     if module_index == 0:
-        image_type = 'fatman-base'
+        image_type = 'job-base'
     else:
-        image_type = f'fatman-base-{module_index}'
+        image_type = f'job-base-{module_index}'
     return join_paths(docker_registry, registry_namespace, image_type, f'{name}:{tag}')

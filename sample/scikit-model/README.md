@@ -1,7 +1,7 @@
 # Deploying
 Run `racetrack deploy` in this directory.
 
-# Calling a Fatman
+# Calling a Job
 The model uses linear regression to predict Y value for given data point.
 X input data has 2 numerical features. Model accepts data point (composed of list of 2 floats) and returns list of predicted values for them. 
 The following request performs its functionality:
@@ -18,7 +18,7 @@ The following request checks service's healthiness:
 ```bash
 curl "http://localhost:7000/health" 
 # Expect:
-# {"service": "fatman", "status": "pass"}
+# {"service": "job", "status": "pass"}
 ```
 
 # API docs

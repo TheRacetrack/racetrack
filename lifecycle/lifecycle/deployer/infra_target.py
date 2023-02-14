@@ -3,8 +3,8 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from lifecycle.config import Config
-from lifecycle.deployer.base import FatmanDeployer
-from lifecycle.monitor.base import FatmanMonitor, LogsStreamer
+from lifecycle.deployer.base import JobDeployer
+from lifecycle.monitor.base import JobMonitor, LogsStreamer
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
@@ -12,8 +12,8 @@ from racetrack_client.manifest.manifest import Manifest
 
 
 class InfrastructureTarget(BaseModel, arbitrary_types_allowed=True):
-    fatman_deployer: FatmanDeployer
-    fatman_monitor: FatmanMonitor
+    job_deployer: JobDeployer
+    job_monitor: JobMonitor
     logs_streamer: LogsStreamer
 
 

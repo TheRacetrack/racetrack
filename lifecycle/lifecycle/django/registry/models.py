@@ -5,7 +5,7 @@ from django.db import models
 
 from racetrack_client.utils.time import now
 from racetrack_commons.auth.scope import AuthScope
-from racetrack_commons.entities.dto import FatmanStatus, DeploymentStatus
+from racetrack_commons.entities.dto import JobStatus, DeploymentStatus
 
 
 def new_uuid() -> str:
@@ -35,7 +35,7 @@ class Fatman(models.Model):
     family = models.ForeignKey(FatmanFamily, on_delete=models.CASCADE)
     name = models.CharField(max_length=512)
     version = models.CharField(max_length=256)
-    status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in FatmanStatus])
+    status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in JobStatus])
     create_time = models.DateTimeField(default=now)
     update_time = models.DateTimeField(default=now)
     manifest = models.TextField(null=True, blank=True)
@@ -112,7 +112,7 @@ class TrashFatman(models.Model):
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
     name = models.CharField(max_length=512)
     version = models.CharField(max_length=256)
-    status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in FatmanStatus])
+    status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in JobStatus])
     create_time = models.DateTimeField(default=now)
     update_time = models.DateTimeField(default=now)
     delete_time = models.DateTimeField(default=now)

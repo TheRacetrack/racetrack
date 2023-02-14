@@ -8,7 +8,7 @@ from racetrack_client.utils.request import ResponseError, Requests, RequestError
 from racetrack_commons.dir import project_root
 from racetrack_commons.entities.dto import EscDto
 from racetrack_commons.entities.esc_client import EscRegistryClient
-from racetrack_commons.entities.fatman_client import FatmanRegistryClient
+from racetrack_commons.entities.job_client import JobRegistryClient
 from racetrack_client.utils.auth import RT_AUTH_HEADER
 from racetrack_client.client_config.auth import set_user_auth
 from racetrack_client.client_config.client_config import ClientConfig
@@ -62,11 +62,11 @@ def _wait_for_image_builder_ready():
         Requests.get(f'{image_builder_url}/health').raise_for_status()
 
 
-def _delete_workload(fatman_name: str):
-    print(f'Deleting remnant workloads of {fatman_name}...')
+def _delete_workload(job_name: str):
+    print(f'Deleting remnant workloads of {job_name}...')
     try:
-        frc = FatmanRegistryClient(auth_token=ADMIN_AUTH_TOKEN)
-        frc.delete_deployed_fatman(fatman_name, fatman_version='0.0.1')
+        frc = JobRegistryClient(auth_token=ADMIN_AUTH_TOKEN)
+        frc.delete_deployed_job(job_name, job_version='0.0.1')
     except ResponseError as e:
         if e.status_code not in {200, 404}:
             raise ContextError('deleting previous workloads') from e
@@ -83,18 +83,18 @@ def _create_esc() -> EscDto:
         if e.status_code not in {200, 409}:  # created or already exists
             raise ContextError('creating ESC') from e
 
-def _deploy_and_verify(sample_path: str, fatman_name: str, esc: EscDto):
+def _deploy_and_verify(sample_path: str, job_name: str, esc: EscDto):
     _deploy(sample_path)
 
-    print(f'Allowing a fatman {fatman_name} to ESC...')
+    print(f'Allowing a job {job_name} to ESC...')
     erc = EscRegistryClient(auth_token=INTERNAL_AUTH_TOKEN)
-    erc.esc_allow_fatman(esc_id=esc.id, fatman_name=fatman_name)
+    erc.esc_allow_job(esc_id=esc.id, job_name=job_name)
     esc_token = erc.get_esc_auth_token(esc.id)
 
-    if fatman_name == 'adder':
-        _verify_deployed_fatman_adder_response(fatman_name, esc_token)
+    if job_name == 'adder':
+        _verify_deployed_job_adder_response(job_name, esc_token)
 
-    _verify_fatman_logs(fatman_name, ADMIN_AUTH_TOKEN)
+    _verify_job_logs(job_name, ADMIN_AUTH_TOKEN)
 
 
 def _deploy(sample_path: str):
@@ -107,27 +107,27 @@ def _deploy(sample_path: str):
 
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=3, max_time=60, jitter=None)
-def _verify_deployed_fatman_adder_response(fatman_name: str, auth_token: str):
-    print(f'Verifying {fatman_name} job response...')
+def _verify_deployed_job_adder_response(job_name: str, auth_token: str):
+    print(f'Verifying {job_name} job response...')
     pub_url = os.environ['PUB_URL']
-    url = f'{pub_url}/fatman/{fatman_name}/latest/api/v1/perform'
+    url = f'{pub_url}/job/{job_name}/latest/api/v1/perform'
 
     headers = {}
     if auth_token:
         headers[RT_AUTH_HEADER] = auth_token
 
     r = Requests.post(url, json={'numbers': [40, 2]}, headers=headers)
-    assert r.ok, f'Fatman response: {r.status_code} {r.status_reason} for url {r.url}, content: {str(r.content)}'
+    assert r.ok, f'Job response: {r.status_code} {r.status_reason} for url {r.url}, content: {str(r.content)}'
     output = r.json()
-    assert output == 42, 'Unexpected output returned by Fatman'
+    assert output == 42, 'Unexpected output returned by Job'
 
 
 @backoff.on_exception(backoff.fibo, ResponseError, max_value=3, max_time=60, jitter=None)
-def _verify_fatman_logs(fatman_name: str, user_auth: str):
-    print(f'Verifying {fatman_name} logs...')
-    frc = FatmanRegistryClient(auth_token=user_auth)
-    logs = frc.get_runtime_logs(fatman_name, 'latest')
-    assert len(logs) > 1, 'Unexpected short log from Fatman'
+def _verify_job_logs(job_name: str, user_auth: str):
+    print(f'Verifying {job_name} logs...')
+    frc = JobRegistryClient(auth_token=user_auth)
+    logs = frc.get_runtime_logs(job_name, 'latest')
+    assert len(logs) > 1, 'Unexpected short log from Job'
 
 
 def _install_plugin(plugin_uri: str):

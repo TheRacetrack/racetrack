@@ -54,17 +54,17 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
 
 
 class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
-    """Fatman Manifest file - build recipe to get deployable image from source code workspace"""
+    """Job Manifest file - build recipe to get deployable image from source code workspace"""
 
-    # name of the Fatman Workload
+    # name of the Job Workload
     name: str
 
-    # email address of the Fatman's owner to reach out
+    # email address of the Job's owner to reach out
     owner_email: str
 
     git: GitManifest
 
-    # version of the Fatman
+    # version of the Job
     version: str = '0.0.1'
 
     # Language wrapper used to embed model
@@ -97,16 +97,16 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # secret env vars loaded from an external file applied at runtime
     secret_runtime_env_file: Optional[str] = None
 
-    # labels - fatman metadata for humans
+    # labels - job metadata for humans
     labels: Optional[Dict[str, Any]] = None
 
-    # list of public fatman endpoints that can be accessed without authentication
+    # list of public job endpoints that can be accessed without authentication
     public_endpoints: Optional[List[str]] = None
 
-    # number of instances of the Fatman
+    # number of instances of the Job
     replicas: int = 1
 
-    # resources demands to allocate to the Fatman
+    # resources demands to allocate to the Job
     resources: Optional[ResourcesManifest] = None
 
     # Language wrapper attributes

@@ -15,7 +15,7 @@ from lifecycle.monitor.monitors import list_log_streamers
 from lifecycle.endpoints.health import setup_health_endpoint
 from lifecycle.endpoints.deploy import setup_deploy_endpoints
 from lifecycle.endpoints.esc import setup_esc_endpoints
-from lifecycle.endpoints.fatman import setup_fatman_endpoints
+from lifecycle.endpoints.job import setup_job_endpoints
 from lifecycle.endpoints.user import setup_user_endpoints
 from lifecycle.server.metrics import setup_lifecycle_metrics
 from lifecycle.server.socketio import SocketIOServer
@@ -44,7 +44,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
     BASE_URL = f'/{service_name}'
     fastapi_app = create_fastapi(
         title='Lifecycle API Server',
-        description='Management of deployed Fatman Workloads',
+        description='Management of deployed Job Workloads',
         base_url=BASE_URL,
         authorizations=get_racetrack_authorizations_methods(),
         request_access_log=True,
@@ -93,7 +93,7 @@ def setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         logger.warning("Authentication is not required")
 
     setup_deploy_endpoints(api, config, plugin_engine)
-    setup_fatman_endpoints(api, config, plugin_engine)
+    setup_job_endpoints(api, config, plugin_engine)
     setup_esc_endpoints(api, config)
     setup_user_endpoints(api, config)
     setup_info_endpoints(api, config, plugin_engine)

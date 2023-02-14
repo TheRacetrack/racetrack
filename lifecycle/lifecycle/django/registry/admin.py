@@ -12,12 +12,12 @@ from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, 
 from ...auth.subject import regenerate_auth_token_by_id
 
 
-class FatmanFamilyAdmin(admin.ModelAdmin):
+class JobFamilyAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     search_fields = ['name']
 
 
-class FatmanAdmin(admin.ModelAdmin):
+class JobAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'version', 'status', 'update_time', 'deployed_by')
     search_fields = ['name', 'version', 'deployed_by']
     list_filter = ['status', 'deployed_by', 'name']
@@ -52,7 +52,7 @@ class RacetrackUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'is_active', 'is_staff', 'is_superuser')
 
 
-class TrashFatmanAdmin(admin.ModelAdmin):
+class TrashJobAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days')
     search_fields = ['id', 'name', 'version', 'status', 'deployed_by']
     list_filter = ['status', 'deployed_by', 'name']
@@ -67,7 +67,7 @@ class AuditLogEventAdmin(admin.ModelAdmin):
 class AuthSubjectTypeFilter(SimpleListFilter):
     title = 'Subject type'
     parameter_name = 'subject_type'
-    possible_values = ['User', 'ESC', 'Fatman Family', 'Unknown']
+    possible_values = ['User', 'ESC', 'Job Family', 'Unknown']
 
     def lookups(self, request, model_admin):
         return [(value, value) for value in self.possible_values]
@@ -77,7 +77,7 @@ class AuthSubjectTypeFilter(SimpleListFilter):
             return queryset.filter(user__isnull=False)
         if self.value() == 'ESC':
             return queryset.filter(esc__isnull=False)
-        if self.value() == 'Fatman Family':
+        if self.value() == 'Job Family':
             return queryset.filter(fatman_family__isnull=False)
         if self.value() == 'Unknown':
             return queryset.filter(user__isnull=True, esc__isnull=True, fatman_family__isnull=True)
@@ -107,7 +107,7 @@ class AuthSubjectAdmin(admin.ModelAdmin):
 class AuthResourcePermissionTypeFilter(SimpleListFilter):
     title = 'Subject type'
     parameter_name = 'subject_type'
-    possible_values = ['User', 'ESC', 'Fatman Family', 'Unknown']
+    possible_values = ['User', 'ESC', 'Job Family', 'Unknown']
 
     def lookups(self, request, model_admin):
         return [(value, value) for value in self.possible_values]
@@ -117,7 +117,7 @@ class AuthResourcePermissionTypeFilter(SimpleListFilter):
             return queryset.filter(auth_subject__user__isnull=False)
         if self.value() == 'ESC':
             return queryset.filter(auth_subject__esc__isnull=False)
-        if self.value() == 'Fatman Family':
+        if self.value() == 'Job Family':
             return queryset.filter(auth_subject__fatman_family__isnull=False)
         if self.value() == 'Unknown':
             return queryset.filter(auth_subject__user__isnull=True, auth_subject__esc__isnull=True, auth_subject__fatman_family__isnull=True)
@@ -134,12 +134,12 @@ class AuthResourcePermissionAdmin(admin.ModelAdmin):
 admin.site.unregister(User)
 admin.site.register(User, RacetrackUserAdmin)
 
-admin.site.register(Fatman, FatmanAdmin)
-admin.site.register(FatmanFamily, FatmanFamilyAdmin)
+admin.site.register(Fatman, JobAdmin)
+admin.site.register(FatmanFamily, JobFamilyAdmin)
 admin.site.register(Deployment, DeploymentAdmin)
 admin.site.register(Esc, EscAdmin)
 admin.site.register(PublicEndpointRequest, PublicEndpointRequestAdmin)
-admin.site.register(TrashFatman, TrashFatmanAdmin)
+admin.site.register(TrashFatman, TrashJobAdmin)
 admin.site.register(AuditLogEvent, AuditLogEventAdmin)
 admin.site.register(AuthSubject, AuthSubjectAdmin)
 admin.site.register(AuthResourcePermission, AuthResourcePermissionAdmin)

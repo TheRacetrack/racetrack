@@ -2,7 +2,7 @@
 "python3" job type is intended to handle the calls to your Python function.
 Racetrack will wrap it up in a web server.
 
-Set `lang: python3:latest` in your `fatman.yaml` manifest file in order to use this type of job.
+Set `lang: python3:latest` in your `job.yaml` manifest file in order to use this type of job.
 
 ## Job standards
 Let's assume you already have your code in a repository at `supersmart/model.py`:
@@ -13,11 +13,11 @@ def just_do_it(x: float, y: float) -> float:
 
 Now you need to make a few adjustments to adhere to job standards. 
 Basically, you need to embed your code into an entrypoint class with `def perform` method.
-Create `fatman_entrypoint.py`:
+Create `job_entrypoint.py`:
 ```python
 from supersmart.model import just_do_it
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def perform(self, x: float, y: float) -> float:
         """
         Return the product of two numbers.
@@ -67,7 +67,7 @@ def docs_input_example(self) -> dict:
 ```
 
 ### Auxiliary endpoints: `auxiliary_endpoints` method
-If you need more callable endpoints, you can extend Fatman API with custom auxiliary endpoints (besides `/perform`).
+If you need more callable endpoints, you can extend Job API with custom auxiliary endpoints (besides `/perform`).
 Do it by implementing `auxiliary_endpoints` method in your entrypoint class, 
 returning dict with endpoint paths and corresponding methods handling the request:
 ```python
@@ -90,7 +90,7 @@ def explain(self, x: float, y: float) -> Dict[str, float]:
 
 If you want to define example data for your auxiliary endpoints,
 you can implement `docs_input_examples` method returning 
-mapping of Fatman's endpoints to corresponding exemplary inputs.
+mapping of Job's endpoints to corresponding exemplary inputs.
 So it should return a dictionary of dictionaries (endpoint path -> parameter name -> parameter value).
 You can even use it to define sample input data for the default entrypoint (`/perform` endpoint)
 instead of using `docs_input_example` method to keep it concise.
@@ -99,7 +99,7 @@ It should be the input giving not erroneous result so that it can be used by oth
 For instance:
 ```python
 def docs_input_examples(self) -> Dict[str, Dict]:
-    """Return mapping of Fatman's endpoints to corresponding exemplary inputs."""
+    """Return mapping of Job's endpoints to corresponding exemplary inputs."""
     return {
         '/perform': {
             'numbers': [40, 2],
@@ -114,7 +114,7 @@ def docs_input_examples(self) -> Dict[str, Dict]:
 See [python-auxiliary-endpoints](../../sample/python-auxiliary-endpoints) for an example.
 
 ### Static endpoints: `static_endpoints` method
-You can configure static endpoints to expose your local files at particular path by your Fatman.
+You can configure static endpoints to expose your local files at particular path by your Job.
 Do it by implementing `static_endpoints` method in your entrypoint class, 
 returning dict with endpoint paths and corresponding file metadata. 
 File metadata can be either just the filename (relative to the root of repository) 
@@ -126,7 +126,7 @@ Mimetype is needed for browsers to interpret the content properly.
         """Dict of endpoint paths mapped to corresponding static files that ought be served."""
         return {
             '/xrai': 'xrai.yaml',
-            '/manifest': ('fatman.yaml', 'application/x-yaml'),
+            '/manifest': ('job.yaml', 'application/x-yaml'),
             '/docs/readme': 'README.md',
         }
 ```
@@ -180,8 +180,8 @@ It should return list of Metric objects consisting of:
 def metrics(self):
     return [
         {
-            'name': 'fatman_is_crazy',
-            'description': 'Whether your fatman is crazy or not',
+            'name': 'job_is_crazy',
+            'description': 'Whether your job is crazy or not',
             'value': random.random(),
             'labels': {
                 'color': 'blue',
@@ -211,7 +211,7 @@ runtime_env:
   TORCH_MODEL_ZOO: zoo
 ```
 
-When using your runtime vars, don't use the following reserved names: `PUB_URL`, `FATMAN_NAME`.
+When using your runtime vars, don't use the following reserved names: `PUB_URL`, `JOB_NAME`.
 
 ### Secret variables
 If you need to set secret environment vars during building your job,
@@ -250,10 +250,10 @@ secret values take precedence before the former ones (overwrites them).
 See [python-env-secret](../../sample/python-env-secret) for an example.
 
 ### Public endpoints
-To expose selected fatman endpoints to the public (to be accessible without authentication)
+To expose selected Job endpoints to the public (to be accessible without authentication)
 include them in the `public_endpoints` field in a manifest.
 Every endpoint opens access to an exact specified path as well as all subpaths starting with that path.
-Use short path endings without `/pub/fatman/.../` prefix:
+Use short path endings without `/pub/job/.../` prefix:
 ```yaml
 public_endpoints:
   - '/api/v1/perform'
@@ -263,8 +263,8 @@ public_endpoints:
 !!! warning
     Exempting a path `/foo` also exempts *any* path under it like `/foo/secret`. Use this feature with care.
 
-After deploying such fatman, there will be created a request that needs to be approved by Racetrack admin.
-Such approval needs to be done once for every new fatman version (with distinct `version` field).
+After deploying such Job, there will be created a request that needs to be approved by Racetrack admin.
+Such approval needs to be done once for every new job version (with distinct `version` field).
 
 See [python-ui-flask](../../sample/python-ui-flask) for an example.
 
@@ -281,9 +281,9 @@ To sum up:
 1. You MAY do some initialization in `def __init__(self)` (eg. loading pickled model).
 1. You MAY fetch some data during initialization and keep them in a working directory 
    (eg. load model data from external sources). Working directory is the root of your git repository.
-1. You SHOULD use relative path `./file.txt` (instead of abs like `/src/fatman/file.txt`) 
+1. You SHOULD use relative path `./file.txt` (instead of abs like `/src/job/file.txt`) 
    when accessing your model data.
-1. You MUST create `fatman.yaml` at the root of your repo.
+1. You MUST create `job.yaml` at the root of your repo.
 1. You MAY put some required Python packages to `requirements.txt` file (located anywhere)
    and refer to it in a manifest file.
 1. You MUST NOT refer to some local files that are not pushed to the repository. 
@@ -293,17 +293,17 @@ To sum up:
 1. You MAY implement `static_endpoints` method to serve static files. You SHOULD specify mimetype for them.
 1. You MAY implement `metrics` method to export your custom Prometheus metrics at `/metrics` endpoint.
 1. You MAY configure environment variables applied on build time and runtime by setting them explicitly or through a secret file.
-1. The Fatman application MUST be stateless. It MUST NOT depend on previous requests.
+1. The Job application MUST be stateless. It MUST NOT depend on previous requests.
 
 ## Manifest file
-When using `python3` job type, you MUST include the following fields in a `fatman.yaml` manifest file:
+When using `python3` job type, you MUST include the following fields in a `job.yaml` manifest file:
 
 - `name` - choose a meaningful text name for a job. It should be unique within the Racetrack cluster.
-- `owner_email` - email address of the Fatman's owner to reach out
+- `owner_email` - email address of the Job's owner to reach out
 - `lang` - Set base image to "python3"
 - `git.remote` - URL to your remote repo 
-- `python.entrypoint_path` - Specify relative path to a file with Fatman Entrypoint class. 
-  This file will be imported as a python module when the Fatman is started. 
+- `python.entrypoint_path` - Specify relative path to a file with Job Entrypoint class. 
+  This file will be imported as a python module when the Job is started. 
   
 You MAY include the following fields:
 
@@ -318,13 +318,13 @@ You MAY include the following fields:
     - 'libgomp1'
   ```
 - `build_env` - dictionary of environment variables that should be set when building the image
-- `runtime_env` - dictionary of environment variables that should be set when running Fatman
-- `public_endpoints` - list of public fatman endpoints that can be accessed without authentication
+- `runtime_env` - dictionary of environment variables that should be set when running Job
+- `public_endpoints` - list of public Job endpoints that can be accessed without authentication
 - `secret_build_env_file` - path to a secret file (on a client machine) with build environment variables
 - `secret_runtime_env_file` - path to a secret file (on a client machine) with runtime environment variables
-- `labels` - dictionary with metadata describing fatman for humans
+- `labels` - dictionary with metadata describing Job for humans
 
-The final `fatman.yaml` may look like this:
+The final `job.yaml` may look like this:
 ```yaml
 name: supersmart
 owner_email: nobody@example.com
@@ -336,5 +336,5 @@ git:
 
 python:
   requirements_path: 'supersmart/requirements.txt'
-  entrypoint_path: 'fatman_entrypoint.py'
+  entrypoint_path: 'job_entrypoint.py'
 ```

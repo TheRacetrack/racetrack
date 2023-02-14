@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from lifecycle.deployer.base import FatmanDeployer
+from lifecycle.deployer.base import JobDeployer
 from lifecycle.deployer.infra_target import get_infrastructure_target
 from racetrack_commons.plugin.engine import PluginEngine
 
 
-def get_fatman_deployer(
+def get_job_deployer(
     plugin_engine: PluginEngine,
     infrastructure_name: str | None,
-) -> FatmanDeployer:
+) -> JobDeployer:
     infra_target = get_infrastructure_target(plugin_engine, infrastructure_name)
-    return infra_target.fatman_deployer
+    return infra_target.job_deployer

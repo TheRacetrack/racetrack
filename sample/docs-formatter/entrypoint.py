@@ -8,7 +8,7 @@ from starlette.status import HTTP_302_FOUND
 import markdown
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
 
     def webview_app(self, base_url: str):
         """

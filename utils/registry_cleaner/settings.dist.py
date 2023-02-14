@@ -13,10 +13,10 @@ CORE_RT_IMAGES = [
     'pgbouncer',
     'postgres',
     'postgres-exporter',
-    'fatman-base/docker-http',
-    'fatman-base/golang',
-    'fatman-base/python3',
-    'fatman-base/rust',
+    'job-base/docker-http',
+    'job-base/golang',
+    'job-base/python3',
+    'job-base/rust',
     'ci-test',
 ]
 LAST_IMAGES_SPARE = 10  # how many latest RT images to leave

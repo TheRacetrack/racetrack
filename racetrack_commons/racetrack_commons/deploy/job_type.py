@@ -20,7 +20,7 @@ class JobType:
     lang_name: str
     version: str  # semantic version of the job type
     base_image_paths: list[Path]  # paths to base Dockerfiles (for each container)
-    template_paths: list[Path]  # paths to fatman template Dockerfiles (for each container)
+    template_paths: list[Path]  # paths to job template Dockerfiles (for each container)
 
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
@@ -49,7 +49,7 @@ def gather_job_types(
     job_types: dict[str, JobType] = {}
     job_family_versions: dict[str, list[JobType]] = defaultdict(list)
 
-    plugin_results: list[dict[str, JobTypeImagePaths]] = plugin_engine.invoke_plugin_hook(PluginCore.fatman_job_types)
+    plugin_results: list[dict[str, JobTypeImagePaths]] = plugin_engine.invoke_plugin_hook(PluginCore.job_types)
     for plugin_job_types in plugin_results:
         if plugin_job_types:
             for job_full_name, job_data in plugin_job_types.items():

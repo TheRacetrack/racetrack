@@ -29,35 +29,35 @@ Admin can change any user's password by going to Admin panel, `Users` tab,
 selecting user, clicking "change the password using this form".
 
 
-### Managing Fatman Portfolio
+### Managing Job Portfolio
 
 #### Audit Log
 "Audit Log" tab in Dashboard shows activity events done by users,
-eg. "fatman F1 of user Alice has been deleted by Bob".
+eg. "job F1 of user Alice has been deleted by Bob".
 It can be filtered by events related to a logged user,
-whole fatman family or a particular fatman.
+whole job family or a particular job.
 
 #### Portfolio table
-"Portfolio" tab in Dashboard allows to browse fatmen freely
+"Portfolio" tab in Dashboard allows to browse jobs freely
 with custom criteria and showing the candidates for removal.
 Use the filters above each column to filter and limit table data. 
 Advanced searches can be performed by using the following operators:
 `<, <=, >, >=, =, *, !, {, }, ||,&&, [empty], [nonempty], rgx:`
 
-You can delete fatman from there.
-"Purge score" column shows assessed penalty points representing usability of a fatman.
+You can delete job from there.
+"Purge score" column shows assessed penalty points representing usability of a job.
 A higher value means a better candidate for removal.
 "Purge score" value is explained in "Purge reasons" column
-with suggestions explaining why fatman is a candidate for removal.
+with suggestions explaining why job is a candidate for removal.
 
-#### Changing Fatman attributes
-If you want to overwrite some deployment attributes of a fatman in runtime 
+#### Changing Job attributes
+If you want to overwrite some deployment attributes of a job in runtime 
 (eg. minimum memory amount, number of replicas),
-you can go to Admin panel, choose "Fatmen" tab, select particular one,
+you can go to Admin panel, choose "Jobs" tab, select particular one,
 change its "Manifest" field by editing the YAML and click "Save".
-Then go back to Racetrack Dashboard, tab "Fatmen" and click Redeploy button under the selected fatman.
+Then go back to Racetrack Dashboard, tab "Jobs" and click Redeploy button under the selected job.
 However, keep in mind that this change will be overwritten by the next deployment,
-so better ask maintaner of a fatman to change the manifest in the git repository as well.
+so better ask maintaner of a job to change the manifest in the git repository as well.
 
 ### Permissions
 
@@ -66,7 +66,7 @@ Click on the node to see the details and filter out the neighbours of the select
 
 Permissions can be managed in Administration panel, under "Admin panel" tab in dashboard.
 
-#### Allowing ESC to Fatman permissions
+#### Allowing ESC to Job permissions
 
 In the Racetrack admin panel, go to ESC list, create new ESC.
 
@@ -81,9 +81,9 @@ If this key becomes stolen, to prevent attacker from using it, reset the ESC api
 in Auth Subject edit page.
 
 
-#### Allowing Fatman to Fatman permissions
+#### Allowing Job to Job permissions
 
-Fatman to Fatman permissions are setup on Fatman family basis; that is you just
+Job to Job permissions are setup on Job family basis; that is you just
 have to set it once that family Adder can be called by Badder, then all Badder
 versions can communicate with all Adder versions. The relation is one way only,
 so Adder won't be able to call Badder unless it's permitted too.
@@ -107,15 +107,15 @@ See [registry_cleaner](../utils/registry_cleaner/README.md).
 ### Troubleshooting
 If something's malfunctioning, check out the following places to find more information:
 
-- Racetrack dashboard pages: fatmen list, audit log, dependencies graph,
-- Fatman logs (Dashboard / Fatmen / Logs / Runtime logs)
-- Fatman build logs:
-    - via Dashboard (Fatmen / Logs / Build logs),
+- Racetrack dashboard pages: jobs list, audit log, dependencies graph,
+- Job logs (Dashboard / Jobs / Logs / Runtime logs)
+- Job build logs:
+    - via Dashboard (Jobs / Logs / Build logs),
     - in image-builder container, at `/var/log/racetrack/image-builder/build-logs`,
     - through Django Admin Panel: Deployments model, "Build logs" field,
 - Django Admin panel (Dashboard > Administration > Lifecycle Admin panel):
   browse stored models (eg. Users, Auth subjects, Auth resource permissions,
-  Deployments, Fatmen, Fatman families, External service consumers),
+  Deployments, Jobs, Job families, External service consumers),
 - Racetrack component logs: dashboard, lifecycle, lifecycle-supervisor, image-builder, pub, postgres, pgbouncer
 
 
@@ -123,19 +123,19 @@ If something's malfunctioning, check out the following places to find more infor
 
 Here's the overview of the places where Racetrack data are stored:
 
-- **Postgres Database** - keeps information about fatmen
+- **Postgres Database** - keeps information about jobs
   (that are expected to be running), deployments, users, permissions, etc.
 - **Plugins Volume** - a persistent volume containing plugins 
   currently installed in the Racetrack instance.
-- **Docker Registry** - a registry for keeping built fatman images.
-  If a fatman gets killed somehow, it will be recreated from the image taken from here.
+- **Docker Registry** - a registry for keeping built job images.
+  If a job gets killed somehow, it will be recreated from the image taken from here.
   Backing up the Docker Registry is not always an obligatory step,
-  if it's fine for you to have a cluster with all fatmen glowing red (requiring to redeploy) after a wipeout.
-  If you want the fatmen to be brought back to life after a wipeout,
+  if it's fine for you to have a cluster with all jobs glowing red (requiring to redeploy) after a wipeout.
+  If you want the jobs to be brought back to life after a wipeout,
   make sure to back up the Docker Registry.
-- **Fatman Secrets** - Fatman secrets (git credentials and secret vars) 
+- **Job Secrets** - Job secrets (git credentials and secret vars) 
   are kept by Racetrack inside Kubernetes Secrets.
-  If you skip to back it up, the fatmen making use of secret vars 
+  If you skip to back it up, the jobs making use of secret vars 
   won't be reproduced (the others should work fine),
   unless you redeploy them manually later on.
 
@@ -164,7 +164,7 @@ In this case, once the migration is done, do the following:
 - Exec into the `lifecycle-supervisor` pod/container
 - Run `python -m lifecycle generate-auth admin` to create a valid Auth token for you. Copy it.
 - Go to Lifecycle-Supervisor or Lifecycle API page (`/lifecycle`) and Authorize with your Racetrack Auth Token.
-- Call endpoints `POST /api/v1/auth/token/user/regenerate` and `POST /api/v1/auth/token/fatman_family/regenerate`
+- Call endpoints `POST /api/v1/auth/token/user/regenerate` and `POST /api/v1/auth/token/job_family/regenerate`
   to recreate valid signatures for the tokens.
 
 ### Plugins Volume
@@ -184,6 +184,6 @@ docker_registry: ghcr.io
 docker_registry_namespace: theracetrack/racetrack
 ```
 
-### Fatman Secrets
+### Job Secrets
 Contact your Kubernetes administrator to back up all the `Secret` resources
-associated with the `racetrack/fatman` label.
+associated with the `racetrack/job` label.

@@ -22,7 +22,7 @@ The following request checks service's healthiness:
 ```bash
 curl "http://localhost:7000/health" 
 # Expect:
-# {"service": "fatman", "status": "pass"}
+# {"service": "job", "status": "pass"}
 ```
 
 # API docs

@@ -87,21 +87,21 @@ def get_deployed_racetrack_tags() -> Iterable[str]:
             yield f'{REGISTRY_IMAGE_PREFIX}/{image_name}:{docker_tag}'
 
 
-def get_deployed_fatman_tags() -> Iterable[str]:
+def get_deployed_job_tags() -> Iterable[str]:
     for environment in DEPLOYMENT_ENVIRONMENTS:
         rt_token = RT_AUTH_TOKENS[environment]
-        response = get_request(f'{environment}/lifecycle/api/v1/fatman', headers={
+        response = get_request(f'{environment}/lifecycle/api/v1/job', headers={
             'accept': 'application/json',
             'X-Racetrack-Auth': rt_token,
         })
 
-        logger.info(f'{len(response)} fatmen found at {environment} environment')
+        logger.info(f'{len(response)} jobs found at {environment} environment')
 
-        for fatman_response in response:
-            fatman_name = fatman_response['name']
-            image_tag = fatman_response['image_tag']
-            yield f'{REGISTRY_IMAGE_PREFIX}/fatman-entrypoint/{fatman_name}:{image_tag}'
-            yield f'{REGISTRY_IMAGE_PREFIX}/fatman-user-module/{fatman_name}:{image_tag}'
+        for job_response in response:
+            job_name = job_response['name']
+            image_tag = job_response['image_tag']
+            yield f'{REGISTRY_IMAGE_PREFIX}/job-entrypoint/{job_name}:{image_tag}'
+            yield f'{REGISTRY_IMAGE_PREFIX}/job-user-module/{job_name}:{image_tag}'
 
 
 def group_removal_candidates(removal_candidates: List[ImageTag], all_tags: List[ImageTag]) -> List[ImageRemovalSummary]:

@@ -19,12 +19,12 @@ from racetrack_commons.auth.auth import UnauthorizedError
 from racetrack_commons.auth.token import decode_jwt
 from racetrack_commons.entities.audit import explain_audit_log_event
 from racetrack_commons.entities.audit_client import AuditClient
-from racetrack_commons.entities.dto import AuditLogEventDto, FatmanDto
-from racetrack_commons.entities.fatman_client import FatmanRegistryClient
+from racetrack_commons.entities.dto import AuditLogEventDto, JobDto
+from racetrack_commons.entities.job_client import JobRegistryClient
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 from racetrack_commons.urls import get_external_pub_url
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
-from dashboard.purge import enrich_fatmen_purge_info
+from dashboard.purge import enrich_jobs_purge_info
 from dashboard.utils import login_required, remove_ansi_sequences
 
 
@@ -89,17 +89,17 @@ def registered(request):
 
 
 @login_required
-def list_fatmen(request):
+def list_jobs(request):
     context = {
         'external_pub_url': get_external_pub_url(),
-        'fatmen': None,
+        'jobs': None,
     }
     try:
-        frc = FatmanRegistryClient(auth_token=get_auth_token(request))
-        fatmen: List[FatmanDto] = frc.list_deployed_fatmen()
-        context['fatmen'] = fatmen
+        frc = JobRegistryClient(auth_token=get_auth_token(request))
+        jobs: List[JobDto] = frc.list_deployed_jobs()
+        context['jobs'] = jobs
     except Exception as e:
-        log_exception(ContextError('Getting fatmen failed', e))
+        log_exception(ContextError('Getting jobs failed', e))
         context['error'] = str(e)
     return render(request, 'racetrack/list.html', context)
 
@@ -206,8 +206,8 @@ def write_plugin_config(request, plugin_name: str, plugin_version: str):
 def dependencies_graph(request):
     context = {}
     try:
-        frc = FatmanRegistryClient(auth_token=get_auth_token(request))
-        context['fatman_graph'] = frc.get_dependencies_graph()
+        frc = JobRegistryClient(auth_token=get_auth_token(request))
+        context['job_graph'] = frc.get_dependencies_graph()
     except Exception as e:
         logging.error(f'Building dependencies graph failed: {e}')
         context['error'] = str(e)
@@ -215,42 +215,42 @@ def dependencies_graph(request):
 
 
 @login_required
-def view_fatman_portfolio(request):
+def view_job_portfolio(request):
     context = {
         'external_pub_url': get_external_pub_url(),
-        'fatmen': None,
+        'jobs': None,
     }
     try:
-        frc = FatmanRegistryClient(auth_token=get_auth_token(request))
-        fatmen: List[FatmanDto] = frc.list_deployed_fatmen()
-        fatmen_dicts: List[Dict] = enrich_fatmen_purge_info(fatmen)
+        frc = JobRegistryClient(auth_token=get_auth_token(request))
+        jobs: List[JobDto] = frc.list_deployed_jobs()
+        job_dicts: List[Dict] = enrich_jobs_purge_info(jobs)
 
-        for fatman_dict in fatmen_dicts:
-            fatman_dict['update_time_days_ago'] = days_ago(fatman_dict['update_time'])
-            fatman_dict['last_call_time_days_ago'] = days_ago(fatman_dict['last_call_time'])
-            manifest: Dict = fatman_dict.get('manifest')
-            fatman_dict['job_type_version'] = manifest.get('lang') if manifest else None
+        for job_dict in job_dicts:
+            job_dict['update_time_days_ago'] = days_ago(job_dict['update_time'])
+            job_dict['last_call_time_days_ago'] = days_ago(job_dict['last_call_time'])
+            manifest: Dict = job_dict.get('manifest')
+            job_dict['job_type_version'] = manifest.get('lang') if manifest else None
 
-        context['fatmen'] = fatmen_dicts
+        context['jobs'] = job_dicts
     except Exception as e:
-        log_exception(ContextError('Getting fatmen failed', e))
+        log_exception(ContextError('Getting jobs failed', e))
         context['error'] = str(e)
     return render(request, 'racetrack/portfolio.html', context)
 
 
 @login_required
-def view_fatman_activity(request):
-    filter_fatman_name = request.GET.get('fatman_name', '')
-    filter_fatman_version = request.GET.get('fatman_version', '')
+def view_job_activity(request):
+    filter_job_name = request.GET.get('job_name', '')
+    filter_job_version = request.GET.get('job_version', '')
     filter_related_to_me = request.GET.get('related_to_me', '')
     context = {
-        'filter_fatman_name': filter_fatman_name,
-        'filter_fatman_version': filter_fatman_version,
+        'filter_job_name': filter_job_name,
+        'filter_job_version': filter_job_version,
         'filter_related_to_me': filter_related_to_me,
     }
     try:
         audit_client = AuditClient(auth_token=get_auth_token(request))
-        events: List[AuditLogEventDto] = audit_client.filter_events(filter_related_to_me, filter_fatman_name, filter_fatman_version)
+        events: List[AuditLogEventDto] = audit_client.filter_events(filter_related_to_me, filter_job_name, filter_job_version)
 
         event_dicts = []
         for event in events:
@@ -266,55 +266,55 @@ def view_fatman_activity(request):
 
 
 @login_required
-def delete_fatman(request, fatman_name: str, fatman_version: str):
+def delete_job(request, job_name: str, job_version: str):
     try:
-        frc = _get_fatman_registry_client(request)
-        frc.delete_deployed_fatman(fatman_name, fatman_version)
+        frc = _get_job_registry_client(request)
+        frc.delete_deployed_job(job_name, job_version)
     except Exception as e:
-        log_exception(ContextError('Deleting fatman failed', e))
+        log_exception(ContextError('Deleting job failed', e))
         return JsonResponse({'error': str(e)}, status=500)
     return HttpResponse(status=204)
 
 
 @login_required
-def redeploy_fatman(request, fatman_name: str, fatman_version: str):
+def redeploy_job(request, job_name: str, job_version: str):
     try:
-        frc = _get_fatman_registry_client(request)
-        frc.redeploy_fatman(fatman_name, fatman_version)
+        frc = _get_job_registry_client(request)
+        frc.redeploy_job(job_name, job_version)
     except Exception as e:
-        log_exception(ContextError('Redeploying fatman failed', e))
+        log_exception(ContextError('Redeploying job failed', e))
         return JsonResponse({'error': str(e)}, status=500)
     return HttpResponse(status=204)
 
 
 @login_required
-def reprovision_fatman(request, fatman_name: str, fatman_version: str):
+def reprovision_job(request, job_name: str, job_version: str):
     try:
-        frc = _get_fatman_registry_client(request)
-        frc.reprovision_fatman(fatman_name, fatman_version)
+        frc = _get_job_registry_client(request)
+        frc.reprovision_job(job_name, job_version)
     except Exception as e:
-        log_exception(ContextError('Reprovisioning fatman failed', e))
+        log_exception(ContextError('Reprovisioning job failed', e))
         return JsonResponse({'error': str(e)}, status=500)
     return HttpResponse(status=204)
 
 
 @login_required
-def fatman_runtime_logs(request, fatman_name: str, fatman_version: str):
+def job_runtime_logs(request, job_name: str, job_version: str):
     tail = int(request.GET.get('tail', 0))
-    content = _get_fatman_registry_client(request).get_runtime_logs(fatman_name, fatman_version, tail)
+    content = _get_job_registry_client(request).get_runtime_logs(job_name, job_version, tail)
     content = remove_ansi_sequences(content)
     return HttpResponse(content, content_type='text/plain; charset=utf-8')
 
 
 @login_required
-def fatman_build_logs(request, fatman_name: str, fatman_version: str):
+def job_build_logs(request, job_name: str, job_version: str):
     tail = int(request.GET.get('tail', 0))
-    content = _get_fatman_registry_client(request).get_build_logs(fatman_name, fatman_version, tail)
+    content = _get_job_registry_client(request).get_build_logs(job_name, job_version, tail)
     content = remove_ansi_sequences(content)
     return HttpResponse(content, content_type='text/plain; charset=utf-8')
 
 
-def _get_fatman_registry_client(request) -> FatmanRegistryClient:
+def _get_job_registry_client(request) -> JobRegistryClient:
     if not request.user.is_authenticated:
-        return FatmanRegistryClient()
-    return FatmanRegistryClient(auth_token=get_auth_token(request))
+        return JobRegistryClient()
+    return JobRegistryClient(auth_token=get_auth_token(request))

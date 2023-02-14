@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from lifecycle.config import Config
-from lifecycle.fatman.registry import list_fatmen_registry
+from lifecycle.job.registry import list_job_registry
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
-from racetrack_commons.entities.dto import FatmanDto, FatmanStatus
+from racetrack_commons.entities.dto import JobDto, JobStatus
 from racetrack_commons.plugin.loader import ensure_dir_exists
 
 logger = get_logger(__name__)
@@ -21,14 +21,14 @@ def populate_metrics_jobs(config: Config):
 
     file_content: list[str] = []
     with wrap_context('populating Prometheus configuration'):
-        for job in list_fatmen_registry(config):
-            if job.status != FatmanStatus.LOST.value:
+        for job in list_job_registry(config):
+            if job.status != JobStatus.LOST.value:
                 file_content.append(_build_job_config(job))
 
     service_discovery_file.write_text('\n'.join(file_content))
 
 
-def _build_job_config(job: FatmanDto) -> str:
+def _build_job_config(job: JobDto) -> str:
     return f"""
 - targets:
     - '{job.internal_name}'

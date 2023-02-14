@@ -22,8 +22,8 @@ logger = get_logger(__name__)
 def check_auth(
     request: Request,
     subject_types: List[AuthSubjectType] = None,
-    fatman_name: str = None,
-    fatman_version: str = None,
+    job_name: str = None,
+    job_version: str = None,
     scope: AuthScope = None,
 ) -> models.AuthSubject:
     """
@@ -37,12 +37,12 @@ def check_auth(
 
     if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
         scope_str = scope.value if scope else None
-        authorize_internal_token(token_payload, scope_str, fatman_name, fatman_version)
+        authorize_internal_token(token_payload, scope_str, job_name, job_version)
     else:
-        if fatman_name:
-            assert fatman_version, 'fatman_version is required when fatman_name is specified'
-            assert scope, 'scope is required when fatman_name is specified'
-            authorize_resource_access(auth_subject, fatman_name, fatman_version, scope.value)
+        if job_name:
+            assert job_version, 'job_version is required when job_name is specified'
+            assert scope, 'scope is required when job_name is specified'
+            authorize_resource_access(auth_subject, job_name, job_version, scope.value)
         elif scope:
             authorize_scope_access(auth_subject, scope.value)
 

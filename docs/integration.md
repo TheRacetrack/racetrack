@@ -1,8 +1,8 @@
 # Integration with Racetrack 
 
-## Calling Fatmen
+## Calling Jobs
 
-Assuming you are ESC developer who wants to call certain Fatman:
+Assuming you are ESC developer who wants to call certain Job:
 
 1. Contact your Racetrack instance admin
 2. Ask him to register your application as a consumer of Racetrack services, an ESC   
@@ -11,11 +11,11 @@ Assuming you are ESC developer who wants to call certain Fatman:
 
 ```
 racetrack_domain = 'https://...com"
-pub_url = racetrack_domain + '/pub/fatman'
-fatman_name = 'foobar'
+pub_url = racetrack_domain + '/pub/job'
+job_name = 'foobar'
 
 r = requests.post(
-      url=f'{pub_url}/{fatman_name}/{fatman_version}/api/v1/perform', 
+      url=f'{pub_url}/{job_name}/{job_version}/api/v1/perform', 
       json={'numbers': [40, 2]}, 
       headers={'X-Racetrack-Esc-Auth': esc_auth}
       )

@@ -23,10 +23,10 @@ class ImageBuilder(ABC):
         """
         Build image from manifest file in a workspace directory.
         :param config: Image builder configuration
-        :param manifest: Fatman manifest
+        :param manifest: Job manifest
         :param workspace: Path to workspace directory
         :param tag: Image tag
-        :param git_version: version name from Fatman git history
+        :param git_version: version name from Job git history
         :param env_vars: environment variables that should be set during building
         :param deployment_id: unique deployment id (UUID4)
         :return: Full names of built images, build logs, error message

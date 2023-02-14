@@ -5,9 +5,9 @@ import backoff
 
 from lifecycle.config import Config
 from lifecycle.deployer.infra_target import determine_infrastructure_name
-from lifecycle.deployer.secrets import FatmanSecrets
+from lifecycle.deployer.secrets import JobSecrets
 from lifecycle.django.registry.database import db_access
-from lifecycle.fatman.deployment import create_deployment, save_deployment_build_logs, save_deployment_image_name, save_deployment_result, save_deployment_phase
+from lifecycle.job.deployment import create_deployment, save_deployment_build_logs, save_deployment_image_name, save_deployment_result, save_deployment_phase
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.client.env import SecretVars
 from racetrack_client.utils.request import parse_response_object, Requests, RequestError
@@ -17,25 +17,25 @@ from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
-from racetrack_commons.deploy.image import get_fatman_image
+from racetrack_commons.deploy.image import get_job_image
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus
 from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
 
 
-def build_fatman(
+def build_job(
     config: Config,
     manifest: Manifest,
-    fatman_secrets: FatmanSecrets,
+    job_secrets: JobSecrets,
     deployment: DeploymentDto,
     build_context: Optional[str],
     tag: str,
 ):
     with wrap_context('building an image'):
         save_deployment_phase(deployment.id, 'building image')
-        _send_image_build_request(config, manifest, fatman_secrets.git_credentials,
-                                  fatman_secrets.secret_build_env, tag, deployment, build_context)
+        _send_image_build_request(config, manifest, job_secrets.git_credentials,
+                                  job_secrets.secret_build_env, tag, deployment, build_context)
 
 
 def _send_image_build_request(
@@ -58,13 +58,13 @@ def _send_image_build_request(
     )
     response = parse_response_object(r, 'Image builder API error')
     build_logs: str = response['logs']
-    image_name = get_fatman_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
+    image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
     save_deployment_build_logs(deployment.id, build_logs)
     save_deployment_image_name(deployment.id, image_name)
     error: str = response['error']
     if error:
         raise RuntimeError(error)
-    logger.info(f'fatman image {image_name} has been built, deployment ID: {deployment.id}')
+    logger.info(f'job image {image_name} has been built, deployment ID: {deployment.id}')
 
 
 def _build_image_request_payload(
@@ -86,7 +86,7 @@ def _build_image_request_payload(
 
 
 @db_access
-def build_fatman_in_background(
+def build_job_in_background(
     config: Config,
     manifest: Manifest,
     git_credentials: Optional[Credentials],
@@ -98,15 +98,15 @@ def build_fatman_in_background(
     infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
     deployment = create_deployment(manifest, username, infra_target)
     
-    logger.info(f'started building fatman {deployment.id} in background')
+    logger.info(f'started building job {deployment.id} in background')
     args = (config, manifest, git_credentials, secret_vars, deployment, build_context)
-    thread = threading.Thread(target=_build_fatman_saving_result, args=args, daemon=True)
+    thread = threading.Thread(target=_build_job_saving_result, args=args, daemon=True)
     thread.start()
     return deployment.id
 
 
 @db_access
-def _build_fatman_saving_result(
+def _build_job_saving_result(
     config: Config,
     manifest: Manifest,
     git_credentials: Optional[Credentials],
@@ -114,18 +114,18 @@ def _build_fatman_saving_result(
     deployment: DeploymentDto,
     build_context: Optional[str],
 ):
-    """Deploy a Fatman storing its faulty or successful result in DB"""
+    """Deploy a Job storing its faulty or successful result in DB"""
     try:
         wait_for_image_builder_ready(config)
 
         tag = now().strftime('%Y-%m-%dT%H%M%S')
-        fatman_secrets = FatmanSecrets(
+        job_secrets = JobSecrets(
             git_credentials=git_credentials,
             secret_build_env=secret_vars.build_env,
             secret_runtime_env=secret_vars.runtime_env,
         )
 
-        build_fatman(config, manifest, fatman_secrets, deployment, build_context, tag)
+        build_job(config, manifest, job_secrets, deployment, build_context, tag)
         save_deployment_result(deployment.id, DeploymentStatus.DONE)
     except BaseException as e:
         log_exception(e)

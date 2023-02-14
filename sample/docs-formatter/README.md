@@ -1,5 +1,5 @@
 # Docs Formatter
-This is the exemplary Fatman using ASGI webview feature.
+This is the exemplary Job using ASGI webview feature.
 
 Go to `/api/v1/webview` endpoint to see the frontend application
 formatting Markdown document as an input and rendering it on a webview.

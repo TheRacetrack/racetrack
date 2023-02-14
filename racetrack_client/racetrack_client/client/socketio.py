@@ -19,7 +19,7 @@ class LogsConsumer:
         Consumer of log lines stream.
         :param url: base URL of Socket.IO server
         :param socketio_path: The endpoint where the Socket.IO server is installed.
-        :param resource_properties: metadata of a resource being monitored (properties to identify a Fatman)
+        :param resource_properties: metadata of a resource being monitored (properties to identify a Job)
         :param on_next_line: callback function called whenever a new line is consumed.
         """
         self.url = url

@@ -1,13 +1,15 @@
-name: python-chain
+name: python-ui-flask
 owner_email: sample@example.com
 lang: python3:latest
-version: 0.0.2
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
-  directory: sample/python-chain
+  directory: sample/python-ui-flask
 
 python:
   requirements_path: 'requirements.txt'
   entrypoint_path: 'entrypoint.py'
-  entrypoint_class: 'FatmanEntrypoint'
+  entrypoint_class: 'JobEntrypoint'
+
+public_endpoints:
+  - '/api/v1/webview'

@@ -1,7 +1,7 @@
 import pytest
 import httpretty
 
-from lifecycle.monitor.health import check_until_fatman_is_operational
+from lifecycle.monitor.health import check_until_job_is_operational
 
 _base_url = 'http://localhost'
 
@@ -23,7 +23,7 @@ def test_liveness_readiness_fine():
         content_type='application/json',
     )
 
-    check_until_fatman_is_operational(_base_url, deployment_timestamp=1000)
+    check_until_job_is_operational(_base_url, deployment_timestamp=1000)
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
@@ -44,6 +44,6 @@ def test_liveness_error():
     )
 
     with pytest.raises(Exception) as excinfo:
-        check_until_fatman_is_operational(_base_url, deployment_timestamp=1000)
+        check_until_job_is_operational(_base_url, deployment_timestamp=1000)
     assert 'you have no power here' in str(excinfo.value)
-    assert 'Fatman initialization error' in str(excinfo.value)
+    assert 'Job initialization error' in str(excinfo.value)

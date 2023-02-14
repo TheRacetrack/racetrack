@@ -1,7 +1,7 @@
 from typing import List
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def perform(self, numbers: List[float]) -> float:
         """
         Add numbers.

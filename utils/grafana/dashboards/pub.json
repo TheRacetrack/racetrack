@@ -143,10 +143,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_requests{fatman_name=~\"$fatman_name\"}[5m])) by (fatman_name, fatman_version)",
+          "expr": "sum(irate(pub_job_proxy_requests{job_name=~\"$job_name\"}[5m])) by (job_name, job_version)",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{job_name}} {{job_version}}",
           "range": true,
           "refId": "B"
         }
@@ -239,9 +239,9 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "sum(pub_fatman_proxy_requests_started{fatman_name=~\"$fatman_name\"} - pub_fatman_proxy_requests_done{fatman_name=~\"$fatman_name\"}) by (fatman_name, fatman_version)",
+          "expr": "sum(pub_job_proxy_requests_started{job_name=~\"$job_name\"} - pub_job_proxy_requests_done{job_name=~\"$job_name\"}) by (job_name, job_version)",
           "interval": "",
-          "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{job_name}} {{job_version}}",
           "refId": "A"
         }
       ],
@@ -366,7 +366,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(idelta(pub_fatman_call_response_time_histogram_bucket{fatman_name=~\"$fatman_name\"}[5m])) by (le)",
+          "expr": "sum(idelta(pub_job_call_response_time_histogram_bucket{job_name=~\"$job_name\"}[5m])) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -452,7 +452,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "sum(pub_fatman_call_response_time_histogram_bucket{fatman_name=~\"$fatman_name\"}) by (le)",
+          "expr": "sum(pub_job_call_response_time_histogram_bucket{job_name=~\"$job_name\"}) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -555,9 +555,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "(sum(pub_fatman_call_response_time{fatman_name=~\"$fatman_name\"}) by (fatman_name, fatman_version)) / (sum(pub_fatman_proxy_requests_done{fatman_name=~\"$fatman_name\"}) by (fatman_name, fatman_version))",
+          "expr": "(sum(pub_job_call_response_time{job_name=~\"$job_name\"}) by (job_name, job_version)) / (sum(pub_job_proxy_requests_done{job_name=~\"$job_name\"}) by (job_name, job_version))",
           "interval": "",
-          "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{job_name}} {{job_version}}",
           "range": true,
           "refId": "A"
         }
@@ -695,9 +695,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_response_codes{status_code=\"200\",fatman_name=~\"$fatman_name\"}[5m])) by (status_code, fatman_name, fatman_version)",
+          "expr": "sum(irate(pub_job_proxy_response_codes{status_code=\"200\",job_name=~\"$job_name\"}[5m])) by (status_code, job_name, job_version)",
           "interval": "",
-          "legendFormat": "{{status_code}} - {{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{status_code}} - {{job_name}} {{job_version}}",
           "range": true,
           "refId": "A"
         },
@@ -708,10 +708,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_response_codes{status_code!=\"200\",fatman_name=~\"$fatman_name\"}[5m])) by (status_code, fatman_name, fatman_version)",
+          "expr": "sum(irate(pub_job_proxy_response_codes{status_code!=\"200\",job_name=~\"$job_name\"}[5m])) by (status_code, job_name, job_version)",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{status_code}} - {{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{status_code}} - {{job_name}} {{job_version}}",
           "range": true,
           "refId": "B"
         }
@@ -821,9 +821,9 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "sum(pub_fatman_proxy_response_codes{fatman_name=~\"$fatman_name\"}) by (status_code, fatman_name, fatman_version)",
+          "expr": "sum(pub_job_proxy_response_codes{job_name=~\"$job_name\"}) by (status_code, job_name, job_version)",
           "interval": "",
-          "legendFormat": "{{status_code}} - {{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{status_code}} - {{job_name}} {{job_version}}",
           "refId": "A"
         }
       ],
@@ -960,7 +960,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_errors[5m]))",
+          "expr": "sum(irate(pub_job_proxy_errors[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "reverse proxy errors",
@@ -988,10 +988,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_requests[5m]))",
+          "expr": "sum(irate(pub_job_proxy_requests[5m]))",
           "hide": false,
           "interval": "",
-          "legendFormat": "total fatman proxy rate",
+          "legendFormat": "total job proxy rate",
           "range": true,
           "refId": "H"
         },
@@ -1002,7 +1002,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(irate(pub_fatman_proxy_request_errors[5m]))",
+          "expr": "sum(irate(pub_job_proxy_request_errors[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "proxy request errors",
@@ -1106,9 +1106,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(pub_overall_fatman_proxy_response_time[5m])) / sum(increase(pub_fatman_proxy_requests[5m]))",
+          "expr": "sum(increase(pub_overall_job_proxy_response_time[5m])) / sum(increase(pub_job_proxy_requests[5m]))",
           "interval": "",
-          "legendFormat": "overall Fatman proxy",
+          "legendFormat": "overall Job proxy",
           "range": true,
           "refId": "A"
         },
@@ -1119,7 +1119,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(pub_lifecycle_call_time[5m])) / sum(increase(pub_fatman_proxy_requests[5m]))",
+          "expr": "sum(increase(pub_lifecycle_call_time[5m])) / sum(increase(pub_job_proxy_requests[5m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "lifecycle calls",
@@ -1133,10 +1133,10 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(pub_fatman_call_response_time[5m])) / sum(increase(pub_fatman_proxy_requests[5m]))",
+          "expr": "sum(increase(pub_job_call_response_time[5m])) / sum(increase(pub_job_proxy_requests[5m]))",
           "hide": false,
           "interval": "",
-          "legendFormat": "fatman call",
+          "legendFormat": "job call",
           "range": true,
           "refId": "C"
         }
@@ -1419,15 +1419,15 @@
           "type": "prometheus",
           "uid": "PBFA97CFB590B2093"
         },
-        "definition": "label_values(pub_fatman_proxy_requests, fatman_name)",
+        "definition": "label_values(pub_job_proxy_requests, job_name)",
         "hide": 0,
         "includeAll": true,
-        "label": "fatman_name",
+        "label": "job_name",
         "multi": false,
-        "name": "fatman_name",
+        "name": "job_name",
         "options": [],
         "query": {
-          "query": "label_values(pub_fatman_proxy_requests, fatman_name)",
+          "query": "label_values(pub_job_proxy_requests, job_name)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,

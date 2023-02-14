@@ -566,7 +566,7 @@
           "expr": "image_building_requests_total{job=\"image-builder\"}",
           "hide": false,
           "interval": "",
-          "legendFormat": "requests of {{fatman_name}} {{fatman_version}}",
+          "legendFormat": "requests of {{job_name}} {{job_version}}",
           "refId": "D"
         },
         {
@@ -767,7 +767,7 @@
           "exemplar": true,
           "expr": "image_building_request_duration_seconds_total{job=\"image-builder\"} / image_building_done_requests_total{job=\"image-builder\"}",
           "interval": "",
-          "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{job_name}} {{job_version}}",
           "refId": "A"
         }
       ],
@@ -864,7 +864,7 @@
           "exemplar": true,
           "expr": "images_pushed_duration_total{job=\"image-builder\"} / images_pushed_total{job=\"image-builder\"}",
           "interval": "",
-          "legendFormat": "{{fatman_name}} {{fatman_version}}",
+          "legendFormat": "{{job_name}} {{job_version}}",
           "refId": "A"
         }
       ],

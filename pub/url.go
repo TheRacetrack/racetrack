@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-// Returns target proxy URL for fatman, which is accessed at urlPath
-func TargetURL(cfg *Config, fatman *FatmanDetails, urlPath string) url.URL {
+// Returns target proxy URL for job, which is accessed at urlPath
+func TargetURL(cfg *Config, job *JobDetails, urlPath string) url.URL {
 	return url.URL{
 		Scheme: cfg.ForwardToProtocol,
-		Host:   fatman.InternalName,
+		Host:   job.InternalName,
 		Path:   urlPath,
 	}
 }

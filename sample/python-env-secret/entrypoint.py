@@ -2,7 +2,7 @@ import random
 import os
 
 
-class FatmanEntrypoint:
+class JobEntrypoint:
     def __init__(self):
         self.model = os.environ['TORCH_MODEL_ZOO']
 
