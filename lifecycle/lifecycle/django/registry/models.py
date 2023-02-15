@@ -12,11 +12,11 @@ def new_uuid() -> str:
     return str(uuid.uuid4())
 
 
-class FatmanFamily(models.Model):
-    """Collection of Fatmen generations with the same name (family name)"""
+class JobFamily(models.Model):
+    """Collection of Jobs generations with the same name (family name)"""
     class Meta:
         app_label = 'registry'
-        verbose_name_plural = "Fatman families"
+        verbose_name_plural = "Job families"
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
     name = models.CharField(max_length=512, unique=True)
@@ -25,14 +25,14 @@ class FatmanFamily(models.Model):
         return f'{self.name}'
 
 
-class Fatman(models.Model):
+class Job(models.Model):
     class Meta:
         app_label = 'registry'
         unique_together = (('name', 'version'),)
-        verbose_name_plural = "Fatmen"
+        verbose_name_plural = "Jobs"
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
-    family = models.ForeignKey(FatmanFamily, on_delete=models.CASCADE)
+    family = models.ForeignKey(JobFamily, on_delete=models.CASCADE)
     name = models.CharField(max_length=512)
     version = models.CharField(max_length=256)
     status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in JobStatus])
@@ -64,8 +64,8 @@ class Deployment(models.Model):
     create_time = models.DateTimeField(default=now)
     update_time = models.DateTimeField(default=now)
     manifest = models.TextField()
-    fatman_name = models.CharField(max_length=512)
-    fatman_version = models.CharField(max_length=256)
+    job_name = models.CharField(max_length=512)
+    job_version = models.CharField(max_length=256)
     error = models.TextField(null=True, blank=True)
     deployed_by = models.CharField(max_length=256, null=True)
     build_logs = models.TextField(null=True, blank=True)
@@ -96,18 +96,18 @@ class PublicEndpointRequest(models.Model):
         verbose_name_plural = 'Public endpoint requests'
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
-    fatman = models.ForeignKey(Fatman, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=512)
     active = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.fatman} {self.endpoint}'
+        return f'{self.job} {self.endpoint}'
 
 
-class TrashFatman(models.Model):
+class TrashJob(models.Model):
     class Meta:
         app_label = 'registry'
-        verbose_name_plural = "Trash Fatmen"
+        verbose_name_plural = "Trash Jobs"
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
     name = models.CharField(max_length=512)
@@ -137,8 +137,8 @@ class AuditLogEvent(models.Model):
     properties = models.TextField(null=True)
     username_executor = models.CharField(max_length=512, null=True)
     username_subject = models.CharField(max_length=512, null=True)
-    fatman_name = models.CharField(max_length=512, null=True)
-    fatman_version = models.CharField(max_length=256, null=True)
+    job_name = models.CharField(max_length=512, null=True)
+    job_version = models.CharField(max_length=256, null=True)
 
 
 class AuthSubject(models.Model):
@@ -149,7 +149,7 @@ class AuthSubject(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     esc = models.ForeignKey(Esc, on_delete=models.CASCADE, null=True, blank=True)
-    fatman_family = models.ForeignKey(FatmanFamily, on_delete=models.CASCADE, null=True, blank=True)
+    job_family = models.ForeignKey(JobFamily, on_delete=models.CASCADE, null=True, blank=True)
 
     token = models.CharField(max_length=1024)
     expiry_time = models.DateTimeField(null=True, blank=True)
@@ -160,8 +160,8 @@ class AuthSubject(models.Model):
             return f'User: {self.user}'
         if self.esc is not None:
             return f'ESC: {self.esc}'
-        if self.fatman_family is not None:
-            return f'Fatman Family: {self.fatman_family}'
+        if self.job_family is not None:
+            return f'Job Family: {self.job_family}'
         return f'{self.id}'
 
     def subject_type(self) -> str:
@@ -169,8 +169,8 @@ class AuthSubject(models.Model):
             return 'User'
         if self.esc is not None:
             return 'ESC'
-        if self.fatman_family is not None:
-            return 'Fatman Family'
+        if self.job_family is not None:
+            return 'Job Family'
         return 'Unknown'
 
 
@@ -181,7 +181,7 @@ class AuthResourcePermission(models.Model):
     auth_subject = models.ForeignKey(AuthSubject, on_delete=models.CASCADE)
     # operation permitted to the subject
     scope = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in AuthScope])
-    # resource-scope: anything, fatman-family, fatman, endpoint
-    fatman_family = models.ForeignKey(FatmanFamily, on_delete=models.CASCADE, null=True, blank=True)
-    fatman = models.ForeignKey(Fatman, on_delete=models.CASCADE, null=True, blank=True)
+    # resource-scope: anything, job family, job, endpoint
+    job_family = models.ForeignKey(JobFamily, on_delete=models.CASCADE, null=True, blank=True)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, null=True, blank=True)
     endpoint = models.CharField(max_length=256, null=True, blank=True)

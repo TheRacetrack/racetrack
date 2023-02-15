@@ -14,22 +14,22 @@ logger = get_logger(__name__)
 
 
 @db_access
-def list_job_models() -> Iterable[models.Fatman]:
+def list_job_models() -> Iterable[models.Job]:
     """List deployed jobs stored in registry database"""
-    return models.Fatman.objects.all().order_by('-update_time', 'name')
+    return models.Job.objects.all().order_by('-update_time', 'name')
 
 
 @db_access
-def list_job_family_models() -> Iterable[models.FatmanFamily]:
+def list_job_family_models() -> Iterable[models.JobFamily]:
     """List deployed job families stored in registry database"""
-    return models.FatmanFamily.objects.all().order_by('name')
+    return models.JobFamily.objects.all().order_by('name')
 
 
 @db_access
-def read_job_model(job_name: str, job_version: str) -> models.Fatman:
+def read_job_model(job_name: str, job_version: str) -> models.Job:
     try:
-        return models.Fatman.objects.get(name=job_name, version=job_version)
-    except models.Fatman.DoesNotExist:
+        return models.Job.objects.get(name=job_name, version=job_version)
+    except models.Job.DoesNotExist:
         raise EntityNotFound(f'Job with name {job_name} and version {job_version} was not found')
 
 
@@ -49,7 +49,7 @@ def job_family_exists(job_name: str) -> bool:
         return False
 
 
-def resolve_job_model(job_name: str, job_version: str) -> models.Fatman:
+def resolve_job_model(job_name: str, job_version: str) -> models.Job:
     """
     Find job by name and version, accepting version aliases
     :param job_version: Exact job version or an alias ("latest" or wildcard)
@@ -64,11 +64,11 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Fatman:
 
 
 @db_access
-def read_latest_job_model(job_name: str) -> models.Fatman:
-    job_queryset = models.Fatman.objects.filter(name=job_name)
+def read_latest_job_model(job_name: str) -> models.Job:
+    job_queryset = models.Job.objects.filter(name=job_name)
     if job_queryset.count() == 0:
         raise EntityNotFound(f'No job named {job_name}')
-    jobs: List[models.Fatman] = list(job_queryset)
+    jobs: List[models.Job] = list(job_queryset)
 
     latest_job = SemanticVersion.find_latest_stable(jobs, key=lambda f: f.version)
     if latest_job is None:
@@ -78,16 +78,16 @@ def read_latest_job_model(job_name: str) -> models.Fatman:
 
 
 @db_access
-def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> models.Fatman:
+def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> models.Job:
     """
     :param version_wildcard: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
     """
     version_pattern = SemanticVersionPattern(version_wildcard)
 
-    job_queryset = models.Fatman.objects.filter(name=job_name)
+    job_queryset = models.Job.objects.filter(name=job_name)
     if job_queryset.count() == 0:
         raise EntityNotFound(f'No job named {job_name}')
-    jobs: List[models.Fatman] = list(job_queryset)
+    jobs: List[models.Job] = list(job_queryset)
 
     latest_job = SemanticVersion.find_latest_wildcard(version_pattern, jobs, key=lambda f: f.version)
     if latest_job is None:
@@ -97,22 +97,22 @@ def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> mode
 
 
 @db_access
-def read_job_family_model(job_family: str) -> models.FatmanFamily:
+def read_job_family_model(job_family: str) -> models.JobFamily:
     try:
-        return models.FatmanFamily.objects.get(name=job_family)
-    except models.FatmanFamily.DoesNotExist:
+        return models.JobFamily.objects.get(name=job_family)
+    except models.JobFamily.DoesNotExist:
         raise EntityNotFound(f'Job Family with name {job_family} was not found')
 
 
 @db_access
 def delete_job_model(job_name: str, job_version: str):
-    models.Fatman.objects.get(name=job_name, version=job_version).delete()
+    models.Job.objects.get(name=job_name, version=job_version).delete()
 
 
 @db_access
-def create_job_model(job_dto: JobDto) -> models.Fatman:
+def create_job_model(job_dto: JobDto) -> models.Job:
     job_family = create_job_family_if_not_exist(job_dto.name)
-    new_job = models.Fatman(
+    new_job = models.Job(
         name=job_dto.name,
         version=job_dto.version,
         family=job_family,
@@ -131,8 +131,8 @@ def create_job_model(job_dto: JobDto) -> models.Fatman:
 
 
 @db_access
-def create_job_family_model(job_family_dto: JobFamilyDto) -> models.FatmanFamily:
-    new_model = models.FatmanFamily(
+def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
+    new_model = models.JobFamily(
         name=job_family_dto.name,
     )
     new_model.save()
@@ -141,7 +141,7 @@ def create_job_family_model(job_family_dto: JobFamilyDto) -> models.FatmanFamily
 
 
 @db_access
-def update_job_model(job: models.Fatman, job_dto: JobDto):
+def update_job_model(job: models.Job, job_dto: JobDto):
     job.status = job_dto.status
     job.update_time = timestamp_to_datetime(job_dto.update_time)
     job.manifest = datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None
@@ -155,7 +155,7 @@ def update_job_model(job: models.Fatman, job_dto: JobDto):
 
 
 @db_access
-def save_job_model(job_dto: JobDto) -> models.Fatman:
+def save_job_model(job_dto: JobDto) -> models.Job:
     """Create or update existing job"""
     try:
         job_model = read_job_model(job_dto.name, job_dto.version)
@@ -166,7 +166,7 @@ def save_job_model(job_dto: JobDto) -> models.Fatman:
 
 
 @db_access
-def create_job_family_if_not_exist(job_family: str) -> models.FatmanFamily:
+def create_job_family_if_not_exist(job_family: str) -> models.JobFamily:
     try:
         return read_job_family_model(job_family)
     except EntityNotFound:
@@ -174,9 +174,9 @@ def create_job_family_if_not_exist(job_family: str) -> models.FatmanFamily:
 
 
 @db_access
-def create_trashed_job(job_dto: JobDto) -> models.TrashFatman:
+def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
     age_days = days_ago(job_dto.create_time)
-    new_job = models.TrashFatman(
+    new_job = models.TrashJob(
         id=job_dto.id,
         name=job_dto.name,
         version=job_dto.version,
@@ -201,8 +201,8 @@ def create_trashed_job(job_dto: JobDto) -> models.TrashFatman:
 def find_deleted_job(
     job_name: str,
     job_version: str,
-) -> Optional[models.TrashFatman]:
-    queryset = models.TrashFatman.objects.filter(
+) -> Optional[models.TrashJob]:
+    queryset = models.TrashJob.objects.filter(
         name=job_name, version=job_version,
     )
     if queryset.count() == 0:

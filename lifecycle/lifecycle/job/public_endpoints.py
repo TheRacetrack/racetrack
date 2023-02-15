@@ -20,7 +20,7 @@ def read_active_job_public_endpoints(
     resolved_version = job_model.version
 
     queryset = models.PublicEndpointRequest.objects.filter(
-        fatman__name=job_name, fatman__version=resolved_version, active=True
+        job__name=job_name, job__version=resolved_version, active=True
     )
     return [public_endpoint_request_model_to_dto(model) for model in queryset]
 
@@ -32,11 +32,11 @@ def create_job_public_endpoint_if_not_exist(
     job_model = read_job_model(job_name, job_version)
     try:
         return models.PublicEndpointRequest.objects.get(
-            fatman=job_model, endpoint=endpoint
+            job=job_model, endpoint=endpoint
         )
     except models.PublicEndpointRequest.DoesNotExist:
         new_model = models.PublicEndpointRequest(
-            fatman=job_model,
+            job=job_model,
             endpoint=endpoint,
             active=False,
         )
