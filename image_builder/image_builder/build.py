@@ -73,9 +73,11 @@ def build_job_image(
 
         if config.clean_up_workspaces:
             with wrap_context('cleaning up the workspace'):
+                update_deployment_phase(config, deployment_id, 'cleaning up the workspace')
                 if repo_dir.exists():
                     shutil.rmtree(repo_dir)
 
+        logger.info(f'finished building an image {manifest.name}, deployment ID: {deployment_id}')
         return image_names, logs, error
 
     finally:
