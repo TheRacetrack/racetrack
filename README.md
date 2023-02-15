@@ -62,7 +62,7 @@ And the result is a micro-service with an API:
 
 which can be monitored on a dashboard:
 
-![](docs/assets/dashboard-meowmeow.jpg)
+![](docs/assets/dashboard-example.png)
 
 or called with a curl command:
 
