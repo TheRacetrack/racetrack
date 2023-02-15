@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Dict
 
 import backoff
 
@@ -32,7 +32,7 @@ def check_until_job_is_operational(
 # this can have long timeout since any potential malfunction in here is not related to a model/entrypoint
 # but the cluster errors that shouldn't happen usually
 @backoff.on_exception(backoff.fibo, RuntimeError, max_value=3, max_time=360, jitter=None, logger=None)
-def wait_until_job_is_alive(base_url: str, deployment_timestamp: int) -> Response:
+def wait_until_job_is_alive(base_url: str, expected_deployment_timestamp: int) -> Response:
     """Wait until Job resource (pod or container) is up. This catches internal cluster errors"""
     try:
         response = Requests.get(f'{base_url}/live', timeout=3)
@@ -40,9 +40,10 @@ def wait_until_job_is_alive(base_url: str, deployment_timestamp: int) -> Respons
         raise RuntimeError(f"Cluster error: can't reach Job: {e}")
 
     # prevent from getting responses from the old, dying pod. Ensure new Job responds to probes
-    if deployment_timestamp and 'application/json' in response.headers['content-type']:
-        result = response.json()
-        if int(result.get('deployment_timestamp', 0)) != deployment_timestamp:
+    if expected_deployment_timestamp and 'application/json' in response.headers['content-type']:
+        result: Dict = response.json()
+        current_deployment_timestamp = int(result.get('deployment_timestamp') or 0)
+        if current_deployment_timestamp != expected_deployment_timestamp:
             raise RuntimeError("Cluster error: can't reach newer Job")
 
     return response

@@ -180,4 +180,4 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
 
 
 def _generate_job_map(jobs: Iterable[JobDto]) -> Dict[str, JobDto]:
-    return {job_resource_name(job_name, job_version): job for job in jobs}
+    return {job_resource_name(job.name, job.version): job for job in jobs}

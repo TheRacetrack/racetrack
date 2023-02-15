@@ -139,7 +139,7 @@ func ServeReverseProxy(
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobPath":    target.Path,
-			"status":        res.StatusCode,
+			"status":     res.StatusCode,
 		})
 		statusCode := strconv.Itoa(res.StatusCode)
 		metricJobProxyResponseCodes.WithLabelValues(job.Name, job.Version, statusCode).Inc()
@@ -152,17 +152,17 @@ func ServeReverseProxy(
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
-			"host":          target.Host,
-			"path":          target.Path,
-			"error":         errorStr,
+			"host":       target.Host,
+			"path":       target.Path,
+			"error":      errorStr,
 		})
 		c.JSON(http.StatusBadGateway, gin.H{
-			"error":         fmt.Sprintf("Reverse proxy error: %s", errorStr),
-			"status":        http.StatusText(http.StatusBadGateway),
+			"error":      fmt.Sprintf("Reverse proxy error: %s", errorStr),
+			"status":     http.StatusText(http.StatusBadGateway),
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
-			"requestId":     requestId,
+			"requestId":  requestId,
 		})
 		metricJobProxyErrors.Inc()
 	}

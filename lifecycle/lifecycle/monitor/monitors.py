@@ -24,7 +24,7 @@ def check_job_condition(job: JobDto, on_job_alive: Callable, plugin_engine: Plug
     """
     infrastructure = get_infrastructure_target(plugin_engine, job.infrastructure_target)
     infrastructure.job_monitor.check_job_condition(job, job.update_time,
-                                                         on_job_alive, logs_on_error=True)
+                                                   on_job_alive, logs_on_error=True)
 
 
 def read_recent_logs(job: JobDto, tail: int, plugin_engine: PluginEngine) -> str:

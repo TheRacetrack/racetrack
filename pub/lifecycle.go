@@ -29,8 +29,8 @@ type lifecycleErrorResponse struct {
 type PublicEndpointRequestDto struct {
 	JobName    string `json:"job_name"`
 	JobVersion string `json:"job_version"`
-	Endpoint      string `json:"endpoint"`
-	Active        bool   `json:"active"`
+	Endpoint   string `json:"endpoint"`
+	Active     bool   `json:"active"`
 }
 
 var JobNotFound = errors.New("job was not found")

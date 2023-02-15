@@ -11,23 +11,23 @@ import (
 
 func TestJobPathExtraction(t *testing.T) {
 	router := gin.Default()
-	router.GET(baseIngressPath + "/job/:job/:version/*path", func(c *gin.Context) {
+	router.GET(baseIngressPath+"/job/:job/:version/*path", func(c *gin.Context) {
 		job_name := c.Param("job")
 		job_version := c.Param("version")
 		job_path := c.Param("path")
 		c.JSON(http.StatusOK, gin.H{
-			"name": job_name,
-			"path": job_path,
+			"name":    job_name,
+			"path":    job_path,
 			"version": job_version,
 		})
 	})
-	router.GET(baseIngressPath + "/job/:job/:version", func(c *gin.Context) {
+	router.GET(baseIngressPath+"/job/:job/:version", func(c *gin.Context) {
 		job_name := c.Param("job")
 		job_version := c.Param("version")
 		job_path := c.Param("path")
 		c.JSON(http.StatusOK, gin.H{
-			"name": job_name,
-			"path": job_path,
+			"name":    job_name,
+			"path":    job_path,
 			"version": job_version,
 		})
 	})

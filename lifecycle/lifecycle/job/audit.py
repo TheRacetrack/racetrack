@@ -1,3 +1,4 @@
+from __future__ import annotations
 import json
 from typing import Dict, List, Optional
 
@@ -18,11 +19,11 @@ class AuditLogger:
     def log_event(
         self,
         event_type: AuditLogEventType,
-        properties: Dict = None,
-        username_executor: str = None,
-        username_subject: str = None,
-        job_name: str = None,
-        job_version: str = None,
+        properties: Dict | None = None,
+        username_executor: str | None = None,
+        username_subject: str | None = None,
+        job_name: str | None = None,
+        job_version: str | None = None,
     ):
         timestamp = now()
         properties_json = json.dumps(properties) if properties else None
