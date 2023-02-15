@@ -15,5 +15,5 @@
 **/go.sum
 
 .git
-**/.fatman.Dockerfile
+**/.job.Dockerfile
 **/log.out
