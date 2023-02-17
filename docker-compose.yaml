@@ -167,6 +167,9 @@ services:
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 30000
       CLIENT_IDLE_TIMEOUT: 90
+      SERVER_CONNECT_TIMEOUT: 5
+      CLIENT_LOGIN_TIMEOUT: 5
+      QUERY_WAIT_TIMEOUT: 10
       ADMIN_USERS: postgres,admin,racetrack
     logging:
       driver: none
