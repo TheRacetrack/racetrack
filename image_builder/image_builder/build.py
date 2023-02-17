@@ -78,6 +78,7 @@ def build_job_image(
                     shutil.rmtree(repo_dir)
 
         logger.info(f'finished building an image {manifest.name}, deployment ID: {deployment_id}')
+        update_deployment_phase(config, deployment_id, 'finalizing the build')
         return image_names, logs, error
 
     finally:
