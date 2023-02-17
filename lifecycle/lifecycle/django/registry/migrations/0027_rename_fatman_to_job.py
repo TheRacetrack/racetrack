@@ -4,12 +4,19 @@ from django.db import migrations, models
 
 def rename_fatman_to_job(apps, schema_editor):
     AuthResourcePermission = apps.get_model('registry', 'AuthResourcePermission')
+    AuditLogEvent = apps.get_model('registry', 'AuditLogEvent')
 
     # AuthResourcePermission: Rename AuthScope values
     for permission in AuthResourcePermission.objects.all():
         if 'fatman' in permission.scope:
             permission.scope = permission.scope.replace('fatman', 'job')
             permission.save()
+
+    # AuditLogEvent: Rename event_type values
+    for ale in AuditLogEvent.objects.all():
+        if 'fatman' in ale.event_type:
+            ale.event_type = ale.event_type.replace('fatman', 'job')
+            ale.save()
 
 
 class Migration(migrations.Migration):
