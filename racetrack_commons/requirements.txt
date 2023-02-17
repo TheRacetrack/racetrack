@@ -1,5 +1,4 @@
 prometheus-client==0.10.1
-werkzeug==2.0.2
 pydantic==1.10.2
 pyjwt[crypto]==2.5.0
 fastapi==0.88.0
