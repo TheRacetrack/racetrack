@@ -57,7 +57,7 @@
                         <td>{{ job.create_time | timestamp_to_iso8601 }}</td>
                         <td>{{ job.infrastructure_target }}</td>
                         <td>
-                            <button type="button" class="btn btn-danger button-delete-job" job.name="{{ job.name }}" job.version="{{ job.version }}">Delete</button>
+                            <button type="button" class="btn btn-danger button-delete-job" job-name="{{ job.name }}" job-version="{{ job.version }}">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
