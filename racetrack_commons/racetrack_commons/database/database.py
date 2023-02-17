@@ -32,9 +32,9 @@ def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
             'HOST': os.environ.get('POSTGRES_HOST'),
             'PORT': os.environ.get('POSTGRES_PORT'),
             'CONN_MAX_AGE': 60,
-            'STATEMENT_TIMEOUT': 5,
+            'STATEMENT_TIMEOUT': 10,
             'OPTIONS': {
-                'connect_timeout': 5,
+                'connect_timeout': 10,
             }
         }
     }
