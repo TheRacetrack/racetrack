@@ -29,8 +29,8 @@ def create_deployment(
         create_time=now(),
         update_time=now(),
         manifest=datamodel_to_yaml_str(manifest),
-        fatman_name=manifest.name,
-        fatman_version=manifest.version,
+        job_name=manifest.name,
+        job_version=manifest.version,
         deployed_by=username,
         infrastructure_target=infrastructure_target,
     )
@@ -42,8 +42,8 @@ def check_for_concurrent_deployments(manifest: Manifest):
     update_time_after = now() - timedelta(minutes=1)
     deployments_queryset = models.Deployment.objects.filter(
         status=DeploymentStatus.IN_PROGRESS.value,
-        fatman_name=manifest.name,
-        fatman_version=manifest.version,
+        job_name=manifest.name,
+        job_version=manifest.version,
         update_time__gte=update_time_after,
     )
 
@@ -62,7 +62,7 @@ def check_deployment_result(deploy_id: str, config: Config) -> DeploymentDto:
         dto = deployment_model_to_dto(deployment)
         if deployment.status == DeploymentStatus.DONE.value:
             try:
-                job_model = read_job_model(deployment.fatman_name, deployment.fatman_version)
+                job_model = read_job_model(deployment.job_name, deployment.job_version)
                 dto.job = job_model_to_dto(job_model, config)
             except EntityNotFound:
                 pass
