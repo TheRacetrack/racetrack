@@ -150,7 +150,7 @@ function invokePluginAction(actionName, endpoint, that, csrf_token) {
 $(".button-delete-plugin").click(function () {
     that = $(this);
     const objectDescription = that.attr('plugin-name') + ' ' + that.attr('plugin-version');
-    showModal("Delete Plugin", `Are you sure you want to delete plugin "${objectDescription}"?`, function () {
+    showModal("Delete Plugin", `Are you sure you want to delete a plugin "${objectDescription}"?`, function () {
         invokePluginAction('Deleting plugin', `plugin/delete`, that, '{{ csrf_token }}')
     });
 });
