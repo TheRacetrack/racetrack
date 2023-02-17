@@ -28,7 +28,7 @@ changes and/or source) is:
 | [backoff](https://pypi.org/project/backoff/)                        | 1.10.0 | 2.1.2 |
 | [Kubernetes Python Client](https://pypi.org/project/kubernetes/) | 12.0.1 | 23.6.0 |
 | [prometheus-client](https://pypi.org/project/prometheus-client/) | 0.10.1 | 0.14.1 |
-| [werkzeug](https://pypi.org/project/Werkzeug/) | 2.0.2 | 2.1.2 |
+| [werkzeug](https://pypi.org/project/Werkzeug/) | 2.2.3 | 2.2.3 |
 | [GitPython](https://pypi.org/project/GitPython/) | 3.1.14 | 3.1.27 |
 | [Python markdown](https://pypi.org/project/Markdown/) | 3.3.7 | 3.3.7 |
 | [FastAPI](https://github.com/tiangolo/fastapi) | 0.78.0 | 0.78.0 |
