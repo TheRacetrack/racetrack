@@ -144,28 +144,29 @@
 {% block javascript %}
 <script>
 $(".button-delete-job").click(function () {
-    that = $(this)
-    showModal("Delete Job", "Are you sure you want to delete this job?", function () {
+    that = $(this);
+    const objectDescription = that.attr('job-name') + ' ' + that.attr('job-version');
+    showModal("Delete Job", `Are you sure you want to delete job "${objectDescription}"?`, function () {
         invokeJobAction('Deleting job', 'delete-job', that, '{{ csrf_token }}')
     });
 });
 
 $(".button-redeploy-job").click(function () {
-    button = $(this)
-    jobId = button.attr('job-id')
-    parentButton = $(`#btnGroupRedeploy-${jobId}`)
-    showModal("Redeploy Job", "Are you sure you want to redeploy (rebuild and reprovision) this job?", function () {
+    button = $(this);
+    jobId = button.attr('job-id');
+    parentButton = $(`#btnGroupRedeploy-${jobId}`);
+    const objectDescription = parentButton.attr('job-name') + ' ' + parentButton.attr('job-version');
+    showModal("Redeploy Job", `Are you sure you want to redeploy (rebuild and reprovision) job "${objectDescription}"?`, function () {
         invokeJobAction('Redeploying job', 'redeploy-job', parentButton, '{{ csrf_token }}')
     });
 });
 
 $(".button-reprovision-job").click(function () {
-    button = $(this)
-    jobId = button.attr('job-id')
-    console.log('searching for', jobId)
-    parentButton = $(`#btnGroupRedeploy-${jobId}`)
-    console.log('job-name', parentButton.attr('job-name'))
-    showModal("Reprovision Job", "Are you sure you want to reprovision this job?", function () {
+    button = $(this);
+    jobId = button.attr('job-id');
+    parentButton = $(`#btnGroupRedeploy-${jobId}`);
+    const objectDescription = parentButton.attr('job-name') + ' ' + parentButton.attr('job-version');
+    showModal("Reprovision Job", `Are you sure you want to reprovision job "${objectDescription}"?`, function () {
         invokeJobAction('Reprovisioning job', 'reprovision-job', parentButton, '{{ csrf_token }}')
     });
 });
