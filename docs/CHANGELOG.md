@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.1] - 2023-02-20
 ### Changed
 - *Fatman* has been renamed to *Job* in all database tables, columns and values.
   For instance, scope `call_fatman` is now `call_job`.
