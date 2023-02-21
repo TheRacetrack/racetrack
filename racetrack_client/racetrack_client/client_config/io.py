@@ -42,5 +42,6 @@ def save_client_config(config: ClientConfig):
     dir_path.mkdir(parents=True, exist_ok=True)
     config_path = dir_path / 'config.yaml'
 
-    with open(config_path, 'w') as outfile:
-        yaml.dump(data_dict, outfile)
+    yaml_content = yaml.dump(data_dict)
+    config_path.write_text(yaml_content)
+    config_path.chmod(0o600)
