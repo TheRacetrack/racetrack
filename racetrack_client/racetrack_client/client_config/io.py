@@ -1,4 +1,5 @@
 from pathlib import Path
+import stat
 from typing import Dict, Optional
 
 import yaml
@@ -15,6 +16,8 @@ def load_client_config() -> ClientConfig:
     path = Path.home() / '.racetrack' / 'config.yaml'
     if not path.is_file():
         return ClientConfig()
+    
+    _check_file_mode(path)
 
     try:
         with path.open() as file:
@@ -41,7 +44,16 @@ def save_client_config(config: ClientConfig):
     dir_path = Path.home() / '.racetrack'
     dir_path.mkdir(parents=True, exist_ok=True)
     config_path = dir_path / 'config.yaml'
+    if not config_path.is_file():
+        config_path.touch(mode=0o600)
 
     yaml_content = yaml.dump(data_dict)
     config_path.write_text(yaml_content)
-    config_path.chmod(0o600)
+
+
+def _check_file_mode(config_path: Path):
+    file_mode = config_path.stat().st_mode
+    if file_mode & stat.S_IROTH:
+        logger.warning(f'Config file {config_path} is readable by others! Change permissions to 600.')
+    elif file_mode & stat.S_IRGRP:
+        logger.warning(f'Config file {config_path} is readable by group! Change permissions to 600.')
