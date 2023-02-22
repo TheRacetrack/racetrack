@@ -2,6 +2,9 @@ import logging
 import os
 from urllib.parse import quote
 
+from django.db.utils import OperationalError, InterfaceError
+
+from racetrack_client.log.context_error import ContextError
 from racetrack_client.utils.auth import RT_AUTH_HEADER
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 
@@ -24,7 +27,14 @@ class UserCookieMiddleWare(object):
             racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
             cookie_domain = f'{racetrack_subdomain}.{cookie_domain}'
 
-        if request.user.is_authenticated and not request.COOKIES.get(RT_AUTH_HEADER):
+        try:
+            user_authenticated = request.user.is_authenticated
+        except OperationalError as e:
+            raise ContextError("Database connection: OperationalError", e)
+        except InterfaceError as e:
+            raise ContextError("Database connection: InterfaceError", e)
+
+        if user_authenticated and not request.COOKIES.get(RT_AUTH_HEADER):
 
             auth_token = request.session.get(RT_SESSION_USER_AUTH_KEY)
             if auth_token is None:
@@ -47,7 +57,7 @@ class UserCookieMiddleWare(object):
                 httponly=True,  # prevents client-side JavaScript read access
                 secure=True)  # cookie is sent only when request is made with https (except on localhost)
 
-        elif not request.user.is_authenticated:
+        elif not user_authenticated:
             if request.COOKIES.get(RT_AUTH_HEADER):
                 response.delete_cookie(
                     key=RT_AUTH_HEADER,
