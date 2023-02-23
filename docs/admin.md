@@ -28,6 +28,9 @@ sets `Active` checkbox and clicks `Save`.
 Admin can change any user's password by going to Admin panel, `Users` tab, 
 selecting user, clicking "change the password using this form".
 
+#### Regenerating user's token
+Call endpoint POST `/api/v1/auth/token/user/<username>/regenerate`, where `<username>` is replaced with the desired user's name,
+to regenerate a user's token.
 
 ### Managing Job Portfolio
 
