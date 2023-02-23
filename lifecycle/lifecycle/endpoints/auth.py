@@ -80,7 +80,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         auth_subject = get_auth_subject_by_esc(esc_model)
         return {'token': auth_subject.token}
 
-    @api.post('/auth/token/user/{user}/regenerate')
+    @api.post('/auth/token/user/{username}/regenerate')
     def _generate_tokens_for_user(request: Request, username: str):
         """Generate new token for a User"""
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)

@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
@@ -135,12 +136,10 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
     else:
         raise ValueError("Unknown auth_subject type")
 
-def regenerate_user_token(uesrname: str):
-    auth_subject_queryset = models.AuthSubject.objects.filter(Q(user=username))
-    # TODO: Can I assume only one user of every username?
-    for auth_subject in auth_subject_queryset:
-        # TODO: This is unclean for the sake of matching the below, it shouldn't be a loop
-        regenerate_auth_token(auth_subject)
+def regenerate_user_token(username: str):
+    user = get_object_or_404(User, username=username)
+    auth_subject = get_auth_subject_by_user(user)
+    regenerate_auth_token(auth_subject)
     logger.info(f'Regenerated token of User {user}')
 
 def regenerate_all_user_tokens():
