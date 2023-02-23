@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Racetrack client keeps the local config file `~/.racetrack/config.yaml` with mode `600`
+  (not readable by others) and warns you if this file has insecure permissions
+  since it may contain credentials.
 
 ## [2.9.1] - 2023-02-20
 ### Changed
