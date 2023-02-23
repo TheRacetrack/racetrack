@@ -57,3 +57,7 @@ def _check_file_mode(config_path: Path):
         logger.warning(f'Config file {config_path} is readable by others! Change permissions to 600.')
     elif file_mode & stat.S_IRGRP:
         logger.warning(f'Config file {config_path} is readable by group! Change permissions to 600.')
+    elif file_mode & stat.S_IWOTH:
+        logger.warning(f'Config file {config_path} is writable by others! Change permissions to 600.')
+    elif file_mode & stat.S_IWGRP:
+        logger.warning(f'Config file {config_path} is writable by group! Change permissions to 600.')
