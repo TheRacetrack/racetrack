@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Racetrack client keeps the local config file `~/.racetrack/config.yaml` with mode `600`
   (not readable by others) and warns you if this file has insecure permissions
   since it may contain credentials.
+### Added
+- Endpoint `/api/v1/auth/token/user/<username>/regenerate` added to regenerate tokens on a per-user basis.
 
 ## [2.9.1] - 2023-02-20
 ### Changed
