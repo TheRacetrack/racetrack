@@ -79,6 +79,12 @@ $(".button-regen-token").click(function () {
         url: '{{ lifecycle_url }}/api/v1/auth/token/user/' + username + '/regenerate',
         type: 'post',
         cache: false,
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        headers: {
+            'X-Racetrack-Auth': '{{ user_auth }}'
+        },
         success: function(data) {
             showAlert('Success: Token regenerated', 'success');
         },

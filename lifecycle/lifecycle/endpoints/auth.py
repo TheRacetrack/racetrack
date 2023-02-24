@@ -83,8 +83,8 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
     @api.post('/auth/token/user/{username}/regenerate')
     def _generate_tokens_for_user(request: Request, username: str):
         """Generate new token for a User"""
-        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
-        regenerate_user_token(username)
+        auth_subject = check_auth(request, subject_types=[AuthSubjectType.USER])
+        regenerate_user_token(auth_subject)
 
     @api.post('/auth/token/user/regenerate')
     def _generate_tokens_for_all_users(request: Request):
