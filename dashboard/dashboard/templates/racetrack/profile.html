@@ -33,6 +33,7 @@
                 <div class="d-flex">
                     <input type="text" id="user-auth" class="form-control form-control-sm flex-fill" value="{{ user_auth }}" readonly>
                     <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'user-auth')">Copy</button>
+                    <button type="button" class="btn btn-outline-primary button-regen-token">Regenerate</button>
                 </div>
             </div>
 
@@ -71,6 +72,27 @@
 
 {% block javascript %}
 <script>
+$(".button-regen-token").click(function () {
+    var username = '{{ user }}'
+    console.log('Regenerate user token...');
+    $.ajax({
+        url: '{{ lifecycle_url }}/api/v1/auth/token/user/' + username + '/regenerate',
+        type: 'post',
+        cache: false,
+        success: function(data) {
+            showAlert('Success: Token regenerated', 'success');
+        },
+        error: function(xhr, status, error) {
+            if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) {
+                message = xhr.responseJSON.error;
+            } else {
+                message = xhr.statusText;
+            }
+            showAlert('Error: Regenerate Token' + ': ' + message, 'danger');
+        }
+    })
+});
+
 function copyToClipboard(e, btn, elementId) {
     e.preventDefault(); // prevent submit
     let str = document.getElementById(elementId);
