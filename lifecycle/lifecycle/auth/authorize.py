@@ -104,8 +104,8 @@ def has_endpoint_permission(
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    job_name_filter = Q(fatman_family__name=job_name) | Q(fatman_family__isnull=True)
-    job_version_filter = Q(fatman__version=job_version) | Q(fatman__isnull=True)
+    job_name_filter = Q(job_family__name=job_name) | Q(job_family__isnull=True)
+    job_version_filter = Q(job__version=job_version) | Q(job__isnull=True)
     endpoint_filter = Q(endpoint=endpoint) | Q(endpoint__isnull=True)
     resource_filter = job_name_filter & job_version_filter & endpoint_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
@@ -123,8 +123,8 @@ def has_resource_permission(
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
-    job_name_filter = Q(fatman_family__name=job_name) | Q(fatman_family__isnull=True)
-    job_version_filter = Q(fatman__version=job_version) | Q(fatman__isnull=True)
+    job_name_filter = Q(job_family__name=job_name) | Q(job_family__isnull=True)
+    job_version_filter = Q(job__version=job_version) | Q(job__isnull=True)
     resource_filter = job_name_filter & job_version_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
     queryset = models.AuthResourcePermission.objects.filter(
@@ -172,14 +172,14 @@ def list_permitted_jobs(
 
     job_ids = set()
     for permission in queryset: 
-        if permission.fatman_family is None and permission.fatman is None:
+        if permission.job_family is None and permission.job is None:
             return all_jobs
 
-        if permission.fatman is not None:
-            job_ids.add(f'{permission.fatman.name} v{permission.fatman.version}')
+        if permission.job is not None:
+            job_ids.add(f'{permission.job.name} v{permission.job.version}')
 
-        if permission.fatman_family is not None:
-            job_ids.update(family_to_ids[permission.fatman_family.name])
+        if permission.job_family is not None:
+            job_ids.update(family_to_ids[permission.job_family.name])
 
     return [id_to_job[fid] for fid in sorted(job_ids)]
 
@@ -203,11 +203,11 @@ def list_permitted_families(
     name_to_family = {f.name: f for f in all_families}
     family_names = set()
     for permission in queryset:
-        if permission.fatman_family is None and permission.fatman is None:
+        if permission.job_family is None and permission.job is None:
             return all_families
 
-        if permission.fatman_family is not None:
-            family_names.add(permission.fatman.name)
+        if permission.job_family is not None:
+            family_names.add(permission.job.name)
 
     return [name_to_family[name] for name in sorted(family_names)]
 
@@ -226,11 +226,11 @@ def grant_permission(
     subject_filter = Q(auth_subject=auth_subject)
     scope_filter = Q(scope=scope)
     if job_name and job_version:
-        resource_filter = Q(fatman__name=job_name, fatman__version=job_version)
+        resource_filter = Q(job__name=job_name, job__version=job_version)
     elif job_name:
-        resource_filter = Q(fatman_family__name=job_name, fatman__isnull=True)
+        resource_filter = Q(job_family__name=job_name, job__isnull=True)
     else:
-        resource_filter = Q(fatman_family__isnull=True, fatman__isnull=True)
+        resource_filter = Q(job_family__isnull=True, job__isnull=True)
 
     queryset = models.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter
@@ -240,18 +240,18 @@ def grant_permission(
         return
 
     if job_name and job_version:
-        job_model = models.Fatman.objects.get(name=job_name, version=job_version)
+        job_model = models.Job.objects.get(name=job_name, version=job_version)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            fatman=job_model,
+            job=job_model,
             scope=scope,
         )
         resource_description = f'job "{job_name} v{job_version}"'
     elif job_name:
-        job_family_model = models.FatmanFamily.objects.get(name=job_name)
+        job_family_model = models.JobFamily.objects.get(name=job_name)
         permission = models.AuthResourcePermission(
             auth_subject=auth_subject,
-            fatman_family=job_family_model,
+            job_family=job_family_model,
             scope=scope,
         )
         resource_description = f'job family "{job_name}"'

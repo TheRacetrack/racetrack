@@ -468,8 +468,7 @@ curl -X 'POST' \
 }'
 ```
 Then it won't work, because there's no auth data specified: 
-`Unauthenticated: no header X-Racetrack-Esc-Auth, X-Racetrack-Job-Auth or 
-X-Racetrack-Auth: not logged in`
+`Unauthenticated: no header X-Racetrack-Auth: not logged in`
 
 You will need to include it in curl using `-H 'X-Racetrack-Auth: <token>`.
 

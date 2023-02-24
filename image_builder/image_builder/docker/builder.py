@@ -109,7 +109,7 @@ def _build_job_image(
         dockerfile_path = workspace / manifest.docker.dockerfile_path
     else:
         with wrap_context(f'templating Dockerfile {progress}'):
-            dockerfile_path = workspace / f'.fatman-{image_index}.Dockerfile'
+            dockerfile_path = workspace / f'.job-{image_index}.Dockerfile'
             racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
             template_dockerfile(manifest, template_path, dockerfile_path, base_image,
                                 git_version, racetrack_version, job_type.version, env_vars)

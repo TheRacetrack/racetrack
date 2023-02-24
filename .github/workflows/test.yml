@@ -45,5 +45,5 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v2.2.0
         with:
-          images: 'racetrack/lifecycle,racetrack/image-builder,racetrack/dashboard,racetrack/pub,postgres,localhost:5000/racetrack/fatman-entrypoint/adder'
+          images: 'racetrack/lifecycle,racetrack/image-builder,racetrack/dashboard,racetrack/pub,postgres,localhost:5000/racetrack/job-entrypoint/adder'
           tail: '1000'

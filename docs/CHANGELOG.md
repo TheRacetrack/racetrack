@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Deletion pop-up contains the name of the job to confirm that you're about to delete the right one.
 
+### Changed
+- Racetrack client keeps the local config file `~/.racetrack/config.yaml` with mode `600`
+  (not readable by others) and warns you if this file has insecure permissions
+  since it may contain credentials.
+
+## [2.9.1] - 2023-02-20
+### Changed
+- *Fatman* has been renamed to *Job* in all database tables, columns and values.
+  For instance, scope `call_fatman` is now `call_job`.
+
 ## [2.9.0] - 2023-02-14
 ### Added
 - Deployment phases, shown by a racetrack client, are more granular,
