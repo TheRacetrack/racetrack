@@ -146,7 +146,7 @@
 $(".button-delete-job").click(function () {
     that = $(this);
     const objectDescription = that.attr('job-name') + ' ' + that.attr('job-version');
-    showModal("Delete Job", `Are you sure you want to delete a job "${objectDescription}"?`, function () {
+    showModal("Delete Job", `Are you sure you want to delete the job "${objectDescription}"?`, function () {
         invokeJobAction('Deleting job', 'delete-job', that, '{{ csrf_token }}')
     });
 });
