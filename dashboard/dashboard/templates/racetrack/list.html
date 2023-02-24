@@ -156,7 +156,7 @@ $(".button-redeploy-job").click(function () {
     jobId = button.attr('job-id');
     parentButton = $(`#btnGroupRedeploy-${jobId}`);
     const objectDescription = parentButton.attr('job-name') + ' ' + parentButton.attr('job-version');
-    showModal("Redeploy Job", `Are you sure you want to redeploy a job "${objectDescription}" (rebuild and reprovision)?`, function () {
+    showModal("Redeploy Job", `Are you sure you want to redeploy the job "${objectDescription}" (rebuild and reprovision)?`, function () {
         invokeJobAction('Redeploying job', 'redeploy-job', parentButton, '{{ csrf_token }}')
     });
 });
