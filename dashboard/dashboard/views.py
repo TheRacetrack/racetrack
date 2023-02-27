@@ -22,6 +22,7 @@ from racetrack_commons.entities.audit_client import AuditClient
 from racetrack_commons.entities.dto import AuditLogEventDto, JobDto
 from racetrack_commons.entities.job_client import JobRegistryClient
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
+from racetrack_commons.entities.users_client import UserRegistryClient
 from racetrack_commons.urls import get_external_pub_url
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 from dashboard.purge import enrich_jobs_purge_info
@@ -117,6 +118,16 @@ def user_profile(request):
 
     return render(request, 'racetrack/profile.html', context)
 
+@login_required
+def regenerate_user_token(request, username: str):
+    try:
+        client = UserRegistryClient(auth_token=get_auth_token(request))
+        client.regen_user_token(username)
+    except Exception as e:
+        log_exception(ContextError('Regenerating user token failed', e))
+        return JsonResponse({'error': str(e)}, status=500)
+
+    return HttpResponse(status=200)
 
 @login_required
 def view_administration(request):

@@ -136,10 +136,8 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
     else:
         raise ValueError("Unknown auth_subject type")
 
-def regenerate_user_token(username: str):
-    user = get_object_or_404(User, username=username)
-    auth_subject = get_auth_subject_by_user(user)
-    regenerate_auth_token(auth_subject)
+def regenerate_specific_user_token(user: User):
+    regenerate_auth_token(user)
     logger.info(f'Regenerated token of User {user}')
 
 def regenerate_all_user_tokens():
