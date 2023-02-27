@@ -21,7 +21,7 @@ datasources:
     graphiteVersion: "1.1"
     tlsAuth: false
     tlsAuthWithCACert: false
-    timeInterval: '5s'
+    timeInterval: '1m'
   version: 1
   # <bool> allow users to edit datasources from the UI.
   editable: true

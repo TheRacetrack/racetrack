@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 2,
+  "id": 3,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -142,7 +142,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(idelta(requested_job_deployments_total[5m]))",
+          "expr": "sum(idelta(requested_job_deployments_total[$__rate_interval]))",
           "hide": false,
           "interval": "",
           "legendFormat": "growth: requested deployments",
@@ -326,6 +326,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 3,
+  "version": 2,
   "weekStart": ""
 }
