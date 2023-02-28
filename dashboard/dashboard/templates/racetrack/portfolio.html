@@ -57,7 +57,7 @@
                         <td>{{ job.create_time | timestamp_to_iso8601 }}</td>
                         <td>{{ job.infrastructure_target }}</td>
                         <td>
-                            <button type="button" class="btn btn-danger button-delete-job" job.name="{{ job.name }}" job.version="{{ job.version }}">Delete</button>
+                            <button type="button" class="btn btn-danger button-delete-job" job-name="{{ job.name }}" job-version="{{ job.version }}">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -75,7 +75,8 @@
 <script>
 $(".button-delete-job").click(function () {
     that = $(this)
-    showModal("Delete Job", "Are you sure you want to delete this job?", function () {
+    const objectDescription = that.attr('job-name') + ' ' + that.attr('job-version');
+    showModal("Delete Job", `Are you sure you want to delete the job "${objectDescription}"?`, function () {
         invokeJobAction('Deleting job', 'delete-job', that, '{{ csrf_token }}')
     });
 });
