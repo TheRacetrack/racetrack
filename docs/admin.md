@@ -28,10 +28,6 @@ sets `Active` checkbox and clicks `Save`.
 Admin can change any user's password by going to Admin panel, `Users` tab, 
 selecting user, clicking "change the password using this form".
 
-#### Regenerating user's token
-Call endpoint POST `/api/v1/auth/token/user/<username>/regenerate`, where `<username>` is replaced with the desired user's name,
-to regenerate a user's token.
-
 ### Managing Job Portfolio
 
 #### Audit Log
@@ -167,7 +163,7 @@ In this case, once the migration is done, do the following:
 - Exec into the `lifecycle-supervisor` pod/container
 - Run `python -m lifecycle generate-auth admin` to create a valid Auth token for you. Copy it.
 - Go to Lifecycle-Supervisor or Lifecycle API page (`/lifecycle`) and Authorize with your Racetrack Auth Token.
-- Call endpoints `POST /api/v1/auth/token/user/regenerate` and `POST /api/v1/auth/token/job_family/regenerate`
+- Call endpoints `POST /api/v1/auth/token/user/all/regenerate` and `POST /api/v1/auth/token/job_family/regenerate`
   to recreate valid signatures for the tokens.
 
 ### Plugins Volume
