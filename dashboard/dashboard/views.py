@@ -119,10 +119,10 @@ def user_profile(request):
     return render(request, 'racetrack/profile.html', context)
 
 @login_required
-def regenerate_user_token(request, username: str):
+def regenerate_user_token(request):
     try:
         client = UserRegistryClient(auth_token=get_auth_token(request))
-        client.regen_user_token(username)
+        client.regen_user_token()
     except Exception as e:
         log_exception(ContextError('Regenerating user token failed', e))
         return JsonResponse({'error': str(e)}, status=500)

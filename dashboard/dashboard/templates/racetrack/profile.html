@@ -76,7 +76,7 @@ $(".button-regen-token").click(function () {
     var username = '{{ user }}'
     console.log('Regenerate user token...');
     $.ajax({
-        url: '/dashboard/api/auth/user/' + username + '/token/regenerate',
+        url: '/dashboard/api/auth/token/user/regenerate',
         type: 'post',
         cache: false,
         data: {
