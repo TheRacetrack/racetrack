@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
@@ -135,6 +136,10 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
     else:
         raise ValueError("Unknown auth_subject type")
 
+def regenerate_specific_user_token(auth_subject: models.AuthSubject) -> str:
+    regenerate_auth_token(auth_subject)
+    logger.info(f'Regenerated token of User {auth_subject.user.username}')
+    return auth_subject.token
 
 def regenerate_all_user_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(user__isnull=False))

@@ -27,4 +27,5 @@ urlpatterns = [
     path('plugin/config-editor/<plugin_name>/<plugin_version>', views.plugin_config_editor, name='plugin_config_editor'),
     path('api/plugin/delete/<plugin_name>/<plugin_version>', views.delete_plugin, name='delete_plugin'),
     path('api/plugin/write-config/<plugin_name>/<plugin_version>', views.write_plugin_config, name='write_plugin_config'),
+    path('api/auth/token/user/regenerate', views.regenerate_user_token, name='regenerate_user_token'),
 ]

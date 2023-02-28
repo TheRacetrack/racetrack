@@ -18,3 +18,7 @@ class UserRegistryClient:
         username_encoded = quote_plus(username)
         response = self.lc_client.request_dict('post', f'/api/v1/users/{username_encoded}/profile')
         return parse_dict_datamodel(response, UserProfileDto)
+
+    def regen_user_token(self) -> str:
+        response = self.lc_client.request('post', f'/api/v1/auth/token/user/regenerate')
+        return response
