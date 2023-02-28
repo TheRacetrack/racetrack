@@ -122,7 +122,8 @@ def user_profile(request):
 def regenerate_user_token(request):
     try:
         client = UserRegistryClient(auth_token=get_auth_token(request))
-        client.regen_user_token()
+        new_token = client.regen_user_token()
+        request.session[RT_SESSION_USER_AUTH_KEY] = new_token
     except Exception as e:
         log_exception(ContextError('Regenerating user token failed', e))
         return JsonResponse({'error': str(e)}, status=500)

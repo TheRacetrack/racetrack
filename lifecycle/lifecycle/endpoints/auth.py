@@ -81,10 +81,10 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         return {'token': auth_subject.token}
 
     @api.post('/auth/token/user/regenerate')
-    def _generate_tokens_for_user(request: Request):
+    def _generate_tokens_for_user(request: Request) -> str:
         """Generate new token for a User"""
         auth_subject = check_auth(request, subject_types=[AuthSubjectType.USER])
-        regenerate_specific_user_token(auth_subject)
+        return regenerate_specific_user_token(auth_subject)
 
     @api.post('/auth/token/user/all/regenerate')
     def _generate_tokens_for_all_users(request: Request):
