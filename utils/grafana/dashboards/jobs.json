@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 2,
+  "id": 6,
   "links": [],
   "liveNow": true,
   "panels": [
@@ -431,7 +431,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} or vector(0)) - sum(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} offset 1m or vector(0))",
+          "expr": "sum by (job_name, job_version, endpoint)(idelta(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) > 0",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}} {{endpoint}}",
@@ -1387,7 +1387,7 @@
       {
         "allValue": ".+",
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "All",
           "value": "$__all"
         },
@@ -1464,6 +1464,6 @@
   "timezone": "",
   "title": "Jobs",
   "uid": "KZoFMs_nz",
-  "version": 9,
+  "version": 3,
   "weekStart": ""
 }
