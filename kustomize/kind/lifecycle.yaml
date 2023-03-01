@@ -15,6 +15,8 @@ spec:
       labels:
         app.kubernetes.io/name: lifecycle
     spec:
+      hostname: lifecycle
+      subdomain: lifecycle
       serviceAccountName: null
       priorityClassName: high-priority
       initContainers:

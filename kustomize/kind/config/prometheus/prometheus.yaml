@@ -13,23 +13,29 @@ scrape_configs:
   - job_name: lifecycle
     scheme: http
     metrics_path: /metrics
-    static_configs:
-      - targets:
-          - "lifecycle:7002"
+    dns_sd_configs:
+      - names: 
+          - 'lifecycle.lifecycle.racetrack.svc'
+        type: A
+        port: 7002
 
   - job_name: image-builder
     scheme: http
     metrics_path: /metrics
-    static_configs:
-      - targets:
-          - "image-builder:7001"
+    dns_sd_configs:
+      - names: 
+          - 'image-builder.image-builder.racetrack.svc'
+        type: A
+        port: 7001
 
   - job_name: pub
     scheme: http
     metrics_path: /metrics
-    static_configs:
-      - targets:
-          - "pub:7005"
+    dns_sd_configs:
+      - names: 
+          - 'pub.pub.racetrack.svc'
+        type: A
+        port: 7005
 
   - job_name: racetrack-jobs
     scheme: http

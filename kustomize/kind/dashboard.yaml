@@ -15,6 +15,8 @@ spec:
       labels:
         app.kubernetes.io/name: dashboard
     spec:
+      hostname: dashboard
+      subdomain: dashboard
       priorityClassName: high-priority
       containers:
         - name: dashboard

@@ -15,6 +15,8 @@ spec:
       labels:
         app.kubernetes.io/name: image-builder
     spec:
+      hostname: image-builder
+      subdomain: image-builder
       priorityClassName: high-priority
       containers:
         - name: image-builder
