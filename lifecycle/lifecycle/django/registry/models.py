@@ -45,6 +45,7 @@ class Job(models.Model):
     deployed_by = models.CharField(max_length=256, null=True)  # points to git_credentials.username
     last_call_time = models.DateTimeField(null=True, blank=True)
     infrastructure_target = models.CharField(max_length=256, null=True)
+    replica_internal_names = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} v{self.version}'

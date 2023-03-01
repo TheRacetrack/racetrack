@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 from typing import Dict, Optional
 
@@ -38,6 +39,7 @@ class JobDto(BaseModel, arbitrary_types_allowed=True):
     deployed_by: Optional[str] = None
     last_call_time: Optional[int] = None
     infrastructure_target: Optional[str] = None
+    replica_internal_names: list[str] = []
 
     def __str__(self):
         return f'{self.name} v{self.version}'

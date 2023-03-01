@@ -170,6 +170,9 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
     if registry_job.internal_name != cluster_job.internal_name:
         registry_job.internal_name = cluster_job.internal_name
         changed = True
+    if registry_job.replica_internal_names != cluster_job.replica_internal_names:
+        registry_job.replica_internal_names = cluster_job.replica_internal_names
+        changed = True
     if cluster_job.last_call_time is not None:
         if registry_job.last_call_time is None or registry_job.last_call_time < cluster_job.last_call_time:
             registry_job.last_call_time = cluster_job.last_call_time
