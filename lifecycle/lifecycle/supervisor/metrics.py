@@ -33,7 +33,7 @@ def _build_job_config(job: JobDto) -> str:
     targets_yaml = _job_targets_yaml(job)  # one or more replicas
     return f"""
 - targets:
-'{targets_yaml}'
+{targets_yaml}
   labels:
     job: 'job-{job.name}-v-{job.version}'
     job_name: '{job.name}'
