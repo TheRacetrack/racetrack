@@ -115,7 +115,7 @@ metadata:
 data:
   db.sql: |
     -- should be the same as in postgres/init.sql --
-
+    CREATE SCHEMA IF NOT EXISTS racetrack AUTHORIZATION racetrack;
     CREATE USER racetrack WITH ENCRYPTED PASSWORD 'dev-25ZjbUDJH6MzmUR';
     GRANT ALL PRIVILEGES ON DATABASE racetrack TO racetrack;
 
