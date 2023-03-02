@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 6,
+  "id": 9,
   "links": [],
   "liveNow": true,
   "panels": [
@@ -250,6 +250,42 @@
                 "value": 233
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Endpoint"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 285
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Job version"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 171
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Job name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 341
+              }
+            ]
           }
         ]
       },
@@ -285,7 +321,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (job_name,job_version,endpoint)(idelta(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval]))",
+          "expr": "sum by (job_name,job_version,endpoint)(idelta(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) > 0",
           "format": "table",
           "hide": false,
           "instant": false,
@@ -825,7 +861,7 @@
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "sortBy": "Mean",
+          "sortBy": "Last *",
           "sortDesc": true
         },
         "tooltip": {
@@ -885,7 +921,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1387,7 +1423,7 @@
       {
         "allValue": ".+",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -1464,6 +1500,6 @@
   "timezone": "",
   "title": "Jobs",
   "uid": "KZoFMs_nz",
-  "version": 3,
+  "version": 2,
   "weekStart": ""
 }

@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 5,
+  "id": 8,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -329,7 +329,7 @@
           "mode": "scheme",
           "reverse": false,
           "scale": "exponential",
-          "scheme": "Inferno",
+          "scheme": "OrRd",
           "steps": 128
         },
         "exemplars": {
@@ -1463,6 +1463,6 @@
   "timezone": "",
   "title": "PUB",
   "uid": "Ya0SU7Lnk",
-  "version": 4,
+  "version": 2,
   "weekStart": ""
 }
