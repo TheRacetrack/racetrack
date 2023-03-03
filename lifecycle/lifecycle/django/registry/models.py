@@ -42,9 +42,11 @@ class Job(models.Model):
     internal_name = models.CharField(max_length=512, null=True, blank=True)
     error = models.TextField(null=True, blank=True)
     image_tag = models.CharField(max_length=256, null=True)
-    deployed_by = models.CharField(max_length=256, null=True)  # points to git_credentials.username
+    deployed_by = models.CharField(max_length=256, null=True)
     last_call_time = models.DateTimeField(null=True, blank=True)
     infrastructure_target = models.CharField(max_length=256, null=True)
+    # internal hostnames of the job replicas (eg. pods)
+    replica_internal_names = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} v{self.version}'

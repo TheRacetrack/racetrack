@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 7,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -69,7 +69,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -137,7 +137,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "irate(process_cpu_seconds_total{job=\"image-builder\"}[5m])",
+          "expr": "irate(process_cpu_seconds_total{job=\"image-builder\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "{{instance}}",
           "range": true,
@@ -164,7 +164,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -323,7 +323,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -490,7 +490,6 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "total building requests",
                   "requests growth"
                 ],
                 "prefix": "All except:",
@@ -550,11 +549,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
           "expr": "sum(image_building_requests_total{job=\"image-builder\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "total building requests",
+          "range": true,
           "refId": "C"
         },
         {
@@ -574,11 +575,13 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(increase(image_building_requests_total{job=\"image-builder\"}[1m]))",
+          "expr": "sum(idelta(image_building_requests_total{job=\"image-builder\"}[$__rate_interval]))",
           "hide": false,
           "interval": "",
           "legendFormat": "requests growth",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -667,10 +670,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "images_buidling_errors_total{job=\"image-builder\"}",
+          "expr": "sum(images_buidling_errors_total{job=\"image-builder\"})",
           "interval": "",
           "legendFormat": "total errors",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1065,10 +1070,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "active_building_tasks{job=\"image-builder\"}",
+          "expr": "sum(active_building_tasks{job=\"image-builder\"})",
           "interval": "",
           "legendFormat": "active image-building tasks",
+          "range": true,
           "refId": "A"
         }
       ],

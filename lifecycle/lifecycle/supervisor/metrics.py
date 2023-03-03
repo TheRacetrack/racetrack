@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 
 from lifecycle.config import Config
@@ -29,11 +30,20 @@ def populate_metrics_jobs(config: Config):
 
 
 def _build_job_config(job: JobDto) -> str:
+    targets_yaml = _job_targets_yaml(job)  # one or more replicas
     return f"""
 - targets:
-    - '{job.internal_name}'
+{targets_yaml}
   labels:
     job: 'job-{job.name}-v-{job.version}'
     job_name: '{job.name}'
     job_version: '{job.version}'
     """.strip()
+
+
+def _job_targets_yaml(job: JobDto) -> str:
+    if job.replica_internal_names:
+        targets = job.replica_internal_names
+    else:
+        targets = [job.internal_name]
+    return '\n'.join([f'    - "{target}"' for target in targets])
