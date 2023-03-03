@@ -81,3 +81,13 @@ class Quantity:
     def plain_number(self) -> float:
         """Convert quantity to a plain number without any suffixes"""
         return self.base_number * self._suffix_multipliers[self.suffix]
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if v is None:
+            return None
+        return Quantity(str(v))
