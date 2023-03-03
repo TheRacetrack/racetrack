@@ -39,6 +39,7 @@ class JobDto(BaseModel, arbitrary_types_allowed=True):
     deployed_by: Optional[str] = None
     last_call_time: Optional[int] = None
     infrastructure_target: Optional[str] = None
+    # internal hostnames of the job replicas (eg. pods)
     replica_internal_names: list[str] = []
 
     def __str__(self):
