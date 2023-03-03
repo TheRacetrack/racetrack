@@ -91,3 +91,9 @@ class Quantity:
         if v is None:
             return None
         return Quantity(str(v))
+
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        field_schema.update(
+            examples=["128974848", "129M", "128974848000m", "123Mi", "0.129G"],
+        )
