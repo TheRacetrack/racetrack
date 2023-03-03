@@ -5,34 +5,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.0] - 2023-03-03
 ### Added
 - Deletion pop-up contains the name of the job to confirm that you're about to delete the right one.
+  [issue #176](https://github.com/TheRacetrack/racetrack/issues/176)
+- Button added to the profile page that lets you regenerate your authentication token.
+  [issue #139](https://github.com/TheRacetrack/racetrack/issues/139)
 
 ### Changed
 - Racetrack client keeps the local config file `~/.racetrack/config.yaml` with mode `600`
   (not readable by others) and warns you if this file has insecure permissions
   since it may contain credentials.
-### Added
-- Button added to the profile page that lets you regenerate your authentication token.
+  [issue #179](https://github.com/TheRacetrack/racetrack/issues/179)
 
 ## [2.9.1] - 2023-02-20
 ### Changed
 - *Fatman* has been renamed to *Job* in all database tables, columns and values.
   For instance, scope `call_fatman` is now `call_job`.
+  [issue #162](https://github.com/TheRacetrack/racetrack/issues/162)
 
 ## [2.9.0] - 2023-02-14
 ### Added
 - Deployment phases, shown by a racetrack client, are more granular,
   including image building steps.
+  [issue #145](https://github.com/TheRacetrack/racetrack/issues/145)
 - Racetrack comes with standalone Prometheus and Grafana.
   It contains dedicated dashboards for monitoring the jobs and internal services.
+  [issue #144](https://github.com/TheRacetrack/racetrack/issues/144)
 - Database connection is being monitored closely by Lifecycle and displayed on a Grafana dashboard.
+  [issue #165](https://github.com/TheRacetrack/racetrack/issues/165)
 
 ### Changed
 - *Fatman* is renamed to *Job*.
   `fatman.yaml` is thus deprecated in favour of `job.yaml` file name.
   Although the endpoint for calling the Job has changed to `/pub/job/NAME/VERSION/PATH`,
   the old endpoint `/pub/fatman/NAME/VERSION/PATH` is still supported for backward compatibility.
+  [issue #136](https://github.com/TheRacetrack/racetrack/issues/136)
 
 ## [2.8.1] - 2023-01-27
 ### Changed

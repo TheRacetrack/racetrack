@@ -43,10 +43,19 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
    ```
    git checkout -b release-$VERSION
    ```
-1. Increment version with:
-    - `make version-bump-major` to bump major version.
-    - `make version-bump-minor` to bump minor version,
-    - or `make version-bump` to bump patch version, 
+1. Increment version:
+    - bump major version:
+      ```
+      make version-bump-major
+      ```
+    - bump minor version:
+      ```
+      make version-bump-minor
+      ```
+    - or bump patch version:
+      ```
+      make version-bump
+      ```
 1. Commit and push all changes from previous points:
    ```
    git commit -am "Release version $VERSION"
