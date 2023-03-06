@@ -84,6 +84,8 @@ class Quantity:
 
     @classmethod
     def __get_validators__(cls):
+        # Needed to make it compatible with pydantic's Custom Data Types
+        # https://docs.pydantic.dev/usage/types/#custom-data-types
         yield cls.validate
 
     @classmethod
@@ -94,6 +96,7 @@ class Quantity:
 
     @classmethod
     def __modify_schema__(cls, field_schema):
+        # Needed to make it compatible with pydantic's Custom Data Types
         field_schema.update(
             examples=["128974848", "129M", "128974848000m", "123Mi", "0.129G"],
         )
