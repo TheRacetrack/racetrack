@@ -30,7 +30,7 @@ def list_job_registry(config: Config, auth_subject: Optional[models.AuthSubject]
         return list_permitted_jobs(auth_subject, AuthScope.READ_JOB.value, jobs)
 
 
-def list_job_families(auth_subject: Optional[models.AuthSubject] = None) -> Iterable[JobFamilyDto]:
+def list_job_families(auth_subject: Optional[models.AuthSubject] = None) -> List[JobFamilyDto]:
     """List jobs getting results from registry (Database)"""
     if auth_subject is None:
         return [job_family_model_to_dto(family) for family in models_registry.list_job_family_models()]

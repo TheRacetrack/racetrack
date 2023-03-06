@@ -29,7 +29,8 @@ setup:
 	( cd lifecycle && make setup ) &&\
 	( cd image_builder && make setup ) &&\
 	( cd dashboard && make setup )
-	@echo Activate your venv: . venv/bin/activate
+	@echo Activate your venv:
+	@echo . venv/bin/activate
 
 setup-racetrack-client:
 	python3 -m venv venv &&\

@@ -25,7 +25,7 @@ RUN useradd -u 100000 -m racetrack &&\
     /home/racetrack/.local/lib/python3.9/site-packages
 
 # install kubectl
-RUN curl -L "https://dl.k8s.io/release/v1.24.3/bin/linux/amd64/kubectl" \
+RUN curl -L "https://dl.k8s.io/release/v1.26.2/bin/linux/amd64/kubectl" \
     -o /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
 
