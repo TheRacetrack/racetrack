@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Iterable, Dict, Optional, List
 from collections import defaultdict
 from lifecycle.auth.authorize import list_permitted_families, list_permitted_jobs
@@ -124,7 +125,7 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
         cluster_jobs = _generate_job_map(list_cluster_jobs(config, plugin_engine))
         registry_jobs = _generate_job_map(list_job_registry(config))
         logger.debug(f'Found {len(cluster_jobs)} jobs in the cluster, {len(registry_jobs)} in the database')
-        job_status_count: Dict[str, int] = defaultdict(int)
+        job_status_count: dict[str, int] = defaultdict(int)
 
         for job_id, registry_job in registry_jobs.items():
             if job_id in cluster_jobs:
@@ -144,7 +145,6 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
             if job_id not in registry_jobs:
                 logger.info(f'orphaned job found: {cluster_job}')
                 cluster_job.status = JobStatus.ORPHANED.value
-                models_registry.save_job_model(cluster_job)
                 job_status_count[cluster_job.status] += 1
 
         logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')

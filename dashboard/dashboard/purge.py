@@ -27,17 +27,14 @@ def assess_job_usability(job: JobDto, all_jobs: List[JobDto]) -> Tuple[float, Li
     score: float = 0
     reasons = []
 
-    if job.status == JobStatus.ORPHANED.value:
-        score -= 100
-        reasons.append('Orphaned job is most likely a useless remnant.')
-    elif job.status == JobStatus.LOST.value:
+    if job.status == JobStatus.LOST.value:
         score -= 50
         reasons.append('Job is lost - can\'t be found in a cluster. It should be redeployed or removed.')
     elif job.status == JobStatus.ERROR.value:
         score -= 20
         reasons.append('Job is failing. It should be fixed or removed.')
 
-    deployed_days_ago = days_ago(job.update_time)
+    deployed_days_ago = days_ago(job.update_time) or 0
     if deployed_days_ago >= 1:  # wait a day until we decide it was never called
         never_called = job.last_call_time is None or job.last_call_time == 0
         if never_called:
