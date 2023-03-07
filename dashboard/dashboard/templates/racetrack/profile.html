@@ -72,7 +72,10 @@
 
 {% block javascript %}
 <script>
+var auth = '{{ user_auth }}';
+
 $(".button-regen-token").click(function () {
+    var auth = getToken();
     var username = '{{ user }}'
     console.log('Regenerate user token...');
     $.ajax({
@@ -83,11 +86,12 @@ $(".button-regen-token").click(function () {
             csrfmiddlewaretoken: '{{ csrf_token }}'
         },
         headers: {
-            'X-Racetrack-Auth': '{{ user_auth }}'
+            'X-Racetrack-Auth': auth
         },
         success: function(data) {
+            refreshHTMLToken();
             showAlert('Success: Token regenerated', 'success');
-        },
+                    },
         error: function(xhr, status, error) {
             if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) {
                 message = xhr.responseJSON.error;
@@ -106,6 +110,39 @@ function copyToClipboard(e, btn, elementId) {
     document.execCommand('copy');
     btn.innerHTML = "Copied!";
     return false; // prevent submit
+}
+
+function getToken() {
+    $.ajax({
+        url: '/dashboard/api/auth/token/user/retrieve',
+        type: 'get',
+        cache: false,
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        headers: {
+            'X-Racetrack-Auth': auth
+        },
+        success: function(data) {
+            auth = data;
+                    },
+        error: function(xhr, status, error) {
+            if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) {
+                message = xhr.responseJSON.error;
+            } else {
+                message = xhr.statusText;
+            }
+            showAlert('Error: Refreshing token in webpage failed' + ': ' + message, 'danger');
+        }
+    })
+}
+
+function refreshHTMLToken() {
+    var tokenHTML = document.getElementById('user-auth');
+    var tokenExampleHTML = document.getElementById('racetrack-cli-login');
+    var newToken = getToken();
+    tokenHTML.value = auth;
+    tokenExampleHTML.value = "racetrack login --remote {{ lifecycle_url }}" + auth;
 }
 </script>
 {% endblock javascript %}
