@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   since it may contain credentials.
   [issue #179](https://github.com/TheRacetrack/racetrack/issues/179)
 
+### Fixed
+- Regenerating a user token via the button on your profile now no longer requires a refresh.
+
 ## [2.9.1] - 2023-02-20
 ### Changed
 - *Fatman* has been renamed to *Job* in all database tables, columns and values.
