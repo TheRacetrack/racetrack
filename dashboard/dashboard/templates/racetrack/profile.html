@@ -142,7 +142,7 @@ function refreshHTMLToken() {
     var tokenExampleHTML = document.getElementById('racetrack-cli-login');
     var newToken = getToken();
     tokenHTML.value = auth;
-    tokenExampleHTML.value = "racetrack login --remote {{ lifecycle_url }}" + auth;
+    tokenExampleHTML.value = "racetrack login --remote {{ lifecycle_url }} " + auth;
 }
 </script>
 {% endblock javascript %}
