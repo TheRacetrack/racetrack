@@ -73,7 +73,6 @@
 {% block javascript %}
 <script>
 $(".button-regen-token").click(function () {
-    var username = '{{ user }}'
     console.log('Regenerate user token...');
     $.ajax({
         url: '/dashboard/api/auth/token/user/regenerate',
@@ -83,11 +82,12 @@ $(".button-regen-token").click(function () {
             csrfmiddlewaretoken: '{{ csrf_token }}'
         },
         headers: {
-            'X-Racetrack-Auth': '{{ user_auth }}'
+            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ user_auth }}'
         },
         success: function(data) {
+            refreshTokenInHTML();
             showAlert('Success: Token regenerated', 'success');
-        },
+                    },
         error: function(xhr, status, error) {
             if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) {
                 message = xhr.responseJSON.error;
@@ -106,6 +106,36 @@ function copyToClipboard(e, btn, elementId) {
     document.execCommand('copy');
     btn.innerHTML = "Copied!";
     return false; // prevent submit
+}
+
+function refreshTokenInHTML() {
+    $.ajax({
+        url: '/dashboard/api/auth/token/user/retrieve',
+        type: 'get',
+        cache: false,
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        headers: {
+            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ user_auth }}'
+        },
+        success: function(data) {
+            localStorage.setItem('auth_token', data);
+            var tokenHTML = document.getElementById('user-auth');
+            var tokenExampleHTML = document.getElementById('racetrack-cli-login');
+            var newToken = localStorage.getItem('auth_token');
+            tokenHTML.value = newToken;
+            tokenExampleHTML.value = "racetrack login --remote {{ lifecycle_url }} " + newToken;
+                    },
+        error: function(xhr, status, error) {
+            if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) {
+                message = xhr.responseJSON.error;
+            } else {
+                message = xhr.statusText;
+            }
+            showAlert('Error: Refreshing token in webpage failed. You should manually refresh the page' + ': ' + message, 'danger');
+        }
+    })
 }
 </script>
 {% endblock javascript %}
