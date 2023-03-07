@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Regenerating a user token via the button on your profile now no longer requires a refresh.
 
 ## [2.10.0] - 2023-03-03
 ### Added
@@ -18,9 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (not readable by others) and warns you if this file has insecure permissions
   since it may contain credentials.
   [issue #179](https://github.com/TheRacetrack/racetrack/issues/179)
-
-### Fixed
-- Regenerating a user token via the button on your profile now no longer requires a refresh.
 
 ## [2.9.1] - 2023-02-20
 ### Changed
