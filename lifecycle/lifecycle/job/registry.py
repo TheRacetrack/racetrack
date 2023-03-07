@@ -119,7 +119,13 @@ def decommission_job_infrastructure(
 
 
 def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
-    """Synchronize job stored in registry and confront it with Kubernetes source of truth"""
+    """
+    Synchronize jobs stored in the database registry and confront it with Kubernetes source of truth.
+    It compares expected list of jobs with the actual state. In particular:
+    - it probes every job and updates its status to RUNNING or ERROR.
+    - if the job is expected to be present, but was not found in a cluster, it gets LOST status.
+    - if there are extra jobs found in the cluster, called "orphans", they are ignored, but the log warning is written.
+    """
     logger.info("Synchronizing jobs")
 
     with wrap_context('synchronizing job'):
