@@ -72,11 +72,7 @@
 
 {% block javascript %}
 <script>
-var auth = '{{ user_auth }}';
-
 $(".button-regen-token").click(function () {
-    var auth = getToken();
-    var username = '{{ user }}'
     console.log('Regenerate user token...');
     $.ajax({
         url: '/dashboard/api/auth/token/user/regenerate',
@@ -86,10 +82,10 @@ $(".button-regen-token").click(function () {
             csrfmiddlewaretoken: '{{ csrf_token }}'
         },
         headers: {
-            'X-Racetrack-Auth': auth
+            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ user_auth }}'
         },
         success: function(data) {
-            refreshHTMLToken();
+            refreshTokenInHTML();
             showAlert('Success: Token regenerated', 'success');
                     },
         error: function(xhr, status, error) {
@@ -112,7 +108,7 @@ function copyToClipboard(e, btn, elementId) {
     return false; // prevent submit
 }
 
-function getToken() {
+function refreshTokenInHTML() {
     $.ajax({
         url: '/dashboard/api/auth/token/user/retrieve',
         type: 'get',
@@ -121,10 +117,15 @@ function getToken() {
             csrfmiddlewaretoken: '{{ csrf_token }}'
         },
         headers: {
-            'X-Racetrack-Auth': auth
+            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ user_auth }}'
         },
         success: function(data) {
-            auth = data;
+            localStorage.setItem('auth_token', data);
+            var tokenHTML = document.getElementById('user-auth');
+            var tokenExampleHTML = document.getElementById('racetrack-cli-login');
+            var newToken = localStorage.getItem('auth_token');
+            tokenHTML.value = newToken;
+            tokenExampleHTML.value = "racetrack login --remote {{ lifecycle_url }} " + newToken;
                     },
         error: function(xhr, status, error) {
             if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) {
@@ -132,17 +133,9 @@ function getToken() {
             } else {
                 message = xhr.statusText;
             }
-            showAlert('Error: Refreshing token in webpage failed' + ': ' + message, 'danger');
+            showAlert('Error: Refreshing token in webpage failed. You should manually refresh the page' + ': ' + message, 'danger');
         }
     })
-}
-
-function refreshHTMLToken() {
-    var tokenHTML = document.getElementById('user-auth');
-    var tokenExampleHTML = document.getElementById('racetrack-cli-login');
-    var newToken = getToken();
-    tokenHTML.value = auth;
-    tokenExampleHTML.value = "racetrack login --remote {{ lifecycle_url }} " + auth;
 }
 </script>
 {% endblock javascript %}
