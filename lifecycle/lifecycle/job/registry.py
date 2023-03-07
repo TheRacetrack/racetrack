@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, Dict, Optional, List
+from typing import Iterable, Optional, List
 from collections import defaultdict
 from lifecycle.auth.authorize import list_permitted_families, list_permitted_jobs
 
@@ -185,5 +185,5 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
         models_registry.save_job_model(registry_job)
 
 
-def _generate_job_map(jobs: Iterable[JobDto]) -> Dict[str, JobDto]:
+def _generate_job_map(jobs: Iterable[JobDto]) -> dict[str, JobDto]:
     return {job_resource_name(job.name, job.version): job for job in jobs}
