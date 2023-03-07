@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 3,
+  "id": 4,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -142,7 +142,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(idelta(requested_job_deployments_total[$__rate_interval]))",
+          "expr": "sum(idelta(requested_job_deployments_total[$__rate_interval]) > 0)",
           "hide": false,
           "interval": "",
           "legendFormat": "growth: requested deployments",
@@ -184,7 +184,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(idelta(deployed_job_total[$__rate_interval]))",
+          "expr": "sum(idelta(deployed_job_total[$__rate_interval]) > 0)",
           "hide": false,
           "interval": "",
           "legendFormat": "growth: successful deployments",
@@ -308,6 +308,110 @@
         }
       ],
       "title": "Database connection",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "jobs_count_by_status",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{status}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Jobs by status",
       "type": "timeseries"
     }
   ],

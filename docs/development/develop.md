@@ -149,6 +149,8 @@ Jobs are deployed as k8s pods, and should be managed as such.
 | PUB                  | 7005                | 7105                   | 7205              |
 | Lifecycle Supervisor | 7006                | 7106                   | 7202              |
 | postgres             | 5432                | 5532                   | --- (1)           |
+| Prometheus           | 9090                | 9192                   |                   |
+| Grafana              | 3000                | 3100                   |                   |
 
 (1) - none as Postgres is not run on localhost
 
