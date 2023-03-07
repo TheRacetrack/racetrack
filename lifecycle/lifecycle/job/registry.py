@@ -9,6 +9,7 @@ from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.dto_converter import job_model_to_dto, job_family_model_to_dto
 from lifecycle.monitor.monitors import list_cluster_jobs
+from lifecycle.server.metrics import metric_jobs_count_by_status
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.scope import AuthScope
@@ -143,11 +144,13 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
         # Orphans - job missing in registry but present in cluster
         for job_id, cluster_job in cluster_jobs.items():
             if job_id not in registry_jobs:
-                logger.info(f'orphaned job found: {cluster_job}')
                 cluster_job.status = JobStatus.ORPHANED.value
                 job_status_count[cluster_job.status] += 1
+                logger.warning(f'orphaned job found: {cluster_job}, internal name: {cluster_job.internal_name}')
 
-        logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')
+    logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')
+    for status in JobStatus:
+        metric_jobs_count_by_status.labels(status=status.value).set(job_status_count[status.value])
 
 
 def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
