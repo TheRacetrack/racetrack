@@ -123,7 +123,7 @@ def retrieve_user_token(request):
     try:
         token = get_auth_token(request)
     except Exception as e:
-        log_exception(ContextError('Regenerating user token failed', e))
+        log_exception(ContextError('Retrieving user token failed', e))
         return JsonResponse({'error': str(e)}, status=500)
 
     return HttpResponse(status=200, content=token)
