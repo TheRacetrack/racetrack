@@ -22,7 +22,7 @@ from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.deploy.image import get_job_image
 from racetrack_commons.deploy.job_type import load_job_type
 from racetrack_commons.entities.audit import AuditLogEventType
-from racetrack_commons.entities.dto import DeploymentDto, JobDto
+from racetrack_commons.entities.dto import DeploymentDto, JobDto, JobStatus
 
 logger = get_logger(__name__)
 
@@ -80,6 +80,9 @@ def provision_job(
         save_deployment_phase(deployment.id, 'post-deploy hooks')
         post_job_deploy(manifest, job, image_name, deployment,
                            auth_subject, previous_job, plugin_engine)
+
+    job.status = JobStatus.RUNNING.value
+    save_job_model(job)
 
     metric_deployed_job.inc()
     logger.info(f'job {manifest.name} v{manifest.version} has been provisioned, deployment ID: {deployment.id}')

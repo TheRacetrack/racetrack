@@ -4,20 +4,27 @@ import os
 from django.conf import settings
 from django.db import connection, close_old_connections
 from django.db.utils import OperationalError
-from prometheus_client import Counter
+from prometheus_client import Counter, Gauge
 from prometheus_client.core import REGISTRY
+from prometheus_client.registry import Collector
 from prometheus_client.metrics_core import GaugeMetricFamily
 
 
 metric_requested_job_deployments = Counter('requested_job_deployments', 'Number of requests to deploy job')
 metric_deployed_job = Counter('deployed_job', 'Number of Jobs deployed successfully')
 
+metric_jobs_count_by_status = Gauge(
+    "jobs_count_by_status",
+    "Number of jobs with a particular status",
+    labelnames=['status'],
+)
+
 
 def setup_lifecycle_metrics():
     REGISTRY.register(DatabaseConnectionCollector())
 
 
-class DatabaseConnectionCollector:
+class DatabaseConnectionCollector(Collector):
     def collect(self):
         metric_name = 'lifecycle_database_connected'
         metric_value = 1 if is_database_connected() else 0
