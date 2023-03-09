@@ -35,16 +35,25 @@ def load_job_type(
     with wrap_context('gathering available job types'):
         job_types = gather_job_types(plugin_engine)
     assert job_types, f'language {lang} is not supported here. No job type plugins are currently installed to Racetrack.'
+    all_languages = sorted(job_types.keys())
+    selected_version = match_job_type_version(lang, all_languages)
+    return job_types[selected_version]
 
-    all_versions = sorted(job_types.keys())
-    if SemanticVersionPattern.is_asterisk_wildcard_pattern(lang):
-        version_pattern = SemanticVersionPattern.from_asterisk_pattern(lang)
-        matching_version: str | None = SemanticVersion.find_latest_wildcard(version_pattern, all_versions, key=lambda v: v)
-        assert matching_version is not None, f'language pattern "{lang}" doesn\'t match any of the supported versions: {all_versions}'
-        return job_types[matching_version]
+
+def match_job_type_version(lang: str, all_languages: list[str]) -> str:
+    lang_split = lang.split(':')
+    assert len(lang_split) == 2, f'job type should be specified as "name:version", got "{lang}"'
+    lang_name = lang_split[0]
+    lang_version = lang_split[1]
+    if SemanticVersionPattern.is_asterisk_wildcard_pattern(lang_version):
+        all_versions = [v.split(':')[1] for v in all_languages if v.startswith(lang_name + ':')]
+        version_pattern = SemanticVersionPattern.from_asterisk_pattern(lang_version)
+        matching_version = SemanticVersion.find_latest_wildcard(version_pattern, all_versions, key=lambda v: v, only_stable=False)
+        assert matching_version is not None, f'language pattern "{lang}" doesn\'t match any of the supported versions: {all_languages}'
+        return f'{lang_name}:{matching_version}'
     else:
-        assert lang in job_types, f'language {lang} is not supported, supported are: {all_versions}'
-        return job_types[lang]
+        assert lang in all_languages, f'language {lang} is not supported, supported are: {all_languages}'
+        return lang
     
 
 def gather_job_types(

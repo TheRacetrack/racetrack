@@ -138,6 +138,7 @@ def test_valid_semver_asterisk_pattern():
     assert SemanticVersionPattern.is_asterisk_wildcard_pattern('*')
     assert SemanticVersionPattern.is_asterisk_wildcard_pattern('1.0.0-*')
     assert SemanticVersionPattern.is_asterisk_wildcard_pattern('1.*-dev')
+    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('2.6.*')
 
 
 def test_invalid_semver_x_pattern():
