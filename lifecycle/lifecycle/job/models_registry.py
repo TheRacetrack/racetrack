@@ -57,7 +57,7 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Job:
     """
     if job_version == 'latest':
         return read_latest_job_model(job_name)
-    elif SemanticVersionPattern.is_wildcard_pattern(job_version):
+    elif SemanticVersionPattern.is_x_wildcard_pattern(job_version):
         return read_latest_wildcard_job_model(job_name, job_version)
     else:
         return read_job_model(job_name, job_version)
@@ -82,7 +82,7 @@ def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> mode
     """
     :param version_wildcard: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
     """
-    version_pattern = SemanticVersionPattern(version_wildcard)
+    version_pattern = SemanticVersionPattern.from_x_pattern(version_wildcard)
 
     job_queryset = models.Job.objects.filter(name=job_name)
     if job_queryset.count() == 0:

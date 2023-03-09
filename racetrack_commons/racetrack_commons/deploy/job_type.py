@@ -7,7 +7,7 @@ from typing import Union
 import backoff
 
 from racetrack_client.log.context_error import wrap_context
-from racetrack_client.utils.semver import SemanticVersion
+from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 
@@ -35,9 +35,17 @@ def load_job_type(
     with wrap_context('gathering available job types'):
         job_types = gather_job_types(plugin_engine)
     assert job_types, f'language {lang} is not supported here. No job type plugins are currently installed to Racetrack.'
-    assert lang in job_types, f'language {lang} is not supported, supported are: {sorted(job_types.keys())}'
-    return job_types[lang]
 
+    all_versions = sorted(job_types.keys())
+    if SemanticVersionPattern.is_asterisk_wildcard_pattern(lang):
+        version_pattern = SemanticVersionPattern.from_asterisk_pattern(lang)
+        matching_version: str | None = SemanticVersion.find_latest_wildcard(version_pattern, all_versions, key=lambda v: v)
+        assert matching_version is not None, f'language pattern "{lang}" doesn\'t match any of the supported versions: {all_versions}'
+        return job_types[matching_version]
+    else:
+        assert lang in job_types, f'language {lang} is not supported, supported are: {all_versions}'
+        return job_types[lang]
+    
 
 def gather_job_types(
     plugin_engine: PluginEngine,
