@@ -41,12 +41,17 @@ def load_job_type(
 
 
 def match_job_type_version(lang: str, all_languages: list[str]) -> str:
-    """Find job type version with the exact name or matching the wildcard pattern"""
+    """
+    Find job type by either:
+    - exact name and version
+    - wildcard pattern with "*"
+    - latest tag: "name:latest"
+    """
     lang_split = lang.split(':')
     assert len(lang_split) == 2, f'job type should be specified as "name:version", got "{lang}"'
     lang_name = lang_split[0]
     lang_version = lang_split[1]
-    
+
     if lang_version == 'latest':
         lang_versions = [v.split(':')[1] for v in all_languages if v.startswith(lang_name + ':')]
         lang_versions.sort(key=lambda v: SemanticVersion(v))
