@@ -24,7 +24,7 @@ from racetrack_commons.entities.job_client import JobRegistryClient
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 from racetrack_commons.entities.users_client import UserRegistryClient
 from racetrack_commons.urls import get_external_pub_url
-from dashboard.dashboard.middleware import set_auth_token_cookie
+from dashboard.middleware import set_auth_token_cookie
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 from dashboard.purge import enrich_jobs_purge_info
 from dashboard.utils import login_required, remove_ansi_sequences
