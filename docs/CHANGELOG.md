@@ -5,8 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.10.1] - 2023-03-10
+### Added
+- Grafana's "Lifecycle" dashboard now includes
+  a new panel that tracks the number of jobs with the particular status.
+
+### Changed
+- "Orhpaned" jobs are no longer adopted by Racetrack.
+  This was causing spurious "Lost" status after all.
+  [issue #163](https://github.com/TheRacetrack/racetrack/issues/163),
+  [issue #134](https://github.com/TheRacetrack/racetrack/issues/134)
+- Third-party dependencies have been upgraded.
+
 ### Fixed
 - Regenerating a user token via the button on your profile now no longer requires a refresh.
+  [issue #188](https://github.com/TheRacetrack/racetrack/issues/188)
 
 ## [2.10.0] - 2023-03-03
 ### Added
