@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- When specifying a job type version, wildcards can be used.
+  For instance, `mllab:1.3.*-3.9-bullseye` to subscribe for the latest patches
+  or `mllab:1.*.*-3.9-bullseye` if you fell more adventurous.
+  The job could be upgraded without committing to manifest then.
+  It's the extension of the existing `latest` tag, but it now supports multiple job type variants.
+  Note: The release of a new job type version has no effect on existing jobs until they are redeployed.
 
 ## [2.10.1] - 2023-03-10
 ### Added
