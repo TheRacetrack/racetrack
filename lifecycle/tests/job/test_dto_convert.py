@@ -30,6 +30,7 @@ def test_convert_json_to_job_dto():
             'pub_url': None,
             'error': None,
             'image_tag': None,
+            'job_type_version': 'python3:latest',
         },
     ]
     jobs = parse_dict_datamodels(response, JobDto)
