@@ -28,9 +28,9 @@ if not AUTH_REQUIRED:
 
 ALLOWED_HOSTS = ['*']
 
-if os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS'):
+if os.environ.get('CSRF_TRUSTED_ORIGINS'):
     CSRF_TRUSTED_ORIGINS = [
-        os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS'),
+        os.environ.get('CSRF_TRUSTED_ORIGINS'),
     ]
 
 # Auth Token to call Lifecycle API
