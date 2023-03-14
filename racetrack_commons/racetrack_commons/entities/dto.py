@@ -42,7 +42,7 @@ class JobDto(BaseModel, arbitrary_types_allowed=True):
     # internal hostnames of the job replicas (eg. pods)
     replica_internal_names: list[str] = []
     # exact name and version of a job type used to built this job
-    job_type_version: str
+    job_type_version: str = ''
 
     def __str__(self):
         return f'{self.name} v{self.version}'
