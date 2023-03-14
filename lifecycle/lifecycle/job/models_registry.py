@@ -126,7 +126,7 @@ def create_job_model(job_dto: JobDto) -> models.Job:
         deployed_by=job_dto.deployed_by,
         infrastructure_target=job_dto.infrastructure_target,
         replica_internal_names=','.join(job_dto.replica_internal_names),
-        job_type=job_dto.job_type_version,
+        job_type_version=job_dto.job_type_version,
     )
     new_job.save()
     return new_job
@@ -154,6 +154,7 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.last_call_time = timestamp_to_datetime(job_dto.last_call_time) if job_dto.last_call_time is not None else None
     job.infrastructure_target = job_dto.infrastructure_target
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
+    job.job_type_version = job_dto.job_type_version
     job.save()
 
 
