@@ -32,6 +32,7 @@ def job_model_to_dto(model: models.Job, config: Config) -> JobDto:
         last_call_time=datetime_to_timestamp(model.last_call_time) if model.last_call_time is not None else None,
         infrastructure_target=model.infrastructure_target,
         replica_internal_names=model.replica_internal_names.split(',') if model.replica_internal_names else [],
+        job_type_version=model.job_type_version,
     )
 
 

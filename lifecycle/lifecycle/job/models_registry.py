@@ -126,6 +126,7 @@ def create_job_model(job_dto: JobDto) -> models.Job:
         deployed_by=job_dto.deployed_by,
         infrastructure_target=job_dto.infrastructure_target,
         replica_internal_names=','.join(job_dto.replica_internal_names),
+        job_type=job_dto.job_type_version,
     )
     new_job.save()
     return new_job
