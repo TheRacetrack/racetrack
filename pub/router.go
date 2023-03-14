@@ -14,7 +14,8 @@ const baseIngressPath = "/pub"
 
 func ListenAndServe(cfg *Config) error {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")
 	// and at prefixed path (when accessed through ingress proxy)
