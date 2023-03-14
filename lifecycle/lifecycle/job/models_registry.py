@@ -57,7 +57,7 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Job:
     """
     if job_version == 'latest':
         return read_latest_job_model(job_name)
-    elif SemanticVersionPattern.is_x_wildcard_pattern(job_version):
+    elif SemanticVersionPattern.is_x_pattern(job_version):
         return read_latest_wildcard_job_model(job_name, job_version)
     else:
         return read_job_model(job_name, job_version)

@@ -55,7 +55,7 @@ class SemanticVersion:
         :param pattern: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
         :param objects: List of objects to compare
         :param key: Callable to extract version from an object
-        :param only_stable: whether to filter only stable versions
+        :param only_stable: whether to filter only stable versions ("X.Y.Z" without label suffix)
         :return: Object from a list having the latest version matching pattern
         """
         versions_objects = {SemanticVersion(key(obj)): obj for obj in objects}
@@ -175,7 +175,7 @@ class SemanticVersionPattern:
         return self.regex_pattern.fullmatch(str(version)) is not None
 
     @staticmethod
-    def is_x_wildcard_pattern(pattern: str) -> bool:
+    def is_x_pattern(pattern: str) -> bool:
         """Check whether it's a valid version pattern containing "x" wildcards"""
         match = SemanticVersionPattern.x_pattern_regex.fullmatch(pattern)
         if not match:
@@ -183,7 +183,7 @@ class SemanticVersionPattern:
         return 'x' in pattern
 
     @staticmethod
-    def is_asterisk_wildcard_pattern(pattern: str) -> bool:
+    def is_asterisk_pattern(pattern: str) -> bool:
         """Check whether it's a valid version pattern containing "*" wildcards"""
         match = SemanticVersionPattern.asterisk_pattern_regex.fullmatch(pattern)
         if not match:

@@ -59,7 +59,7 @@ def match_job_type_version(lang: str, all_languages: list[str]) -> str:
         latest_version = lang_versions[-1]
         return f'{lang_name}:{latest_version}'
             
-    elif SemanticVersionPattern.is_asterisk_wildcard_pattern(lang_version):
+    elif SemanticVersionPattern.is_asterisk_pattern(lang_version):
         lang_versions = [v.split(':')[1] for v in all_languages if v.startswith(lang_name + ':')]
         version_pattern = SemanticVersionPattern.from_asterisk_pattern(lang_version)
         matching_version = SemanticVersion.find_latest_wildcard(version_pattern, lang_versions, key=lambda v: v, only_stable=False)

@@ -121,9 +121,9 @@ def test_valid_semver_x_pattern():
     SemanticVersionPattern.from_x_pattern('1.x.x')
     SemanticVersionPattern.from_x_pattern('91.1005.x')
 
-    assert SemanticVersionPattern.is_x_wildcard_pattern('91.1005.x')
-    assert SemanticVersionPattern.is_x_wildcard_pattern('x.x.x')
-    assert SemanticVersionPattern.is_x_wildcard_pattern('x')
+    assert SemanticVersionPattern.is_x_pattern('91.1005.x')
+    assert SemanticVersionPattern.is_x_pattern('x.x.x')
+    assert SemanticVersionPattern.is_x_pattern('x')
 
 
 def test_valid_semver_asterisk_pattern():
@@ -133,12 +133,12 @@ def test_valid_semver_asterisk_pattern():
     SemanticVersionPattern.from_asterisk_pattern('91.1005.*-dev')
     SemanticVersionPattern.from_asterisk_pattern('1.2.*-3.9-bullseye')
 
-    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('1.2.*-3.9-bullseye')
-    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('*.*.*')
-    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('*')
-    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('1.0.0-*')
-    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('1.*-dev')
-    assert SemanticVersionPattern.is_asterisk_wildcard_pattern('2.6.*')
+    assert SemanticVersionPattern.is_asterisk_pattern('1.2.*-3.9-bullseye')
+    assert SemanticVersionPattern.is_asterisk_pattern('*.*.*')
+    assert SemanticVersionPattern.is_asterisk_pattern('*')
+    assert SemanticVersionPattern.is_asterisk_pattern('1.0.0-*')
+    assert SemanticVersionPattern.is_asterisk_pattern('1.*-dev')
+    assert SemanticVersionPattern.is_asterisk_pattern('2.6.*')
 
 
 def test_invalid_semver_x_pattern():
@@ -151,10 +151,10 @@ def test_invalid_semver_x_pattern():
     with pytest.raises(ValueError) as excinfo:
         SemanticVersionPattern.from_x_pattern('dev')
 
-    assert not SemanticVersionPattern.is_x_wildcard_pattern('1.0.0')
-    assert not SemanticVersionPattern.is_x_wildcard_pattern('1.x-dev')
-    assert not SemanticVersionPattern.is_x_wildcard_pattern('1.0.0-x')
-    assert not SemanticVersionPattern.is_x_wildcard_pattern('dex')
+    assert not SemanticVersionPattern.is_x_pattern('1.0.0')
+    assert not SemanticVersionPattern.is_x_pattern('1.x-dev')
+    assert not SemanticVersionPattern.is_x_pattern('1.0.0-x')
+    assert not SemanticVersionPattern.is_x_pattern('dex')
 
 
 def test_invalid_semver_asterisk_pattern():
@@ -167,5 +167,5 @@ def test_invalid_semver_asterisk_pattern():
     with pytest.raises(ValueError) as excinfo:
         SemanticVersionPattern.from_asterisk_pattern('dev')
 
-    assert not SemanticVersionPattern.is_asterisk_wildcard_pattern('1.0.0')
-    assert not SemanticVersionPattern.is_asterisk_wildcard_pattern('de*')
+    assert not SemanticVersionPattern.is_asterisk_pattern('1.0.0')
+    assert not SemanticVersionPattern.is_asterisk_pattern('de*')
