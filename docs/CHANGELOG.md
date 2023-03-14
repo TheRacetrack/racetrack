@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It's the extension of the existing `latest` tag, but it now supports multiple job type variants.
   Note: The release of a new job type version has no effect on existing jobs until they are redeployed.
 
+### Fixed
+- Fixed opening a job after regenerating the token.
+  [issue #200](https://github.com/TheRacetrack/racetrack/issues/200)
+
 ## [2.10.1] - 2023-03-10
 ### Added
 - Grafana's "Lifecycle" dashboard now includes
