@@ -24,6 +24,7 @@ from racetrack_commons.entities.job_client import JobRegistryClient
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 from racetrack_commons.entities.users_client import UserRegistryClient
 from racetrack_commons.urls import get_external_pub_url
+from dashboard.middleware import set_auth_token_cookie
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
 from dashboard.purge import enrich_jobs_purge_info
 from dashboard.utils import login_required, remove_ansi_sequences
@@ -134,11 +135,13 @@ def regenerate_user_token(request):
         client = UserRegistryClient(auth_token=get_auth_token(request))
         new_token = client.regen_user_token()
         request.session[RT_SESSION_USER_AUTH_KEY] = new_token
+        response = HttpResponse(status=200)
+        set_auth_token_cookie(new_token, response)
+        return response
+
     except Exception as e:
         log_exception(ContextError('Regenerating user token failed', e))
         return JsonResponse({'error': str(e)}, status=500)
-
-    return HttpResponse(status=200)
 
 @login_required
 def view_administration(request):
