@@ -1,7 +1,12 @@
 import os
 from pathlib import Path
+import warnings
+
+from django.utils.deprecation import RemovedInDjango50Warning
 
 from racetrack_commons.database.database import populate_database_settings
+
+warnings.filterwarnings(action='ignore', category=RemovedInDjango50Warning)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,7 +125,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 DATE_FORMAT = 'Y-m-d'

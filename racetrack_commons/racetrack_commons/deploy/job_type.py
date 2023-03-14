@@ -7,7 +7,7 @@ from typing import Union
 import backoff
 
 from racetrack_client.log.context_error import wrap_context
-from racetrack_client.utils.semver import SemanticVersion
+from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 
@@ -35,9 +35,41 @@ def load_job_type(
     with wrap_context('gathering available job types'):
         job_types = gather_job_types(plugin_engine)
     assert job_types, f'language {lang} is not supported here. No job type plugins are currently installed to Racetrack.'
-    assert lang in job_types, f'language {lang} is not supported, supported are: {sorted(job_types.keys())}'
-    return job_types[lang]
+    all_languages = sorted(job_types.keys())
+    selected_version = match_job_type_version(lang, all_languages)
+    return job_types[selected_version]
 
+
+def match_job_type_version(lang: str, all_languages: list[str]) -> str:
+    """
+    Find job type by either:
+    - exact name and version
+    - wildcard pattern with "*"
+    - latest tag: "name:latest"
+    """
+    lang_split = lang.split(':')
+    assert len(lang_split) == 2, f'job type should be specified as "name:version", got "{lang}"'
+    lang_name = lang_split[0]
+    lang_version = lang_split[1]
+
+    if lang_version == 'latest':
+        lang_versions = [v.split(':')[1] for v in all_languages if v.startswith(lang_name + ':')]
+        lang_versions.sort(key=lambda v: SemanticVersion(v))
+        assert lang_versions, f'there is no version matching "{lang}", supported are: {all_languages}'
+        latest_version = lang_versions[-1]
+        return f'{lang_name}:{latest_version}'
+            
+    elif SemanticVersionPattern.is_asterisk_pattern(lang_version):
+        lang_versions = [v.split(':')[1] for v in all_languages if v.startswith(lang_name + ':')]
+        version_pattern = SemanticVersionPattern.from_asterisk_pattern(lang_version)
+        matching_version = SemanticVersion.find_latest_wildcard(version_pattern, lang_versions, key=lambda v: v, only_stable=False)
+        assert matching_version is not None, f'language pattern "{lang}" doesn\'t match any of the supported versions: {all_languages}'
+        return f'{lang_name}:{matching_version}'
+
+    else:
+        assert lang in all_languages, f'language {lang} is not supported, supported are: {all_languages}'
+        return lang
+    
 
 def gather_job_types(
     plugin_engine: PluginEngine,
@@ -47,7 +79,6 @@ def gather_job_types(
     Return job name (with version) -> (base image name, dockerfile template path)
     """
     job_types: dict[str, JobType] = {}
-    job_family_versions: dict[str, list[JobType]] = defaultdict(list)
 
     plugin_results: list[dict[str, JobTypeImagePaths]] = plugin_engine.invoke_plugin_hook(PluginCore.job_types)
     for plugin_job_types in plugin_results:
@@ -71,13 +102,6 @@ def gather_job_types(
                 lang_version = name_parts[1]
                 job_type_version = JobType(lang_name, lang_version, base_image_paths, template_paths)
                 job_types[job_full_name] = job_type_version
-                job_family_versions[lang_name].append(job_type_version)
-
-    for lang_name in job_family_versions.keys():
-        versions = job_family_versions[lang_name]
-        versions.sort(key=lambda v: SemanticVersion(v.version))
-        latest_version = versions[-1]
-        job_types[f'{lang_name}:latest'] = latest_version
 
     return job_types
 

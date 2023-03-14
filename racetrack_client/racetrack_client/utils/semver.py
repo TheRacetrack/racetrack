@@ -44,18 +44,26 @@ class SemanticVersion:
         return versions_objects[latest_version]
 
     @staticmethod
-    def find_latest_wildcard(pattern: 'SemanticVersionPattern', objects: List[T], key: Callable[[T], str]) -> Optional[T]:
+    def find_latest_wildcard(
+        pattern: 'SemanticVersionPattern',
+        objects: List[T],
+        key: Callable[[T], str],
+        only_stable: bool = True,
+    ) -> Optional[T]:
         """
         Find object with the latest (highest), stable (non-dev) version matching pattern
         :param pattern: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
         :param objects: List of objects to compare
         :param key: Callable to extract version from an object
+        :param only_stable: whether to filter only stable versions ("X.Y.Z" without label suffix)
         :return: Object from a list having the latest version matching pattern
         """
         versions_objects = {SemanticVersion(key(obj)): obj for obj in objects}
-        # filter stable versions matching pattern
+        if only_stable:
+            versions_objects = {version: obj for version, obj in versions_objects.items()
+                                if not version.label}
         versions_objects = {version: obj for version, obj in versions_objects.items()
-                            if not version.label and pattern.matches(version)}
+                            if pattern.matches(version)}
         if not versions_objects:
             return None
 
@@ -125,26 +133,59 @@ class SemanticVersion:
 
 
 class SemanticVersionPattern:
-    valid_pattern_regex = re.compile(r'(\d+|x)(\.(\d+|x))*')  # 1.2.x or 1.x or 1.x.x
+    # 1.2.x or 1.x or 1.x.x
+    x_pattern_regex = re.compile(r'(\d+|x)(\.(\d+|x))*')
+    # 1.2.* or 1.2.3-*-bullseye or 1.*.*
+    asterisk_pattern_regex = re.compile(r'(?P<major>\d+|\*)(?P<minor>\.(\d+|\*))?(?P<patch>\.(\d+|\*))?(?P<label>\-.+)?')
 
-    def __init__(self, pattern: str) -> None:
+    def __init__(self, regex_pattern: re.Pattern) -> None:
+        self.regex_pattern = regex_pattern
+
+    @classmethod
+    def from_x_pattern(cls, pattern: str) -> 'SemanticVersionPattern':
         """
         :param pattern: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
         """
-        match = self.valid_pattern_regex.fullmatch(pattern)
+        match = cls.x_pattern_regex.fullmatch(pattern)
         if not match:
             raise ValueError(f"Version pattern '{pattern}' is invalid, should be '1.x' or '1.2.x'")
         if 'x' not in pattern:
             raise ValueError(f"Version pattern '{pattern}' doesn't contain 'x' wildcard")
 
-        self.regex_pattern = re.compile(pattern.replace('.', r'\.').replace('x', r'.+'))
+        regex_pattern = re.compile(pattern.replace('.', r'\.').replace('x', r'.+'))
+        return SemanticVersionPattern(regex_pattern)
+
+    @classmethod
+    def from_asterisk_pattern(cls, pattern: str) -> 'SemanticVersionPattern':
+        """
+        :param pattern: version pattern containing "*" wildcards, eg. 1.2.* or 1.2.3-*-bullseye or 1.*.*
+        """
+        match = cls.asterisk_pattern_regex.fullmatch(pattern)
+        pattern2 = re.escape(pattern)
+        pattern2 = pattern2.replace('\\*', '.+')
+        if not match:
+            raise ValueError(f"Version pattern '{pattern}' is invalid, should be '1.2.*' or '1.2.3-*-bullseye' or '1.*.*'")
+        if '*' not in pattern:
+            raise ValueError(f"Version pattern '{pattern}' doesn't contain '*' wildcard")
+
+        regex_pattern = re.compile(pattern2)
+        return SemanticVersionPattern(regex_pattern)
 
     def matches(self, version: SemanticVersion) -> bool:
         return self.regex_pattern.fullmatch(str(version)) is not None
 
     @staticmethod
-    def is_wildcard_pattern(pattern: str) -> bool:
-        match = SemanticVersionPattern.valid_pattern_regex.fullmatch(pattern)
+    def is_x_pattern(pattern: str) -> bool:
+        """Check whether it's a valid version pattern containing "x" wildcards"""
+        match = SemanticVersionPattern.x_pattern_regex.fullmatch(pattern)
         if not match:
             return False
         return 'x' in pattern
+
+    @staticmethod
+    def is_asterisk_pattern(pattern: str) -> bool:
+        """Check whether it's a valid version pattern containing "*" wildcards"""
+        match = SemanticVersionPattern.asterisk_pattern_regex.fullmatch(pattern)
+        if not match:
+            return False
+        return '*' in pattern
