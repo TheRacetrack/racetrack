@@ -67,7 +67,7 @@ def set_auth_token_cookie(auth_token: str, response: HttpResponse):
         value=value,
         path='/',
         domain=_get_cookie_domain(),
-        max_age=60 * 60 * 24 * 365,  # one year of cookie lifetime (in seconds), also makes cookie persist between browser restarts
+        max_age=60 * 60 * 24 * 31,  # one month of cookie lifetime (in seconds), also makes cookie persist between browser restarts
         samesite='lax',  # cookie is sent only when user access origin site or navigates to it, prevents CSRF
         httponly=True,  # prevents client-side JavaScript read access
         secure=True)  # cookie is sent only when request is made with https (except on localhost)
