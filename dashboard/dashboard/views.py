@@ -253,8 +253,6 @@ def view_job_portfolio(request):
         for job_dict in job_dicts:
             job_dict['update_time_days_ago'] = days_ago(job_dict['update_time'])
             job_dict['last_call_time_days_ago'] = days_ago(job_dict['last_call_time'])
-            manifest: Dict = job_dict.get('manifest')
-            job_dict['job_type_version'] = manifest.get('lang') if manifest else None
 
         context['jobs'] = job_dicts
     except Exception as e:
