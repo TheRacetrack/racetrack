@@ -77,7 +77,7 @@ func handleProxyRequest(
 	var err error
 
 	if cfg.AuthRequired {
-		job, err = lifecycleClient.AuthenticateCaller(jobName, jobVersion, jobPath)
+		job, err = lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
@@ -85,9 +85,9 @@ func handleProxyRequest(
 			if errors.As(err, &AuthenticationFailure{}) {
 				return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
 			} else if errors.As(err, &NotFoundError{}) {
-				return http.StatusNotFound, errors.Wrap(err, "Not found")
+				return http.StatusNotFound, errors.Wrap(err, "Job was not found")
 			}
-			return http.StatusInternalServerError, errors.Wrap(err, "Checking authentication error")
+			return http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
 		}
 
 	} else {

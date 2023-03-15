@@ -22,7 +22,7 @@ def read_active_job_public_endpoints(
     queryset = models.PublicEndpointRequest.objects.filter(
         job__name=job_name, job__version=resolved_version, active=True
     )
-    return [public_endpoint_request_model_to_dto(model) for model in queryset]to
+    return [public_endpoint_request_model_to_dto(model) for model in queryset]
 
 
 @db_access
