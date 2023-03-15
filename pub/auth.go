@@ -10,12 +10,6 @@ import (
 
 const AuthHeader = "X-Racetrack-Auth"
 
-var unprotectedEndpoints = []string{
-	"/health",
-	"/live",
-	"/ready",
-}
-
 // Indicates legitimate failure of authentication (ie. wrong username or password), not technical error
 type AuthenticationFailure struct {
 	error

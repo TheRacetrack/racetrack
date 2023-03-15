@@ -51,7 +51,7 @@ def read_job(job_name: str, job_version: str, config: Config) -> JobDto:
     """
     Find deployed job by name and version
     :param job_name: name of the job
-    :param job_version: job version name
+    :param job_version: exact job version name
     :param config: Lifecycle configuration
     :return: deployed job as data model
     :raise EntityNotFound if job with given name doesn't exist

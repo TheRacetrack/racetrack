@@ -23,70 +23,6 @@ from racetrack_commons.auth.scope import AuthScope
 
 def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
 
-    class JobResultModel(BaseModel):
-        id: Optional[str] = Field(
-            default=None,
-            description='ID of Job',
-            example='00000000-1111-2222-3333-444444444444',
-        )
-        name: Optional[str] = Field(
-            default=None,
-            description='name of Job',
-            example='adder',
-        )
-        version: Optional[str] = Field(
-            default=None,
-            description='version of Job',
-            example='0.0.1',
-        )
-        deployed_by: Optional[str] = Field(
-            default=None,
-            description='username of the last deployer',
-            example='nobody',
-        )
-        manifest: Optional[Dict[str, Any]] = Field(
-            default=None,
-            description='Manifest - build recipe for a Job',
-            example={
-                'name': 'adder',
-                'lang': 'python3',
-                'owner_email': 'nobody@example.com',
-                'git': {
-                    'remote': '.',
-                    'directory': 'sample/python-class',
-                },
-                'python': {
-                    'requirements_path': 'requirements.txt',
-                    'entrypoint_path': 'adder.py',
-                },
-            },
-        )
-        error: Optional[str] = Field(
-            default=None,
-            description='error message',
-            example='you have no power here',
-        )
-        status: Optional[str] = Field(
-            default=None,
-            description='status name',
-            example='all ok',
-        )
-        internal_name: Optional[str] = Field(
-            default=None,
-            description='internal name of the Job',
-            example='job-adder-v-0-0-1',
-        )
-        create_time: Optional[int] = Field(
-            default=None,
-            description='timestamp of creation',
-            example=1000000,
-        )
-        update_time: Optional[int] = Field(
-            default=None,
-            description='timestamp of last update',
-            example=1000000,
-        )
-
     class MoveJobPayload(BaseModel):
         infrastructure_target: str = Field(description='text content of configuration file')
 
@@ -108,8 +44,8 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
         return build_job_dependencies_graph(config, auth_subject)
 
-    @api.get('/job/{job_name}/{job_version}', response_model=JobResultModel)
-    def _get_job(job_name: str, job_version: str, request: Request):
+    @api.get('/job/{job_name}/{job_version}', response_model=JobDto)
+    def _get_job(job_name: str, job_version: str, request: Request) -> JobDto:
         """Get details of particular Job"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         return read_versioned_job(job_name, job_version, config)

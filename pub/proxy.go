@@ -73,29 +73,34 @@ func handleProxyRequest(
 	authToken := getAuthFromHeaderOrCookie(c.Request)
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
-
-	job, err := lifecycleClient.GetJobDetails(jobName, jobVersion)
-	if err != nil {
-		if errors.Is(err, JobNotFound) {
-			return http.StatusNotFound, err
-		}
-		return http.StatusInternalServerError, errors.Wrap(err, "failed to get Job details")
-	}
-
-	metricJobProxyRequests.WithLabelValues(jobName, job.Version).Inc()
+	var job *JobDetails
+	var err error
 
 	if cfg.AuthRequired {
-		err := lifecycleClient.AuthenticateCaller(c.Request.URL.Path, jobName, job.Version, jobPath, cfg.AuthDebug)
+		job, err = lifecycleClient.AuthenticateCaller(jobName, jobVersion, jobPath)
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
 			metricAuthFailed.Inc()
 			if errors.As(err, &AuthenticationFailure{}) {
 				return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+			} else if errors.As(err, &NotFoundError{}) {
+				return http.StatusNotFound, errors.Wrap(err, "Not found")
 			}
 			return http.StatusInternalServerError, errors.Wrap(err, "Checking authentication error")
 		}
+
+	} else {
+		job, err = lifecycleClient.GetJobDetails(jobName, jobVersion)
+		if err != nil {
+			if errors.As(err, &NotFoundError{}) {
+				return http.StatusNotFound, errors.Wrap(err, "Not found")
+			}
+			return http.StatusInternalServerError, errors.Wrap(err, "failed to get Job details")
+		}
 	}
+
+	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId)
