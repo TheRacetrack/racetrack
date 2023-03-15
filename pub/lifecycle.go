@@ -80,7 +80,7 @@ func (l *LifecycleClient) GetJobDetails(jobName string, jobVersion string) (*Job
 func (l *LifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobDetails, error) {
 	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/can-call-job/", jobName, "/", jobVersion, "/", endpoint)
 	job := &JobDetails{}
-	err := l.getRequest(url, false, "Checking Job caller", true, job)
+	err := l.getRequest(url, false, "Authorizing Job caller", true, job)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (l *LifecycleClient) getRequest(
 			explanation += ": " + errorResp.Status
 		}
 
-		err := errors.Errorf("%s: %s response: %s", operationType, r.Status, explanation)
+		err := errors.Errorf("%s: %s", operationType, explanation)
 		if r.StatusCode == http.StatusUnauthorized {
 			return AuthenticationFailure{err}
 		} else if r.StatusCode == http.StatusNotFound {

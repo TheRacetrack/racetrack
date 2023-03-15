@@ -83,7 +83,11 @@ func handleProxyRequest(
 		} else {
 			metricAuthFailed.Inc()
 			if errors.As(err, &AuthenticationFailure{}) {
-				return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+				if cfg.AuthDebug {
+					return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+				} else {
+					return http.StatusUnauthorized, errors.New("Unauthenticated")
+				}
 			} else if errors.As(err, &NotFoundError{}) {
 				return http.StatusNotFound, errors.Wrap(err, "Job was not found")
 			}

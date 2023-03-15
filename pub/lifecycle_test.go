@@ -44,12 +44,12 @@ func TestAuthorizeCaller(t *testing.T) {
 	}
 	{
 		job, err := lifecycleClient.AuthorizeCaller("typo", "0.0.1", "/api/v1/perform")
-		assert.EqualError(t, err, "Checking Job caller: 404 response: Job typo was not found")
+		assert.EqualError(t, err, "Authorizing Job caller: Job typo was not found")
 		assert.Nil(t, job)
 	}
 	{
 		job, err := lifecycleClient.AuthorizeCaller("secret", "0.0.1", "/api/v1/perform")
-		assert.EqualError(t, err, "Checking Job caller: 401 response: You have no power here")
+		assert.EqualError(t, err, "Authorizing Job caller: You have no power here")
 		assert.Nil(t, job)
 	}
 }
