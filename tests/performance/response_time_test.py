@@ -1,31 +1,30 @@
 import os
 import statistics
+import sys
 import time
 
 import httpx
 from dotenv import load_dotenv
 
 
-load_dotenv()
+load_dotenv(sys.argv[1])
 
 url = os.environ['url']
-auth_token = os.environ.get('auth_token', '')
-payload = os.environ.get('payload')
 attempts = int(os.environ.get('attempts', 100))
+payload = os.environ.get('payload')
 auth_header = os.environ.get('auth_header', 'X-Racetrack-Auth')
+auth_token = os.environ.get('auth_token', '')
+reuse_connection: bool = os.environ.get('auth_header', 'true').lower() in {'true', '1'}
 
+print(f'Testing URL {url}')
+
+durations = []
 headers = {
     'User-Agent': 'curl/7.81.0',
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     auth_header: auth_token,
 }
-
-reuse_connection = True
-
-print(f'Testing URL {url}')
-
-durations = []
 client = httpx.Client()
 try:
     for i in range(attempts):

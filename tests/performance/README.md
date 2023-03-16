@@ -5,12 +5,12 @@
 pip install -r requirements.txt
 ```
 
-2. Copy .env.dist to .env and fillout missing values:
+2. Copy `.env.template` to `*.env` and fillout missing values:
 ```sh
-cp .env.dist .env
+cp .env.template test.env
 ```
 
 3. Run performance test:
 ```sh
-python response_time_test.py
+python response_time_test.py test.env
 ```
