@@ -40,7 +40,7 @@ try:
         time.sleep(1)
         response.raise_for_status()
         durations.append(duration)
-        print(f'Attempt #{i+1} - request duration: {duration*1000} ms')
+        print(f'Attempt #{i+1} - request duration: {duration*1000:.2f} ms')
 except KeyboardInterrupt:
     pass
 finally:
