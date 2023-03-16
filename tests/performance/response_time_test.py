@@ -12,12 +12,13 @@ url = os.environ['url']
 auth_token = os.environ.get('auth_token', '')
 payload = os.environ.get('payload')
 attempts = int(os.environ.get('attempts', 100))
+auth_header = os.environ.get('auth_header', 'X-Racetrack-Auth')
 
 headers = {
     'User-Agent': 'curl/7.81.0',
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Racetrack-Auth': auth_token,
+    auth_header: auth_token,
 }
 
 reuse_connection = True
