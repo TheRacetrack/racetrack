@@ -5,11 +5,12 @@ help us manage our software supply chain security by being aware of the open
 source projects we need to track as part of the long term lifecycle of
 Racetrack.
 
-Currently, the list of most critical software projects (with handy links to
-changes and/or source) is:
+Here's the list of the open source projects we use in Racetrack.
+The columns are:
 
 - `Our version`: the version we use in Racetrack
 - `Latest version`: newest version from the provider
+- `Purpose`: what we use the project for
 
 | Tool                                                                       | Our version | Latest version | Purpose |
 | -------------------------------------------------------------------------- | ------------| ---------------|---------|
@@ -31,7 +32,7 @@ changes and/or source) is:
 | [werkzeug](https://pypi.org/project/Werkzeug/)                             | 2.2.3       | 2.2.3          | serving SocketIO server |
 | [GitPython](https://pypi.org/project/GitPython/)                           | 3.1.31      | 3.1.31         | cloning job repositories |
 | [Python markdown](https://pypi.org/project/Markdown/)                      | 3.4.1       | 3.4.1          | rendering docs in Dashboard |
-| [FastAPI](https://github.com/tiangolo/fastapi)                             | 0.92.0      | 0.92.0         | serving API |
+| [FastAPI](https://github.com/tiangolo/fastapi)                             | 0.92.0      | 0.92.0         | serving API by Python components |
 | [kubectl](https://github.com/kubernetes/kubectl)                           | 1.26.2      | 1.26.2         | managing Kubernetes |
 | [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)               | 2.9.5       | 2.9.5          | connecting to PostgreSQL |
 | [a2wsgi](https://pypi.org/project/a2wsgi/)                                 | 1.7.0       | 1.7.0          | serving Django app in ASGI server |
@@ -51,3 +52,7 @@ changes and/or source) is:
 | [coverage](https://pypi.org/project/coverage/)                             | 7.2.1       | 7.2.1          | measuring test coverage |
 | [httpretty](https://pypi.org/project/httpretty/)                           | 1.1.4       | 1.1.4          | mocking HTTP requests |
 | [opentelemetry-exporter-otlp-proto-http](https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/) | 1.16.0 | 1.16.0 | sending traces to OpenTelemetry |
+| [Gin](https://github.com/gin-gonic/gin)                                    | 1.9.0       | 1.9.0          | Web framework for Go |
+| [log15](https://github.com/inconshreveable/log15)                          | 3.0.0       | 3.0.0          | structured logging in Go | 
+| [pkg/errors](https://github.com/pkg/errors)                                | 0.9.1       | 0.9.1          | wrapping errors context | 
+| [Prometheus Go client library](https://github.com/prometheus/client_golang)| 1.14.0      | 1.14.0         | metrics exposure in Go |
