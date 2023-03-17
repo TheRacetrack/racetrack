@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed opening a job after regenerating the token.
   [issue #200](https://github.com/TheRacetrack/racetrack/issues/200)
+- Performance of PUB component has been improved
+  by reducing number of requests made to the Lifecycle and to the database.
+  [issue #155](https://github.com/TheRacetrack/racetrack/issues/155)
 
 ## [2.10.1] - 2023-03-10
 ### Added
