@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.11.0] - 2023-03-17
 ### Added
 - When specifying a job type version, wildcards can be used.
   For instance, `mllab:1.3.*-3.9-bullseye` to subscribe for the latest patches
@@ -13,9 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It's the extension of the existing `latest` tag, but it now supports multiple job type variants.
   Note: The release of a new job type version has no effect on existing jobs until they are redeployed.
 
+### Changed
+- *Portfolio* tab on Dashboard shows the exact version of a job type,
+  even if its manifest specifies a wildcard version or "latest".
+  [issue #203](https://github.com/TheRacetrack/racetrack/issues/203)
+
 ### Fixed
 - Fixed opening a job after regenerating the token.
   [issue #200](https://github.com/TheRacetrack/racetrack/issues/200)
+- Fixed CSRF Trusted Origins protection.
+  [issue #197](https://github.com/TheRacetrack/racetrack/issues/197)
 
 ## [2.10.1] - 2023-03-10
 ### Added
