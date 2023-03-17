@@ -1,10 +1,11 @@
 from enum import Enum
+import sys
 from typing import Dict, List, Optional
 
 from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.auth import get_user_auth
 from racetrack_client.client_config.io import load_client_config
-from racetrack_client.log.logs import get_logger
+from racetrack_client.log.logs import configure_logs, get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
 from racetrack_client.utils.request import parse_response, parse_response_list, Requests
 from racetrack_client.utils.table import print_table
@@ -26,6 +27,9 @@ class JobTableColumn(str, Enum):
 
 def list_jobs(remote: Optional[str], columns: List[JobTableColumn]):
     """List all deployed jobs"""
+    if not sys.stdout.isatty():
+        configure_logs(log_level='error')
+
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, remote)
     user_auth = get_user_auth(client_config, lifecycle_url)

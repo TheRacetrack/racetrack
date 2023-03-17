@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- New column in the *list* command of the Racetrack client displays a job type.
+  Try it out by running `racetrack list -c job_type`.
+  [issue #207](https://github.com/TheRacetrack/racetrack/issues/207)
+
+### Changed
+- The *list* command of the Racetrack client drops the fancy formatting and *INFO*/*DEBUG* logs
+  when being piped into another command (ie. not connected to a terminal/tty device). Try `racetrack list | cat`.
+  [issue #207](https://github.com/TheRacetrack/racetrack/issues/207)
 
 ## [2.11.0] - 2023-03-17
 ### Added
