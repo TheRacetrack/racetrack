@@ -20,7 +20,7 @@ from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.deploy.image import get_job_image
-from racetrack_commons.deploy.job_type import load_job_type
+from racetrack_commons.deploy.job_type import JobType, load_job_type
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.entities.dto import DeploymentDto, JobDto, JobStatus
 
@@ -59,11 +59,13 @@ def provision_job(
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
         runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
 
-        containers_num = count_job_type_containers(manifest.lang, plugin_engine)
+        job_type: JobType = load_job_type(plugin_engine, manifest.lang)
+        containers_num = len(job_type.template_paths)
 
-        job = job_deployer.deploy_job(manifest, config, plugin_engine,
-                                               tag, runtime_env_vars, family_dto, containers_num)
+        job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine,
+                                              tag, runtime_env_vars, family_dto, containers_num)
         job.deployed_by = deployment.deployed_by
+        job.job_type_version = f'{job_type.lang_name}:{job_type.version}'
 
     with wrap_context('saving job in database'):
         save_job_model(job)
@@ -128,12 +130,3 @@ def post_job_deploy(
             job_name=job.name,
             job_version=job.version,
         )
-
-
-def count_job_type_containers(
-    lang: str,
-    plugin_engine: PluginEngine,
-) -> int:
-    """Determine number of containers used by a job type to compose a Job"""
-    job_type = load_job_type(plugin_engine, lang)
-    return len(job_type.template_paths)

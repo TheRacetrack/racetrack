@@ -47,6 +47,8 @@ class Job(models.Model):
     infrastructure_target = models.CharField(max_length=256, null=True)
     # internal hostnames of the job replicas (eg. pods)
     replica_internal_names = models.TextField(null=True, blank=True)
+    # exact name and version of a job type used to built this job
+    job_type_version = models.CharField(max_length=256, blank=True)
 
     def __str__(self):
         return f'{self.name} v{self.version}'
