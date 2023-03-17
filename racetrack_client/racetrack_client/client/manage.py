@@ -15,6 +15,7 @@ logger = get_logger(__name__)
 
 
 class JobTableColumn(str, Enum):
+    job_type = "job_type"
     infrastructure = "infrastructure"
     deployed_by = "deployed_by"
     updated_at = "updated_at"
@@ -40,6 +41,8 @@ def list_jobs(remote: Optional[str], columns: List[JobTableColumn]):
         return
 
     header = ['NAME', 'VERSION', 'STATUS']
+    if JobTableColumn.job_type in columns or JobTableColumn.all in columns:
+        header.append('JOB TYPE')
     if JobTableColumn.infrastructure in columns or JobTableColumn.all in columns:
         header.append('INFRASTRUCTURE')
     if JobTableColumn.deployed_by in columns or JobTableColumn.all in columns:
@@ -60,6 +63,8 @@ def list_jobs(remote: Optional[str], columns: List[JobTableColumn]):
 
         if JobTableColumn.infrastructure in columns or JobTableColumn.all in columns:
             cells.append(job.get('infrastructure_target'))
+        if JobTableColumn.job_type in columns or JobTableColumn.all in columns:
+            cells.append(job.get('job_type_version'))
         if JobTableColumn.deployed_by in columns or JobTableColumn.all in columns:
             cells.append(job.get('deployed_by'))
         if JobTableColumn.updated_at in columns or JobTableColumn.all in columns:
