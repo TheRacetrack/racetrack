@@ -61,10 +61,10 @@ def list_jobs(remote: Optional[str], columns: List[JobTableColumn]):
         status = job.get('status', '').upper()
         cells = [name, version, status]
 
-        if JobTableColumn.infrastructure in columns or JobTableColumn.all in columns:
-            cells.append(job.get('infrastructure_target'))
         if JobTableColumn.job_type in columns or JobTableColumn.all in columns:
             cells.append(job.get('job_type_version'))
+        if JobTableColumn.infrastructure in columns or JobTableColumn.all in columns:
+            cells.append(job.get('infrastructure_target'))
         if JobTableColumn.deployed_by in columns or JobTableColumn.all in columns:
             cells.append(job.get('deployed_by'))
         if JobTableColumn.updated_at in columns or JobTableColumn.all in columns:
