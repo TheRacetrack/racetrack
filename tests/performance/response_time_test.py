@@ -38,7 +38,11 @@ try:
 
         duration = response.elapsed.total_seconds()
 
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except:
+            print(f'Response error: {response.content}')
+            raise
         durations.append(duration)
         print(f'Attempt #{i+1} - request duration: {duration*1000:.2f} ms')
 except KeyboardInterrupt:
