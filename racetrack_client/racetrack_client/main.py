@@ -1,4 +1,5 @@
 from typing import List
+
 import typer
 
 from racetrack_client import __version__
@@ -39,7 +40,7 @@ def main():
 def _startup(
     verbose: bool = typer.Option(False, '-v', '--verbose', help='enable verbose mode'),
 ):
-    configure_logs(verbosity=1 if verbose else 0)
+    configure_logs(log_level='debug' if verbose else 'info')
 
 
 @cli.command('deploy')
