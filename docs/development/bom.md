@@ -47,7 +47,7 @@ The columns are:
 | [pyjwt](https://pypi.org/project/PyJWT/)                                   | 2.6.0       | 2.6.0          | handling JWT tokens |
 | [python-multipart](https://pypi.org/project/python-multipart/)             | 0.0.6       | 0.0.6          | handling uploaded plugins |
 | [watchdog](https://pypi.org/project/watchdog/)                             | 2.3.1       | 2.3.1          | watching for changes in plugins |
-| [protobuf](https://pypi.org/project/protobuf/)                             | 4.22.0      | 4.22.0         | handling OTLP protocol |
+| [protobuf](https://pypi.org/project/protobuf/)                             | 4.22.0      | 4.22.0         | handling OTLP |
 | [pytest](https://pypi.org/project/pytest/)                                 | 7.2.1       | 7.2.1          | running tests |
 | [coverage](https://pypi.org/project/coverage/)                             | 7.2.1       | 7.2.1          | measuring test coverage |
 | [httpretty](https://pypi.org/project/httpretty/)                           | 1.1.4       | 1.1.4          | mocking HTTP requests |
