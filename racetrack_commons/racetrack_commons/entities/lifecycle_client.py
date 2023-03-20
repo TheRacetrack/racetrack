@@ -34,7 +34,9 @@ class LifecycleClient:
                              **kwargs)
         return parse_response_list(r, 'Lifecycle response')
 
-    def _get_auth_headers(self) -> dict[str, str | None]:
+    def _get_auth_headers(self) -> dict[str, str]:
+        if self.auth_token == "":
+            return {}
         return {
-            RT_AUTH_HEADER: self.auth_token if self.auth_token != "" else None
+            RT_AUTH_HEADER: self.auth_token
         }
