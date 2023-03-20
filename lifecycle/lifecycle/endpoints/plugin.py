@@ -54,10 +54,10 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return plugin_engine.read_plugin_config(plugin_name, plugin_version)
 
     @api.put('/plugin/{plugin_name}/{plugin_version}/config')
-    def _write_plugin_config(payload: PluginUpdate, plugin_name: str, plugin_version: str, request: Request) -> str:
-        """Read plugin's configuration"""
+    def _write_plugin_config(payload: PluginUpdate, plugin_name: str, plugin_version: str, request: Request):
+        """Update plugin's configuration"""
         check_staff_user(request)
-        return plugin_engine.write_plugin_config(plugin_name, plugin_version, payload.config_data)
+        plugin_engine.write_plugin_config(plugin_name, plugin_version, payload.config_data)
 
     @api.get('/plugin/{plugin_name}/docs')
     def _info_plugin_docs(plugin_name: str) -> Optional[str]:

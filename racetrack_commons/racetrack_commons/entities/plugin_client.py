@@ -35,7 +35,7 @@ class LifecyclePluginClient:
     def read_plugin_config(self, plugin_name: str, plugin_version: str) -> str:
         return self.lc_client.request('get', f'/api/v1/plugin/{plugin_name}/{plugin_version}/config')
 
-    def write_plugin_config(self, plugin_name: str, plugin_version: str, config_data: str) -> str:
+    def write_plugin_config(self, plugin_name: str, plugin_version: str, config_data: str):
         return self.lc_client.request('put', f'/api/v1/plugin/{plugin_name}/{plugin_version}/config',
             json={'config_data': config_data},
         )
