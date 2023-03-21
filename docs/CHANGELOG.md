@@ -6,19 +6,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- New column in the *list* command of the Racetrack client displays a job type.
+  Try it out by running `racetrack list -c job_type`.
+  [issue #207](https://github.com/TheRacetrack/racetrack/issues/207)
+
+### Changed
+- The *list* command of the Racetrack client drops the fancy formatting and *INFO*/*DEBUG* logs
+  when being piped into another command (ie. not connected to a terminal/tty device). Try `racetrack list | cat`.
+  [issue #207](https://github.com/TheRacetrack/racetrack/issues/207)
+
+### Fixed
+- Performance of PUB component has been improved
+  by reducing number of requests made to the Lifecycle and to the database.
+  [issue #155](https://github.com/TheRacetrack/racetrack/issues/155)
+
+## [2.11.0] - 2023-03-17
+### Added
 - When specifying a job type version, wildcards can be used.
   For instance, `mllab:1.3.*-3.9-bullseye` to subscribe for the latest patches
-  or `mllab:1.*.*-3.9-bullseye` if you fell more adventurous.
+  or `mllab:1.*.*-3.9-bullseye` if you feel more adventurous.
   The job could be upgraded without committing to manifest then.
   It's the extension of the existing `latest` tag, but it now supports multiple job type variants.
   Note: The release of a new job type version has no effect on existing jobs until they are redeployed.
+  [issue #183](https://github.com/TheRacetrack/racetrack/issues/183)
+
+### Changed
+- *Portfolio* tab on Dashboard shows the exact version of a job type,
+  even if its manifest specifies a wildcard version or "latest".
+  [issue #203](https://github.com/TheRacetrack/racetrack/issues/203)
 
 ### Fixed
 - Fixed opening a job after regenerating the token.
   [issue #200](https://github.com/TheRacetrack/racetrack/issues/200)
-- Performance of PUB component has been improved
-  by reducing number of requests made to the Lifecycle and to the database.
-  [issue #155](https://github.com/TheRacetrack/racetrack/issues/155)
+- Fixed CSRF Trusted Origins protection.
+  [issue #197](https://github.com/TheRacetrack/racetrack/issues/197)
 
 ## [2.10.1] - 2023-03-10
 ### Added
