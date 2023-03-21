@@ -145,6 +145,10 @@ def _normalize_endpoint_path(endpoint: str) -> str:
 
 
 def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request):
+    """
+    Check if auth subject (read from request header's token) is allowed to call an endpoint of a job.
+    In case it's not allowed, raise UnauthorizedError.
+    """
     if endpoint in unprotected_job_endpoints:
         return
 
