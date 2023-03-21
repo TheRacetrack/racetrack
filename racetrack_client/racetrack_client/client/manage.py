@@ -1,5 +1,4 @@
 from enum import Enum
-import sys
 from typing import Dict, List, Optional
 
 from racetrack_client.client_config.alias import resolve_lifecycle_url
@@ -27,9 +26,6 @@ class JobTableColumn(str, Enum):
 
 def list_jobs(remote: Optional[str], columns: List[JobTableColumn]):
     """List all deployed jobs"""
-    if not sys.stdout.isatty():
-        configure_logs(log_level='error')
-
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, remote)
     user_auth = get_user_auth(client_config, lifecycle_url)

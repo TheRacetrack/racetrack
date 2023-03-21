@@ -1,17 +1,19 @@
+import sys
 from typing import List
 
 import typer
 
 from racetrack_client import __version__
+from racetrack_client.client.call import call_job
 from racetrack_client.client.deploy import BuildContextMethod, send_deploy_request, DeploymentError
 from racetrack_client.client.manage import JobTableColumn, move_job, delete_job, list_jobs
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
+from racetrack_client.client.run import run_job_locally
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_current_remote, get_current_remote, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
 from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
-from racetrack_client.client.run import run_job_locally
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.log.logs import get_logger
@@ -40,7 +42,10 @@ def main():
 def _startup(
     verbose: bool = typer.Option(False, '-v', '--verbose', help='enable verbose mode'),
 ):
-    configure_logs(log_level='debug' if verbose else 'info')
+    if not sys.stdout.isatty():
+        configure_logs(log_level='error')
+    else:
+        configure_logs(log_level='debug' if verbose else 'info')
 
 
 @cli.command('deploy')
@@ -241,3 +246,16 @@ def _plugin_bundle(
 ):
     """Turn local plugin code into ZIP file"""
     bundle_plugin(workdir, out, plugin_version)
+
+
+@cli.command('perform', no_args_is_help=True)
+def _call_job(
+    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    payload: str = typer.Argument('{}', show_default=True, help='JSON payload of the request'),
+    version: str = typer.Option('latest', show_default=True, help='version of the job'),
+    remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
+    endpoint: str = typer.Option('/api/v1/perform', show_default=True, help='endpoint of the job to call'),
+    curl: bool = typer.Option(False, '--curl', help='generate a curl query instead of calling the job'),
+):
+    """Call an endpoint of a job"""
+    call_job(name, version, remote, endpoint, payload, curl)
