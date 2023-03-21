@@ -61,6 +61,7 @@ nav:
   - Development:
     - Developer manual: docs/development/develop.md
     - Deployment & Release: docs/development/deployment.md
+    - Bill of Materials: docs/development/bom.md
   - Administering: docs/admin.md
   - Changelog: docs/CHANGELOG.md
   - Glossary: docs/glossary.md
