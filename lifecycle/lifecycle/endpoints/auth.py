@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, Request
 from fastapi.responses import Response, JSONResponse
 
@@ -6,14 +8,26 @@ from lifecycle.auth.authorize import authorize_internal_token, authorize_resourc
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
+from lifecycle.django.registry import models
+from lifecycle.job import models_registry
+from lifecycle.job.dto_converter import job_model_to_dto
 from lifecycle.job.esc import read_esc_model
 from lifecycle.job.models_registry import read_job_family_model
+from lifecycle.job.public_endpoints import read_active_job_public_endpoints, read_job_model_public_endpoints
+from lifecycle.job.registry import read_versioned_job
 from racetrack_client.log.exception import log_exception
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.scope import AuthScope
+from racetrack_commons.entities.dto import JobDto
 
 logger = get_logger(__name__)
+
+unprotected_job_endpoints = {
+    "/health",
+    "/live",
+    "/ready",
+}
 
 
 def setup_auth_endpoints(api: APIRouter, config: Config):
@@ -38,10 +52,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
     @api.get('/auth/allowed/job_endpoint/{job_name}/{job_version}/scope/{scope}/endpoint/{endpoint:path}')
     def _auth_allowed_job_endpoint(job_name: str, job_version: str, scope: str, endpoint: str, request: Request):
         """Check if auth subject (read from token) has access to the job endpoint"""
-        if endpoint.endswith('/'):
-            endpoint = endpoint[:-1]
-        if not endpoint.startswith('/'):
-            endpoint = '/' + endpoint
+        endpoint = _normalize_endpoint_path(endpoint)
         try:
             token_payload, auth_subject = authenticate_token(request)
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
@@ -55,6 +66,26 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             return JSONResponse(content={'error': msg}, status_code=401)
 
         return Response(content='', status_code=202)
+    
+    @api.get('/auth/can-call-job/{job_name}/{job_version}/{endpoint:path}', response_model=JobDto)
+    def _auth_can_call_job_endpoint(job_name: str, job_version: str, endpoint: str, request: Request):
+        """
+        Check if auth subject (read from token) is allowed to call an endpoint of a job.
+        This is intended to check all permissions with a single request made by PUB.
+        """
+        endpoint = _normalize_endpoint_path(endpoint)
+
+        job_model = models_registry.resolve_job_model(job_name, job_version)
+        
+        try:
+            _authorize_job_caller(job_model, endpoint, request)
+            return job_model_to_dto(job_model, config)
+
+        except UnauthorizedError as e:
+            msg = e.describe(debug=config.auth_debug)
+            log_exception(e)
+            return JSONResponse(content={'error': msg}, status_code=401)
+
 
     @api.post('/auth/allow/esc/{esc_id}/job/{job_name}/scope/{scope}')
     def _auth_allow_esc_job_family(esc_id: str, job_name: str, scope: str, request: Request):
@@ -104,3 +135,34 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         regenerate_all_esc_tokens()
         
+
+def _normalize_endpoint_path(endpoint: str) -> str:
+    if endpoint.endswith('/'):
+        endpoint = endpoint[:-1]
+    if not endpoint.startswith('/'):
+        endpoint = '/' + endpoint
+    return endpoint
+
+
+def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request):
+    """
+    Check if auth subject (read from request header's token) is allowed to call an endpoint of a job.
+    In case it's not allowed, raise UnauthorizedError.
+    """
+    if endpoint in unprotected_job_endpoints:
+        return
+
+    # check public endpoints
+    public_endpoints: list[str] = read_job_model_public_endpoints(job_model)
+    for public_endpoint in public_endpoints:
+        if endpoint.startswith(public_endpoint):
+            return
+    
+    scope = AuthScope.CALL_JOB.value
+    token_payload, auth_subject = authenticate_token(request)
+
+    if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
+        authorize_internal_token(token_payload, scope, job_model.name, job_model.version, endpoint)
+    else:
+        assert auth_subject is not None
+        authorize_resource_access(auth_subject, job_model.name, job_model.version, scope, endpoint)

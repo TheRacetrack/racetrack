@@ -2,9 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -33,7 +31,13 @@ type PublicEndpointRequestDto struct {
 	Active     bool   `json:"active"`
 }
 
-var JobNotFound = errors.New("job was not found")
+type NotFoundError struct {
+	error
+}
+
+func (e NotFoundError) Error() string {
+	return e.error.Error()
+}
 
 type LifecycleClient struct {
 	lifecycleUrl         string
@@ -43,8 +47,6 @@ type LifecycleClient struct {
 	requestTracingHeader string
 	requestId            string
 }
-
-const AuthScopeCallJob = "call_job"
 
 func NewLifecycleClient(
 	lifecycleUrl string,
@@ -75,88 +77,14 @@ func (l *LifecycleClient) GetJobDetails(jobName string, jobVersion string) (*Job
 	return job, nil
 }
 
-func (l *LifecycleClient) HasAccessToJob(jobName, jobVersion string, scope string) (bool, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/job/", jobName, "/", jobVersion, "/scope/", scope)
-	err := l.getRequest(url, false, "checking access to call Job", false, nil)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func (l *LifecycleClient) HasAccessToJobEndpoint(jobName, jobVersion, endpoint string) (bool, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/allowed/job_endpoint/", jobName, "/", jobVersion, "/scope/", AuthScopeCallJob, "/endpoint/", endpoint)
-	err := l.getRequest(url, false, "checking access to call Job endpoint", false, nil)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func (l *LifecycleClient) GetJobPublicEndpoints(jobName, jobVersion string) ([]string, error) {
-	url := JoinURL(l.lifecycleUrl, "/api/v1/job/", jobName, "/", jobVersion, "/public-endpoints")
-	result := []*PublicEndpointRequestDto{}
-	err := l.getRequest(url, true, "getting Job public endpoints", true, &result)
+func (l *LifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobDetails, error) {
+	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/can-call-job/", jobName, "/", jobVersion, "/", endpoint)
+	job := &JobDetails{}
+	err := l.getRequest(url, false, "Authorizing Job caller", true, job)
 	if err != nil {
 		return nil, err
 	}
-
-	publicPaths := []string{}
-	for _, dto := range result {
-		if dto.Active {
-			publicPaths = append(publicPaths, dto.Endpoint)
-		}
-	}
-
-	return publicPaths, nil
-}
-
-func (l *LifecycleClient) IsPathPublic(jobName, jobVersion, jobPath string) (bool, error) {
-	publicPaths, err := l.GetJobPublicEndpoints(jobName, jobVersion)
-	if err != nil {
-		return false, err
-	}
-
-	for _, publicPath := range publicPaths {
-		if strings.HasPrefix(jobPath, publicPath) {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
-func (l *LifecycleClient) AuthenticateCaller(path, jobName, jobVersion, jobPath string, debug bool) error {
-	for _, unprotectedEndpoint := range unprotectedEndpoints {
-		if strings.HasPrefix(jobPath, unprotectedEndpoint) {
-			return nil
-		}
-	}
-
-	public, err := l.IsPathPublic(jobName, jobVersion, jobPath)
-	if err != nil {
-		return errors.Wrap(err, "checking public paths")
-	}
-	if public {
-		return nil
-	}
-
-	if l.authToken == "" {
-		return AuthFailure(
-			errors.New("not logged in"),
-			fmt.Sprintf("empty header value of %s", AuthHeader),
-			debug,
-		)
-	}
-
-	ok, err := l.HasAccessToJobEndpoint(jobName, jobVersion, jobPath)
-	if err != nil {
-		return errors.Wrap(err, "Auth error")
-	}
-	if !ok {
-		return AuthFailure(nil, "Unauthorized to access this job", debug)
-	}
-	return nil
+	return job, nil
 }
 
 func (l *LifecycleClient) getRequest(
@@ -189,9 +117,6 @@ func (l *LifecycleClient) getRequest(
 	}
 	defer r.Body.Close()
 
-	if r.StatusCode == http.StatusNotFound {
-		return JobNotFound
-	}
 	if r.StatusCode >= 400 {
 		errorResp := &lifecycleErrorResponse{}
 		_ = json.NewDecoder(r.Body).Decode(errorResp)
@@ -200,9 +125,11 @@ func (l *LifecycleClient) getRequest(
 			explanation += ": " + errorResp.Status
 		}
 
-		err := errors.Errorf("%s: %s response from Lifecycle: %s", operationType, r.Status, explanation)
-		if r.StatusCode == 401 {
+		err := errors.Errorf("%s: %s", operationType, explanation)
+		if r.StatusCode == http.StatusUnauthorized {
 			return AuthenticationFailure{err}
+		} else if r.StatusCode == http.StatusNotFound {
+			return NotFoundError{err}
 		}
 		return err
 	}

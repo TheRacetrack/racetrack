@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when being piped into another command (ie. not connected to a terminal/tty device). Try `racetrack list | cat`.
   [issue #207](https://github.com/TheRacetrack/racetrack/issues/207)
 
+### Fixed
+- Performance of PUB component has been improved
+  by reducing number of requests made to the Lifecycle and to the database.
+  [issue #155](https://github.com/TheRacetrack/racetrack/issues/155)
+
 ## [2.11.0] - 2023-03-17
 ### Added
 - When specifying a job type version, wildcards can be used.
