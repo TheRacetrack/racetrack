@@ -29,7 +29,7 @@ spec:
             - name: image-builder-config
               mountPath: /etc/racetrack/image-builder/
             - name: racetrack-plugins
-              mountPath: /etc/racetrack/image-builder/plugins
+              mountPath: /mnt/plugins
           env:
             - name: CONFIG_FILE
               value: /etc/racetrack/image-builder/config.yaml
