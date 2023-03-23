@@ -220,6 +220,7 @@ registry:
 kind-cluster-up: registry
 	kind create cluster --name racetrack --config utils/kind-config.yaml || true
 	kind get clusters | grep -q 'racetrack' # make sure cluster exists
+	kubectl config use-context kind-racetrack
 	kubectl config set-context --current --namespace=racetrack
 	kubectl cluster-info --context kind-racetrack
 	# Enable service monitors in a cluster
