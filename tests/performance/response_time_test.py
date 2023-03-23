@@ -1,7 +1,6 @@
 import os
 import statistics
 import sys
-import time
 
 import httpx
 from dotenv import load_dotenv
