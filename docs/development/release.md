@@ -1,4 +1,4 @@
-# Deployment & Release
+# Release
 
 ## Versioning
 

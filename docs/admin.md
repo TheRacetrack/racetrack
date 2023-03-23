@@ -1,18 +1,5 @@
 # Administering Racetrack
 
-## Deploying Racetrack
-
-Prerequisites:
-
-- k8s cluster
-
-1. Adjust the docker registry urls and build Racetrack images: `make docker-push`
-2. Deploy the containers either using manual `kubectl apply -k kustomize/dev`
-or with automated system like Flux.
-
-Security warning: make sure to enable TLS traffic to PUB and Lifecycle API, since
-they will receive secret tokens, which otherwise would be sent plaintext.
-
 ## Maintaining Racetrack
 
 ### Managing users
