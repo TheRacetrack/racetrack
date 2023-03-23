@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: image-builder
+  labels:
+    app.kubernetes.io/name: image-builder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: image-builder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: image-builder
+    spec:
+      hostname: image-builder
+      subdomain: image-builder
+      priorityClassName: high-priority
+      containers:
+        - name: image-builder
+          image: ghcr.io/theracetrack/racetrack/image-builder:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7001
+          tty: true
+          volumeMounts:
+            - name: image-builder-config
+              mountPath: /etc/racetrack/image-builder/
+            - name: docker-push-secret
+              mountPath: "/home/racetrack/.docker/"
+            - name: racetrack-plugins
+              mountPath: /mnt/plugins
+          env:
+            - name: CONFIG_FILE
+              value: /etc/racetrack/image-builder/config.yaml
+            - name: DOCKER_TLS_CERTDIR
+              value: ''
+            - name: DOCKER_HOST
+              value: tcp://127.0.0.1:2375
+            - name: DEBUG
+              value: 'true'
+            - name: LIFECYCLE_AUTH_TOKEN
+              value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY'
+        - name: docker-engine
+          image: docker:dind
+          ports:
+            - containerPort: 2375
+          tty: true
+          args: []
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ''
+      volumes:
+        - name: image-builder-config
+          configMap:
+            name: image-builder-config
+        - name: docker-push-secret
+          secret:
+            secretName: docker-registry-write-secret
+            items:
+              - key: .dockerconfigjson
+                path: config.json
+        - name: racetrack-plugins
+          persistentVolumeClaim:
+            claimName: racetrack-plugins-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: image-builder
+  labels:
+    app.kubernetes.io/name: image-builder
+spec:
+  selector:
+    app.kubernetes.io/name: image-builder
+  type: LoadBalancer
+  ports:
+    - name: image-builder
+      port: 7001
+      targetPort: 7001

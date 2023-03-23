@@ -1,0 +1,47 @@
+commonLabels:
+  app: racetrack
+resources:
+- docker-registry-secret.yaml
+- namespace.yaml
+- roles.yaml
+- priorities.yaml
+- volumes.yaml
+- lifecycle.yaml
+- lifecycle-supervisor.yaml
+- image-builder.yaml
+- dashboard.yaml
+- pub.yaml
+- postgres.yaml
+- prometheus.yaml
+- grafana.yaml
+
+configMapGenerator:
+  - name: postgres-env
+    envs:
+      - postgres.env
+    namespace: racetrack
+  - name: pgbouncer-env
+    envs:
+      - pgbouncer.env
+    namespace: racetrack
+  - name: lifecycle-env
+    envs:
+      - lifecycle.env
+    namespace: racetrack
+  - name: lifecycle-config
+    namespace: racetrack
+    files:
+      - config.yaml=lifecycle.config.yaml
+  - name: image-builder-config
+    namespace: racetrack
+    files:
+      - config.yaml=image-builder.config.yaml
+  - name: prometheus-config
+    namespace: racetrack
+    files:
+      - prometheus.yaml=config/prometheus/prometheus.yaml
+  - name: grafana-config
+    namespace: racetrack
+    files:
+      - datasource.yml=config/grafana/datasource.yaml
+      - all.yml=config/grafana/dashboards-all.yaml

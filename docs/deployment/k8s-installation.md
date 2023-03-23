@@ -132,7 +132,7 @@ This will convert your source code to a REST microservice workload, called **Job
 
 ## Call your Job
 
-You can find your application on the Racetrack Dashboard,
+You can find your job on the Racetrack Dashboard,
 which is available at http://aks-racetrack.example.com:7003/dashboard
 (use default login `admin` with password `admin`).
 
@@ -164,13 +164,6 @@ You can use Kubernetes Dashboard UI to troubleshoot your application, and manage
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ```
 
-Enable access to the Dashboard from your local computer, by running the following command:
-```shell
-kubectl proxy
-```
-
-It will make Dashboard available at http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/.
-
 Create a token for the admin user:
 ```shell
 cat <<EOF | kubectl apply -f -
@@ -200,6 +193,13 @@ kubectl -n kubernetes-dashboard create token admin-user
 ```
 
 The last command should print out the token that lets you log in to the Kubernetes Dashboard.
+
+Enable access to the Dashboard from your local computer, by running the following command:
+```shell
+kubectl proxy
+```
+
+It will make Dashboard available at [http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/).
 
 ## Production Deployment
 
