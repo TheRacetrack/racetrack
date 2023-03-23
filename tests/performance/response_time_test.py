@@ -39,7 +39,7 @@ try:
 
         try:
             response.raise_for_status()
-        except:
+        except httpx.HTTPStatusError:
             print(f'Response error: {response.content}')
             raise
         durations.append(duration)
