@@ -10,7 +10,7 @@ As an example, let's make a plugin to run jobs written in [Go programming langua
 ### 1. Create a git repository
 Create a git repository (or use existing one) to keep the source code of the plugin.
 
-We're going to use https://github.com/TheRacetrack/plugin-go-job-type 
+We're going to use https://github.com/TheRacetrack/plugin-go-job-type
 repository and we'll place the plugin inside `golang-job-type` subdirectory.
 
 ### 2. Initialize plugin manifest
@@ -27,7 +27,7 @@ url: https://github.com/TheRacetrack/plugin-go-job-type
 ### 3. Write the wrapper
 Let's create the "wrapper" written in the language of choice.
 Wrapper is a program that runs given source code, wraps it up in a Web server,
-adds some features to it (eg. metrics, swagger page) 
+adds some features to it (eg. metrics, swagger page)
 and forwards the HTTP requests, calling the wrapped code.
 In other words, "Language Wrapper" converts your code written in your language
 to a standardized Job web service.
@@ -73,7 +73,7 @@ go_wrapper
 Let's assume that the user's source code will be placed in `go_wrapper/src/handler/` subfolder.
 It will be injected there by docker during building the image.
 
-For interpreted languages one could possibly load code modules 
+For interpreted languages one could possibly load code modules
 on the fly from a given source code location
 (see [Python wrapper](https://github.com/TheRacetrack/plugin-python-job-type/tree/master/python3-job-type/python_wrapper) as an example).
 
@@ -87,9 +87,9 @@ module stub
 go 1.16
 
 require (
-	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
-	github.com/mattn/go-colorable v0.1.12 // indirect
+    github.com/go-stack/stack v1.8.1 // indirect
+    github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
+    github.com/mattn/go-colorable v0.1.12 // indirect
 )
 ```
 
@@ -346,7 +346,7 @@ func MetricHandler() gin.HandlerFunc {
 ```
 </details>
 
-`go_wrapper/openapi.go` as well as `go_wrapper/swaggerui/` handles the swaggerui dashboard:
+`go_wrapper/openapi.go` handles the swaggerui dashboard:
 <details>
   <summary>File `go_wrapper/openapi.go`</summary>
 
@@ -1013,19 +1013,19 @@ Every wrapper has to follow some rules:
 
 - HTTP server MUST run on port 7000, address `0.0.0.0`.
 - HTTP server MUST mount endpoints at `/pub/job/{name}/{version}` base URL,
-  where `{name}` is the name of the job taken from `JOB_NAME` environment 
-  variable (it will be assigned by docker) and `{version}` should match any string 
+  where `{name}` is the name of the job taken from `JOB_NAME` environment
+  variable (it will be assigned by docker) and `{version}` should match any string
   (due to job can be accessed by explicit version or by `latest` alias).
-- HTTP server MUST have `/live` and `/ready` endpoints returning `200` status code, 
+- HTTP server MUST have `/live` and `/ready` endpoints returning `200` status code,
   once it's alive and ready to accept requests.
 - `/live` endpoint MUST return `{"deployment_timestamp": 1654779364}` JSON object.
-  `"deployment_timestamp"` integer value should be taken from 
+  `"deployment_timestamp"` integer value should be taken from
   `JOB_DEPLOYMENT_TIMESTAMP` environment variable (it will be set by docker).
-  This is the timestamp of the deployment, it's needed to distinguish versions 
+  This is the timestamp of the deployment, it's needed to distinguish versions
   in case of asynchronous redeployment of the job.
   `/live` endpoint MAY contain other JSON fields as well.
-- You MAY implement swagger documentation for your endpoints on root endpoint.
-- You MAY implement `/metrics` endpoint for exposing Prometheus metrics.
+- You MAY implement [swagger](https://swagger.io/tools/swagger-ui/) documentation for your endpoints on root endpoint.
+- You MAY implement `/metrics` endpoint for exposing [Prometheus](https://prometheus.io/) metrics.
 - You MAY expose any other endpoints.
 - Be careful to isolate libraries / requirements installed by the user
   from the versions of the libraries used by the core wrapper.
@@ -1034,11 +1034,11 @@ Every wrapper has to follow some rules:
 
 Building of the job docker image is split into two steps, having performance of the building in mind:
 
-1. **Building base image** - 
+1. **Building base image** -
   Base image contains files common to every Job (wrapper code).
   Base image doesn't depend on any particular Job or manifest.
   The image is built by Racetrack once on first use.
-2. **Building Job from template** - 
+2. **Building Job from template** -
   Job Dockerfile is the outcome of the Dockerfile template and the manifest of the Job that is about to be deployed.
   The Job image extends the base image.
   The job source code is injected into the image during building.
@@ -1079,7 +1079,7 @@ It should be a Jinja2 template, it can make use of the following variables:
 - `env_vars` - dict with environment variables that should be assigned to the Job container
 - `manifest` - whole Job Manifest object (see [Job Manifest Schema](../manifest-schema.md))
 - `git_version` - version of the Job code taken from git repository
-- `deployed_by_racetrack_version` - version of the Racetrack that has been used to build this image 
+- `deployed_by_racetrack_version` - version of the Racetrack that has been used to build this image
   (you can use it in the application to present it somewhere)
 
 Here's `job-template.Dockerfile`:
@@ -1166,7 +1166,7 @@ go.sum
 ### 8. Bundle plugin into a ZIP file
 Local source code of the plugin can be turned into a ZIP file
 by means of a `racetrack` client tool.
-Install it with: 
+Install it with:
 ```shell
 python3 -m pip install --upgrade racetrack-client
 ```
