@@ -24,11 +24,6 @@ class UserCookieMiddleWare(object):
     def __call__(self, request):
         response = self.get_response(request)
 
-        cookie_domain = os.environ.get('CLUSTER_FQDN', None)
-        if cookie_domain:
-            racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
-            cookie_domain = f'{racetrack_subdomain}.{cookie_domain}'
-
         try:
             user_authenticated = request.user.is_authenticated
         except OperationalError as e:
@@ -42,7 +37,7 @@ class UserCookieMiddleWare(object):
             if auth_token is None:
                 logging.error("UserCookieMiddleware: user_auth from session is empty")
                 return response
-        
+
             set_auth_token_cookie(auth_token, response)
 
         elif not user_authenticated:
@@ -70,7 +65,7 @@ def set_auth_token_cookie(auth_token: str, response: HttpResponse):
         max_age=60 * 60 * 24 * 31,  # one month of cookie lifetime (in seconds), also makes cookie persist between browser restarts
         samesite='lax',  # cookie is sent only when user access origin site or navigates to it, prevents CSRF
         httponly=True,  # prevents client-side JavaScript read access
-        secure=True)  # cookie is sent only when request is made with https (except on localhost)
+        secure=False)  # cookie is sent only when request is made with https (except on localhost)
 
 
 def _get_cookie_domain() -> str | None:
