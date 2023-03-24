@@ -86,7 +86,7 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: image-builder
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - name: image-builder
       port: 7001

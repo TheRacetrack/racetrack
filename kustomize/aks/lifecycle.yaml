@@ -63,7 +63,6 @@ spec:
               valueFrom: null
             - name: CLUSTER_FQDN
               value: ''
-              valueFrom: null
             - name: DEBUG
               value: 'true'
             - name: DJANGO_DEBUG
@@ -99,7 +98,7 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: lifecycle
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - name: lifecycle
       port: 7002

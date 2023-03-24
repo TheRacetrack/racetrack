@@ -50,7 +50,7 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: prometheus
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - name: prometheus
       port: 9090

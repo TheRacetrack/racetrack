@@ -55,10 +55,8 @@ spec:
               value: 'dev'
             - name: PUBLIC_IP
               value: ''
-              valueFrom: null
             - name: CLUSTER_FQDN
               value: ''
-              valueFrom: null
           livenessProbe:
             httpGet:
               path: /live
@@ -83,7 +81,7 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: dashboard
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - name: dashboard
       port: 7003
