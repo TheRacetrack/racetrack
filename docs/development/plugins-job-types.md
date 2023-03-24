@@ -1,7 +1,8 @@
 # Job type plugins
 
 This tutorial shows  how to create a plugin extending Racetrack with your own job types.
-Job types allow you to run applications written in specific programming languages.
+A job type specifies a manner in which to execute software as a job -
+typically this software will be a programming language, though it can be anything.
 
 ## How to create a job-type plugin
 
@@ -10,13 +11,14 @@ As an example, let's make a plugin to run jobs written in [Go programming langua
 ### 1. Create a git repository
 Create a git repository (or use existing one) to keep the source code of the plugin.
 
-We're going to use https://github.com/TheRacetrack/plugin-go-job-type
-repository and we'll place the plugin inside `golang-job-type` subdirectory.
+This example will use the https://github.com/TheRacetrack/plugin-go-job-type
+repository and have the plugin placed inside the `golang-job-type` subdirectory.
 
 ### 2. Initialize plugin manifest
-Create `plugin-manifest.yaml` file in a `golang-job-type` subdirectory.
-It contains the metadata of the plugin, including name, version
-and the URL of the plugin home page.
+Create a `plugin-manifest.yaml` file in your plugins subdirectory, in this
+example, the `golang-job-type` subdirectory.
+This file should contain the metadata of the plugin, including name, version
+and the URL of the plugin's home page. For example:
 
 ```yaml
 name: golang-job-type
@@ -25,15 +27,16 @@ url: https://github.com/TheRacetrack/plugin-go-job-type
 ```
 
 ### 3. Write the wrapper
-Let's create the "wrapper" written in the language of choice.
-Wrapper is a program that runs given source code, wraps it up in a Web server,
-adds some features to it (eg. metrics, swagger page)
-and forwards the HTTP requests, calling the wrapped code.
-In other words, "Language Wrapper" converts your code written in your language
-to a standardized Job web service.
+You need to create a wrapper for your software so it can run on racetrack.
+A wrapper is a program that runs given piece of software,
+wraps it up in a web server, adds features to it (eg. metrics, swagger page)
+and forwards HTTP requests calling the wrapped code.
+In other words, wrapping your piece of software converts it into a standardized
+Job web service.
 
-This section would be different for each language.
-When it comes to Go, we can organize the wrapper code in the following structure:
+As there's a great diversity of possible pieces of software, wrapping it
+can differ greatly. For out example of writing a Go wrapper, we can organize
+the wrapper code in the following structure:
 ```
 go_wrapper
 ├── go.mod
@@ -77,7 +80,7 @@ For interpreted languages one could possibly load code modules
 on the fly from a given source code location
 (see [Python wrapper](https://github.com/TheRacetrack/plugin-python-job-type/tree/master/python3-job-type/python_wrapper) as an example).
 
-Here's how `go_wrapper/handler/go.mod` looks like:
+Here's what `go_wrapper/handler/go.mod` looks like:
 
 ```go
 // This is just a stub for IDE.
@@ -96,7 +99,7 @@ require (
 The stub above will be replaced by user's code.
 `func Perform(input map[string]interface{}) (interface{}, error)` function is our interface
 between wrapper and user's code.
-User is only required to provide the function matching this interface.
+A job is only required to provide the function matching this interface.
 
 `go_wrapper/main.go` contains the main function setting up the server:
 <details>
@@ -1032,12 +1035,13 @@ Every wrapper has to follow some rules:
 
 ### 4. Prepare base Dockerfile
 
-Building of the job docker image is split into two steps, having performance of the building in mind:
+Building the job docker image is split into two steps,
+with the performance of building the image in mind:
 
 1. **Building base image** -
   Base image contains files common to every Job (wrapper code).
   Base image doesn't depend on any particular Job or manifest.
-  The image is built by Racetrack once on first use.
+  The image is built by Racetrack on first use.
 2. **Building Job from template** -
   Job Dockerfile is the outcome of the Dockerfile template and the manifest of the Job that is about to be deployed.
   The Job image extends the base image.
@@ -1131,7 +1135,7 @@ See [developing-plugins.md](./developing-plugins.md) for the list of all support
 
 We want to provide job types with this plugin,
 so let's implement `job_types` method.
-It defines what's the name of our new job type (`'go'`).
+It defines what's the name of our new job type (`'go'` in our example).
 Also it has the reference to the base Dockerfile path
 and the dockerfile template path we created earlier.
 
@@ -1171,20 +1175,20 @@ Install it with:
 python3 -m pip install --upgrade racetrack-client
 ```
 
-Let's run `racetrack plugin bundle` in a directory where the plugin is located (`go-job-type` dir)
-to turn a plugin into a ZIP file.
+Running `racetrack plugin bundle` in a directory where the plugin is
+located (`go-job-type` dir) turns the plugin into a ZIP file.
 
 ## Installing plugin to Racetrack
 
 Now, we can make use of the plugin by installing it to Racetrack.
 
-Let's go to the Dashboard Administration page
-(you need to be staff user to see this tab)
+Go to the Dashboard Administration page logged in as a staff user,
 and upload the zipped plugin there.
 
 ## Deploying sample Job
 
-Let's create an exemplary Job `sample-golang-function` that will be deployed to Racetrack.
+First, create an example Job (`sample-golang-function` for this example)
+that will be deployed to Racetrack.
 
 `perform.go` file contains the logic we want to deploy:
 ```go
@@ -1221,7 +1225,7 @@ func Perform(input map[string]interface{}) (interface{}, error) {
 }
 ```
 
-and the Job manifest `job.yaml` might look like this:
+Our example Job manifest `job.yaml` looks like this:
 ```yaml
 name: golang-function
 owner_email: sample@example.com
