@@ -15,8 +15,12 @@ spec:
       labels:
         app.kubernetes.io/name: image-builder
     spec:
+      securityContext:
+        fsGroup: 200000
       hostname: image-builder
       subdomain: image-builder
+      imagePullSecrets:
+        - name: docker-registry-read-secret
       priorityClassName: high-priority
       containers:
         - name: image-builder
@@ -25,6 +29,9 @@ spec:
           ports:
             - containerPort: 7001
           tty: true
+          securityContext:
+            runAsUser: 100000
+            runAsGroup: 100000
           volumeMounts:
             - name: image-builder-config
               mountPath: /etc/racetrack/image-builder/

@@ -15,8 +15,14 @@ spec:
       labels:
         app.kubernetes.io/name: pub
     spec:
+      securityContext:
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
       hostname: pub
       subdomain: pub
+      imagePullSecrets:
+        - name: docker-registry-read-secret
       priorityClassName: high-priority
       containers:
         - name: pub
