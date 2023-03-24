@@ -3,43 +3,25 @@
 This tutorial shows  how to create a plugin extending Racetrack with your own job types.
 Job types allow you to run applications written in specific programming languages.
 
-## Overall flow
-
-Here's the overall flow which describes how job types are created
-and used by others to deploy Job workloads:
-
-[![Job Type Plugins](../assets/job-type-plugins.png)](../assets/job-type-plugins.png)
-
-1. **Plugin Developer** writes the source code of a wrapper and base.Dockerfile.
-  He creates plugin code, Job template Dockerfile and plugin Manifest.
-  Next, he turns it into a ZIP plugin using a plugin bundler.
-2. He uploads the plugin to the Racetrack.
-3. **Data Scientist** writes the source code of his Job and pushes it to a Git repository.
-4. He creates job.yaml Manifest (including job type name and reference to a git repository)
-  and starts a deployment using racetrack client.
-5. Racetrack builds the base image and the Job image made of templated Job Dockerfile
-  and the Job type source code pulled from git.
-6. Racetrack creates Kubernetes resources for the Job workload.
-
 ## How to create a job-type plugin
 
-As an example, let's make a plugin to run jobs written in [Rust programming language](https://www.rust-lang.org/).
+As an example, let's make a plugin to run jobs written in [Go programming language](https://www.go.dev/).
 
 ### 1. Create a git repository
 Create a git repository (or use existing one) to keep the source code of the plugin.
 
-We're going to use https://github.com/TheRacetrack/plugin-rust-job-type 
-repository and we'll place the plugin inside `rust-job-type` subdirectory.
+We're going to use https://github.com/TheRacetrack/plugin-go-job-type 
+repository and we'll place the plugin inside `golang-job-type` subdirectory.
 
 ### 2. Initialize plugin manifest
-Create `plugin-manifest.yaml` file in a `rust-job-type` subdirectory.
+Create `plugin-manifest.yaml` file in a `golang-job-type` subdirectory.
 It contains the metadata of the plugin, including name, version
 and the URL of the plugin home page.
 
 ```yaml
-name: rust-job-type
-version: 1.0.0
-url: https://github.com/TheRacetrack/plugin-rust-job-type
+name: golang-job-type
+version: 0.0.0
+url: https://github.com/TheRacetrack/plugin-go-job-type
 ```
 
 ### 3. Write the wrapper
@@ -51,219 +33,304 @@ In other words, "Language Wrapper" converts your code written in your language
 to a standardized Job web service.
 
 This section would be different for each language.
-When it comes to Rust, we can organize the wrapper code in the following structure:
+When it comes to Go, we can organize the wrapper code in the following structure:
 ```
-rust_wrapper
-├── Cargo.toml
-└── src
-    ├── handler
-    │   └── mod.rs
-    ├── health.rs
-    ├── main.rs
-    └── server.rs
+go_wrapper
+├── go.mod
+├── go.sum
+├── handler
+│   ├── go.mod
+│   ├── go.sum
+│   └── perform.go
+├── health.go
+├── main.go
+├── Makefile
+├── openapi.go
+├── server.go
+└── swaggerui
+    ├── favicon-16x16.png
+    ├── favicon-32x32.png
+    ├── index.css
+    ├── index.html
+    ├── oauth2-redirect.html
+    ├── openapi.json
+    ├── swagger-initializer.js
+    ├── swagger-ui-bundle.js
+    ├── swagger-ui-bundle.js.map
+    ├── swagger-ui.css
+    ├── swagger-ui.css.map
+    ├── swagger-ui-es-bundle-core.js
+    ├── swagger-ui-es-bundle-core.js.map
+    ├── swagger-ui-es-bundle.js
+    ├── swagger-ui-es-bundle.js.map
+    ├── swagger-ui.js
+    ├── swagger-ui.js.map
+    ├── swagger-ui-standalone-preset.js
+    └── swagger-ui-standalone-preset.js.map
 ```
 
-Let's assume that the user's source code will be placed in `rust_wrapper/src/handler/` subfolder.
+Let's assume that the user's source code will be placed in `go_wrapper/src/handler/` subfolder.
 It will be injected there by docker during building the image.
 
-We'll do that way because Rust is a compiled language. 
-If it was interpreted language (like Python), 
-we could possibly load Python modules on the fly from the given source code location
-(see [Python wrapper](../../wrappers/python_wrapper/job_wrapper)).
+For interpreted languages one could possibly load code modules 
+on the fly from a given source code location
+(see [Python wrapper](https://github.com/TheRacetrack/plugin-python-job-type/tree/master/python3-job-type/python_wrapper) as an example).
 
-Here's how `rust_wrapper/src/handler/mod.rs` looks like:
+Here's how `go_wrapper/handler/go.mod` looks like:
 
-```rust
+```go
 // This is just a stub for IDE.
-// It gets replaced by user's Job code in job-template.Dockerfile
-use std::collections::HashMap;
-use serde_json::{Value, json};
+// It gets replaced by user's Job code in wrappers/docker/golang/job-template.Dockerfile
+module stub
 
-pub fn perform(input: HashMap<String, Value>) -> Value {
-    json!(input)
-}
+go 1.16
+
+require (
+	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
+	github.com/mattn/go-colorable v0.1.12 // indirect
+)
 ```
 
-Although it contains just a mock implementation,
-it will be used the same way with real source code.
 The stub above will be replaced by user's code.
-`perform(input: HashMap<String, Value>)` function is our interface between wrapper and user's code.
+`func Perform(input map[string]interface{}) (interface{}, error)` function is our interface
+between wrapper and user's code.
 User is only required to provide the function matching this interface.
 
-`rust_wrapper/src/main.rs` contains the main function setting up the server:
+`go_wrapper/main.go` contains the main function setting up the server:
 <details>
-  <summary>File `rust_wrapper/src/main.rs`</summary>
+  <summary>File `go_wrapper/main.go`</summary>
 
-```rust
-mod server;
-mod handler;
-mod health;
+```go
+package main
 
-fn main() {
-    server::serve().unwrap();
+import (
+    handler "racetrack/job"
+)
+
+func main() {
+    err := WrapAndServe(handler.Perform)
+    if err != nil {
+        panic(err)
+    }
 }
 ```
 </details>
 
-`rust_wrapper/src/server.rs` contains the function that starts the server and redirects calls to perform function:
+`go_wrapper/server.go` contains the function that starts the server
+and redirects calls to perform function:
 <details>
-  <summary>File `rust_wrapper/src/server.rs`</summary>
+  <summary>File `go_wrapper/server.go`</summary>
 
-```rust
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use actix_web::middleware::Logger;
-use log::{info, LevelFilter};
-use env_logger::{Builder, Target};
-use std::collections::HashMap;
-use serde_json::{Value};
-use crate::handler::perform;
-use crate::health::{health_handler, live_handler, ready_handler};
-use std::env;
+```go
+package main
 
-#[actix_web::main]
-pub async fn serve() -> std::io::Result<()> {
-    Builder::new()
-        .target(Target::Stdout)
-        .filter(None, LevelFilter::Debug)
-        .init();
-    info!("I wish only to serve...");
+import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "os"
 
-    let job_name = env::var("JOB_NAME").unwrap();
-	// Serve endpoints at raw path (to facilitate debugging) and prefixed path (when accessed through PUB).
-	// Accept any version so that job can be called by its many version names ("latest", "1.x").
-	let base_urls: Vec<String> = vec![
-		format!("/pub/job/{name}/{{version}}", name=job_name),
-		String::new(),
-    ];
+    "github.com/gorilla/mux"
+    log "github.com/inconshreveable/log15"
+    "github.com/pkg/errors"
+)
 
-    HttpServer::new(move || {
-        let mut app = App::new();
+// WrapAndServe embeds given function in a HTTP server and listens for requests
+func WrapAndServe(entrypoint EntrypointHandler) error {
+    performHandler := buildHandler(entrypoint)
 
-        for base_url in base_urls.iter() {
-            app = app
-                .route(&*format!("{}", base_url), web::get().to(homepage))
-                .route(&*format!("{}/", base_url), web::get().to(homepage))
-                .route(&*format!("{}/health", base_url), web::get().to(health_handler))
-                .route(&*format!("{}/live", base_url), web::get().to(live_handler))
-                .route(&*format!("{}/ready", base_url), web::get().to(ready_handler))
-                .route(&*format!("{}/api/v1/perform", base_url), web::post().to(perform_handler))
+    jobName := os.Getenv("JOB_NAME")
+    // Serve endpoints at raw path (to facilitate debugging) and prefixed path (when accessed through   PUB).
+    // Accept any version so that job can be called by its many version names ("latest", "1.x").
+    baseUrls := []string{
+        fmt.Sprintf("/pub/job/%s/{version}", jobName),
+        "",
+    }
+
+    router := mux.NewRouter()
+
+    for _, baseUrl := range baseUrls {
+
+        router.HandleFunc(baseUrl+"/api/v1/perform", performHandler)
+        router.HandleFunc(baseUrl+"/health", HealthHandler)
+        router.HandleFunc(baseUrl+"/live", LiveHandler)
+        router.HandleFunc(baseUrl+"/ready", ReadyHandler)
+        MountOpenApi(router, baseUrl)
+    }
+
+    loggingMiddleware := func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            log.Info("Request", log.Ctx{
+                "method": r.Method,
+                "uri":    r.RequestURI,
+                "ip":     r.RemoteAddr,
+            })
+            next.ServeHTTP(w, r)
+        })
+    }
+    router.Use(loggingMiddleware)
+
+    listenAddress := "0.0.0.0:7000"
+    log.Info("Listening on", log.Ctx{
+        "listenAddress": listenAddress,
+        "baseUrls":      baseUrls,
+    })
+    if err := http.ListenAndServe(listenAddress, router); err != nil {
+        log.Error("Serving http", log.Ctx{"error": err})
+        return errors.Wrap(err, "Failed to serve")
+    }
+    return nil
+}
+
+type EntrypointHandler func(input map[string]interface{}) (interface{}, error)
+
+func buildHandler(entrypointHandler EntrypointHandler) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, req *http.Request) {
+        log.Debug("Perform request received")
+
+        var input map[string]interface{}
+        err := json.NewDecoder(req.Body).Decode(&input)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
         }
 
-        app.wrap(Logger::default())
-    })
-    .bind(("0.0.0.0", 7000))?
-    .run()
-    .await
-}
+        output, err := entrypointHandler(input)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 
-async fn homepage() -> impl Responder {
-    HttpResponse::Ok().body("This is a job built with Rust language wrapper")
-}
-
-async fn perform_handler(input: web::Json<HashMap<String, Value>>) -> web::Json<Value> {
-    let input_map: HashMap<String, Value> = input.into_inner();
-    let output: Value = perform(input_map);
-    web::Json(output)
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(output)
+    }
 }
 ```
 </details>
 
 
-`rust_wrapper/src/health.rs` handles liveness and readiness probes:
+`go_wrapper/health.go` handles liveness and readiness probes:
 <details>
-  <summary>File `rust_wrapper/src/health.rs`</summary>
+  <summary>File `go_wrapper/health.go`</summary>
 
-```rust
-use actix_web::{web};
-use serde::{Serialize};
-use std::env;
+```go
+package main
 
-#[derive(Serialize)]
-pub struct HealthResponse {
-    service: String,
-    job_name: String,
-    job_version: String,
-    git_version: String,
-    deployed_by_racetrack_version: String,
-    status: String,
-    deployment_timestamp: u64,
+import (
+    "encoding/json"
+    "net/http"
+    "os"
+    "strconv"
+)
+
+type HealthResponse struct {
+    Service                    string `json:"service"`
+    JobName                 string `json:"job_name"`
+    JobVersion              string `json:"job_version"`
+    GitVersion                 string `json:"git_version"`
+    DeployedByRacetrackVersion string `json:"deployed_by_racetrack_version"`
+    Status                     string `json:"status"`
+    DeploymentTimestamp        int    `json:"deployment_timestamp"`
 }
 
-#[derive(Serialize)]
-pub struct LiveResponse {
-    status: String,
-    deployment_timestamp: u64,
+type LiveResponse struct {
+    Status              string `json:"status"`
+    DeploymentTimestamp int    `json:"deployment_timestamp"`
 }
 
-#[derive(Serialize)]
-pub struct ReadyResponse {
-    status: String,
+type ReadyResponse struct {
+    Status string `json:"status"`
 }
 
-pub async fn health_handler() -> web::Json<HealthResponse> {
-    let deployment_timestamp: u64 = env::var("JOB_DEPLOYMENT_TIMESTAMP").unwrap().parse().unwrap();
-    let job_name = env::var("JOB_NAME").unwrap();
-    let job_version = env::var("JOB_VERSION").unwrap();
-    let git_version = env::var("GIT_VERSION").unwrap();
-    let racetrack_version = env::var("DEPLOYED_BY_RACETRACK_VERSION").unwrap();
-    web::Json(HealthResponse {
-        service: String::from("job"),
-        job_name: job_name,
-        job_version: job_version,
-        git_version: git_version,
-        deployed_by_racetrack_version: racetrack_version,
-        status: String::from("pass"),
-        deployment_timestamp: deployment_timestamp,
-    })
+func HealthHandler(w http.ResponseWriter, req *http.Request) {
+    deploymentTimestamp, _ := strconv.Atoi(os.Getenv("JOB_DEPLOYMENT_TIMESTAMP"))
+    output := &HealthResponse{
+        Service:                    "job",
+        JobName:                 os.Getenv("JOB_NAME"),
+        JobVersion:              os.Getenv("JOB_VERSION"),
+        GitVersion:                 os.Getenv("GIT_VERSION"),
+        DeployedByRacetrackVersion: os.Getenv("DEPLOYED_BY_RACETRACK_VERSION"),
+        DeploymentTimestamp:        deploymentTimestamp,
+        Status:                     "pass",
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(output)
 }
 
-pub async fn live_handler() -> web::Json<LiveResponse> {
-    let deployment_timestamp: u64 = env::var("JOB_DEPLOYMENT_TIMESTAMP").unwrap().parse().unwrap();
-    web::Json(LiveResponse {
-        status: String::from("live"),
-        deployment_timestamp: deployment_timestamp,
-    })
+func LiveHandler(w http.ResponseWriter, req *http.Request) {
+    deploymentTimestamp, _ := strconv.Atoi(os.Getenv("JOB_DEPLOYMENT_TIMESTAMP"))
+    output := &LiveResponse{
+        Status:              "live",
+        DeploymentTimestamp: deploymentTimestamp,
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(output)
 }
 
-pub async fn ready_handler() -> web::Json<ReadyResponse> {
-    web::Json(ReadyResponse {
-        status: String::from("ready"),
-    })
+func ReadyHandler(w http.ResponseWriter, req *http.Request) {
+    output := &ReadyResponse{
+        Status: "ready",
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(output)
 }
 ```
 </details>
 
-`rust_wrapper/Cargo.toml` is the file with package dependencies used by Rust:
+`go_wrapper/go.mod` and `go_wrapper/go.sum` are the files with package dependencies used by Go:
 <details>
-  <summary>File `rust_wrapper/Cargo.toml`</summary>
+  <summary>File `go_wrapper/go.mod`</summary>
 
-```ini
-[package]
-name = "rust_wrapper"
-version = "0.1.0"
-edition = "2021"
+```
+module github.com/TheRacetrack/plugin-go-job-type/golang-job-type  
+go 1.16
 
-[dependencies]
-actix-web = "4.0.1"
-serde = { version = "1.0.137", features = ["derive"] }
-log = "0.4.17"
-env_logger = "0.9.0"
-serde_json = "1.0.81"
+require (
+    github.com/gorilla/mux v1.8.0
+    github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac
+    github.com/pkg/errors v0.9.1
+    racetrack/job v0.0.0
+)
+replace racetrack/job => ./handler
+```
+</details>
+
+<details>
+  <summary>File `go_wrapper/go.sum`</summary>
+
+```
+github.com/go-stack/stack v1.8.1 h1:ntEHSVwIt7PNXNpgPmVfMrNhLtgjlmnZha2kOpuRiDw=
+github.com/go-stack/stack v1.8.1/go.mod h1:dcoOX6HbPZSZptuspn9bctJ+N/CnF5gGygcUP3XYfe4=
+github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
+github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
+github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac h1:n1DqxAo4oWPMvH1+v+DLYlMCecgumhhgnxAPdqDIFHI=
+github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac/go.mod h1:cOaXtrgN4ScfRrD9Bre7U1thNq5RtJ8ZoP4iXVGRj6o=
+github.com/mattn/go-colorable v0.1.12 h1:jF+Du6AlPIjs2BiUiQlKOX0rt3SujHxPnksPKZbaA40=
+github.com/mattn/go-colorable v0.1.12/go.mod h1:u5H1YNBxpqRaxsYJYSkiCWKzEfiAb1Gb520KVy5xxl4=
+github.com/mattn/go-isatty v0.0.14 h1:yVuAays6BHfxijgZPzw+3Zlu5yQgKGP2/hcQbHb7S9Y=
+github.com/mattn/go-isatty v0.0.14/go.mod h1:7GGIvUiUoEMVVmxf/4nioHXj79iQHKdU27kJ6hsGG94=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 h1:foEbQz/B0Oz6YIqu/69kfXPYeFQAuuMYFkjaqXzl5Wo=
+golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6/go.mod h1:oPkhp1MJrh7nUepCBck5+               mAzfO9JrbApNNgaTdGDITg=
 ```
 </details>
 
 We can test the server locally by running:
 ```bash
-cd rust_wrapper &&\
-JOB_NAME=rust-function JOB_VERSION=0.0.1 JOB_DEPLOYMENT_TIMESTAMP=0 cargo run
+cd golang-job-type/go_wrapper &&\
+JOB_NAME=golang-function JOB_VERSION=0.0.1 go run .
 ```
 
 We can test its response with:
 ```bash
 curl -X POST \
-		"http://localhost:7000/pub/job/rust-function/latest/api/v1/perform" \
-		-H "Content-Type: application/json" \
-		-d '{"numbers": [40, 2]}'
+    "http://localhost:7000/pub/job/golang-function/latest/api/v1/perform" \
+    -H "Content-Type: application/json" \
+    -d '{"numbers": [40, 2]}'
 ```
 
 #### Wrapper Principles
@@ -308,29 +375,24 @@ Building of the job docker image is split into two steps, having performance of 
 Having that in mind, let's create a `base.Dockerfile`:
 
 ```dockerfile
-FROM rust:1.60-slim-buster
+FROM golang:1.16-alpine
 
-WORKDIR /src/rust_wrapper
+WORKDIR /src/go_wrapper
 
-# Install just the dependencies first, this is a trick to optimize building time by creating cached layer
-RUN cargo init
-COPY rust_wrapper/Cargo.toml rust_wrapper/Cargo.lock /src/rust_wrapper/
-RUN cargo build
+# Copy wrapper code to the image & remove the stub that is about to be replaced
+COPY go_wrapper/. /src/go_wrapper/
+RUN go get ./... && rm -rf /src/go_wrapper/handler
 
-# Copy wrapper code to the image
-COPY rust_wrapper/src /src/rust_wrapper/src/
-RUN cargo check && cargo clean
-# Remove the stub that is about to be replaced
-RUN rm -rf /src/rust_wrapper/src/handler
-
+CMD ./go_wrapper < /dev/null
 # Label image so the container can be identified as Job (for automated cleanup)
 LABEL racetrack-component="job"
 ```
 
 We can test it if it builds without errors:
 ```bash
+cd golang-job-type &&\
 DOCKER_BUILDKIT=1 docker build \
-    -t racetrack/job-base/rust:1.0.0 \
+    -t ghcr.io/theracetrack/racetrack/job-base/golang:latest \
     -f base.Dockerfile .
 ```
 
@@ -358,19 +420,24 @@ ENV {{ env_key }} "{{ env_value }}"
 {% endfor %}
 
 # Install additional libraries requested by user in its manifest
-# Note: package manager (apt) should be compliant with the base image we used earlier (rust:1.60-slim-buster)
+# Note: package manager should be compliant with the base image we used earlier
 {% if manifest.system_dependencies and manifest.system_dependencies|length > 0 %}
-RUN apt-get update -y && apt-get install -y \
+RUN apk add \
     {{ manifest.system_dependencies | join(' ') }}
 {% endif %}
 
-# Finally, copy the Job source code in the place where the wrapper expects it
-COPY . /src/rust_wrapper/src/handler/
-# Make sure directory is writable and build the executable
-RUN chmod -R a+rw /src/rust_wrapper && cd /src/rust_wrapper/ && cargo build
+{% if manifest.golang.gomod %}
+COPY "{{ manifest.golang.gomod }}" /src/job/
+RUN cd /src/job && go mod download
+{% endif %
 
-# Set the main command to run the Job executable
-CMD /src/rust_wrapper/target/debug/rust_wrapper < /dev/null
+# Finally, copy the Job source code in the place where the wrapper expects it
+COPY . /src/go_wrapper/handler/
+# Make sure directory is writable and build the executable
+RUN chmod -R a+rw /src/go_wrapper && cd /src/go_wrapper/ && go mod download
+
+# Build Go Job
+RUN go get ./... && go build -o go_wrapper
 
 # Set environment variables that are expected by Job executable
 ENV JOB_NAME "{{ manifest.name }}"
@@ -390,26 +457,26 @@ See [developing-plugins.md](./developing-plugins.md) for the list of all support
 
 We want to provide job types with this plugin,
 so let's implement `job_types` method.
-It defines what's the name of our new job type (`'rust'`).
+It defines what's the name of our new job type (`'go'`).
 Also it has the reference to the base Dockerfile path
 and the dockerfile template path we created earlier.
 
 ```python
-from typing import Dict, Tuple
+from __future__ import annotations
 from pathlib import Path
 
 
 class Plugin:
-    def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+    def job_types(self) -> dict[str, tuple[Path, Path]]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> (base image path, dockerfile template path)
         """
         return {
-            f'rust:{self.plugin_manifest.version}': [(
+            f'golang:{self.plugin_manifest.version}': (
                 self.plugin_dir / 'base.Dockerfile',
                 self.plugin_dir / 'job-template.Dockerfile',
-            )],
+            ),
         }
 ```
 
@@ -417,10 +484,9 @@ class Plugin:
 We don't need to incorporate all the local files into a plugin ZIP file.
 We can instruct `racetrack` plugin bundler to ignore these files by adding `.racetrackignore` file:
 ```
-Cargo.lock
-target
-.gitignore
-
+go_wrapper/swaggerui/*.map
+Makefile
+go.sum
 ```
 
 ### 8. Bundle plugin into a ZIP file
@@ -431,9 +497,8 @@ Install it with:
 python3 -m pip install --upgrade racetrack-client
 ```
 
-Let's run `racetrack plugin bundle` in a directory where the plugin is located (`rust-job-type` dir)
+Let's run `racetrack plugin bundle` in a directory where the plugin is located (`go-job-type` dir)
 to turn a plugin into a ZIP file.
-The outcome is `rust-job-type-1.0.0.zip`.
 
 ## Installing plugin to Racetrack
 
@@ -445,33 +510,52 @@ and upload the zipped plugin there.
 
 ## Deploying sample Job
 
-Let's create an exemplary Job `sample-rust-function` that will be deployed to Racetrack.
+Let's create an exemplary Job `sample-golang-function` that will be deployed to Racetrack.
 
-`mod.rs` file contains the logic we want to deploy:
-```rust
-use std::collections::HashMap;
-use serde_json::{Value, json};
+`perform.go` file contains the logic we want to deploy:
+```go
+package dummyserver
 
-pub fn perform(input: HashMap<String, Value>) -> Value {
-    let numbers = input.get("numbers").unwrap();
-    let numbers: &Vec<Value> = numbers.as_array().unwrap();
+import (
+    "github.com/pkg/errors"
+)
 
-    // Sum given numbers
-    let sum = numbers.iter().fold(0, |acc, x| acc + x.as_i64().unwrap());
+func Perform(input map[string]interface{}) (interface{}, error) {
+    numbers, ok := input["numbers"]
+    if !ok {
+        return nil, errors.New("'numbers' parameter was not given")
+    }
+    numbersList, ok := numbers.([]interface{})
+    if !ok {
+        return nil, errors.New("'numbers' is not a list")
+    }
+    inputFloats := make([]float64, len(numbersList))
+    var err error
+    for i, arg := range numbersList {
+        inputFloats[i] = arg.(float64)
+        if err != nil {
+            return nil, errors.Wrap(err, "converting argument to float64")
+        }
+    }
 
-    json!(sum)
+    var sum float64 = 0
+    for _, number := range inputFloats {
+        sum += number
+    }
+
+    return sum, nil
 }
 ```
 
 and the Job manifest `job.yaml` might look like this:
 ```yaml
-name: rust-function
+name: golang-function
 owner_email: sample@example.com
-lang: rust
+lang: golang:latest
 
 git:
-  remote: https://github.com/TheRacetrack/plugin-rust-job-type
-  directory: sample-rust-function
+  remote: https://github.com/TheRacetrack/plugin-go-job-type
+  directory: sample-golang-function
 ```
 
 Don't forget to push the Job code to a git repository.
