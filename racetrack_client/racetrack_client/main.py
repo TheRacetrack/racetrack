@@ -6,7 +6,7 @@ import typer
 from racetrack_client import __version__
 from racetrack_client.client.call import call_job
 from racetrack_client.client.deploy import BuildContextMethod, send_deploy_request, DeploymentError
-from racetrack_client.client.manage import JobTableColumn, move_job, delete_job, list_jobs
+from racetrack_client.client.manage import JobTableColumn, move_job, delete_job, list_jobs, complete_job_name
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client.run import run_job_locally
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
@@ -28,6 +28,7 @@ cli = typer.Typer(
     name='racetrack',
     help='CLI client tool for managing workloads in Racetrack',
 )
+
 
 def main():
     try:
@@ -70,7 +71,7 @@ def _validate(
 
 @cli.command('logs', no_args_is_help=True)
 def _logs(
-    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job', autocompletion=complete_job_name),
     version: str = typer.Option('latest', show_default=True, help='version of the job'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     tail: int = typer.Option(20, '--tail', help='number of recent lines to show'),
@@ -82,7 +83,7 @@ def _logs(
 
 @cli.command('build-logs', no_args_is_help=True)
 def _build_logs(
-    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job', autocompletion=complete_job_name),
     version: str = typer.Option('latest', show_default=True, help='version of the job'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     tail: int = typer.Option(0, '--tail', help='number of recent lines to show, all logs by default'),
@@ -102,7 +103,7 @@ def _list_jobs(
 
 @cli.command('delete', no_args_is_help=True)
 def _delete_job(
-    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job', autocompletion=complete_job_name),
     version: str = typer.Option(..., show_default=False, help='version of the job to delete'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
@@ -112,7 +113,7 @@ def _delete_job(
 
 @cli.command('move', no_args_is_help=True)
 def _move_job(
-    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job', autocompletion=complete_job_name),
     version: str = typer.Option(..., show_default=False, help='version of the job to move out'),
     infrastructure: str = typer.Option(..., show_default=False, help='infrastructure target to move to'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
@@ -159,6 +160,7 @@ def _logout(
 cli_set = typer.Typer(no_args_is_help=True, help='Set global options of the Racetrack client')
 cli.add_typer(cli_set, name="set")
 
+
 @cli_set.command('remote', no_args_is_help=True)
 def _set_remote(
     remote: str = typer.Argument(..., show_default=False, help="Racetrack server's URL or alias name"),
@@ -190,6 +192,7 @@ def _set_alias(
 cli_get = typer.Typer(no_args_is_help=True, help='Read global options of the Racetrack client')
 cli.add_typer(cli_get, name="get")
 
+
 @cli_get.command('remote')
 def _get_remote():
     """Get current Racetrack's remote address"""
@@ -206,6 +209,7 @@ def _get_config():
 # racetrack plugin ...
 cli_plugin = typer.Typer(no_args_is_help=True, help='Manage Racetrack plugins')
 cli.add_typer(cli_plugin, name="plugin")
+
 
 @cli_plugin.command('install', no_args_is_help=True)
 def _install_plugin(
@@ -250,7 +254,7 @@ def _plugin_bundle(
 
 @cli.command('call', no_args_is_help=True)
 def _call_job(
-    name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    name: str = typer.Argument(..., show_default=False, help='name of the job', autocompletion=complete_job_name),
     endpoint: str = typer.Argument(..., show_default=False, help='endpoint of the job to call, eg. /api/v1/perform'),
     payload: str = typer.Argument(..., show_default=False, help='payload of the request in JSON or YAML format'),
     version: str = typer.Option('latest', show_default=True, help='version of the job'),
