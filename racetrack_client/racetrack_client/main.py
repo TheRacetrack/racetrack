@@ -248,13 +248,13 @@ def _plugin_bundle(
     bundle_plugin(workdir, out, plugin_version)
 
 
-@cli.command('perform', no_args_is_help=True)
+@cli.command('call', no_args_is_help=True)
 def _call_job(
     name: str = typer.Argument(..., show_default=False, help='name of the job'),
+    endpoint: str = typer.Argument(..., show_default=False, help='endpoint of the job to call, eg. /api/v1/perform'),
     payload: str = typer.Argument(..., show_default=False, help='payload of the request in JSON or YAML format'),
     version: str = typer.Option('latest', show_default=True, help='version of the job'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
-    endpoint: str = typer.Option('/api/v1/perform', show_default=True, help='endpoint of the job to call'),
     curl: bool = typer.Option(False, '--curl', help='generate a curl query instead of calling the job'),
 ):
     """Call an endpoint of a job"""

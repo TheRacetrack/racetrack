@@ -35,6 +35,8 @@ def call_job(
     )
     job = parse_response_object(r, 'Lifecycle response error')
     pub_url = job.get('pub_url')
+    if not endpoint.startswith('/'):
+        endpoint = '/' + endpoint
     full_url = f'{pub_url}{endpoint}'
     payload_dict = _parse_payload(payload)
 

@@ -9,12 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New column in the *list* command of the Racetrack client displays a job type.
   Try it out by running `racetrack list -c job_type`.
   [issue #207](https://github.com/TheRacetrack/racetrack/issues/207)
-- New command `racetrack perform NAME PAYLOAD [--version VERSION] [--remote REMOTE] [--endpoint ENDPOINT] [--curl]`
+- New command `racetrack call NAME ENDPOINT PAYLOAD [--version VERSION] [--remote REMOTE] [--curl]`
   allows you to call an endpoint of a job.
   Provide the name of the job and the payload of the request in JSON or YAML format,
-  for example `racetrack perform adder '{"numbers": [40,2]}'`.
+  for example `racetrack call adder /api/v1/perform '{"numbers": [40,2]}'`.
   Use `--curl` flag, if you want to generate a curl query instead of calling the job.
-  Check out `racetrack perform --help` for more details.
+  Check out `racetrack call --help` for more details.
   [issue #146](https://github.com/TheRacetrack/racetrack/issues/146)
 
 ### Changed
