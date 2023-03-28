@@ -1,11 +1,10 @@
 from enum import Enum
-import sys
 from typing import Dict, List, Optional
 
 from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.auth import get_user_auth
 from racetrack_client.client_config.io import load_client_config
-from racetrack_client.log.logs import configure_logs, get_logger
+from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
 from racetrack_client.utils.request import parse_response, parse_response_list, Requests
 from racetrack_client.utils.table import print_table
@@ -27,9 +26,6 @@ class JobTableColumn(str, Enum):
 
 def list_jobs(remote: Optional[str], columns: List[JobTableColumn]):
     """List all deployed jobs"""
-    if not sys.stdout.isatty():
-        configure_logs(log_level='error')
-
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, remote)
     user_auth = get_user_auth(client_config, lifecycle_url)
@@ -119,3 +115,24 @@ def delete_job(name: str, version: str, remote: Optional[str]):
     )
     parse_response(r, 'Lifecycle response error')
     logger.info(f'Job "{name}" v{version} has been deleted from {lifecycle_url}')
+
+
+def complete_job_name(incomplete: str) -> List[str]:
+    """Return list of possible completions based on incomplete job name"""
+    completion = []
+
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, None)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/job',
+        headers=get_auth_request_headers(user_auth),
+    )
+    jobs: List[Dict] = parse_response_list(r, 'Lifecycle response error')
+    job_names = [job.get('name') for job in jobs]
+
+    for name in job_names:
+        if name.startswith(incomplete):
+            completion.append(name)
+    return completion
