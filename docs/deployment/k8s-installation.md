@@ -5,7 +5,7 @@ such as [AKS](https://azure.microsoft.com/en-us/products/kubernetes-service), GK
 
 ## Prerequisites
 
-1. Install [Kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
+1. Install [kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
 
 ## Create a Kubernetes cluster
 
@@ -61,15 +61,57 @@ docker_registry: ghcr.io
 docker_registry_namespace: 'theracetrack/racetrack'
 ```
 
-## Deploy Racetrack
+## Prepare Kubernetes resources
 
 If needed, make another adjustments in **kustomize/aks/** files.
 See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
+
+You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller. To do so, add the following annotations to the `ingress-nginx-controller` service in a `kustomize/aks/ingress-controller.yaml` file:
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx-controller
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-ipv4: 1.1.1.1
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_resource_group
+spec:
+  type: LoadBalancer
+...
+```
+
+If you don't know the IP address of the LoadBalancer, you can skip this step for now.
+It will be assigned after the first deployment, then you can get back to this step and set the IP address.
+
+Fill in the public IP of the Ingress in the `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in the following resources:
+
+- `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in the  **kustomize/aks/dashboard.yaml**
+- `PUBLIC_IP` env variable in the  **kustomize/aks/lifecycle.yaml**
+- `PUBLIC_IP` env variable in the  **kustomize/aks/lifecycle-supervisor.yaml**
+- `external_pub_url` in **kustomize/aks/lifecycle.config.yaml**
+
+## Deploy Racetrack
 
 Once you're ready, deploy Racetrack to your cluster:
 ```sh
 kubectl apply -k kustomize/aks/
 ```
+
+After that, verify the status of your deployments using one of your favorite tools:
+
+- `kubectl get pods`
+- Cloud Console
+- [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
+- [k9s](https://github.com/derailed/k9s)
+
+Assuming your Ingress Controller is now deployed at public IP:
+```sh
+RT_HOST=http://1.1.1.1  
+```
+you can look up the following services:
+- **Racetrack Dashboard** at `$RT_HOST/dashboard`,
+- **Lifecycle** at `$RT_HOST/lifecycle`,
+- **PUB** at `$RT_HOST/pub`,
 
 ## Configure Racetrack
 
@@ -78,13 +120,13 @@ Install racetrack-client using pip:
 python3 -m pip install --upgrade racetrack-client
 ```
 
-Log in to the Racetrack Dashboard at http://aks-racetrack.example.com:7003/dashboard with default login `admin` and password `admin`.
+Log in to the *Racetrack Dashboard* at `$RT_HOST/dashboard` with default login `admin` and password `admin`.
 Then, go to the *Profile* tab and copy your auth token.
 
 Configure a few things with the racetrack client:
 ```sh
 # Set the current Racetrack's remote address
-racetrack set remote http://aks-racetrack.example.com:7002/lifecycle
+racetrack set remote $RT_HOST/lifecycle
 # Login to Racetrack
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack
@@ -96,14 +138,14 @@ racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructur
 ## Deploy a first job
 
 Let's create a model which purpose is to add numbers.
-Keep it in a `adder` directory.
+Let's keep it in a `adder` directory.
 
 Create `adder/entrypoint.py` file with your application logic:
 ```python
 class Entrypoint:
-    def perform(self, a: float, b: float) -> float:
+    def perform(self, numbers) -> float:
         """Add numbers"""
-        return a + b
+        return sum(numbers)
 ```
 
 And a `adder/job.yaml` file describing what's inside:
@@ -121,42 +163,47 @@ python:
   entrypoint_class: 'Entrypoint'
 ```
 
-Remember to put your git remote URL in `git.remote` field and to push your changes to it.
+Remember to put your git remote URL in `git.remote` field and push your changes to it.
 
 Finally, submit your job to Racetrack:
 ```shell
 racetrack deploy adder
 ```
 
+Alternatively, you can deploy a sample from a root of the [Racetrack's repository](https://github.com/TheRacetrack/racetrack):
+```shell
+racetrack deploy sample/python-class
+```
+
 This will convert your source code to a REST microservice workload, called **Job**.
 
 ## Call your Job
 
-You can find your job on the Racetrack Dashboard,
-which is available at http://aks-racetrack.example.com:7003/dashboard
-(use default login `admin` with password `admin`).
+Go to the Racetrack Dashboard at `$RT_HOST/dashboard` to find your job there.
 
-Also, you should get the link to your Job from the `racetrack` client output.
-Check it out at http://aks-racetrack.example.com:7105/pub/job/adder/latest.
+Also, you should get the link to your job from the `racetrack` client output.
+Check it out at `$RT_HOST/pub/job/adder/latest`.
 This opens a SwaggerUI page, from which you can call your function
-(try `/perform` endpoint with `{"a": 40, "b": 2}` body).
+(try `/perform` endpoint with `{"numbers": [40, 2]}` body).
 
 ![](../assets/swaggerino.png)
 
 You can do it from CLI with an HTTP client as well:
 ```shell
-curl -X POST "http://aks-racetrack.example.com:7105/pub/job/adder/latest/api/v1/perform" \
+curl -X POST "$RT_HOST/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
-  -d '{"a": 40, "b": 2}'
+  -d '{"numbers": [40, 2]}'
 # Expect: 42
 ```
 
+Congratulations, your Racetrack Job is up and running!
+
 ## Troubleshooting
 
-Consider using [k9s](https://github.com/derailed/k9s) tool to inspect your cluster.
+Consider using [k9s](https://github.com/derailed/k9s) tool to inspect your cluster resources.
 
-### (Optional) Deploy Kubernetes Dashboard
+### Deploy Kubernetes Dashboard
 
 You can use Kubernetes Dashboard UI to troubleshoot your application, and manage the cluster resources.
 
@@ -205,12 +252,12 @@ It will make Dashboard available at [http://localhost:8001/api/v1/namespaces/kub
 
 Few improvements to keep in mind before deploying Racetrack to production:
 
-- Make sure to enable TLS traffic to your cluster, since PUB and Lifecycle API
+- Make sure to enable TLS traffic to your cluster, since **PUB** and **Lifecycle API**
   will receive secret tokens, which otherwise would be sent plaintext.
 - Encrypt your secrets, for instance, using [SOPS](https://github.com/mozilla/sops) tool
   in order not to store them in your repository.
 - Use different database password by changing `POSTGRES_PASSWORD` in **kustomize/aks/postgres.env**.
 - Use different secrets `AUTH_KEY` and `SECRET_KEY` by modifying them in **kustomize/aks/lifecycle.env**.
 - Generate new tokens `LIFECYCLE_AUTH_TOKEN` for internal communication between components.
-- After logging in to Dashboard, create a new Adminitrator user with a strong password and deactivate default *admin* user.
+- After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
 
