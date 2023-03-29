@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.12.0] - 2023-03-29
 ### Added
 - New column in the *list* command of the Racetrack client displays a job type.
   Try it out by running `racetrack list -c job_type`.
@@ -20,10 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Remember to run `racetrack --install-completion` beforehand.
   Under the hood, it fetches the available jobs from the current remote.
 
-### Fixed
-- Racetrack's cookie can work even on non-HTTPS deployments.
-  [issue #225](https://github.com/TheRacetrack/racetrack/issues/225)
-
 ### Changed
 - The *list* command of the Racetrack client drops the fancy formatting and *INFO*/*DEBUG* logs
   when being piped into another command (ie. not connected to a terminal/tty device). Try `racetrack list | cat`.
@@ -33,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance of PUB component has been improved
   by reducing number of requests made to the Lifecycle and to the database.
   [issue #155](https://github.com/TheRacetrack/racetrack/issues/155)
+- Fixed saving plugin's config.
+  [issue #218](https://github.com/TheRacetrack/racetrack/issues/218)
+- Racetrack's cookie can work even on non-HTTPS deployments.
+  [issue #225](https://github.com/TheRacetrack/racetrack/issues/225)
 
 ## [2.11.0] - 2023-03-17
 ### Added
