@@ -14,7 +14,7 @@ For instance, let's assume we've already
 [created AKS cluster on Azure](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli#create-aks-cluster),
 and we have access to it with a `kubectl` tool.
 
-In this tutorial the address of the `aks-racetrack` cluster is `aks-racetrack.example.com`.
+In this tutorial the cluster is in the context `aks-racetrack`.
 
 Verify the connection to your cluster using the `kubectl get nodes` command.
 
@@ -27,7 +27,7 @@ kubectl config set-context --current --namespace=racetrack
 
 ## Prepare Docker Registry
 Racetrack needs a Docker registry to store the images of the jobs.
-We need to instruct Kubernetes to pull them from there.
+We need to instruct Kubernetes to pull images from there.
 
 Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
 `racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
@@ -66,7 +66,9 @@ docker_registry_namespace: 'theracetrack/racetrack'
 If needed, make another adjustments in **kustomize/aks/** files.
 See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
 
-You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller. To do so, add the following annotations to the `ingress-nginx-controller` service in a `kustomize/aks/ingress-controller.yaml` file:
+You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
+To do so, add the appropriate annotations to the `ingress-nginx-controller` service in a `kustomize/aks/ingress-controller.yaml` file.
+In case of AKS, it could look like this:
 ```yaml
 apiVersion: v1
 kind: Service
@@ -80,19 +82,20 @@ spec:
 ...
 ```
 
-If you don't know the IP address of the LoadBalancer, you can skip this step for now.
-It will be assigned after the first deployment, then you can get back to this step and set the IP address.
+Now, let's make Racetrack aware of this IP address.
+If you don't know the exact IP address of the LoadBalancer, you can skip this step for now.
+It will be assigned after the first deployment, then you can get back to this step, set the IP address and apply it again.
 
-Fill in the public IP of the Ingress in the `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in the following resources:
+Fill in the public IP in the following places:
 
-- `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in the  **kustomize/aks/dashboard.yaml**
-- `PUBLIC_IP` env variable in the  **kustomize/aks/lifecycle.yaml**
-- `PUBLIC_IP` env variable in the  **kustomize/aks/lifecycle-supervisor.yaml**
+- `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in **kustomize/aks/dashboard.yaml**
+- `PUBLIC_IP` env variable in **kustomize/aks/lifecycle.yaml**
+- `PUBLIC_IP` env variable in **kustomize/aks/lifecycle-supervisor.yaml**
 - `external_pub_url` in **kustomize/aks/lifecycle.config.yaml**
 
 ## Deploy Racetrack
 
-Once you're ready, deploy Racetrack to your cluster:
+Once you're ready, deploy Racetrack's resources to your cluster:
 ```sh
 kubectl apply -k kustomize/aks/
 ```
@@ -112,6 +115,7 @@ you can look up the following services:
 - **Racetrack Dashboard** at `$RT_HOST/dashboard`,
 - **Lifecycle** at `$RT_HOST/lifecycle`,
 - **PUB** at `$RT_HOST/pub`,
+- **Grafana** at `$RT_HOST/grafana`,
 
 ## Configure Racetrack
 
@@ -123,13 +127,13 @@ python3 -m pip install --upgrade racetrack-client
 Log in to the *Racetrack Dashboard* at `$RT_HOST/dashboard` with default login `admin` and password `admin`.
 Then, go to the *Profile* tab and copy your auth token.
 
-Configure a few things with the racetrack client:
+Go back to the command line and configure a few things with the racetrack client:
 ```sh
 # Set the current Racetrack's remote address
 racetrack set remote $RT_HOST/lifecycle
-# Login to Racetrack
+# Login to Racetrack (use your Auth Token)
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
-# Activate python3 job type in the Racetrack
+# Activate python3 job type in the Racetrack - we're gonna deploy Python jobs
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 # Activate kubernetes infrastructure target in the Racetrack
 racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
@@ -170,18 +174,18 @@ Finally, submit your job to Racetrack:
 racetrack deploy adder
 ```
 
+This will convert your source code to a REST microservice workload, called **Job**.
+
 Alternatively, you can deploy a sample from a root of the [Racetrack's repository](https://github.com/TheRacetrack/racetrack):
 ```shell
 racetrack deploy sample/python-class
 ```
 
-This will convert your source code to a REST microservice workload, called **Job**.
-
 ## Call your Job
 
-Go to the Racetrack Dashboard at `$RT_HOST/dashboard` to find your job there.
+Go to the Dashboard at `$RT_HOST/dashboard` to find your job there.
 
-Also, you should get the link to your job from the `racetrack` client output.
+Also, you should get the link to your job from the `racetrack` client's output.
 Check it out at `$RT_HOST/pub/job/adder/latest`.
 This opens a SwaggerUI page, from which you can call your function
 (try `/perform` endpoint with `{"numbers": [40, 2]}` body).
@@ -201,7 +205,12 @@ Congratulations, your Racetrack Job is up and running!
 
 ## Troubleshooting
 
-Consider using [k9s](https://github.com/derailed/k9s) tool to inspect your cluster resources.
+Use one of these tools to inspect your cluster resources:
+
+- `kubectl`
+- Cloud Console
+- [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
+- [k9s](https://github.com/derailed/k9s)
 
 ### Deploy Kubernetes Dashboard
 
@@ -209,10 +218,8 @@ You can use Kubernetes Dashboard UI to troubleshoot your application, and manage
 
 ```shell
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-```
 
-Create a token for the admin user:
-```shell
+# Create an admin user account
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: ServiceAccount
@@ -236,6 +243,7 @@ subjects:
   namespace: kubernetes-dashboard
 EOF
 
+# Create a token for the admin user
 kubectl -n kubernetes-dashboard create token admin-user
 ```
 
@@ -246,11 +254,11 @@ Enable access to the Dashboard from your local computer, by running the followin
 kubectl proxy
 ```
 
-It will make Dashboard available at [http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/).
+It will make k8s Dashboard available at [http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/).
 
 ## Production Deployment
 
-Few improvements to keep in mind before deploying Racetrack to production:
+Bunch of improvements to keep in mind before deploying Racetrack to production:
 
 - Make sure to enable TLS traffic to your cluster, since **PUB** and **Lifecycle API**
   will receive secret tokens, which otherwise would be sent plaintext.
@@ -260,4 +268,3 @@ Few improvements to keep in mind before deploying Racetrack to production:
 - Use different secrets `AUTH_KEY` and `SECRET_KEY` by modifying them in **kustomize/aks/lifecycle.env**.
 - Generate new tokens `LIFECYCLE_AUTH_TOKEN` for internal communication between components.
 - After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
-
