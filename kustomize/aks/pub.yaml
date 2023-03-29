@@ -21,8 +21,6 @@ spec:
         runAsGroup: 100000
       hostname: pub
       subdomain: pub
-      imagePullSecrets:
-        - name: docker-registry-read-secret
       priorityClassName: high-priority
       containers:
         - name: pub

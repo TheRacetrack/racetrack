@@ -22,8 +22,6 @@ spec:
       hostname: lifecycle
       subdomain: lifecycle
       serviceAccountName: null
-      imagePullSecrets:
-        - name: docker-registry-read-secret
       priorityClassName: high-priority
       initContainers:
         - name: init-django-db

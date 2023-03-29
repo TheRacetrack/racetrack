@@ -30,19 +30,25 @@ Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
 `racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
-Create a secret for the registry in **kustomize/aks/docker-registry-secret.yaml**:
+Create a secret for the registry in **kustomize/aks/docker-registry-secret.yaml**.
+Remember to replace `READ_REGISTRY_TOKEN`, `WRITE_REGISTRY_TOKEN`, `REGISTRY_HOSTNAME` and `REGISTRY_USERNAME`.
 ```shell
+REGISTRY_HOSTNAME=ghcr.io
+REGISTRY_USERNAME=racetrack-registry
+READ_REGISTRY_TOKEN=blahblah
+WRITE_REGISTRY_TOKEN=blahblah
+
 kubectl create secret docker-registry docker-registry-read-secret \
-    --docker-server=ghcr.io \
-    --docker-username="racetrack-registry" \
-    --docker-password="READ_REGISTRY_TOKEN" \
+    --docker-server="$REGISTRY_HOSTNAME" \
+    --docker-username="$REGISTRY_USERNAME" \
+    --docker-password="$READ_REGISTRY_TOKEN" \
     --namespace=racetrack \
     --dry-run=client -oyaml > kustomize/aks/docker-registry-secret.yaml
 echo "---" >> kustomize/aks/docker-registry-secret.yaml
 kubectl create secret docker-registry docker-registry-write-secret \
-    --docker-server=ghcr.io \
-    --docker-username="racetrack-registry" \
-    --docker-password="WRITE_REGISTRY_TOKEN" \
+    --docker-server="$REGISTRY_HOSTNAME" \
+    --docker-username="$REGISTRY_USERNAME" \
+    --docker-password="$WRITE_REGISTRY_TOKEN" \
     --namespace=racetrack \
     --dry-run=client -oyaml >> kustomize/aks/docker-registry-secret.yaml
 ```
@@ -106,13 +112,12 @@ After that, verify the status of your deployments using one of your favorite too
 
 Assuming your Ingress Controller is now deployed at public IP:
 ```sh
-RT_HOST=http://1.1.1.1  
+RT_HOST=http://1.1.1.1
 ```
 you can look up the following services:
 - **Racetrack Dashboard** at `$RT_HOST/dashboard`,
 - **Lifecycle** at `$RT_HOST/lifecycle`,
 - **PUB** at `$RT_HOST/pub`,
-- **Grafana** at `$RT_HOST/grafana`,
 
 ## Configure Racetrack
 
@@ -208,6 +213,8 @@ Use one of these tools to inspect your cluster resources:
 - Cloud Console
 - [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
 - [k9s](https://github.com/derailed/k9s)
+
+- Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/aks`
 
 ### Deploy Kubernetes Dashboard
 

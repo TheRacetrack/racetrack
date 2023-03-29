@@ -19,8 +19,6 @@ spec:
         fsGroup: 200000
       hostname: image-builder
       subdomain: image-builder
-      imagePullSecrets:
-        - name: docker-registry-read-secret
       priorityClassName: high-priority
       containers:
         - name: image-builder

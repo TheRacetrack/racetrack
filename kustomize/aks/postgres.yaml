@@ -14,8 +14,6 @@ spec:
       labels:
         tier: postgres
     spec:
-      imagePullSecrets:
-        - name: docker-registry-read-secret
       priorityClassName: high-priority
       volumes:
         - name: postgres-init-script

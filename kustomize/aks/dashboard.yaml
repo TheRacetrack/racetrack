@@ -21,8 +21,6 @@ spec:
         runAsGroup: 100000
       hostname: dashboard
       subdomain: dashboard
-      imagePullSecrets:
-        - name: docker-registry-read-secret
       priorityClassName: high-priority
       containers:
         - name: dashboard

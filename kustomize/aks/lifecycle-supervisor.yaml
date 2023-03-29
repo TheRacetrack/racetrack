@@ -20,8 +20,6 @@ spec:
         runAsUser: 100000
         runAsGroup: 100000
       serviceAccountName: null
-      imagePullSecrets:
-        - name: docker-registry-read-secret
       priorityClassName: high-priority
       initContainers:
         - name: init-django-db
