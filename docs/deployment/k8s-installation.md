@@ -272,3 +272,9 @@ Bunch of improvements to keep in mind before deploying Racetrack to production:
 - Use different secrets `AUTH_KEY` and `SECRET_KEY` by modifying them in **kustomize/aks/lifecycle.env**.
 - Generate new tokens `LIFECYCLE_AUTH_TOKEN` for internal communication between components.
 - After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
+
+## Clean up
+Delete the resources when you're done:
+```shell
+kubectl delete -k kustomize/aks/
+```
