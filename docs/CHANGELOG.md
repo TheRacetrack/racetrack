@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Remember to run `racetrack --install-completion` beforehand.
   Under the hood, it fetches the available jobs from the current remote.
 
+### Fixed
+- Racetrack's cookie can work even on non-HTTPS deployments.
+  [issue #225](https://github.com/TheRacetrack/racetrack/issues/225)
+
 ### Changed
 - The *list* command of the Racetrack client drops the fancy formatting and *INFO*/*DEBUG* logs
   when being piped into another command (ie. not connected to a terminal/tty device). Try `racetrack list | cat`.
