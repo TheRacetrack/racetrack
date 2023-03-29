@@ -68,11 +68,11 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
    ```
    git tag $VERSION && git push origin $VERSION
    ```
-1. Build & push docker images by running:
-   ```
-   make version-release version-release-github
-   ```
 1. Release racetrack client (if needed) with
    ```
    (cd racetrack_client && make release-pypi)
+   ```
+1. Build & push docker images by running:
+   ```
+   make version-release version-release-github
    ```
