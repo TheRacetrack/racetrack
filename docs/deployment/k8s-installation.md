@@ -1,7 +1,7 @@
 # Installation to non-local Kubernetes
 
-This guide covers installation of Racetrack to a non-local Kubernetes cluster,
-such as [AKS](https://azure.microsoft.com/en-us/products/kubernetes-service), GKE, EKS or self-hosted Kubernetes.
+This guide will walk you through the steps to install Racetrack on a non-local Kubernetes cluster,
+such as AKS, GKE, EKS or a self-hosted Kubernetes.
 
 ## Prerequisites
 
@@ -9,19 +9,16 @@ such as [AKS](https://azure.microsoft.com/en-us/products/kubernetes-service), GK
 
 ## Create a Kubernetes cluster
 
-In first place, you need a Kubernetes cluster.
-For instance, let's assume we've already
-[created AKS cluster on Azure](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli#create-aks-cluster),
-and we have access to it with a `kubectl` tool.
-
-In this tutorial the cluster is in the context `aks-racetrack`.
-
+The first step is to create a Kubernetes cluster.
+Let's assume you have already created an
+[AKS cluster on Azure](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli#create-aks-cluster),
+and you have access to it using the `kubectl` tool.
 Verify the connection to your cluster using the `kubectl get nodes` command.
 
-Set this cluster as the default one:
+Next, set this cluster as the default one:
 ```sh
 kubectl config get-contexts
-kubectl config use-context aks-racetrack
+kubectl config use-context aks-racetrack # k8s context is `aks-racetrack` in this tutorial
 kubectl config set-context --current --namespace=racetrack
 ```
 
