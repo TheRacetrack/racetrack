@@ -1,4 +1,4 @@
-# Release
+# Releasing a version
 
 ## Versioning
 

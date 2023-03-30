@@ -33,7 +33,7 @@ The columns are:
 | [Kubernetes Python Client](https://pypi.org/project/kubernetes/)                                           | 26.1.0      | 26.1.0         | managing Kubernetes                             |
 | [log15](https://github.com/inconshreveable/log15)                                                          | 3.0.0       | 3.0.0          | structured logging in Go                        | 
 | [opentelemetry-exporter-otlp-proto-http](https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/) | 1.16.0      | 1.16.0         | sending traces to OpenTelemetry                 |
-| [pkg/errors](https://github.com/pkg/errors)                                                                | 0.9.1       | 0.9.1          | wrapping errors context                         | 
+| [pkg/errors](https://github.com/pkg/errors) (**archived repository**)                                      | 0.9.1       | 0.9.1          | wrapping errors context                         | 
 | [PostgreSQL](https://www.postgresql.org/docs/release/)                                                     | 13.1        | 15.2           | Racetrack's database                            |
 | [Prism](https://github.com/PrismJS/prism/)                                                                 | 1.28.0      | 1.29.0         | rendering code snippets in docs                 |
 | [prometheus-client](https://pypi.org/project/prometheus-client/)                                           | 0.16.0      | 0.16.0         | metrics exposure                                |
