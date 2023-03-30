@@ -3,14 +3,13 @@ from fastapi import APIRouter, Request
 
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.django.registry.database import before_db_access
-from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
 from lifecycle.server.users import read_user_profile, init_user_profile
 from pydantic import BaseModel, Field
 from racetrack_commons.auth.scope import AuthScope
 
 
-def setup_user_endpoints(api: APIRouter, config: Config):
+def setup_user_endpoints(api: APIRouter):
 
     class UserProfileModel(BaseModel):
         username: Optional[str] = Field(

@@ -2,11 +2,10 @@ import os
 
 from fastapi import APIRouter
 
-from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
 
 
-def setup_info_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
+def setup_info_endpoints(api: APIRouter, config: Config):
 
     @api.get('/info')
     async def _info():

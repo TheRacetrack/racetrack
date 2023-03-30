@@ -6,7 +6,8 @@ from lifecycle.config import Config
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.server.api import run_api_server
 from racetrack_client.utils.request import Requests, RequestError
-from tests.server.socket import free_tcp_port
+
+from .socket import free_tcp_port
 
 
 def test_bootstrap_server():

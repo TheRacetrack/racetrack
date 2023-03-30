@@ -39,7 +39,7 @@ def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional
     else:
         inclusion_matcher = FilenameMatcher()
 
-    with zipfile.ZipFile(out_path.as_posix(), mode="w", compression=zipfile.ZIP_STORED) as zip:
+    with zipfile.ZipFile(out_path.as_posix(), mode="w", compression=zipfile.ZIP_STORED) as _zip:
         for file in plugin_dir.rglob('*'):
 
             if file.is_dir():
@@ -49,9 +49,9 @@ def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional
                 continue
 
             logger.debug(f'writing file to zip: {relative_path}')
-            zip.write(file.as_posix(), arcname=relative_path.as_posix())
+            _zip.write(file.as_posix(), arcname=relative_path.as_posix())
 
-        _write_plugin_manifest(zip, plugin_manifest)
+        _write_plugin_manifest(_zip, plugin_manifest)
 
     logger.info(f'plugin {plugin_manifest.name} has been exported to: {out_path.resolve().absolute()}')
 
@@ -62,9 +62,9 @@ def _load_plugin_manifest(manifest_file: Path) -> PluginManifest:
         return parse_yaml_datamodel(yaml_str, PluginManifest)
 
 
-def _write_plugin_manifest(zip, plugin_manifest: PluginManifest):
+def _write_plugin_manifest(_zip, plugin_manifest: PluginManifest):
     logger.debug(f'writing plugin manifest to zip: {PLUGIN_MANIFEST_FILENAME}')
     plugin_manifest.build_date = now().strftime('%Y-%m-%dT%H%M%SZ')
     manifest_output = io.StringIO()
     manifest_output.write(datamodel_to_yaml_str(plugin_manifest))
-    zip.writestr(PLUGIN_MANIFEST_FILENAME, manifest_output.getvalue())
+    _zip.writestr(PLUGIN_MANIFEST_FILENAME, manifest_output.getvalue())

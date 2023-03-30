@@ -33,7 +33,7 @@ resources:
   memory_min: 500M
 """)
 
-        manifest = load_validated_manifest(Path(path) / 'job-overlay.yaml')
+        manifest = load_validated_manifest((Path(path) / 'job-overlay.yaml').as_posix())
         assert manifest.extends is None
         assert manifest.name == 'overlay-example'
         assert manifest.lang == 'golang:latest'

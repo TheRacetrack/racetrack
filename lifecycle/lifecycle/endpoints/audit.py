@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Request
 
 from lifecycle.job.audit import read_audit_log_user_events
-from lifecycle.config import Config
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.auth.check import check_auth
 from racetrack_commons.auth.auth import AuthSubjectType
 
 
-def setup_audit_endpoints(api: APIRouter, config: Config):
+def setup_audit_endpoints(api: APIRouter):
 
     @api.get('/audit/user_events')
     def _get_autdit_user_events(request: Request):

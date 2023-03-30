@@ -141,7 +141,7 @@ Jobs are deployed as k8s pods, and should be managed as such.
 ## Port numbers
 
 | service              | kind/Kubernetes (X) | docker-compose (X+100) | localhost (X+200) |
-| -------------------- | ---------------     | --------------         | ---------         |
+|----------------------|---------------------|------------------------|-------------------|
 | Lifecycle            | 7002                | 7102                   | 7202              |
 | Image Builder        | 7001                | 7101                   | 7201              |
 | Dashboard            | 7003                | 7103                   | 7203              |

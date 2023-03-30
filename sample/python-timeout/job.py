@@ -31,7 +31,7 @@ class TimeoutJob:
             return out
 
         elif mode == "timeout_kill":
-            return self.safe_compute(t)
+            return {'result': self.safe_compute(t)}
 
         elif mode == "crash":
             raise Exception("Windows12 has stopped working")
@@ -53,7 +53,6 @@ class TimeoutJob:
             time.sleep(1)
             count -= 1
         return t**2
-
 
     def docs_input_example(self):
         """This method should simply return a synthetic example of the input taken to perform."""

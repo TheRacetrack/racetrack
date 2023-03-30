@@ -30,7 +30,7 @@ class Config(BaseModel, extra=Extra.forbid):
     build_cache_retention_hours: Optional[float] = None
 
     # Interval (in minutes) between tasks pruning build cache
-    build_cache_prune_interval_m: float = 60
+    build_cache_prune_interval_m: int = 60
 
     # Don't rebuild base Job image, if there is existing one (it makes images immutable)
     cache_base_images: bool = True
