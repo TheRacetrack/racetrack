@@ -370,3 +370,12 @@ python3 -m pip install --upgrade racetrack-client
 ```
 
 And then run `racetrack plugin bundle` in the `go-job-type` directory.
+
+## FAQ
+**Q: What distinguishes a base image from a job template?**
+
+**A:** A Job is created in two distinct stages. First, a *base image* is
+created, which is common to all jobs of a single job type. Primarily, the
+wrapper. The *job template* is then combined with the user-facing manifest,
+creating a job image that extends the base image. This job image is unique
+to each job, and is what will be deployed on racetrack.
