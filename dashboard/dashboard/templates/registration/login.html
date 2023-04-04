@@ -14,7 +14,7 @@
     </div>
     {% endif %}
 
-    {% if next %}
+    {% if request.GET.next %}
         {% if is_authenticated %}
             <p>Your account doesn't have access to this page. To proceed, please login with an account that has access.</p>
         {% else %}
@@ -28,10 +28,15 @@
           <div class="card-body p-4 p-sm-4">
             <h5 class="card-title text-center mb-4">Sign In</h5>
 
-            <form method="post" action="{% url 'dashboard:login' %}">
+                {% if request.GET.next %}
+                <form method="post" action="{% url 'dashboard:login' %}?next={{ request.GET.next }}">
+                {%else%}
+                <form method="post" action="{% url 'dashboard:login' %}">
+                {% endif %}
+
                 {% csrf_token %}
                 <div class="form-floating mb-3">
-                    <input type="text" name="username" autofocus autocomplete="username" required id="id_username" class="form-control" placeholder="Email">
+                    <input type="text" name="username" autofocus autocomplete="username" required id="id_username" class="form-control" placeholder="Email" value="{{ login_username }}">
                     <label for="id_username">Email</label>
                 </div>
                 <div class="form-floating mb-3">

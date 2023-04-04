@@ -48,15 +48,24 @@ def view_login(request):
         password = request.POST['password']
         try:
             user_profile: UserProfileDto = UserAccountClient().login_user(username, password)
-            response = redirect('dashboard:list')
+            next_page = request.GET.get('next')
+            if next_page:
+                response = redirect(next_page)
+            else:
+                response = redirect('dashboard:list')
             set_auth_token_cookie(user_profile.token, response)
             return response
         except Exception as e:
             log_exception(ContextError('Login failed', e))
             root_exception = unwrap(e)
-            return render(request, 'registration/login.html', {'error': str(root_exception)})
+            return render(request, 'registration/login.html', {
+                'error': str(root_exception),
+                'login_username': username,
+            })
 
-    return render(request, 'registration/login.html', {})
+    return render(request, 'registration/login.html', {
+        'login_username': '',
+    })
 
 
 def view_logout(request):
