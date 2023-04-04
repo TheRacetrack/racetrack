@@ -154,7 +154,7 @@ TAG?=1.2.1
         args = SimpleNamespace()
         args.mr = 87
         args.current = None
-        args.part='patch'
+        args.part = 'patch'
 
         lifecycle = (Path(path) / 'lifecycle.yaml')
         lc_pre = """

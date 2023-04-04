@@ -6,7 +6,8 @@ from lifecycle.monitor.base import LogsStreamer
 from lifecycle.server.socketio import SocketIOServer
 from racetrack_client.client.socketio import LogsConsumer
 from racetrack_client.log.logs import get_logger
-from tests.server.socket import free_tcp_port
+
+from .socket import free_tcp_port
 
 logger = get_logger(__name__)
 
@@ -29,6 +30,10 @@ def test_streaming_logs():
 
 
 class SayHelloLogsStreamer(LogsStreamer):
+    def __init__(self):
+        super().__init__()
+        self.last_session_id = None
+
     def create_session(self, session_id: str, resource_properties: Dict[str, str]):
         self.last_session_id = session_id
         job_name = resource_properties.get('job_name')

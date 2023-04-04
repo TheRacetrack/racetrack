@@ -29,7 +29,7 @@ def redeploy_job(
     infra_target = job.infrastructure_target
     deployment = create_deployment(manifest, deployer_username, infra_target)
     try:
-        job_secrets = _retrieve_job_secrets(config, manifest, plugin_engine, job)
+        job_secrets = _retrieve_job_secrets(manifest, plugin_engine, job)
 
         with wrap_context('redeploying job'):
             build_and_provision(
@@ -65,7 +65,7 @@ def reprovision_job(
     deployment = create_deployment(manifest, deployer_username, infra_target)
     try:
         if manifest.secret_runtime_env_file:
-            job_secrets = _retrieve_job_secrets(config, manifest, plugin_engine, job)
+            job_secrets = _retrieve_job_secrets(manifest, plugin_engine, job)
         else:
             job_secrets = JobSecrets(git_credentials=None, secret_build_env={}, secret_runtime_env={})
 
@@ -104,7 +104,7 @@ def move_job(
     deployment = create_deployment(manifest, deployer_username, new_infra_target)
     try:
         if manifest.secret_runtime_env_file:
-            job_secrets = _retrieve_job_secrets(config, manifest, plugin_engine, job)
+            job_secrets = _retrieve_job_secrets(manifest, plugin_engine, job)
         else:
             job_secrets = JobSecrets(git_credentials=None, secret_build_env={}, secret_runtime_env={})
 
@@ -128,7 +128,7 @@ def move_job(
         raise e
 
 
-def _retrieve_job_secrets(config: Config, manifest: Manifest, plugin_engine: PluginEngine, job: JobDto) -> JobSecrets:
+def _retrieve_job_secrets(manifest: Manifest, plugin_engine: PluginEngine, job: JobDto) -> JobSecrets:
     with wrap_context('retrieving job secrets'):
         job_deployer = get_job_deployer(plugin_engine, job.infrastructure_target)
         return job_deployer.get_job_secrets(manifest.name, manifest.version)

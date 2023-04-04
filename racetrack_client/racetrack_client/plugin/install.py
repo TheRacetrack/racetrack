@@ -185,5 +185,5 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
         if version and zip_assets:
             releases.append(PluginRelease(version, zip_assets[0]))
 
-    releases.sort(key=lambda r: SemanticVersion(r.version))
+    releases.sort(key=lambda release: SemanticVersion(release.version))
     return releases

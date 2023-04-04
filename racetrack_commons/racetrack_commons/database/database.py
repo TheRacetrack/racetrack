@@ -4,9 +4,9 @@ from typing import Dict
 
 
 def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
-    DJANGO_DB_TYPE: str = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
-    if DJANGO_DB_TYPE not in ['sqlite', 'postgres']:
-        raise Exception("Error, unknown DJANGO_DB_TYPE: " + DJANGO_DB_TYPE)
+    django_db_type: str = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+    if django_db_type not in ['sqlite', 'postgres']:
+        raise Exception("Error, unknown DJANGO_DB_TYPE: " + django_db_type)
 
     database_name = os.environ.get('POSTGRES_DB', '')
     if '{CLUSTER_NAME}' in database_name:  # evaluate templated database name
@@ -40,6 +40,6 @@ def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
     }
 
     return {
-        'default': available_databases[DJANGO_DB_TYPE],
-        DJANGO_DB_TYPE: available_databases[DJANGO_DB_TYPE],
+        'default': available_databases[django_db_type],
+        django_db_type: available_databases[django_db_type],
     }

@@ -16,7 +16,7 @@ class LifecyclePluginClient:
 
     def get_job_type_versions(self) -> list[str]:
         return self.lc_client.request_list('get', '/api/v1/plugin/job_type/versions')
-        
+
     def get_infrastructure_targets(self) -> dict[str, PluginManifest]:
         return self.lc_client.request_dict('get', '/api/v1/plugin/infrastructure_targets')
 
@@ -27,9 +27,9 @@ class LifecyclePluginClient:
         self.lc_client.request('delete', f'/api/v1/plugin/{plugin_name}/{plugin_version}')
 
     def upload_plugin(self, filename: str, file_bytes: bytes):
-        r = Requests.post(f'{self.lc_client._lifecycle_api_url}/api/v1/plugin/upload/{filename}',
+        r = Requests.post(f'{self.lc_client.lifecycle_api_url}/api/v1/plugin/upload/{filename}',
                           data=file_bytes,
-                          headers=self.lc_client._get_auth_headers())
+                          headers=self.lc_client.get_auth_headers())
         parse_response(r, 'Lifecycle response')
 
     def read_plugin_config(self, plugin_name: str, plugin_version: str) -> str:
@@ -37,5 +37,4 @@ class LifecyclePluginClient:
 
     def write_plugin_config(self, plugin_name: str, plugin_version: str, config_data: str):
         return self.lc_client.request('put', f'/api/v1/plugin/{plugin_name}/{plugin_version}/config',
-            json={'config_data': config_data},
-        )
+                                      json={'config_data': config_data})

@@ -24,9 +24,9 @@ def test_invalid_semver():
         SemanticVersion('1.0')
     assert str(excinfo.value) == "Version '1.0' doesn't match SemVer format 'X.Y.Z[-label]'"
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersion('1.0.a')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersion('dev')
 
 
@@ -142,13 +142,13 @@ def test_valid_semver_asterisk_pattern():
 
 
 def test_invalid_semver_x_pattern():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_x_pattern('1.0.2')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_x_pattern('1.2x')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_x_pattern('1.x2')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_x_pattern('dev')
 
     assert not SemanticVersionPattern.is_x_pattern('1.0.0')
@@ -158,13 +158,13 @@ def test_invalid_semver_x_pattern():
 
 
 def test_invalid_semver_asterisk_pattern():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_asterisk_pattern('1.0.2')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_asterisk_pattern('1.2*')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_asterisk_pattern('1.*2')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         SemanticVersionPattern.from_asterisk_pattern('dev')
 
     assert not SemanticVersionPattern.is_asterisk_pattern('1.0.0')

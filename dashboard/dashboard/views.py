@@ -119,6 +119,7 @@ def user_profile(request):
 
     return render(request, 'racetrack/profile.html', context)
 
+
 @login_required
 def retrieve_user_token(request):
     try:
@@ -128,6 +129,7 @@ def retrieve_user_token(request):
         return JsonResponse({'error': str(e)}, status=500)
 
     return HttpResponse(status=200, content=token)
+
 
 @login_required
 def regenerate_user_token(request):
@@ -143,6 +145,7 @@ def regenerate_user_token(request):
         log_exception(ContextError('Regenerating user token failed', e))
         return JsonResponse({'error': str(e)}, status=500)
 
+
 @login_required
 def view_administration(request):
     context = {}
@@ -155,7 +158,7 @@ def view_administration(request):
         # Collect instances running on the same infrastructure
         _infrastructure_instances: dict = collections.defaultdict(list)
         for infrastructure_name, plugin_manifest in context['infrastructure_targets'].items():
-            _infrastructure_instances[plugin_manifest['name']].append(infrastructure_name)
+            _infrastructure_instances[plugin_manifest.name].append(infrastructure_name)
         infrastructure_instances: list[tuple[str, List[str]]] = sorted(_infrastructure_instances.items())
 
         context['infrastructure_instances'] = infrastructure_instances
@@ -216,6 +219,7 @@ def delete_plugin(request, plugin_name: str, plugin_version: str):
         return JsonResponse({'error': str(e)}, status=500)
     return HttpResponse(status=204)
 
+
 @login_required
 def write_plugin_config(request, plugin_name: str, plugin_version: str):
     try:
@@ -226,6 +230,7 @@ def write_plugin_config(request, plugin_name: str, plugin_version: str):
         log_exception(ContextError('Updating plugin config failed', e))
         return JsonResponse({'error': str(e)}, status=500)
     return HttpResponse(status=200)
+
 
 @login_required
 def dependencies_graph(request):

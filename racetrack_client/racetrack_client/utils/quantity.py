@@ -43,7 +43,7 @@ class Quantity:
         self.base_number: float = float(match.group('number'))
         self.suffix: str = match.group('suffix')
 
-        if not self.suffix in self._suffix_multipliers:
+        if self.suffix not in self._suffix_multipliers:
             raise ValueError(f'invalid suffix: {self.suffix}, use one of {self._suffix_multipliers.keys()}')
 
     def __str__(self) -> str:

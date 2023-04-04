@@ -27,6 +27,7 @@ class FilenameMatcher:
         +whole_dir/but_this
         -whole_dir/but_this/without_that
     """
+
     def __init__(self, file_patterns: List[str] = None, apply_defaults: bool = True) -> None:
         self.patterns: List[str] = []
 
@@ -76,7 +77,7 @@ def match_file_pattern(relative_path: Path, pattern: str) -> bool:
             if not fnmatch.fnmatchcase(path_part, pattern_part):
                 return False
         return True
-    
+
     return False
 
 
@@ -85,7 +86,7 @@ def _match_file_pattern_beginning(relative_path: Path, pattern: str) -> bool:
     pattern_parts = Path(pattern).parts
 
     if len(path_parts) < len(pattern_parts):
-            return False
+        return False
 
     for path_part, pattern_part in zip(path_parts, pattern_parts):
         if not fnmatch.fnmatchcase(path_part, pattern_part):

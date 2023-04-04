@@ -64,7 +64,7 @@ def images_to_tags(images: List[RegistryImage]) -> List[ImageTag]:
     return results
 
 
-def delete_image_tag(repository_id: str, tag_name: str):
+def delete_image_tag(repository_id: int, tag_name: str):
     delete_request(f'{GITLAB_API_URL}/projects/{PROJECT_ID}/registry/repositories/{repository_id}/tags/{tag_name}')
 
 

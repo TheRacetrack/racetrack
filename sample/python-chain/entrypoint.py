@@ -23,8 +23,9 @@ class JobEntrypoint:
         payload: Dict = None,
         version: str = 'latest',
     ) -> Any:
+        src_job = os.environ.get('JOB_NAME')
         try:
-            src_job = os.environ['JOB_NAME']
+            assert src_job, 'JOB_NAME env var is not set'
             internal_pub_url = os.environ['PUB_URL']
             url = f'{internal_pub_url}/job/{job_name}/{version}{path}'
 
