@@ -12,6 +12,7 @@ logger = get_logger(__name__)
 JOB_MANIFEST_FILENAME = 'job.yaml'
 FORMER_MANIFEST_FILENAME = 'fatman.yaml'
 
+
 def load_manifest_from_yaml(path: Path) -> Manifest:
     """Load Manifest from a YAML file. Data types validation happens here when parsing YAML."""
     manifest_dict = load_manifest_dict_from_yaml(path)

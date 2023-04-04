@@ -13,8 +13,7 @@ from lifecycle.job import models_registry
 from lifecycle.job.dto_converter import job_model_to_dto
 from lifecycle.job.esc import read_esc_model
 from lifecycle.job.models_registry import read_job_family_model
-from lifecycle.job.public_endpoints import read_active_job_public_endpoints, read_job_model_public_endpoints
-from lifecycle.job.registry import read_versioned_job
+from lifecycle.job.public_endpoints import read_job_model_public_endpoints
 from racetrack_client.log.exception import log_exception
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_client.log.logs import get_logger
@@ -85,7 +84,6 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             msg = e.describe(debug=config.auth_debug)
             log_exception(e)
             return JSONResponse(content={'error': msg}, status_code=401)
-
 
     @api.post('/auth/allow/esc/{esc_id}/job/{job_name}/scope/{scope}')
     def _auth_allow_esc_job_family(esc_id: str, job_name: str, scope: str, request: Request):

@@ -33,10 +33,11 @@ class AuditClient:
         response = self.lc_client.request_list('get', f'/api/v1/audit/events/job/{job_name}/{job_version}')
         return parse_dict_datamodels(response, AuditLogEventDto)
 
-    def filter_events(self, 
-        related_to_user: bool, 
-        job_name: Optional[str], 
-        job_version: Optional[str],
+    def filter_events(
+            self,
+            related_to_user: bool,
+            job_name: Optional[str],
+            job_version: Optional[str],
     ) -> List[AuditLogEventDto]:
         if related_to_user:
             if job_name and job_version:

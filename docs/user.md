@@ -24,7 +24,7 @@
     1. [Using a Production Racetrack](#in-prod)
         1. [Authentication](#racetrack-authentication)
     1. [Jobs in Private or Protected git Repositories](#repo-tokens)
-    1. [Setting aliases for Racetrack servers](config-aliases)
+    1. [Setting aliases for Racetrack servers](#config-aliases)
     1. [The Job Manifest File](#manifest-deep)
     1. [The Job Types](#job-types)
 1. [Guidelines](#guide)

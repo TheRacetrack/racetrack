@@ -40,7 +40,6 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
     # maximum CPU consumption in cores, eg. 1000m
     cpu_max: Optional[Quantity] = None
 
-
     @validator(
         'memory_min', 
         'memory_max', 

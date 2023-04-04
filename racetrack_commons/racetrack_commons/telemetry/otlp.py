@@ -8,7 +8,8 @@ os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 from fastapi import FastAPI, Request, Response
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.resources import DEPLOYMENT_ENVIRONMENT, SERVICE_NAMESPACE, SERVICE_NAME, SERVICE_VERSION, Resource
+from opentelemetry.sdk.resources import DEPLOYMENT_ENVIRONMENT, SERVICE_NAMESPACE, SERVICE_NAME, SERVICE_VERSION, \
+    Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.trace import Status, StatusCode
@@ -20,10 +21,10 @@ from racetrack_client.log.logs import get_logger
 logger = get_logger(__name__)
 
 EXCLUDED_ENDPOINTS = {
-	"GET /metrics",
-	"GET /health",
-	"GET /live",
-	"GET /ready",
+    "GET /metrics",
+    "GET /health",
+    "GET /live",
+    "GET /ready",
 }
 
 traceparent_pattern = re.compile(r'00-(?P<trace_id>[0-9a-f]+)-(?P<span_id>[0-9a-f]+)-(?P<trace_flags>[0-9a-f]+)')
@@ -96,7 +97,7 @@ def _get_span_parent_context(traceparent: str) -> Optional[SpanContext]:
     match = traceparent_pattern.fullmatch(traceparent)
     if not match:
         return None
-    
+
     trace_id_int = int(match.group('trace_id'), 16)
     span_id_int = int(match.group('span_id'), 16)
     return SpanContext(trace_id=trace_id_int, span_id=span_id_int, is_remote=True)

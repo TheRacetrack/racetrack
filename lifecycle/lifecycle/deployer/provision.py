@@ -81,7 +81,7 @@ def provision_job(
     with wrap_context('invoking post-deploy actions'):
         save_deployment_phase(deployment.id, 'post-deploy hooks')
         post_job_deploy(manifest, job, image_name, deployment,
-                           auth_subject, previous_job, plugin_engine)
+                        auth_subject, previous_job, plugin_engine)
 
     job.status = JobStatus.RUNNING.value
     save_job_model(job)

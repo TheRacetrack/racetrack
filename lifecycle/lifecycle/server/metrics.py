@@ -9,7 +9,6 @@ from prometheus_client.core import REGISTRY
 from prometheus_client.registry import Collector
 from prometheus_client.metrics_core import GaugeMetricFamily
 
-
 metric_requested_job_deployments = Counter('requested_job_deployments', 'Number of requests to deploy job')
 metric_deployed_job = Counter('deployed_job', 'Number of Jobs deployed successfully')
 
@@ -35,8 +34,8 @@ class DatabaseConnectionCollector(Collector):
 
 def is_database_connected() -> bool:
     try:
-        DJANGO_DB_TYPE = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
-        if DJANGO_DB_TYPE == 'postgres':
+        django_db_type = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+        if django_db_type == 'postgres':
             host = settings.DATABASES['default']['HOST']
             port = settings.DATABASES['default']['PORT']
             if not is_port_open(host, int(port)):

@@ -49,8 +49,8 @@ def setup_health_endpoint(api: FastAPI, config: Config):
 @db_access
 def is_database_connected() -> bool:
     try:
-        DJANGO_DB_TYPE = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
-        if DJANGO_DB_TYPE == 'postgres':
+        django_db_type = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+        if django_db_type == 'postgres':
             db_name = settings.DATABASES['default']['NAME']
             user = settings.DATABASES['default']['USER']
             host = settings.DATABASES['default']['HOST']

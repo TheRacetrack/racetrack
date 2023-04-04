@@ -83,6 +83,7 @@ def _create_esc() -> EscDto:
         if e.status_code not in {200, 409}:  # created or already exists
             raise ContextError('creating ESC') from e
 
+
 def _deploy_and_verify(sample_path: str, job_name: str, esc: EscDto):
     _deploy(sample_path)
 

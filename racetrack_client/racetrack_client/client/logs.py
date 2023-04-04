@@ -14,8 +14,6 @@ logger = get_logger(__name__)
 def show_runtime_logs(name: str, version: str, remote: Optional[str], tail: int, follow: bool):
     """
     Show logs from job output
-    :param workdir: directory with job.yaml manifest
-    :param lifecycle_url: URL to Lifecycle API
     :param tail: number of recent lines to show
     :param follow: whether to follow logs output stream
     """
@@ -60,9 +58,7 @@ def _show_runtime_logs_following(lifecycle_url: str, name: str, version: str, ta
 
 def show_build_logs(name: str, version: str, remote: Optional[str], tail: int = 0):
     """
-    Show output of latest job image building process
-    :param workdir: directory with job.yaml manifest
-    :param lifecycle_url: URL to Lifecycle API
+    Show output of the latest job image building process
     :param tail: number of recent lines to show. If zero, all logs are displayed.
     """
     client_config = load_client_config()
