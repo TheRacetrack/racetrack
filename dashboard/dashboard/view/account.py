@@ -1,30 +1,44 @@
+from functools import wraps
+
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 
+from dashboard.cookie import set_auth_token_cookie, delete_auth_cookie
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.auth import RT_AUTH_HEADER
 from racetrack_commons.auth.auth import UnauthorizedError
+from racetrack_commons.auth.token import decode_jwt
 from racetrack_commons.entities.dto import UserProfileDto
 from racetrack_commons.entities.users_client import UserAccountClient
-from dashboard.cookie import set_auth_token_cookie, delete_auth_cookie
-from dashboard.session import RT_SESSION_USER_AUTH_KEY
-from dashboard.utils import login_required
+
+
+def login_required(view_func):
+
+    def wrapped_view(request, *args, **kwargs):
+        if settings.AUTH_REQUIRED:
+            if not request.COOKIES.get(RT_AUTH_HEADER):
+                return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+        return view_func(request, *args, **kwargs)
+
+    return wraps(view_func)(wrapped_view)
 
 
 def get_auth_token(request) -> str:
-    token = request.COOKIES.get(RT_AUTH_HEADER)
-    if not token and not settings.AUTH_REQUIRED:
+    auth_token = request.COOKIES.get(RT_AUTH_HEADER)
+    if not auth_token and not settings.AUTH_REQUIRED:
         return ''
-    if not token:
+    if not auth_token:
         raise UnauthorizedError('no Auth Token set, please log in.')
-    return token
+    decode_jwt(auth_token)
+    return auth_token
 
 
 def view_login(request):
@@ -44,7 +58,7 @@ def view_login(request):
 
 
 def view_logout(request):
-    response = redirect('login')
+    response = redirect('dashboard:login')
     delete_auth_cookie(response)
     return response
 
@@ -128,7 +142,6 @@ def regenerate_user_token(request):
     try:
         client = UserAccountClient(auth_token=get_auth_token(request))
         new_token = client.regen_user_token()
-        request.session[RT_SESSION_USER_AUTH_KEY] = new_token
         response = HttpResponse(status=200)
         set_auth_token_cookie(new_token, response)
         return response

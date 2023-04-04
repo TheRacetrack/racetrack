@@ -8,8 +8,8 @@ from django.urls import reverse
 from django.utils.http import urlencode
 
 from dashboard.purge import enrich_jobs_purge_info
-from dashboard.utils import login_required, remove_ansi_sequences
-from dashboard.view.account import get_auth_token
+from dashboard.utils import remove_ansi_sequences
+from dashboard.view.account import get_auth_token, login_required
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.time import days_ago

@@ -46,12 +46,12 @@
                     <a class="nav-link" href="{% url 'dashboard:doc_page' doc_path='home.md' %}">Docs</a>
                 </li>
 
-            {% if user.is_authenticated %}
-                <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Hi {{ user.username }}!">
+            {% if is_authenticated %}
+                <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Hi {{ username }}!">
                     <a class="nav-link" href="{% url 'dashboard:profile' %}">Profile</a>
                 </li>
 
-                {% if user.is_staff %}
+                {% if is_staff %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'dashboard:administration' %}">Administration</a>
                 </li>

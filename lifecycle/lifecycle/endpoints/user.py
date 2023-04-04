@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
@@ -19,11 +20,16 @@ def setup_user_endpoints(api: APIRouter):
         new_password: str
 
     @api.get('/users/validate_user_auth')
-    def _validate_user_auth(request: Request):
+    def _validate_user_auth(request: Request) -> UserProfileDto:
         """Validate auth token and return corresponding username"""
-        check_auth(request)
+        auth_subject = check_auth(request)
         username = get_username_from_token(request)
-        return {'username': username}
+        user: User = auth_subject.user
+        return UserProfileDto(
+            username=username,
+            token=auth_subject.token,
+            is_staff=user.is_staff,
+        )
 
     @api.post('/users/login')
     def _login_user_account(payload: UserCredentialsModel) -> UserProfileDto:
