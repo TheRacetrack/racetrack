@@ -234,6 +234,4 @@ def job_build_logs(request, job_name: str, job_version: str):
 
 
 def _get_job_registry_client(request) -> JobRegistryClient:
-    if not request.user.is_authenticated:
-        return JobRegistryClient()
     return JobRegistryClient(auth_token=get_auth_token(request))
