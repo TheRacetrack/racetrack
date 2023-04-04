@@ -36,9 +36,6 @@ if os.environ.get('CSRF_TRUSTED_ORIGINS'):
         os.environ.get('CSRF_TRUSTED_ORIGINS'),
     ]
 
-# Auth Token to call Lifecycle API
-LIFECYCLE_AUTH_TOKEN = os.environ.get('LIFECYCLE_AUTH_TOKEN')
-
 # Application definition
 
 INSTALLED_APPS = [

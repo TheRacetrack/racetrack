@@ -141,55 +141,6 @@ def view_change_password(request):
     return render(request, 'registration/change_password.html', {})
 
 
-class RacetrackUserCreationForm(UserCreationForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].help_text += ' Use your email as username.'
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
-
-    def clean_username(self):
-        username = self.cleaned_data['username']
-        if "@" not in username:
-            raise ValidationError("You have to pass email as username")
-        return username
-
-
-class RacetrackPasswordChangeForm(PasswordChangeForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
-
-
-class RegisterView(generic.CreateView):
-    form_class = RacetrackUserCreationForm
-    success_url = reverse_lazy('dashboard:registered')
-    template_name = 'registration/register.html'
-
-
-class ChangePasswordView(PasswordChangeView):
-    form_class = RacetrackPasswordChangeForm
-    success_url = reverse_lazy('dashboard:profile')
-    template_name = 'registration/change_password.html'
-
-
-def register(request):
-    request.session['registered'] = False
-    return RegisterView.as_view()(request)
-
-
-def change_password(request):
-    return ChangePasswordView.as_view()(request)
-
-
-def registered(request):
-    if request.session.get('registered', False):
-        return redirect('login')
-    request.session['registered'] = True
-    return render(request, 'registration/registered.html')
-
-
 @login_required
 def view_user_profile(request):
     context = {
