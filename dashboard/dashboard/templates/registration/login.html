@@ -25,7 +25,7 @@
           <div class="card-body p-4 p-sm-4">
             <h5 class="card-title text-center mb-4">Sign In</h5>
 
-            <form method="post" action="{% url 'login' %}">
+            <form method="post" action="{% url 'dashboard:login' %}">
                 {% csrf_token %}
                 <div class="form-floating mb-3">
                     <input type="text" name="username" autofocus autocomplete="username" required id="id_username" class="form-control" placeholder="Email">

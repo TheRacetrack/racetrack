@@ -1,44 +1,52 @@
-import logging
-import collections
-from typing import Dict, List
-
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.views import generic
-from django.utils.http import urlencode
 
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
-from racetrack_client.utils.time import days_ago
+from racetrack_client.utils.auth import RT_AUTH_HEADER
 from racetrack_commons.auth.auth import UnauthorizedError
-from racetrack_commons.auth.token import decode_jwt
-from racetrack_commons.entities.audit import explain_audit_log_event
-from racetrack_commons.entities.audit_client import AuditClient
-from racetrack_commons.entities.dto import AuditLogEventDto, JobDto
-from racetrack_commons.entities.job_client import JobRegistryClient
-from racetrack_commons.entities.plugin_client import LifecyclePluginClient
+from racetrack_commons.entities.dto import UserProfileDto
 from racetrack_commons.entities.users_client import UserAccountClient
-from racetrack_commons.urls import get_external_pub_url
-from dashboard.middleware import set_auth_token_cookie
+from dashboard.cookie import set_auth_token_cookie, delete_auth_cookie
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
-from dashboard.purge import enrich_jobs_purge_info
-from dashboard.utils import login_required, remove_ansi_sequences
+from dashboard.utils import login_required
 
 
 def get_auth_token(request) -> str:
-    token = request.session.get(RT_SESSION_USER_AUTH_KEY, '')
+    token = request.COOKIES.get(RT_AUTH_HEADER)
     if not token and not settings.AUTH_REQUIRED:
         return ''
-    try:
-        decode_jwt(token)
-        return token
-    except UnauthorizedError as e:
-        raise e
+    if not token:
+        raise UnauthorizedError('no Auth Token set, please log in.')
+    return token
+
+
+def view_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        try:
+            user_profile: UserProfileDto = UserAccountClient().login_user(username, password)
+            response = redirect('dashboard:jobs')
+            set_auth_token_cookie(user_profile.token, response)
+            return response
+        except Exception as e:
+            log_exception(ContextError('Login failed', e))
+            return render(request, 'registration/login.html', {'error': str(e)})
+
+    return render(request, 'registration/login.html', {})
+
+
+def view_logout(request):
+    response = redirect('login')
+    delete_auth_cookie(response)
+    return response
 
 
 class RacetrackUserCreationForm(UserCreationForm):
@@ -91,7 +99,7 @@ def registered(request):
 
 
 @login_required
-def user_profile(request):
+def view_user_profile(request):
     context = {
         'user': request.user,
     }

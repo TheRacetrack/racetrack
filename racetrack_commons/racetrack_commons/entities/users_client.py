@@ -4,7 +4,7 @@ from racetrack_commons.entities.lifecycle_client import LifecycleClient
 
 
 class UserAccountClient:
-    def __init__(self, auth_token: str):
+    def __init__(self, auth_token: str = ''):
         self.lc_client = LifecycleClient(auth_token)
 
     def login_user(self, username: str, password: str) -> UserProfileDto:

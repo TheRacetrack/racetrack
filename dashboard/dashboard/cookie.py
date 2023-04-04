@@ -1,53 +1,10 @@
 from __future__ import annotations
-import logging
 import os
 from urllib.parse import quote
 
-from django.db.utils import OperationalError, InterfaceError
 from django.http import HttpResponse
 
-from racetrack_client.log.context_error import ContextError
 from racetrack_client.utils.auth import RT_AUTH_HEADER
-from dashboard.session import RT_SESSION_USER_AUTH_KEY
-
-
-class UserCookieMiddleWare(object):
-    """
-    Middleware to set user cookie
-    If user is authenticated and there is no cookie, set the cookie.
-    If the user is not authenticated and the cookie remains, delete it.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-
-        try:
-            user_authenticated = request.user.is_authenticated
-        except OperationalError as e:
-            raise ContextError("Database connection: OperationalError", e)
-        except InterfaceError as e:
-            raise ContextError("Database connection: InterfaceError", e)
-
-        if user_authenticated and not request.COOKIES.get(RT_AUTH_HEADER):
-
-            auth_token = request.session.get(RT_SESSION_USER_AUTH_KEY)
-            if auth_token is None:
-                logging.error("UserCookieMiddleware: user_auth from session is empty")
-                return response
-
-            set_auth_token_cookie(auth_token, response)
-
-        elif not user_authenticated:
-            if request.COOKIES.get(RT_AUTH_HEADER):
-                response.delete_cookie(
-                    key=RT_AUTH_HEADER,
-                    path='/',
-                    domain=_get_cookie_domain())
-
-        return response
 
 
 def set_auth_token_cookie(auth_token: str, response: HttpResponse):
@@ -67,6 +24,13 @@ def set_auth_token_cookie(auth_token: str, response: HttpResponse):
         samesite='lax',  # cookie is sent only when user access origin site or navigates to it, prevents CSRF
         httponly=True,  # prevents client-side JavaScript read access
         secure=secure_cookie)  # whether cookie may only be transmitted using a secure https connection (except on localhost)
+
+
+def delete_auth_cookie(response: HttpResponse):
+    response.delete_cookie(
+        key=RT_AUTH_HEADER,
+        path='/',
+        domain=_get_cookie_domain())
 
 
 def _get_cookie_domain() -> str | None:

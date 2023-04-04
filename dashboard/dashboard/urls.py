@@ -1,6 +1,7 @@
 from django.urls import path
 
-from . import views
+from .view import views
+from .view import account
 from .docs import view_docs_index, view_doc_page, view_doc_plugin
 
 
@@ -18,16 +19,18 @@ urlpatterns = [
     path('docs/', view_docs_index, name='docs_index'),
     path('docs/file/<path:doc_path>', view_doc_page, name='doc_page'),
     path('docs/plugin/<str:plugin_name>', view_doc_plugin, name='doc_plugin'),
-    path('accounts/login/', views.login, name='login'),
-    path('register/', views.register, name='register'),
-    path('change_password/', views.change_password, name='change_password'),
-    path('registered', views.registered, name='registered'),
-    path('profile', views.user_profile, name='profile'),
     path('administration', views.view_administration, name='administration'),
+    path('profile', account.view_user_profile, name='profile'),
     path('plugin/upload', views.upload_plugin, name='upload_plugin'),
     path('plugin/config-editor/<plugin_name>/<plugin_version>', views.plugin_config_editor, name='plugin_config_editor'),
     path('api/plugin/delete/<plugin_name>/<plugin_version>', views.delete_plugin, name='delete_plugin'),
     path('api/plugin/write-config/<plugin_name>/<plugin_version>', views.write_plugin_config, name='write_plugin_config'),
-    path('api/auth/token/user/regenerate', views.regenerate_user_token, name='regenerate_user_token'),
-    path('api/auth/token/user/retrieve', views.retrieve_user_token, name='retrieve_user_token'),
+    path('api/auth/token/user/regenerate', account.regenerate_user_token, name='regenerate_user_token'),
+    path('api/auth/token/user/retrieve', account.retrieve_user_token, name='retrieve_user_token'),
+
+    path('accounts/login/', account.view_login, name='login'),
+    path('accounts/logout/', account.view_logout, name='logout'),
+    # path('register/', account.register, name='register'),
+    # path('change_password/', account.change_password, name='change_password'),
+    # path('registered', account.registered, name='registered'),
 ]
