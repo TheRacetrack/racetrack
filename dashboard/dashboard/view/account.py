@@ -82,7 +82,7 @@ def view_register(request):
 
             redirect_url = reverse('dashboard:login')
             parameters = urlencode({
-                'success': 'Your account have been registered. Now wait till Racetrack admin activates your account.',
+                'success': f'Your account "{username}" have been registered. Now wait till Racetrack admin activates your account.',
             })
             return redirect(f'{redirect_url}?{parameters}')
 

@@ -39,8 +39,7 @@ def register_user_account(username: str, password: str) -> User:
     except User.DoesNotExist:
         pass
 
-    user = User.objects.create_user(username, password=password)
-    user.is_active = False
+    user = User.objects.create_user(username, password=password, is_active=False)
 
     auth_subject = create_auth_subject_for_user(user)
     # grant default user permisssions
