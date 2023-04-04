@@ -11,7 +11,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def parse_dict_datamodel(
-    obj_dict: Dict, 
+    obj_dict: Dict,
     clazz: Type[T], 
 ) -> T:
     """

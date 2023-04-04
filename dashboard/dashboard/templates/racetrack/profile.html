@@ -12,7 +12,7 @@
     <div class="card">
         <div class="card-header">
             User profile
-            {% if user.is_staff %}
+            {% if is_staff %}
                 <span class="badge bg-success ms-2">admin</span>
             {% endif %}
         </div>
@@ -22,7 +22,7 @@
                 <label for="username" class="form-label">Username</label>
                 <div class="d-flex flex-row">
                     <div class="align-self-start">
-                        <input type="text" id="username" class="form-control" value="{{ user }}" readonly>
+                        <input type="text" id="username" class="form-control" value="{{ username }}" readonly>
                     </div>
                     <a href="{% url 'dashboard:change_password' %}" class="btn btn-primary align-self-start">Change Password</a>
                 </div>
@@ -31,7 +31,7 @@
             <div class="form-group row">
                 <label for="user-auth" class="form-label">Racetrack Auth Token (X-Racetrack-Auth) - keep it secret</label>
                 <div class="d-flex">
-                    <input type="text" id="user-auth" class="form-control form-control-sm flex-fill" value="{{ user_auth }}" readonly>
+                    <input type="text" id="user-auth" class="form-control form-control-sm flex-fill" value="{{ auth_token }}" readonly>
                     <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'user-auth')">Copy</button>
                     <button type="button" class="btn btn-outline-primary button-regen-token">Regenerate</button>
                 </div>
@@ -41,7 +41,7 @@
             <div class="form-group row">
                 <label for="racetrack-cli-login" class="form-label">Run this in CLI to deploy Jobs to this Racetrack: </label>
                 <div class="d-flex">
-                    <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login --remote {{ lifecycle_url }} {{ user_auth }}" id="racetrack-cli-login" readonly>
+                    <input type="text" class="form-control form-control-sm flex-fill" value="racetrack login --remote {{ lifecycle_url }} {{ auth_token }}" id="racetrack-cli-login" readonly>
                     <button type="button" class="btn btn-outline-primary" onclick="return copyToClipboard(event, this, 'racetrack-cli-login')">Copy</button>
                 </div>
             </div>
@@ -82,7 +82,7 @@ $(".button-regen-token").click(function () {
             csrfmiddlewaretoken: '{{ csrf_token }}'
         },
         headers: {
-            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ user_auth }}'
+            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ auth_token }}'
         },
         success: function(data) {
             refreshTokenInHTML();
@@ -117,7 +117,7 @@ function refreshTokenInHTML() {
             csrfmiddlewaretoken: '{{ csrf_token }}'
         },
         headers: {
-            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ user_auth }}'
+            'X-Racetrack-Auth': localStorage.getItem('auth_token') || '{{ auth_token }}'
         },
         success: function(data) {
             localStorage.setItem('auth_token', data);

@@ -103,6 +103,35 @@ def view_password_reset(request):
     return render(request, 'registration/password_reset.html', {})
 
 
+def view_change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST['old_password']
+        new_password1 = request.POST['new_password1']
+        new_password2 = request.POST['new_password2']
+        try:
+            if not old_password or not new_password1:
+                raise RuntimeError("Password cannot be empty")
+            if new_password1 != new_password2:
+                raise RuntimeError("Passwords do not match")
+
+            UserAccountClient(auth_token=get_auth_token(request)).change_password(old_password, new_password1)
+
+            redirect_url = reverse('dashboard:change_password')
+            parameters = urlencode({
+                'success': f'Your password has been changed.',
+            })
+            return redirect(f'{redirect_url}?{parameters}')
+
+        except Exception as e:
+            log_exception(ContextError('failed to change a password', e))
+            root_exception = unwrap(e)
+            return render(request, 'registration/change_password.html', {
+                'error': str(root_exception),
+            })
+
+    return render(request, 'registration/change_password.html', {})
+
+
 class RacetrackUserCreationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

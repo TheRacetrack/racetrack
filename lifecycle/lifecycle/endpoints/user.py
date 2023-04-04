@@ -33,6 +33,7 @@ def setup_user_endpoints(api: APIRouter):
 
     @api.post('/users/login')
     def _login_user_account(payload: UserCredentialsModel) -> UserProfileDto:
+        """Validate username and password and return auth token and user data"""
         user, auth_subject = authenticate_username_with_password(payload.username, payload.password)
         return UserProfileDto(
             username=user.username,

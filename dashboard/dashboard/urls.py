@@ -32,6 +32,5 @@ urlpatterns = [
     path('accounts/logout/', account.view_logout, name='logout'),
     path('register/', account.view_register, name='register'),
     path('reset_password/', account.view_password_reset, name='password_reset'),
-    # path('registered', account.registered, name='registered'),
-    # path('change_password/', account.change_password, name='change_password'),
+    path('change_password/', account.view_change_password, name='change_password'),
 ]
