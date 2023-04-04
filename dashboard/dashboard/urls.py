@@ -18,6 +18,7 @@ urlpatterns = [
     path('docs/', view_docs_index, name='docs_index'),
     path('docs/file/<path:doc_path>', view_doc_page, name='doc_page'),
     path('docs/plugin/<str:plugin_name>', view_doc_plugin, name='doc_plugin'),
+    path('accounts/login/', views.login, name='login'),
     path('register/', views.register, name='register'),
     path('change_password/', views.change_password, name='change_password'),
     path('registered', views.registered, name='registered'),

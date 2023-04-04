@@ -22,7 +22,7 @@ from racetrack_commons.entities.audit_client import AuditClient
 from racetrack_commons.entities.dto import AuditLogEventDto, JobDto
 from racetrack_commons.entities.job_client import JobRegistryClient
 from racetrack_commons.entities.plugin_client import LifecyclePluginClient
-from racetrack_commons.entities.users_client import UserRegistryClient
+from racetrack_commons.entities.users_client import UserAccountClient
 from racetrack_commons.urls import get_external_pub_url
 from dashboard.middleware import set_auth_token_cookie
 from dashboard.session import RT_SESSION_USER_AUTH_KEY
@@ -132,7 +132,7 @@ def retrieve_user_token(request):
 @login_required
 def regenerate_user_token(request):
     try:
-        client = UserRegistryClient(auth_token=get_auth_token(request))
+        client = UserAccountClient(auth_token=get_auth_token(request))
         new_token = client.regen_user_token()
         request.session[RT_SESSION_USER_AUTH_KEY] = new_token
         response = HttpResponse(status=200)

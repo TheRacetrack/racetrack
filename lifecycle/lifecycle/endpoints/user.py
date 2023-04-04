@@ -1,41 +1,22 @@
-from typing import Optional
 from fastapi import APIRouter, Request
+from pydantic import BaseModel
 
 from lifecycle.auth.authenticate import get_username_from_token
-from lifecycle.django.registry.database import before_db_access
-from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
-from lifecycle.server.users import read_user_profile, init_user_profile
-from pydantic import BaseModel, Field
-from racetrack_commons.auth.scope import AuthScope
+from lifecycle.auth.users import authenticate_username_with_password, register_user_account
+from lifecycle.auth.users import change_user_password
+from racetrack_commons.entities.dto import UserProfileDto
 
 
-def setup_user_endpoints(api: APIRouter, config: Config):
+def setup_user_endpoints(api: APIRouter):
 
-    class UserProfileModel(BaseModel):
-        username: Optional[str] = Field(
-            default=None,
-            description='username',
-            example='admin',
-        )
-        token: Optional[str] = Field(
-            default=None,
-            description='auth token',
-            example='eyJ1c2VybmFtZSI6ICJhZG1pbiIsICJ0b2tlbiI6ICIwMjg1ZmIzZC1hNDVjLTQ5NjYtYTU5OC1mZmJiMzJiYzhkNTQifQ==',
-        )
+    class UserCredentialsModel(BaseModel):
+        username: str
+        password: str
 
-    @api.get('/users/{username}/profile', response_model=UserProfileModel)
-    def _get_user_profile(username: str, request: Request):
-        """Get profile of particular User"""
-        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
-        return read_user_profile(username)
-
-    @api.post('/users/{username}/profile', response_model=UserProfileModel)
-    def _init_user_profile(username: str, request: Request):
-        """Init profile of particular User"""
-        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
-        before_db_access()
-        return init_user_profile(username)
+    class ChangePasswordModel(BaseModel):
+        old_password: str
+        new_password: str
 
     @api.get('/users/validate_user_auth')
     def _validate_user_auth(request: Request):
@@ -43,3 +24,22 @@ def setup_user_endpoints(api: APIRouter, config: Config):
         check_auth(request)
         username = get_username_from_token(request)
         return {'username': username}
+
+    @api.post('/users/login')
+    def _login_user_account(payload: UserCredentialsModel) -> UserProfileDto:
+        user, auth_subject = authenticate_username_with_password(payload.username, payload.password)
+        return UserProfileDto(
+            username=user.username,
+            token=auth_subject.token,
+            is_staff=user.is_staff,
+        )
+
+    @api.post('/users/register')
+    def _register_user_account(payload: UserCredentialsModel):
+        register_user_account(payload.username, payload.password)
+
+    @api.put('/users/change_password')
+    def _change_user_password(payload: ChangePasswordModel, request: Request):
+        check_auth(request)
+        username = get_username_from_token(request)
+        change_user_password(username, payload.old_password, payload.new_password)
