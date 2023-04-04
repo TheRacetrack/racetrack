@@ -7,7 +7,8 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
+from django.utils.http import urlencode
 from django.views import generic
 
 from dashboard.cookie import set_auth_token_cookie, delete_auth_cookie
@@ -61,6 +62,38 @@ def view_logout(request):
     response = redirect('dashboard:login')
     delete_auth_cookie(response)
     return response
+
+
+def view_register(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password1 = request.POST['password1']
+        password2 = request.POST['password2']
+        try:
+            if "@" not in username:
+                raise RuntimeError("You have to pass email as username")
+            if not password1:
+                raise RuntimeError("Password cannot be empty")
+            if password1 != password2:
+                raise RuntimeError("Passwords do not match")
+
+            UserAccountClient().register_user(username, password1)
+
+            redirect_url = reverse('dashboard:login')
+            parameters = urlencode({
+                'success': 'Your account have been registered. Now wait till Racetrack admin activates your account.',
+            })
+            return redirect(f'{redirect_url}?{parameters}')
+
+        except Exception as e:
+            log_exception(ContextError('Registration failed', e))
+            return render(request, 'registration/register.html', {'error': str(e)})
+
+    return render(request, 'registration/register.html', {})
+
+
+def view_password_reset(request):
+    return render(request, 'registration/password_reset.html', {})
 
 
 class RacetrackUserCreationForm(UserCreationForm):

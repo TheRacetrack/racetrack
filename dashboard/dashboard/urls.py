@@ -30,7 +30,8 @@ urlpatterns = [
 
     path('accounts/login/', account.view_login, name='login'),
     path('accounts/logout/', account.view_logout, name='logout'),
-    # path('register/', account.register, name='register'),
-    # path('change_password/', account.change_password, name='change_password'),
+    path('register/', account.view_register, name='register'),
+    path('reset_password/', account.view_password_reset, name='password_reset'),
     # path('registered', account.registered, name='registered'),
+    # path('change_password/', account.change_password, name='change_password'),
 ]

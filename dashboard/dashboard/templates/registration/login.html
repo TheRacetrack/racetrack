@@ -7,8 +7,11 @@
 <div class="card-body">
 
     <div class="invalid-feedback d-block text-center">
-    {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     {% endif %}
 
     {% if next %}
@@ -42,7 +45,7 @@
                 
                 <hr class="my-4">
                 <div class="d-grid mb-2 text-center">
-                    <a href="{% url 'password_reset' %}">Lost password?</a>
+                    <a href="{% url 'dashboard:password_reset' %}">Lost password?</a>
                 </div>
                 <div class="d-grid mb-2 text-center">
                     <a href="{% url 'dashboard:register' %}">Not registered yet?</a>
