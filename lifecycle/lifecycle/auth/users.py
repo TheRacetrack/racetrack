@@ -1,5 +1,7 @@
 from django.contrib import auth as django_auth
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from lifecycle.auth.subject import regenerate_auth_token
 from lifecycle.auth.subject import get_auth_subject_by_user
@@ -20,12 +22,23 @@ def authenticate_username_with_password(username: str, password: str) -> tuple[U
     if not user.is_active:
         raise UnauthorizedError('user account is disabled')
 
-    auth_subject = get_auth_subject_by_user(user=user)
+    auth_subject = get_auth_subject_by_user(user)
     return user, auth_subject
 
 
 @db_access
 def register_user_account(username: str, password: str) -> User:
+    try:
+        validate_password(password)
+    except ValidationError as e:
+        raise RuntimeError('Invalid password: ' + ' '.join(e.messages))
+
+    try:
+        User.objects.get(username=username)
+        raise RuntimeError(f'Username already exists: {username}')
+    except User.DoesNotExist:
+        pass
+
     user = User.objects.create_user(username, password=password)
     user.is_active = False
 

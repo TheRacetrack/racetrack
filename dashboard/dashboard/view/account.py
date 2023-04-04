@@ -12,7 +12,7 @@ from django.utils.http import urlencode
 from django.views import generic
 
 from dashboard.cookie import set_auth_token_cookie, delete_auth_cookie
-from racetrack_client.log.context_error import ContextError
+from racetrack_client.log.context_error import ContextError, unwrap
 from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.auth import RT_AUTH_HEADER
 from racetrack_commons.auth.auth import UnauthorizedError
@@ -48,12 +48,13 @@ def view_login(request):
         password = request.POST['password']
         try:
             user_profile: UserProfileDto = UserAccountClient().login_user(username, password)
-            response = redirect('dashboard:jobs')
+            response = redirect('dashboard:list')
             set_auth_token_cookie(user_profile.token, response)
             return response
         except Exception as e:
             log_exception(ContextError('Login failed', e))
-            return render(request, 'registration/login.html', {'error': str(e)})
+            root_exception = unwrap(e)
+            return render(request, 'registration/login.html', {'error': str(root_exception)})
 
     return render(request, 'registration/login.html', {})
 
@@ -87,9 +88,15 @@ def view_register(request):
 
         except Exception as e:
             log_exception(ContextError('Registration failed', e))
-            return render(request, 'registration/register.html', {'error': str(e)})
+            root_exception = unwrap(e)
+            return render(request, 'registration/register.html', {
+                'error': str(root_exception),
+                'register_username': username,
+            })
 
-    return render(request, 'registration/register.html', {})
+    return render(request, 'registration/register.html', {
+        'register_username': '',
+    })
 
 
 def view_password_reset(request):
