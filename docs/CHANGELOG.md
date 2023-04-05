@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Racetrack client returns non-zero exit code in case of error.
   [issue #224](https://github.com/TheRacetrack/racetrack/issues/224)
 
+### Fixed
+- Dashboard is more responsive in case of a database malfunction (shows error rather than hanging indefinitely),
+  since Postgres is no longer its hard dependency.
+
 ## [2.12.0] - 2023-03-29
 ### Added
 - New column in the *list* command of the Racetrack client displays a job type.
