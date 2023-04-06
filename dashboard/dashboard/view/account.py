@@ -112,6 +112,7 @@ def view_password_reset(request):
     return render(request, 'registration/password_reset.html', {})
 
 
+@login_required
 def view_change_password(request):
     if request.method == 'POST':
         old_password = request.POST['old_password']
