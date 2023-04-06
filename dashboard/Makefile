@@ -36,3 +36,32 @@ setup-django-db:
 add-migration:
 	python manage.py makemigrations dashboard &&\
 	python manage.py migrate
+
+
+front-setup:
+	. ~/.nvm/nvm.sh &&\
+	cd dashboard-front &&\
+	nvm install v16.20.0 &&\
+	nvm use v16.20.0 &&\
+	npm install
+
+npm-run: 
+	. ./nvm-activate.sh &&\
+	cd dashboard-front &&\
+	npm run dev
+
+npm-build:
+	. ./nvm-activate.sh &&\
+	cd dashboard-front &&\
+	npm run build
+
+build-in-docker:
+	DOCKER_BUILDKIT=1 docker build -t frontend-builder:latest -f build.Dockerfile .
+
+build-in-docker-replace: build-in-docker
+	set -e ;\
+	rm -rf ../static/react ;\
+	ID=$$(docker create frontend-builder:latest) ;\
+	echo $$ID ;\
+	docker cp "$$ID:/build/build" ../static/react/ ;\
+	docker rm -v $$ID ;\
