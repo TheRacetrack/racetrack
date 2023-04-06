@@ -56,7 +56,7 @@ def register_user_account(username: str, password: str) -> User:
 def change_user_password(username: str, old_password: str, new_password: str):
     user: User = django_auth.authenticate(username=username, password=old_password)
     if user is None:
-        raise UnauthorizedError('Current password is incorrect.')
+        raise UnauthorizedError('Passed password is incorrect.')
 
     try:
         validate_password(new_password)
