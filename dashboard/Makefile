@@ -11,7 +11,6 @@ run: setup-django-db
 	DEPLOYMENT_TYPE=localhost \
 	AUTH_REQUIRED=false \
 	SECRET_KEY=dev \
-	LIFECYCLE_AUTH_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4 \
 	SITE_NAME=dev \
 	python -u main.py
 
@@ -24,7 +23,6 @@ run-local-rt-docker:
 	DEPLOYMENT_TYPE=localhost \
 	AUTH_REQUIRED=true \
 	SECRET_KEY=dev \
-	LIFECYCLE_AUTH_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4 \
 	SITE_NAME=dev \
 	python -u main.py
 

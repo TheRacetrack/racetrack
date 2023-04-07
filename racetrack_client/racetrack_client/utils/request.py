@@ -277,7 +277,7 @@ def parse_response(response: Response, error_context: str) -> Optional[Union[Dic
             return result
 
         if result is not None and isinstance(result, dict) and 'error' in result:
-            raise RuntimeError(f'{response.status_reason}: {result.get("error")}')
+            raise ContextError(response.status_reason, RuntimeError(result.get("error")))
         raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
@@ -295,7 +295,7 @@ def parse_response_object(response: Response, error_context: str) -> Dict:
             return result
 
         if result is not None and isinstance(result, dict) and 'error' in result:
-            raise RuntimeError(f'{response.status_reason}: {result.get("error")}')
+            raise ContextError(response.status_reason, RuntimeError(result.get("error")))
         raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
@@ -313,7 +313,7 @@ def parse_response_list(response: Response, error_context: str) -> List:
             return result
 
         if result is not None and isinstance(result, dict) and 'error' in result:
-            raise RuntimeError(f'{response.status_reason}: {result.get("error")}')
+            raise ContextError(response.status_reason, RuntimeError(result.get("error")))
         raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e

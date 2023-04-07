@@ -62,7 +62,7 @@ def _load_plugin_manifest(manifest_file: Path) -> PluginManifest:
         return parse_yaml_datamodel(yaml_str, PluginManifest)
 
 
-def _write_plugin_manifest(_zip, plugin_manifest: PluginManifest):
+def _write_plugin_manifest(_zip: zipfile.ZipFile, plugin_manifest: PluginManifest):
     logger.debug(f'writing plugin manifest to zip: {PLUGIN_MANIFEST_FILENAME}')
     plugin_manifest.build_date = now().strftime('%Y-%m-%dT%H%M%SZ')
     manifest_output = io.StringIO()

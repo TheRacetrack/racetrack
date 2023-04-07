@@ -40,3 +40,10 @@ def wrap_context(context_name: str, log_debug: bool = False):
         yield
     except Exception as e:
         raise ContextError(context_name) from e
+
+
+def unwrap(e: BaseException) -> BaseException:
+    """Find root cause of the error"""
+    while e.__cause__ is not None:
+        e = e.__cause__
+    return e

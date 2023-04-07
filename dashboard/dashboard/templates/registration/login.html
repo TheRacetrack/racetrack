@@ -7,12 +7,15 @@
 <div class="card-body">
 
     <div class="invalid-feedback d-block text-center">
-    {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     {% endif %}
 
-    {% if next %}
-        {% if user.is_authenticated %}
+    {% if request.GET.next %}
+        {% if is_authenticated %}
             <p>Your account doesn't have access to this page. To proceed, please login with an account that has access.</p>
         {% else %}
             <p>Please login to see this page.</p>
@@ -25,10 +28,15 @@
           <div class="card-body p-4 p-sm-4">
             <h5 class="card-title text-center mb-4">Sign In</h5>
 
-            <form method="post" action="{% url 'login' %}">
+                {% if request.GET.next %}
+                <form method="post" action="{% url 'dashboard:login' %}?next={{ request.GET.next }}">
+                {%else%}
+                <form method="post" action="{% url 'dashboard:login' %}">
+                {% endif %}
+
                 {% csrf_token %}
                 <div class="form-floating mb-3">
-                    <input type="text" name="username" autofocus autocomplete="username" required id="id_username" class="form-control" placeholder="Email">
+                    <input type="text" name="username" autofocus autocomplete="username" required id="id_username" class="form-control" placeholder="Email" value="{{ login_username }}">
                     <label for="id_username">Email</label>
                 </div>
                 <div class="form-floating mb-3">
@@ -42,7 +50,7 @@
                 
                 <hr class="my-4">
                 <div class="d-grid mb-2 text-center">
-                    <a href="{% url 'password_reset' %}">Lost password?</a>
+                    <a href="{% url 'dashboard:password_reset' %}">Lost password?</a>
                 </div>
                 <div class="d-grid mb-2 text-center">
                     <a href="{% url 'dashboard:register' %}">Not registered yet?</a>

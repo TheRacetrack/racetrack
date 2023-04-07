@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from racetrack_client.plugin.plugin_manifest import PluginManifest
-from racetrack_client.utils.datamodel import parse_dict_datamodels
+from racetrack_client.utils.datamodel import parse_dict_datamodels, parse_dict_datamodel
 from racetrack_client.utils.request import Requests, parse_response
 from racetrack_commons.entities.lifecycle_client import LifecycleClient
 
@@ -18,7 +18,8 @@ class LifecyclePluginClient:
         return self.lc_client.request_list('get', '/api/v1/plugin/job_type/versions')
 
     def get_infrastructure_targets(self) -> dict[str, PluginManifest]:
-        return self.lc_client.request_dict('get', '/api/v1/plugin/infrastructure_targets')
+        targets = self.lc_client.request_dict('get', '/api/v1/plugin/infrastructure_targets')
+        return {k: parse_dict_datamodel(v, PluginManifest) for k, v in targets.items()}
 
     def get_plugin_docs(self, plugin_name: str) -> str | None:
         return self.lc_client.request('get', f'/api/v1/plugin/{plugin_name}/docs')

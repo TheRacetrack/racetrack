@@ -1,24 +1,6 @@
 import os
 
-from django.dispatch import receiver
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
 from django.db.backends.signals import connection_created
-
-from lifecycle.server.users import init_user_profile
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    """
-    When user is created from CLI or in admin panel, we need to create Auth Subject for him
-    """
-    if created:
-        init_user_profile(instance.username)
-
-        if not instance.is_staff:
-            instance.is_active = False
-            instance.save()
 
 
 def set_search_path(sender, **kwargs):

@@ -4,8 +4,6 @@ import warnings
 
 from django.utils.deprecation import RemovedInDjango50Warning
 
-from racetrack_commons.database.database import populate_database_settings
-
 warnings.filterwarnings(action='ignore', category=RemovedInDjango50Warning)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,9 +36,6 @@ if os.environ.get('CSRF_TRUSTED_ORIGINS'):
         os.environ.get('CSRF_TRUSTED_ORIGINS'),
     ]
 
-# Auth Token to call Lifecycle API
-LIFECYCLE_AUTH_TOKEN = os.environ.get('LIFECYCLE_AUTH_TOKEN')
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -61,7 +56,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'dashboard.middleware.UserCookieMiddleWare'
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -78,6 +72,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'dashboard.context_processors.racetrack_version_context',
+                'dashboard.context_processors.user_account_context',
             ],
         },
     },
@@ -85,36 +80,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'app.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DJANGO_DB_TYPE: str = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
-
-DATABASES = populate_database_settings(BASE_DIR)
-
-DATABASE_ROUTERS = [
-    'dashboard.database_routers.routers.Router',
-]
-
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -160,5 +134,3 @@ SESSION_COOKIE_NAME = 'racetrack_sessionid'
 LOGIN_URL = '/dashboard/accounts/login'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/dashboard/accounts/login'
-
-RUNNING_ON_LOCALHOST = (DJANGO_DB_TYPE == 'sqlite')

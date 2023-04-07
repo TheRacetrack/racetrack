@@ -104,11 +104,6 @@ services:
       EXTERNAL_LIFECYCLE_URL: 'http://localhost:7102/lifecycle'
       EXTERNAL_PUB_URL: 'http://localhost:7105/pub'
       AUTH_REQUIRED: 'true'
-      LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4'
-    command: >
-      bash -c "
-      /src/dashboard/wait-for-postgres.sh && 
-      python -u main.py"
 
   pub:
     container_name: pub

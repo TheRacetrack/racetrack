@@ -79,7 +79,7 @@
                                 <span> - <a href="{{ plugin.url }}" target="_blank">{{ plugin.url }}</a></span>
                             </div>
                             {% endif %}
-                            {% if user.is_staff %}
+                            {% if is_staff %}
                             <div class="col-md-3 text-end">
                                 <a href="{% url 'dashboard:plugin_config_editor' plugin.name plugin.version %}" class="btn btn-primary">Edit Config</a>
                                 <button type="button" class="btn btn-danger button-delete-plugin" plugin-name="{{ plugin.name }}" plugin-version="{{ plugin.version }}">Delete</button>
@@ -93,7 +93,7 @@
                 <p>(empty)</p>
             {% endif %}
 
-            {% if user.is_staff %}
+            {% if is_staff %}
             <form action="{% url "dashboard:upload_plugin" %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-group mb-3">

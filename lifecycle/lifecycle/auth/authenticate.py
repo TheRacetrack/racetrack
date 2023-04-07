@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 
 from fastapi import Request
 
-from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
+from lifecycle.django.registry.database import db_access
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import RT_AUTH_HEADER

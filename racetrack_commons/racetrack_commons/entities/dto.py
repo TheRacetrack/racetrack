@@ -73,6 +73,7 @@ class EscDto(BaseModel):
 class UserProfileDto(BaseModel):
     username: str
     token: str
+    is_staff: bool = False
 
 
 class PublicEndpointRequestDto(BaseModel):
