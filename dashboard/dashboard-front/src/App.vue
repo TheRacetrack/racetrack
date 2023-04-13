@@ -14,7 +14,7 @@ function toggleLeftDrawer() {
 </script>
 
 <template>
-  <q-layout view="hHh lpR fff">
+  <q-layout view="hHh lpR lff">
 
     <HeaderBar @toggleDrawer="(msg) => toggleLeftDrawer()"/>
     <NavDrawer ref="navDrawer"/>
