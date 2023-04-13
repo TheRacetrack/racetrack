@@ -1,137 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { RouterView } from 'vue-router'
 
-import { mdiGraphOutline, mdiTable, mdiMessageAlertOutline, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant } from '@quasar/extras/mdi-v7'
+import Footer from './components/Footer.vue'
+import NavDrawer from './components/NavDrawer.vue'
+import HeaderBar from './components/HeaderBar.vue'
 
-const leftDrawerOpen = ref(false)
+const navDrawer: Ref<typeof NavDrawer | null> = ref(null)
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+function toggleLeftDrawer() {
+  navDrawer.value?.toggleLeftDrawer()
 }
-
-const links1 = [
-  { icon: 'web', text: 'Top stories' },
-  { icon: 'person', text: 'For you' },
-  { icon: 'star_border', text: 'Favourites' },
-  { icon: 'search', text: 'Saved searches' }
-]
-
-const links3 = [
-  { icon: '', text: 'Settings' },
-  { icon: '', text: 'Send feedback' },
-  { icon: 'open_in_new', text: 'Help' }
-]
 </script>
 
 <template>
   <q-layout view="hHh lpR fff">
 
-    <q-header reveal elevated class="bg-black text-white" height-hint="64">
-      <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title>
-          Racetrack Dashboard
-        </q-toolbar-title>
-
-        <q-space />
-
-        <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn round dense flat color="grey-8" icon="notifications">
-            <q-badge color="red" text-color="white" floating>
-              2
-            </q-badge>
-            <q-tooltip>Notifications</q-tooltip>
-          </q-btn>
-          <q-btn round flat icon="apps">
-            <q-tooltip>Account</q-tooltip>
-          </q-btn>
-        </div>
-      </q-toolbar>
-    </q-header>
-
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
-      <q-scroll-area class="fit">
-        <q-list padding class="text-grey-8">
-
-          <q-item v-ripple clickable to="/">
-            <q-item-section avatar>
-              <q-icon name="list" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Jobs</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item v-ripple clickable to="/graph">
-            <q-item-section avatar>
-              <q-icon :name="mdiGraphOutline" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Graph</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item v-ripple clickable to="/portfolio">
-            <q-item-section avatar>
-              <q-icon :name="mdiTable" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Portfolio</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item v-ripple clickable to="/activity">
-            <q-item-section avatar>
-              <q-icon :name="mdiMessageAlertOutline" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Audit Log</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-separator inset class="q-my-sm" />
-
-          <q-item v-ripple clickable>
-            <q-item-section avatar>
-              <q-icon :name="mdiBookOpenVariant" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Docs <q-icon name="open_in_new"/></q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item v-ripple clickable>
-            <q-item-section avatar>
-              <q-icon :name="mdiAccountCircle" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Profile</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item v-ripple clickable>
-            <q-item-section avatar>
-              <q-icon :name="mdiTools" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Administration</q-item-label>
-            </q-item-section>
-          </q-item>
-          
-          <q-item v-ripple clickable>
-            <q-item-section avatar>
-              <q-icon :name="mdiLogout" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Logout</q-item-label>
-            </q-item-section>
-          </q-item>
-
-        </q-list>
-      </q-scroll-area>
-    </q-drawer>
+    <HeaderBar @toggleDrawer="(msg) => toggleLeftDrawer()"/>
+    <NavDrawer ref="navDrawer"/>
 
     <q-page-container>
       <div id="app-container">
@@ -139,9 +25,7 @@ const links3 = [
       </div>
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-9 text-white">
-      <div class="text-center q-my-sm">Racetrack version</div>
-    </q-footer>
+    <Footer/>
 
   </q-layout>
 </template>
