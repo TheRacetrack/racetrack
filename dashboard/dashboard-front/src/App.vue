@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
+
+import { mdiGraphOutline, mdiTable, mdiMessageAlertOutline, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant } from '@quasar/extras/mdi-v7'
 
 const leftDrawerOpen = ref(false)
 
@@ -64,7 +66,7 @@ const links3 = [
 
           <q-item v-ripple clickable to="/graph">
             <q-item-section avatar>
-              <q-icon name="mdi-graph-outline" />
+              <q-icon :name="mdiGraphOutline" />
             </q-item-section>
             <q-item-section>
               <q-item-label>Graph</q-item-label>
@@ -73,7 +75,7 @@ const links3 = [
 
           <q-item v-ripple clickable to="/portfolio">
             <q-item-section avatar>
-              <q-icon name="" />
+              <q-icon :name="mdiTable" />
             </q-item-section>
             <q-item-section>
               <q-item-label>Portfolio</q-item-label>
@@ -82,7 +84,7 @@ const links3 = [
 
           <q-item v-ripple clickable to="/activity">
             <q-item-section avatar>
-              <q-icon name="" />
+              <q-icon :name="mdiMessageAlertOutline" />
             </q-item-section>
             <q-item-section>
               <q-item-label>Audit Log</q-item-label>
@@ -92,24 +94,36 @@ const links3 = [
           <q-separator inset class="q-my-sm" />
 
           <q-item v-ripple clickable>
+            <q-item-section avatar>
+              <q-icon :name="mdiBookOpenVariant" />
+            </q-item-section>
             <q-item-section>
               <q-item-label>Docs <q-icon name="open_in_new"/></q-item-label>
             </q-item-section>
           </q-item>
 
           <q-item v-ripple clickable>
+            <q-item-section avatar>
+              <q-icon :name="mdiAccountCircle" />
+            </q-item-section>
             <q-item-section>
               <q-item-label>Profile</q-item-label>
             </q-item-section>
           </q-item>
 
           <q-item v-ripple clickable>
+            <q-item-section avatar>
+              <q-icon :name="mdiTools" />
+            </q-item-section>
             <q-item-section>
               <q-item-label>Administration</q-item-label>
             </q-item-section>
           </q-item>
-
+          
           <q-item v-ripple clickable>
+            <q-item-section avatar>
+              <q-icon :name="mdiLogout" />
+            </q-item-section>
             <q-item-section>
               <q-item-label>Logout</q-item-label>
             </q-item-section>
