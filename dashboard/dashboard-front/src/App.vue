@@ -1,74 +1,81 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
-import TheWelcome from './components/TheWelcome.vue'
-
-const data = reactive({
-  drawer: true,
-      group: null,
-      items: [
-        {
-          title: 'Foo',
-          value: 'foo',
-        },
-        {
-          title: 'Bar',
-          value: 'bar',
-        },
-        {
-          title: 'Fizz',
-          value: 'fizz',
-        },
-        {
-          title: 'Buzz',
-          value: 'buzz',
-        },
-      ],
-})
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <v-app>
-    <v-layout>
+  <header>
 
-      <v-app-bar
-        color="surface-variant"
-        prominent
-      >
-        <v-app-bar-nav-icon variant="text" @click.stop="data.drawer = !data.drawer"></v-app-bar-nav-icon>
+    <div class="wrapper">
+      <nav>
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/about">About</RouterLink>
+      </nav>
+    </div>
+  </header>
 
-        <v-toolbar-title>Racetrack Dashboard</v-toolbar-title>
-
-        <v-spacer></v-spacer>
-
-        <v-btn variant="text" icon="mdi-magnify"></v-btn>
-
-        <v-btn variant="text" icon="mdi-filter"></v-btn>
-
-        <v-btn variant="text" icon="mdi-dots-vertical"></v-btn>
-      </v-app-bar>
-
-      <v-navigation-drawer
-        v-model="data.drawer"
-        location="left"
-        density="compact"
-        permanent
-        absolute
-      >
-        <v-list
-          nav
-        >
-          <v-list-item prepend-icon="mdi-view-dashboard" title="Home" value="home" active-color="primary"></v-list-item>
-          <v-list-item prepend-icon="mdi-forum" title="About" value="about"></v-list-item>
-      </v-list>
-      </v-navigation-drawer>
-
-      <v-main style="min-height: 300px;">
-        <v-container fill-height>
-          Main
-        </v-container>
-      </v-main>
-
-      <v-footer app>Footer</v-footer>
-    </v-layout>
-  </v-app>
+  <RouterView />
 </template>
+
+<style scoped>
+header {
+  line-height: 1.5;
+  max-height: 100vh;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 2rem;
+}
+
+nav {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+nav a.router-link-exact-active {
+  color: var(--color-text);
+}
+
+nav a.router-link-exact-active:hover {
+  background-color: transparent;
+}
+
+nav a {
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid var(--color-border);
+}
+
+nav a:first-of-type {
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  header {
+    display: flex;
+    place-items: center;
+    padding-right: calc(var(--section-gap) / 2);
+  }
+
+  .logo {
+    margin: 0 2rem 0 0;
+  }
+
+  header .wrapper {
+    display: flex;
+    place-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  nav {
+    text-align: left;
+    margin-left: -1rem;
+    font-size: 1rem;
+
+    padding: 1rem 0;
+    margin-top: 1rem;
+  }
+}
+</style>
