@@ -4,6 +4,30 @@ import HelloWorld from '../components/HelloWorld.vue'
 
 <template>
   <HelloWorld msg="Vite + Vue" />
+
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
+  <div>Lorem ipsum </div>
 </template>
 
 <style scoped>
