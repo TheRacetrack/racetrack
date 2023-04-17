@@ -5,12 +5,15 @@ import { RouterView } from 'vue-router'
 import Footer from './components/Footer.vue'
 import NavDrawer from './components/NavDrawer.vue'
 import HeaderBar from './components/HeaderBar.vue'
+import { loadUserData } from '@/services/UserDataStore'
 
 const navDrawer: Ref<typeof NavDrawer | null> = ref(null)
 
 function toggleLeftDrawer() {
   navDrawer.value?.toggleLeftDrawer()
 }
+
+loadUserData()
 </script>
 
 <template>

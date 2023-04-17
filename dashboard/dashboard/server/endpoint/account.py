@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from racetrack_client.log.context_error import ContextError, unwrap
 from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.auth import RT_AUTH_HEADER
+from racetrack_client.utils.request import ResponseError
 from racetrack_commons.auth.auth import UnauthorizedError
 from racetrack_commons.auth.token import decode_jwt
 from racetrack_commons.entities.dto import UserProfileDto
@@ -28,6 +29,9 @@ def setup_account_endpoints(app: FastAPI):
         
         except Exception as e:
             log_exception(ContextError('Login failed', e))
+            if isinstance(e, ResponseError):
+                if e.status_code == 401:
+                    raise UnauthorizedError(str(unwrap(e)))
             raise unwrap(e)
 
     @app.get("/api/accounts/logout")

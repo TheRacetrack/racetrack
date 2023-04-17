@@ -2,10 +2,17 @@
 import { ref } from 'vue'
 import axios from "axios"
 import { ToastService } from '@/services/ToastService';
+import { userData, setUserData } from '@/services/UserDataStore.js';
 
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
+
+interface LoginData {
+    username: string;
+    token: string;
+    is_staff: boolean;
+}
 
 function login() {
     loading.value = true
@@ -13,11 +20,18 @@ function login() {
     axios.post(`/api/accounts/login`,
         {'username': email.value, 'password': password.value},
     ).then(response => {
-
-        const responseObject = response.data
+        
         loading.value = false
         password.value = ''
-        ToastService.toastSuccess(`Logged in as ${responseObject.username}`)
+
+        const responseData: LoginData = response.data
+        setUserData({
+            isAuthenticated: true,
+            username: responseData.username,
+            authToken: responseData.token,
+            isStaff: responseData.is_staff,
+        })
+        ToastService.toastSuccess(`Logged in as ${responseData.username}`)
         
     }).catch(err => {
         ToastService.showRequestError(`Login failed`, err)
@@ -34,14 +48,14 @@ function login() {
 
         <q-card-section>
           <q-form class="q-gutter-md">
-            <q-input outlined autofocus type="email" label="Email"
+            <q-input outlined autofocus type="email" label="Email" autocomplete="username"
               v-model="email" @keydown.enter.prevent="login"
               >
               <template v-if="email" v-slot:append>
                 <q-icon name="cancel" @click.stop.prevent="email = ''" class="cursor-pointer" />
               </template>
             </q-input>
-            <q-input outlined type="password" label="Password"
+            <q-input outlined type="password" label="Password" autocomplete="password"
               v-model="password" @keydown.enter.prevent="login"
               />
           </q-form>
