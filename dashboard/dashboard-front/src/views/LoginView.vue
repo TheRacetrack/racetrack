@@ -15,8 +15,9 @@ function login() {
     ).then(response => {
 
         const responseObject = response.data
-        ToastService.toastSuccess(`Logged in ${responseObject}`)
         loading.value = false
+        password.value = ''
+        ToastService.toastSuccess(`Logged in as ${responseObject.username}`)
         
     }).catch(err => {
         ToastService.showRequestError(`Login failed`, err)

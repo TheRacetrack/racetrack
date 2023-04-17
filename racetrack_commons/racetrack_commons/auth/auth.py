@@ -19,6 +19,6 @@ class UnauthorizedError(RuntimeError):
 
     def describe(self, debug: bool = False):
         if not debug or not self.details:
-            return f'Unauthorized: {self.cause}'
+            return self.cause
         else:
-            return f'Unauthorized: {self.cause}: {self.details}'
+            return f'{self.cause}: {self.details}'
