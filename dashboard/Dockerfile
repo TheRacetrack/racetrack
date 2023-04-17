@@ -9,7 +9,7 @@ RUN apt-get update -y && apt-get install -y \
 
 COPY racetrack_client/setup.py racetrack_client/requirements.txt racetrack_client/README.md /src/racetrack_client/
 COPY racetrack_commons/setup.py racetrack_commons/requirements.txt /src/racetrack_commons/
-COPY dashboard/requirements.txt /src/dashboard/
+COPY dashboard/setup.py dashboard/requirements.txt /src/dashboard/
 RUN pip install -r /src/racetrack_client/requirements.txt \
   -r /src/racetrack_commons/requirements.txt \
   -r /src/dashboard/requirements.txt
@@ -17,11 +17,13 @@ RUN pip install -r /src/racetrack_client/requirements.txt \
 COPY racetrack_client/racetrack_client/. /src/racetrack_client/racetrack_client/
 COPY racetrack_commons/racetrack_commons/. /src/racetrack_commons/racetrack_commons/
 RUN cd /src/racetrack_client && python setup.py develop &&\
-  cd /src/racetrack_commons && python setup.py develop
+  cd /src/racetrack_commons && python setup.py develop &&\
+  cd /src/dashboard && python setup.py develop
 
 COPY dashboard/dashboard/. /src/dashboard/dashboard/
 
 COPY docs/. /src/docs/
+COPY dashboard/static/. /src/dashboard/static/
 
 CMD python -u dashboard/main.py
 

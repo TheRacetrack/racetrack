@@ -1,8 +1,10 @@
 from typing import Annotated
 
 from fastapi import Request, FastAPI, Form
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 
+from racetrack_client.log.context_error import ContextError, unwrap
+from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.auth import RT_AUTH_HEADER
 from racetrack_commons.auth.auth import UnauthorizedError
 from racetrack_commons.auth.token import decode_jwt
@@ -15,11 +17,16 @@ def setup_account_endpoints(app: FastAPI):
 
     @app.post("/api/accounts/login")
     def _login(username: Annotated[str, Form()], password: Annotated[str, Form()]):
-        user_profile: UserProfileDto = UserAccountClient().login_user(username, password)
-
-        response = Response()
-        set_auth_token_cookie(user_profile.token, response)
-        return response
+        try:
+            user_profile: UserProfileDto = UserAccountClient().login_user(username, password)
+            response = JSONResponse(user_profile.dict())
+            set_auth_token_cookie(user_profile.token, response)
+            return response
+        
+        except Exception as e:
+            log_exception(ContextError('Login failed', e))
+            root_exception = unwrap(e)
+            raise UnauthorizedError(str(root_exception))
 
     @app.get("/api/accounts/logout")
     def _logout():
