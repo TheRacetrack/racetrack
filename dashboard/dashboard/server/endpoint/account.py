@@ -1,7 +1,6 @@
-from typing import Annotated
-
-from fastapi import Request, FastAPI, Form
+from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel
 
 from racetrack_client.log.context_error import ContextError, unwrap
 from racetrack_client.log.exception import log_exception
@@ -15,18 +14,21 @@ from dashboard.cookie import set_auth_token_cookie, delete_auth_cookie
 
 def setup_account_endpoints(app: FastAPI):
 
+    class UserCredentialsModel(BaseModel):
+        username: str
+        password: str
+
     @app.post("/api/accounts/login")
-    def _login(username: Annotated[str, Form()], password: Annotated[str, Form()]):
+    def _login(payload: UserCredentialsModel):
         try:
-            user_profile: UserProfileDto = UserAccountClient().login_user(username, password)
+            user_profile: UserProfileDto = UserAccountClient().login_user(payload.username, payload.password)
             response = JSONResponse(user_profile.dict())
             set_auth_token_cookie(user_profile.token, response)
             return response
         
         except Exception as e:
             log_exception(ContextError('Login failed', e))
-            root_exception = unwrap(e)
-            raise UnauthorizedError(str(root_exception))
+            raise unwrap(e)
 
     @app.get("/api/accounts/logout")
     def _logout():
@@ -34,39 +36,40 @@ def setup_account_endpoints(app: FastAPI):
         delete_auth_cookie(response)
         return response
     
+    class RegisterModel(BaseModel):
+        username: str
+        password1: str
+        password2: str
+
     @app.post("/api/accounts/register")
-    def _register(
-        username: Annotated[str, Form()],
-        password1: Annotated[str, Form()],
-        password2: Annotated[str, Form()],
-    ) -> dict:
-        if "@" not in username:
+    def _register(payload: RegisterModel) -> dict:
+        if "@" not in payload.username:
             raise RuntimeError("You have to pass email as username")
-        if not password1:
+        if not payload.password1:
             raise RuntimeError("Password cannot be empty")
-        if password1 != password2:
+        if payload.password1 != payload.password2:
             raise RuntimeError("Passwords do not match")
 
-        UserAccountClient().register_user(username, password1)
+        UserAccountClient().register_user(payload.username, payload.password1)
 
         return {
-            'success': f'Your account "{username}" have been registered. Now wait till Racetrack admin activates your account.',
+            'success': f'Your account "{payload.username}" have been registered. Now wait till Racetrack admin activates your account.',
         }
     
+    class ChangePasswordModel(BaseModel):
+        old_password: str
+        new_password1: str
+        new_password2: str
+
     @app.post("/api/accounts/change_password")
-    def _change_password(
-        request: Request,
-        old_password: Annotated[str, Form()],
-        new_password1: Annotated[str, Form()],
-        new_password2: Annotated[str, Form()],
-    ):
-        if not old_password or not new_password1:
+    def _change_password(request: Request, payload: ChangePasswordModel):
+        if not payload.old_password or not payload.new_password1:
             raise RuntimeError("Password cannot be empty")
-        if new_password1 != new_password2:
+        if payload.new_password1 != payload.new_password2:
             raise RuntimeError("Passwords do not match")
 
         user_client = UserAccountClient(auth_token=get_auth_token(request))
-        user_client.change_password(old_password, new_password1)
+        user_client.change_password(payload.old_password, payload.new_password1)
 
         return {
             'success': f'Your password has been changed.',

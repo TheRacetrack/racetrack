@@ -1,12 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import axios from "axios"
+import { ToastService } from '@/services/ToastService';
 
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 
 function login() {
-  loading.value = true
+    loading.value = true
+
+    axios.post(`/api/accounts/login`,
+        {'username': email.value, 'password': password.value},
+    ).then(response => {
+
+        const responseObject = response.data
+        ToastService.toastSuccess(`Logged in ${responseObject}`)
+        loading.value = false
+        
+    }).catch(err => {
+        ToastService.showRequestError(`Login failed`, err)
+        loading.value = false
+    })
 }
 </script>
 
