@@ -28,7 +28,7 @@ defineExpose({
     <q-scroll-area class="fit">
       <q-list padding class="text-grey-8">
 
-        <q-item v-ripple clickable to="/">
+        <q-item v-ripple clickable to="/list">
           <q-item-section avatar>
             <q-icon name="list" />
           </q-item-section>
