@@ -2,10 +2,11 @@
 import { ref, defineExpose } from 'vue'
 import { mdiGraphOutline, mdiTable, mdiMessageAlertOutline, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant } from '@quasar/extras/mdi-v7'
 
-const leftDrawerOpen = ref(false)
+const drawerOpen = ref(false)
+const miniState = ref(true)
 
 function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+  drawerOpen.value = !drawerOpen.value
 }
 
 defineExpose({
@@ -14,7 +15,16 @@ defineExpose({
 </script>
 
 <template>
-  <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
+  <q-drawer
+    show-if-above
+    v-model="drawerOpen"
+    :mini="miniState"
+    @mouseover="miniState = false"
+    @mouseout="miniState = true"
+    mini-to-overlay
+    side="left"
+    bordered
+  >
     <q-scroll-area class="fit">
       <q-list padding class="text-grey-8">
 
