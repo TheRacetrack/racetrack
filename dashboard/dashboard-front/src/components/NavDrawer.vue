@@ -93,7 +93,7 @@ defineExpose({
           </q-item-section>
         </q-item>
         
-        <q-item v-ripple clickable>
+        <q-item v-ripple clickable to="/logout">
           <q-item-section avatar>
             <q-icon :name="mdiLogout" />
           </q-item-section>

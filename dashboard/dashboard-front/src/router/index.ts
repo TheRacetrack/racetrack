@@ -8,6 +8,7 @@ import DocsView from '../views/DocsView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import AdministrationView from '../views/AdministrationView.vue'
 import LoginView from '../views/LoginView.vue'
+import LogoutView from '../views/LogoutView.vue'
 import { userData } from '@/services/UserDataStore'
 
 const router = createRouter({
@@ -62,6 +63,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/logout',
+      name: 'logout',
+      component: LogoutView,
     },
   ]
 })

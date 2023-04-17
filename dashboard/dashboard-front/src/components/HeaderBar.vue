@@ -23,7 +23,7 @@ function toggleDrawer () {
         <q-btn round flat :icon="mdiAccountCircle" to="/profile">
           <q-tooltip>Profile</q-tooltip>
         </q-btn>
-        <q-btn round dense flat color="grey-5" :icon="mdiLogout">
+        <q-btn round dense flat color="grey-5" :icon="mdiLogout" to="/logout">
           <q-tooltip>Logout</q-tooltip>
         </q-btn>
       </div>

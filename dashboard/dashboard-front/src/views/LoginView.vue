@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import axios from "axios"
 import { ToastService } from '@/services/ToastService';
 import { userData, setUserData } from '@/services/UserDataStore.js';
+import router from '@/router';
+import { useRoute } from 'vue-router';
 
 const email = ref('')
 const password = ref('')
@@ -13,6 +15,9 @@ interface LoginData {
     token: string;
     is_staff: boolean;
 }
+
+
+const route = useRoute()
 
 function login() {
     loading.value = true
@@ -31,6 +36,14 @@ function login() {
             authToken: responseData.token,
             isStaff: responseData.is_staff,
         })
+
+        const nextPath = route.query.next
+        if (nextPath) {
+            router.push({ path: nextPath })
+        } else {
+            router.push({ name: 'home' })
+        }
+
         ToastService.toastSuccess(`Logged in as ${responseData.username}`)
         
     }).catch(err => {
