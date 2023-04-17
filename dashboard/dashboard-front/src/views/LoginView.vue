@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import axios from "axios"
 import { ToastService } from '@/services/ToastService';
-import { userData, setUserData } from '@/services/UserDataStore.js';
+import { setUserData } from '@/services/UserDataStore.js';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 
@@ -16,8 +16,12 @@ interface LoginData {
     is_staff: boolean;
 }
 
-
 const route = useRoute()
+const nextPath = route.query.next
+
+if (nextPath) {
+  ToastService.toastInfo(`Please log in to see this page.`)
+}
 
 function login() {
     loading.value = true
@@ -37,7 +41,6 @@ function login() {
             isStaff: responseData.is_staff,
         })
 
-        const nextPath = route.query.next
         if (nextPath) {
             router.push({ path: nextPath })
         } else {
