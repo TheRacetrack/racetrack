@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { copyToClipboard } from 'quasar'
 import { userData } from '@/services/UserDataStore'
 import { envInfo } from '@/services/EnvironmentInfo'
@@ -8,6 +9,20 @@ function copyAuthToken() {
   copyToClipboard(userData.authToken || '')
     .then(() => {
       ToastService.success(`Auth Token copied to clipboard.`)
+    })
+    .catch((error) => {
+      ToastService.error(`Failed to copy to clipboard.`)
+    })
+}
+
+const loginCommand = computed(() => 
+  `racetrack login --remote ${envInfo.lifecycle_url} ${userData.authToken}`
+)
+
+function copyLoginCommand() {
+  copyToClipboard(loginCommand.value)
+    .then(() => {
+      ToastService.success(`Command copied to clipboard.`)
     })
     .catch((error) => {
       ToastService.error(`Failed to copy to clipboard.`)
@@ -37,7 +52,7 @@ function copyAuthToken() {
 
       <q-field outlined label="Auth Token" stack-label class="q-mt-md">
         <template v-slot:control>
-          <span style="overflow-wrap: anywhere;">
+          <span class="x-monospace x-overflow-any">
             {{ userData.authToken }}
           </span>
         </template>
@@ -45,6 +60,20 @@ function copyAuthToken() {
           <q-btn round dense flat icon="content_copy" @click="copyAuthToken" />
         </template>
       </q-field>
+
+      <p class="q-mt-md">
+        Run this in CLI to deploy Jobs to this Racetrack:
+        <q-field filled dense>
+          <template v-slot:control>
+            <div class="x-monospace x-overflow-any">
+              {{ loginCommand }}
+            </div>
+          </template>
+        <template v-slot:append>
+          <q-btn round dense flat icon="content_copy" @click="copyLoginCommand" />
+        </template>
+        </q-field>
+      </p>
 
     </q-card-section>
   </q-card>
@@ -59,14 +88,20 @@ function copyAuthToken() {
 
       <p>
         Racetrack's remote address: 
-        <a :href="envInfo.lifecycle_url" target="_blank"> {{ envInfo.lifecycle_url }}</a>
+        <q-field filled dense>
+          <template v-slot:control>
+            <div class="x-monospace">
+              {{ envInfo.lifecycle_url }}
+            </div>
+          </template>
+        </q-field>
       </p>
 
       <p>
         To add it as alias, run:
         <q-field filled dense>
           <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0" style="font-family: monospace;">
+            <div class="x-monospace">
               racetrack set alias ALIAS_NAME {{ envInfo.lifecycle_url }}
             </div>
           </template>
@@ -77,7 +112,7 @@ function copyAuthToken() {
         To set the current remote, run:
         <q-field filled dense>
           <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0" style="font-family: monospace;">
+            <div class="x-monospace">
               racetrack set remote {{ envInfo.lifecycle_url }}
             </div>
           </template>
@@ -88,7 +123,7 @@ function copyAuthToken() {
         To deploy here, run:
         <q-field filled dense>
           <template v-slot:control>
-            <div class="self-center full-width no-outline" tabindex="0" style="font-family: monospace;">
+            <div class="x-monospace">
               racetrack deploy MANIFEST_PATH --remote {{ envInfo.lifecycle_url }}
             </div>
           </template>

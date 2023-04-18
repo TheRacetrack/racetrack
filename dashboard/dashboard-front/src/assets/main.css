@@ -3,3 +3,11 @@
   margin: 0 auto;
   padding: 2rem;
 }
+
+.x-monospace {
+  font-family: monospace, monospace;
+}
+
+.x-overflow-any {
+  overflow-wrap: anywhere;
+}
