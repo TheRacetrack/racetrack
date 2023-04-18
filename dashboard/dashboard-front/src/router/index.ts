@@ -10,6 +10,7 @@ import AdministrationView from '../views/AdministrationView.vue'
 import LoginView from '../views/LoginView.vue'
 import LogoutView from '../views/LogoutView.vue'
 import { userData } from '@/services/UserDataStore'
+import { ToastService } from '@/services/ToastService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,6 +83,7 @@ router.beforeEach((to, from, next) => {
           next: nextPath,
         },
       })
+      ToastService.toastInfo(`Please log in to see this page.`)
     } else {
       next()
     }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, defineExpose } from 'vue'
 import { mdiGraphOutline, mdiTable, mdiMessageAlertOutline, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant } from '@quasar/extras/mdi-v7'
+import { outlinedMemory } from '@quasar/extras/material-icons-outlined'
 
 const drawerOpen = ref(false)
 const miniState = ref(true)
@@ -30,7 +31,7 @@ defineExpose({
 
         <q-item v-ripple clickable to="/list">
           <q-item-section avatar>
-            <q-icon name="list" />
+            <q-icon :name="outlinedMemory" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Jobs</q-item-label>
