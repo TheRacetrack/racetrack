@@ -75,7 +75,7 @@ defineExpose({
             <q-icon :name="mdiBookOpenVariant" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Docs <q-icon name="open_in_new"/></q-item-label>
+            <q-item-label>Docs</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -88,7 +88,8 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable to="/administration">
+        <q-item v-ripple clickable
+          to="/administration" v-if="userData.isAdmin">
           <q-item-section avatar>
             <q-icon :name="mdiTools" />
           </q-item-section>

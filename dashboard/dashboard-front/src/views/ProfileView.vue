@@ -12,6 +12,6 @@ import { userData } from '@/services/UserDataStore.js'
     Auth Token: <span>{{ userData.authToken }}</span>
   </p>
   <p>
-    Admin: <span>{{ userData.isStaff ? 'yes' : 'no' }}</span>
+    Admin: <span>{{ userData.isAdmin ? 'yes' : 'no' }}</span>
   </p>
 </template>

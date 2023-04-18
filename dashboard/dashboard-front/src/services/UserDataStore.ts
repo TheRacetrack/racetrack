@@ -5,21 +5,21 @@ export const userData: UserData = reactive({
     isAuthenticated: false,
     username: 'dupa',
     authToken: '',
-    isStaff: false,
+    isAdmin: false,
 })
 
 export interface UserData {
     isAuthenticated: boolean;
     username: string | null;
     authToken: string | null;
-    isStaff: boolean;
+    isAdmin: boolean;
 }
 
 export function setUserData(data: UserData) {
     userData.isAuthenticated = data.isAuthenticated
     userData.username = data.username
     userData.authToken = data.authToken
-    userData.isStaff = data.isStaff
+    userData.isAdmin = data.isAdmin
     saveUserData()
 }
 
@@ -27,7 +27,7 @@ export function deleteUserData() {
     userData.isAuthenticated = false
     userData.username = ''
     userData.authToken = ''
-    userData.isStaff = false
+    userData.isAdmin = false
     saveUserData()
 }
 
@@ -35,7 +35,7 @@ export function loadUserData() {
     /** Load user account data from a local storage */
     const username = localStorage.getItem('userData.username')
     const authToken = localStorage.getItem('userData.authToken')
-    const isStaff = localStorage.getItem('userData.isStaff') == "true"
+    const isAdmin = localStorage.getItem('userData.isAdmin') == "true"
     if (isEmpty(username) || isEmpty(authToken)) {
         return
     }
@@ -43,13 +43,13 @@ export function loadUserData() {
     userData.isAuthenticated = true
     userData.username = username
     userData.authToken = authToken
-    userData.isStaff = isStaff
+    userData.isAdmin = isAdmin
 }
 
 export function saveUserData() {
     setOrDeleteLocalStorage('userData.username', userData.username)
     setOrDeleteLocalStorage('userData.authToken', userData.authToken)
-    setOrDeleteLocalStorage('userData.isStaff', userData.isStaff.toString())
+    setOrDeleteLocalStorage('userData.isAdmin', userData.isAdmin.toString())
 }
 
 function setOrDeleteLocalStorage(key: string, value: string | null) {

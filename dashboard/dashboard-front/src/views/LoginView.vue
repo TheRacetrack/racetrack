@@ -33,7 +33,7 @@ function login() {
             isAuthenticated: true,
             username: responseData.username,
             authToken: responseData.token,
-            isStaff: responseData.is_staff,
+            isAdmin: responseData.is_staff,
         })
 
         const nextPath = route.query.next
