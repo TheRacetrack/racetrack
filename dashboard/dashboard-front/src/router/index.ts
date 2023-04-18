@@ -9,6 +9,9 @@ import ProfileView from '@/views/ProfileView.vue'
 import AdministrationView from '@/views/AdministrationView.vue'
 import LoginView from '@/views/LoginView.vue'
 import LogoutView from '@/views/LogoutView.vue'
+import RegisterView from '@/views/RegisterView.vue'
+import ResetPasswordView from '@/views/ResetPasswordView.vue'
+import PageNotFound from '@/views/PageNotFound.vue'
 import { userData } from '@/services/UserDataStore'
 import { ToastService } from '@/services/ToastService'
 
@@ -70,6 +73,17 @@ const router = createRouter({
       name: 'logout',
       component: LogoutView,
     },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPasswordView,
+    },
+    { path: '/:catchAll(.*)', component: PageNotFound },
   ]
 })
 

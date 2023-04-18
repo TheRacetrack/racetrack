@@ -3,8 +3,7 @@ import { ref } from 'vue'
 import axios from "axios"
 import { ToastService } from '@/services/ToastService'
 import { setUserData } from '@/services/UserDataStore'
-import router from '@/router'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const email = ref('')
 const password = ref('')
@@ -16,6 +15,7 @@ interface LoginData {
     is_staff: boolean;
 }
 
+const router = useRouter()
 const route = useRoute()
 
 function login() {
@@ -54,7 +54,7 @@ function login() {
 
 <template>
     <div class="row justify-center">
-      <q-card bordered class="q-pa-lg shadow-1 col-xs-12 col-sm-6 col-md-4">
+      <q-card bordered class="q-pa-lg shadow-1 col-xs-12 col-sm-6 col-md-5">
 
         <h5 class="text-h5 q-my-sm text-center text-grey-9">Sign In</h5>
 
@@ -81,10 +81,10 @@ function login() {
 
         <q-card-section class="text-center q-pa-none">
           <p class="q-pa-sm">
-              <a href="/register">Create an account</a>
-          </p>
+              <router-link to="/register">Create an account</router-link>
+            </p>
           <p class="q-pa-none">
-              <a>Lost password?</a>
+              <router-link to="/reset-password">Lost password?</router-link>
           </p>
         </q-card-section>
 
