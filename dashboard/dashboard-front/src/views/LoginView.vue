@@ -62,41 +62,41 @@ function login() {
 </script>
 
 <template>
-    <div class="row justify-center">
-      <q-card bordered class="q-pa-lg shadow-1 col-xs-12 col-sm-6 col-md-5">
+  <div class="row justify-center">
+    <q-card bordered class="q-pa-lg shadow-1 col-xs-12 col-sm-6 col-md-5">
 
-        <h5 class="text-h5 q-my-sm text-center text-grey-9">Sign In</h5>
+      <h5 class="text-h5 q-my-sm text-center text-grey-9">Sign In</h5>
 
-        <q-card-section>
-          <q-form class="q-gutter-md">
-            <q-input outlined autofocus type="email" label="Email" autocomplete="username"
-              v-model="username" @keydown.enter.prevent="login"
-              >
-              <template v-if="username" v-slot:append>
-                <q-icon name="cancel" @click.stop.prevent="username = ''" class="cursor-pointer" />
-              </template>
-            </q-input>
-            <q-input outlined type="password" label="Password" autocomplete="password"
-              v-model="password" @keydown.enter.prevent="login"
-              />
-          </q-form>
-        </q-card-section>
-        <q-card-actions class="q-px-md">
-          <q-btn color="primary" size="lg" class="full-width" label="Login"
-            :loading="loading" @click="login" />
-        </q-card-actions>
-        
-        <q-separator class="q-ma-sm"/>
+      <q-card-section>
+        <q-form class="q-gutter-md">
+          <q-input outlined autofocus type="email" label="Email" autocomplete="username"
+            v-model="username" @keydown.enter.prevent="login"
+            >
+            <template v-if="username" v-slot:append>
+              <q-icon name="cancel" @click.stop.prevent="username = ''" class="cursor-pointer" />
+            </template>
+          </q-input>
+          <q-input outlined type="password" label="Password" autocomplete="password"
+            v-model="password" @keydown.enter.prevent="login"
+            />
+        </q-form>
+      </q-card-section>
+      <q-card-actions class="q-px-md">
+        <q-btn color="primary" size="lg" class="full-width" label="Login"
+          :loading="loading" @click="login" />
+      </q-card-actions>
+      
+      <q-separator class="q-ma-sm"/>
 
-        <q-card-section class="text-center q-pa-none">
-          <p class="q-pa-sm">
-              <router-link to="/register">Create an account</router-link>
-            </p>
-          <p class="q-pa-none">
-              <router-link to="/reset-password">Lost password?</router-link>
-          </p>
-        </q-card-section>
+      <q-card-section class="text-center q-pa-none">
+        <p class="q-pa-sm">
+          <router-link to="/register">Create an account</router-link>
+        </p>
+        <p class="q-pa-none">
+          <router-link to="/reset-password">Lost password?</router-link>
+        </p>
+      </q-card-section>
 
-      </q-card>
-    </div>
+    </q-card>
+  </div>
 </template>

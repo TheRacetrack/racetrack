@@ -70,15 +70,6 @@ defineExpose({
 
         <q-separator inset class="q-my-sm" />
 
-        <q-item v-ripple clickable to="/docs">
-          <q-item-section avatar>
-            <q-icon :name="mdiBookOpenVariant" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Docs</q-item-label>
-          </q-item-section>
-        </q-item>
-
         <q-item v-ripple clickable to="/profile">
           <q-item-section avatar>
             <q-icon :name="mdiAccountCircle" />
@@ -95,6 +86,15 @@ defineExpose({
           </q-item-section>
           <q-item-section>
             <q-item-label>Administration</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item v-ripple clickable to="/docs">
+          <q-item-section avatar>
+            <q-icon :name="mdiBookOpenVariant" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Docs</q-item-label>
           </q-item-section>
         </q-item>
         

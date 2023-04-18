@@ -27,13 +27,17 @@ export class ToastService {
         this.showToast(msg, this.toast.warning, 5000)
     }
 
-    static showToast(msg: string, toaster: ToasterFunction, timeout: number = 5000, closeOnClick: boolean = true) {
+    static notify(msg: string) {
+        this.showToast(msg, this.toast.success, 15000, false, "top-center")
+    }
+
+    static showToast(msg: string, toaster: ToasterFunction, timeout: number = 5000, closeOnClick: boolean = true, position: string = "top-right") {
         if (this.lastToastId !== null && this.lastToastMessage == msg) {
             this.toast.dismiss(this.lastToastId)
         }
 
         const options = {
-            position: "top-right",
+            position: position,
             timeout: timeout,
             closeOnClick: closeOnClick,
             pauseOnFocusLoss: true,
