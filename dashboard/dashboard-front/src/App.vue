@@ -6,6 +6,7 @@ import Footer from './components/Footer.vue'
 import NavDrawer from './components/NavDrawer.vue'
 import HeaderBar from './components/HeaderBar.vue'
 import { loadUserData } from '@/services/UserDataStore'
+import { loadBackendStatus } from '@/services/InfoStore'
 
 const navDrawer: Ref<typeof NavDrawer | null> = ref(null)
 
@@ -14,6 +15,7 @@ function toggleLeftDrawer() {
 }
 
 loadUserData()
+loadBackendStatus()
 </script>
 
 <template>

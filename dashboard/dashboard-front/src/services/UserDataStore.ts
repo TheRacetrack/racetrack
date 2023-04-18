@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { isEmpty } from './StringUtils';
 
 export const userData: UserData = reactive({
     isAuthenticated: false,
@@ -31,6 +32,7 @@ export function deleteUserData() {
 }
 
 export function loadUserData() {
+    /** Load user account data from a local storage */
     const username = localStorage.getItem('userData.username')
     const authToken = localStorage.getItem('userData.authToken')
     const isStaff = localStorage.getItem('userData.isStaff') == "true"
@@ -56,8 +58,4 @@ function setOrDeleteLocalStorage(key: string, value: string | null) {
     } else {
         localStorage.setItem(key, value)
     }
-}
-
-function isEmpty(str: string | null) {
-    return (!str || str.length === 0 )
 }
