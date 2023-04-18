@@ -1,15 +1,39 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import axios from "axios"
+import { useRouter } from 'vue-router'
+import { ToastService } from '@/services/ToastService';
 
 const username = ref('')
 const password = ref('')
 const password2 = ref('')
 const loading = ref(false)
 
+const router = useRouter()
+
 function register() {
     loading.value = true
 
+    axios.post(`/api/accounts/register`,
+        {
+            'username': username.value, 
+            'password1': password.value,
+            'password2': password2.value,
+        },
+    ).then(response => {
+        
+        loading.value = false
+        password.value = ''
+        password2.value = ''
+
+        router.push({ name: 'login' })
+
+        ToastService.success(`Your account "${username.value}" have been registered. Now wait till Racetrack admin activates your account.`)
+        
+    }).catch(err => {
+        ToastService.showRequestError(`Registering failed`, err)
+        loading.value = false
+    })
 }
 </script>
 

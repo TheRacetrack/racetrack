@@ -97,7 +97,7 @@ router.beforeEach((to, from, next) => {
           next: nextPath,
         },
       })
-      ToastService.toastInfo(`Please log in to see this page.`)
+      ToastService.info(`Please log in to see this page.`)
     } else {
       next()
     }

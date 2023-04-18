@@ -11,19 +11,19 @@ export class ToastService {
     static lastToastId: ToastID | null = null
     static lastToastMessage: string | null = null
 
-    static toastInfo(msg: string) {
+    static info(msg: string) {
         this.showToast(msg, this.toast.info, 5000)
     }
 
-    static toastError(msg: string) {
+    static error(msg: string) {
         this.showToast(msg, this.toast.error, 7000, false)
     }
 
-    static toastSuccess(msg: string) {
+    static success(msg: string) {
         this.showToast(msg, this.toast.success, 3000)
     }
 
-    static toastWarning(msg: string) {
+    static warning(msg: string) {
         this.showToast(msg, this.toast.warning, 5000)
     }
 
@@ -55,11 +55,11 @@ export class ToastService {
                 const data = err.response.data
                 if (data !== undefined && data.hasOwnProperty('error')){
                     const errorDetails = data.error
-                    this.toastError(`${context}: ${errorDetails}`)
+                    this.error(`${context}: ${errorDetails}`)
                     return
                 }
             }
         }
-        this.toastError(`${context}: ${err}`)
+        this.error(`${context}: ${err}`)
     }
 }

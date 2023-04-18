@@ -28,7 +28,6 @@ def setup_account_endpoints(app: FastAPI):
             return response
         
         except Exception as e:
-            log_exception(ContextError('Login failed', e))
             if isinstance(e, ResponseError):
                 if e.status_code == 401:
                     raise UnauthorizedError(str(unwrap(e)))
@@ -46,7 +45,7 @@ def setup_account_endpoints(app: FastAPI):
         password2: str
 
     @app.post("/api/accounts/register")
-    def _register(payload: RegisterModel) -> dict:
+    def _register(payload: RegisterModel):
         if "@" not in payload.username:
             raise RuntimeError("You have to pass email as username")
         if not payload.password1:
@@ -54,11 +53,10 @@ def setup_account_endpoints(app: FastAPI):
         if payload.password1 != payload.password2:
             raise RuntimeError("Passwords do not match")
 
-        UserAccountClient().register_user(payload.username, payload.password1)
-
-        return {
-            'success': f'Your account "{payload.username}" have been registered. Now wait till Racetrack admin activates your account.',
-        }
+        try:
+            UserAccountClient().register_user(payload.username, payload.password1)
+        except Exception as e:
+            raise unwrap(e)
     
     class ChangePasswordModel(BaseModel):
         old_password: str
@@ -74,10 +72,6 @@ def setup_account_endpoints(app: FastAPI):
 
         user_client = UserAccountClient(auth_token=get_auth_token(request))
         user_client.change_password(payload.old_password, payload.new_password1)
-
-        return {
-            'success': f'Your password has been changed.',
-        }
 
 
 def get_auth_token(request: Request) -> str:

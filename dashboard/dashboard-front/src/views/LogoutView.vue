@@ -8,7 +8,7 @@ const router = useRouter()
 function logout() {
   deleteUserData()
   router.push({ name: 'login' })
-  ToastService.toastSuccess(`You're logged out.`)
+  ToastService.success(`You're logged out.`)
 }
 
 logout()

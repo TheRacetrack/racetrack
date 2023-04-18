@@ -5,7 +5,7 @@ import { ToastService } from '@/services/ToastService'
 import { setUserData } from '@/services/UserDataStore'
 import { useRoute, useRouter } from 'vue-router'
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const loading = ref(false)
 
@@ -19,10 +19,19 @@ const router = useRouter()
 const route = useRoute()
 
 function login() {
+    if (username.value == '') {
+        ToastService.error(`Username is empty`)
+        return
+    }
+    if (password.value == '') {
+        ToastService.error(`Password is empty`)
+        return
+    }
+
     loading.value = true
 
     axios.post(`/api/accounts/login`,
-        {'username': email.value, 'password': password.value},
+        {'username': username.value, 'password': password.value},
     ).then(response => {
         
         loading.value = false
@@ -43,7 +52,7 @@ function login() {
             router.push({ name: 'home' })
         }
 
-        ToastService.toastSuccess(`Logged in as ${responseData.username}`)
+        ToastService.success(`Logged in as ${responseData.username}`)
         
     }).catch(err => {
         ToastService.showRequestError(`Login failed`, err)
@@ -61,10 +70,10 @@ function login() {
         <q-card-section>
           <q-form class="q-gutter-md">
             <q-input outlined autofocus type="email" label="Email" autocomplete="username"
-              v-model="email" @keydown.enter.prevent="login"
+              v-model="username" @keydown.enter.prevent="login"
               >
-              <template v-if="email" v-slot:append>
-                <q-icon name="cancel" @click.stop.prevent="email = ''" class="cursor-pointer" />
+              <template v-if="username" v-slot:append>
+                <q-icon name="cancel" @click.stop.prevent="username = ''" class="cursor-pointer" />
               </template>
             </q-input>
             <q-input outlined type="password" label="Password" autocomplete="password"
