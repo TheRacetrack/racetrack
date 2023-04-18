@@ -82,7 +82,7 @@ function login() {
         </q-form>
       </q-card-section>
       <q-card-actions class="q-px-md">
-        <q-btn color="primary" size="lg" class="full-width" label="Login"
+        <q-btn color="primary" size="lg" class="full-width" label="Login" push
           :loading="loading" @click="login" />
       </q-card-actions>
       

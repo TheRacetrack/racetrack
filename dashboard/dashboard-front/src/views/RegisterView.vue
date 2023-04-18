@@ -66,7 +66,7 @@ function register() {
       </q-form>
     </q-card-section>
     <q-card-actions class="q-px-md">
-      <q-btn color="primary" size="md" class="full-width" label="Register"
+      <q-btn color="primary" size="md" class="full-width" label="Register" push
         :loading="loading" @click="register" />
     </q-card-actions>
 

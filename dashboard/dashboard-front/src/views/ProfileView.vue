@@ -28,6 +28,14 @@ function copyLoginCommand() {
       ToastService.error(`Failed to copy to clipboard.`)
     })
 }
+
+function changePassword() {
+
+}
+
+function regenerateToken() {
+
+}
 </script>
 
 <template>
@@ -74,6 +82,11 @@ function copyLoginCommand() {
         </template>
         </q-field>
       </p>
+
+      <q-btn-group push>
+        <q-btn color="primary" push label="Change Password" icon="key" @click="changePassword" />
+        <q-btn color="primary" push label="Regenerate Token" icon="autorenew" @click="regenerateToken" />
+      </q-btn-group>
 
     </q-card-section>
   </q-card>
