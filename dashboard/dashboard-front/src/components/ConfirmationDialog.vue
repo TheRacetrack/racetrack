@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QAjaxBar } from 'quasar';
-import { ref, defineExpose, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 const dialogOpen = ref(false)
 const dialogBody = ref('')

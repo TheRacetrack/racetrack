@@ -6,6 +6,8 @@ import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
 import { DialogService } from '@/services/DialogService'
+import { DataSet, DataView } from "vis-data";
+import { Network } from "vis-network";
 
 
 const graphData: GraphData = reactive({
@@ -53,6 +55,9 @@ function fetchGraph() {
 
 fetchGraph()
 
+onUpdated(() => {
+    initVisNetwork()
+})
 
 function shapeOfNodeByType(nodeType: string) {
     if (nodeType == 'esc')
@@ -78,7 +83,7 @@ var nodeStructs = computed(() =>
     graphData.job_graph.nodes.map(nodeMapper)
 )
 
-var nodes = new vis.DataSet(nodeStructs)
+var nodes = new DataSet(nodeStructs as any)
 
 const edgeMapper = (edge: JobGraphEdge) => ({
     from: edge.from_id,
@@ -92,7 +97,7 @@ var edgeStructs = computed(() =>
     graphData.job_graph.edges.map(edgeMapper)
 )
 
-var edges = new vis.DataSet(edgeStructs)
+var edges = new DataSet(edgeStructs as any)
 
 var focusedNodes: string[] = []
 
@@ -107,30 +112,32 @@ const edgesFilter = (edge: any) => {
     return true;
 }
 
-const nodesView = new vis.DataView(nodes, { filter: nodesFilter });
-const edgesView = new vis.DataView(edges, { filter: edgesFilter });
-var data = {
-    nodes: nodesView,
-    edges: edgesView,
-};
-var options = {
-    nodes: {
-        borderWidth: 2,
-        shadow: true,
-    },
-    edges: {
-        shadow: true,
-        smooth: {
-            type: "cubicBezier",
-            forceDirection: "none"
-        }
-    },
-    physics: {
-        enabled: true,
-    },
-};
-var container = document.getElementById("graph-area");
-var network = new vis.Network(container, data, options);
+function initVisNetwork() {
+    const nodesView = new DataView(nodes, { filter: nodesFilter });
+    const edgesView = new DataView(edges, { filter: edgesFilter });
+    var data = {
+        nodes: nodesView,
+        edges: edgesView,
+    };
+    var options = {
+        nodes: {
+            borderWidth: 2,
+            shadow: true,
+        },
+        edges: {
+            shadow: true,
+            smooth: {
+                type: "cubicBezier",
+                forceDirection: "none"
+            }
+        },
+        physics: {
+            enabled: true,
+        },
+    }
+    var container = document.getElementById("graph-area") as HTMLElement
+    var network = new Network(container, data as any, options as any)
+}
 
 // network.on("click", function (params) {
 //     focusedNodes = params.nodes;

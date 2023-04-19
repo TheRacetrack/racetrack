@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineExpose } from 'vue'
+import { ref } from 'vue'
 import { mdiGraphOutline, mdiTable, mdiMessageAlertOutline, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant } from '@quasar/extras/mdi-v7'
 import { outlinedMemory } from '@quasar/extras/material-icons-outlined'
 
