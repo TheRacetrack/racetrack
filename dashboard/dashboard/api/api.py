@@ -40,7 +40,6 @@ def setup_api_endpoints(app: FastAPI):
     def jobs_list(request: Request) -> dict:
         jobs_client = _get_job_registry_client(request)
         return {
-            'external_pub_url': get_external_pub_url(),
             'jobs': jobs_client.list_deployed_jobs(),
         }
     
@@ -63,7 +62,6 @@ def setup_api_endpoints(app: FastAPI):
             job_dict['last_call_time_days_ago'] = days_ago(job_dict['last_call_time'])
 
         return {
-            'external_pub_url': get_external_pub_url(),
             'jobs': job_dicts,
         }
     

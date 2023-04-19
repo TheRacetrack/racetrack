@@ -11,6 +11,7 @@ import LoginView from '@/views/LoginView.vue'
 import LogoutView from '@/views/LogoutView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ResetPasswordView from '@/views/ResetPasswordView.vue'
+import ChangePasswordView from '@/views/ChangePasswordView.vue'
 import PageNotFound from '@/views/PageNotFound.vue'
 import { userData } from '@/services/UserDataStore'
 import { ToastService } from '@/services/ToastService'
@@ -66,6 +67,12 @@ const router = createRouter({
       path: basePath + '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: basePath + '/change-password',
+      name: 'change-password',
+      component: ChangePasswordView,
       meta: { requiresAuth: true },
     },
     {

@@ -29,10 +29,6 @@ function copyLoginCommand() {
     })
 }
 
-function changePassword() {
-
-}
-
 function regenerateToken() {
 
 }
@@ -84,7 +80,7 @@ function regenerateToken() {
       </p>
 
       <q-btn-group push>
-        <q-btn color="primary" push label="Change Password" icon="key" @click="changePassword" />
+        <q-btn color="primary" push label="Change Password" icon="key" :to="{name: 'change-password'}" />
         <q-btn color="primary" push label="Regenerate Token" icon="autorenew" @click="regenerateToken" />
       </q-btn-group>
 

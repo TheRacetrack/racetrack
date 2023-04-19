@@ -10,9 +10,9 @@ const password = ref('')
 const loading = ref(false)
 
 interface LoginData {
-    username: string;
-    token: string;
-    is_staff: boolean;
+    username: string
+    token: string
+    is_staff: boolean
 }
 
 const router = useRouter()
