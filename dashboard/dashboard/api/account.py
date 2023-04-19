@@ -2,8 +2,7 @@ from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
-from racetrack_client.log.context_error import ContextError, unwrap
-from racetrack_client.log.exception import log_exception
+from racetrack_client.log.context_error import unwrap
 from racetrack_client.utils.auth import RT_AUTH_HEADER
 from racetrack_client.utils.request import ResponseError
 from racetrack_commons.auth.auth import UnauthorizedError

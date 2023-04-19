@@ -14,13 +14,13 @@ from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 from racetrack_commons.urls import get_external_lifecycle_url, get_external_pub_url
 from dashboard.purge import enrich_jobs_purge_info
 from dashboard.utils import remove_ansi_sequences
-from dashboard.server.endpoint.account import get_auth_token, setup_account_endpoints
+from dashboard.api.account import get_auth_token, setup_account_endpoints
 
 
 def setup_api_endpoints(app: FastAPI):
 
     setup_account_endpoints(app)
-
+    
     @app.get("/api/status")
     def _status():
         """Report current application status"""

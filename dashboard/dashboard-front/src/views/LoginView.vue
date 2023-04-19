@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import axios from "axios"
 import { ToastService } from '@/services/ToastService'
 import { setUserData } from '@/services/UserDataStore'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 
 const username = ref('')
 const password = ref('')
@@ -47,7 +47,7 @@ function login() {
 
         const nextPath = route.query.next
         if (nextPath) {
-            router.push({ path: nextPath })
+            router.push({ path: nextPath } as RouteLocationRaw)
         } else {
             router.push({ name: 'home' })
         }
@@ -58,6 +58,11 @@ function login() {
         ToastService.showRequestError(`Login failed`, err)
         loading.value = false
     })
+}
+
+function clearCredentials() {
+    username.value = ''
+    password.value = ''
 }
 </script>
 
@@ -73,7 +78,7 @@ function login() {
             v-model="username" @keydown.enter.prevent="login"
             >
             <template v-if="username" v-slot:append>
-              <q-icon name="cancel" @click.stop.prevent="username = ''" class="cursor-pointer" />
+              <q-icon name="cancel" @click.stop.prevent="clearCredentials" class="cursor-pointer" />
             </template>
           </q-input>
           <q-input outlined type="password" label="Password" autocomplete="password"

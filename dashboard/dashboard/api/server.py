@@ -8,9 +8,9 @@ from racetrack_client.log.logs import configure_logs, get_logger
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.asgi.proxy import mount_at_base_path
 
-from dashboard.server.endpoint.webview import setup_web_views
-from dashboard.server.endpoint.api import setup_api_endpoints
-from dashboard.server.health import setup_health_endpoint
+from dashboard.api.webview import setup_web_views
+from dashboard.api.api import setup_api_endpoints
+from dashboard.api.health import setup_health_endpoint
 
 logger = get_logger(__name__)
 
@@ -35,10 +35,10 @@ def create_fastapi_app() -> ASGIApp:
         request_access_log=True,
         response_access_log=True,
         handle_errors=True,
+        docs_url='/docs',
     )
 
     setup_health_endpoint(app)
-
     setup_api_endpoints(app)
     setup_web_views(app)
 
