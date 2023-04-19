@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { reactive, onUpdated } from 'vue'
 import axios from "axios"
-import '@/assets/tablefilter'
 import { ToastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { AUTH_HEADER } from '@/services/RequestUtils'
@@ -42,7 +41,7 @@ interface PortfolioData {
 function initTableFilter() {
     // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
     var tfConfig = {
-        base_path: '/assets/tablefilter/',
+        base_path: '/dashboard/ui/assets/tablefilter/',
         paging: {
             results_per_page: ['Rows: ', [10, 25, 50, 100]]
         },

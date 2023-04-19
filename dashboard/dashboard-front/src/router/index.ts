@@ -16,8 +16,6 @@ import PageNotFound from '@/views/PageNotFound.vue'
 import { userData } from '@/services/UserDataStore'
 import { ToastService } from '@/services/ToastService'
 
-const basePath = ''
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -27,69 +25,69 @@ const router = createRouter({
       redirect: { name: 'jobs' },
     },
     {
-      path: basePath + '/jobs',
+      path: '/jobs',
       name: 'jobs',
       component: JobsListView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/graph',
+      path: '/graph',
       name: 'graph',
       component: GraphView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/portfolio',
+      path: '/portfolio',
       name: 'portfolio',
       component: PortfolioView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/activity',
+      path: '/activity',
       name: 'activity',
       component: ActivityView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/docs',
+      path: '/docs',
       name: 'docs',
       component: DocsView,
     },
     {
-      path: basePath + '/profile',
+      path: '/profile',
       name: 'profile',
       component: ProfileView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/change-password',
+      path: '/change-password',
       name: 'change-password',
       component: ChangePasswordView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/administration',
+      path: '/administration',
       name: 'administration',
       component: AdministrationView,
       meta: { requiresAuth: true },
     },
     {
-      path: basePath + '/login',
+      path: '/login',
       name: 'login',
       component: LoginView,
     },
     {
-      path: basePath + '/logout',
+      path: '/logout',
       name: 'logout',
       component: LogoutView,
     },
     {
-      path: basePath + '/register',
+      path: '/register',
       name: 'register',
       component: RegisterView,
     },
     {
-      path: basePath + '/reset-password',
+      path: '/reset-password',
       name: 'reset-password',
       component: ResetPasswordView,
     },
