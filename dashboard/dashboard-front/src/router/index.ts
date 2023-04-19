@@ -29,12 +29,13 @@ const router = createRouter({
       redirect: { name: 'home' },
     },
     {
+      name: 'home',
       path: '/dashboard/ui',
-      redirect: { name: 'home' },
+      redirect: { name: 'jobs' },
     },
     {
-      path: basePath + '/list',
-      name: 'home',
+      path: basePath + '/jobs',
+      name: 'jobs',
       component: JobsListView,
       meta: { requiresAuth: true },
     },

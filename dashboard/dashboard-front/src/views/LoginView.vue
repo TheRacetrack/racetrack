@@ -95,10 +95,10 @@ function clearCredentials() {
 
       <q-card-section class="text-center q-pa-none">
         <p class="q-pa-sm">
-          <router-link to="/register">Create an account</router-link>
+          <router-link :to="{name: 'register'}" class="text-subtitle1 text-primary">Create an account</router-link>
         </p>
         <p class="q-pa-none">
-          <router-link to="/reset-password">Lost password?</router-link>
+          <router-link :to="{name: 'reset-password'}" class="text-subtitle1 text-primary">Lost password?</router-link>
         </p>
       </q-card-section>
 

@@ -32,7 +32,7 @@ defineExpose({
     <q-scroll-area class="fit">
       <q-list padding class="text-grey-8">
 
-        <q-item v-ripple clickable to="/list">
+        <q-item v-ripple clickable :to="{name: 'jobs'}">
           <q-item-section avatar>
             <q-icon :name="outlinedMemory" />
           </q-item-section>
@@ -41,7 +41,7 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable to="/graph">
+        <q-item v-ripple clickable :to="{name: 'graph'}">
           <q-item-section avatar>
             <q-icon :name="mdiGraphOutline" />
           </q-item-section>
@@ -50,7 +50,7 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable to="/portfolio">
+        <q-item v-ripple clickable :to="{name: 'portfolio'}">
           <q-item-section avatar>
             <q-icon :name="mdiTable" />
           </q-item-section>
@@ -59,7 +59,7 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable to="/activity">
+        <q-item v-ripple clickable :to="{name: 'activity'}">
           <q-item-section avatar>
             <q-icon :name="mdiMessageAlertOutline" />
           </q-item-section>
@@ -70,7 +70,7 @@ defineExpose({
 
         <q-separator inset class="q-my-sm" />
 
-        <q-item v-ripple clickable to="/profile">
+        <q-item v-ripple clickable :to="{name: 'profile'}">
           <q-item-section avatar>
             <q-icon :name="mdiAccountCircle" />
           </q-item-section>
@@ -79,8 +79,8 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable
-          to="/administration" v-if="userData.isAdmin">
+        <q-item v-ripple clickable :to="{name: 'administration'}"
+          v-if="userData.isAdmin">
           <q-item-section avatar>
             <q-icon :name="mdiTools" />
           </q-item-section>
@@ -89,7 +89,7 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable to="/docs">
+        <q-item v-ripple clickable :to="{name: 'docs'}">
           <q-item-section avatar>
             <q-icon :name="mdiBookOpenVariant" />
           </q-item-section>
@@ -98,7 +98,7 @@ defineExpose({
           </q-item-section>
         </q-item>
         
-        <q-item v-ripple clickable to="/logout">
+        <q-item v-ripple clickable :to="{name: 'logout'}">
           <q-item-section avatar>
             <q-icon :name="mdiLogout" />
           </q-item-section>

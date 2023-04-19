@@ -17,7 +17,7 @@ function toggleDrawer () {
         @click="toggleDrawer" v-if="userData.isAuthenticated" />
 
       <q-toolbar-title>
-        <router-link to="/" style="text-decoration: none; color: inherit;">
+        <router-link :to="{name: 'home'}" style="text-decoration: none; color: inherit;">
           Racetrack Dashboard
         </router-link>
       </q-toolbar-title>
@@ -26,11 +26,11 @@ function toggleDrawer () {
 
       <div class="q-gutter-sm row items-center no-wrap">
         <q-btn round flat :icon="mdiAccountCircle"
-          to="/profile" v-if="userData.isAuthenticated">
+          :to="{name: 'profile'}" v-if="userData.isAuthenticated">
           <q-tooltip>Profile</q-tooltip>
         </q-btn>
         <q-btn round dense flat color="grey-5" :icon="mdiLogout"
-          to="/logout" v-if="userData.isAuthenticated">
+          :to="{name: 'logout'}" v-if="userData.isAuthenticated">
           <q-tooltip>Logout</q-tooltip>
         </q-btn>
       </div>
