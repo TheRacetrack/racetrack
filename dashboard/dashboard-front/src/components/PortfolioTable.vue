@@ -5,6 +5,7 @@ import { ToastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
+import { DialogService } from '@/services/DialogService'
 
 const portfolioData: PortfolioData = reactive({
     jobs: [],
@@ -99,18 +100,44 @@ onUpdated(() => {
     initTableFilter()
 })
 
-axios.get(`/api/job/portfolio`, {
-    headers: {
-        [AUTH_HEADER]: userData.authToken,
-    },
-}).then(response => {
+function fetchJobs() {
+    axios.get(`/api/job/portfolio`, {
+        headers: {
+            [AUTH_HEADER]: userData.authToken,
+        },
+    }).then(response => {
 
-    const data: PortfolioData = response.data
-    portfolioData.jobs = data.jobs
+        const data: PortfolioData = response.data
+        portfolioData.jobs = data.jobs
 
-}).catch(err => {
-    ToastService.showRequestError(`Fetching jobs failed`, err)
-})
+    }).catch(err => {
+        ToastService.showRequestError(`Fetching jobs failed`, err)
+    })
+}
+
+function deleteJobConfirm(name: string, version: string) {
+    const objectDescription = `${name} ${version}`
+    DialogService.showDialog(`Are you sure you want to delete the job "${objectDescription}"?`, () => {
+        deleteJob(name, version)
+    })
+}
+
+function deleteJob(name: string, version: string) {
+    ToastService.info(`Deleting a job ${name} ${version}...`)
+    DialogService.startLoading()
+    axios.delete(`/api/job/${name}/${version}`, {
+        headers: { [AUTH_HEADER]: userData.authToken },
+    }).then(response => {
+        ToastService.success(`Job ${name} ${version} has been deleted.`)
+        fetchJobs()
+        DialogService.stopLoading()
+    }).catch(err => {
+        ToastService.showRequestError(`Failed to delete a job`, err)
+        DialogService.stopLoading()
+    })
+}
+
+fetchJobs()
 </script>
 
 <template>
@@ -157,11 +184,8 @@ axios.get(`/api/job/portfolio`, {
                 <td>{{ formatTimestampIso8601(job.create_time) }}</td>
                 <td>{{ job.infrastructure_target }}</td>
                 <td>
-                    <button type="button" class="btn btn-danger button-delete-job"
-                        :job-name="job.name"
-                        :job-version="job.version">
-                        Delete
-                    </button>
+                    <q-btn color="negative" push label="Delete" icon="delete"
+                        @click="deleteJobConfirm(job.name, job.version)" />
                 </td>
             </tr>
 
