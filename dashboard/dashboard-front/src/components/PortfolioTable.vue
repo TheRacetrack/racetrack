@@ -39,6 +39,45 @@ interface PortfolioData {
     jobs: PortfolioJob[]
 }
 
+function fetchJobs() {
+    axios.get(`/api/job/portfolio`, {
+        headers: {
+            [AUTH_HEADER]: userData.authToken,
+        },
+    }).then(response => {
+
+        const data: PortfolioData = response.data
+        portfolioData.jobs = data.jobs
+
+    }).catch(err => {
+        ToastService.showRequestError(`Fetching jobs portfolio failed`, err)
+    })
+}
+
+fetchJobs()
+
+function deleteJobConfirm(name: string, version: string) {
+    const objectDescription = `${name} ${version}`
+    DialogService.showDialog(`Are you sure you want to delete the job "${objectDescription}"?`, () => {
+        deleteJob(name, version)
+    })
+}
+
+function deleteJob(name: string, version: string) {
+    ToastService.info(`Deleting a job ${name} ${version}...`)
+    DialogService.startLoading()
+    axios.delete(`/api/job/${name}/${version}`, {
+        headers: { [AUTH_HEADER]: userData.authToken },
+    }).then(response => {
+        ToastService.success(`Job ${name} ${version} has been deleted.`)
+        fetchJobs()
+        DialogService.stopLoading()
+    }).catch(err => {
+        ToastService.showRequestError(`Failed to delete a job`, err)
+        DialogService.stopLoading()
+    })
+}
+
 function initTableFilter() {
     // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
     var tfConfig = {
@@ -99,45 +138,6 @@ function initTableFilter() {
 onUpdated(() => {
     initTableFilter()
 })
-
-function fetchJobs() {
-    axios.get(`/api/job/portfolio`, {
-        headers: {
-            [AUTH_HEADER]: userData.authToken,
-        },
-    }).then(response => {
-
-        const data: PortfolioData = response.data
-        portfolioData.jobs = data.jobs
-
-    }).catch(err => {
-        ToastService.showRequestError(`Fetching jobs failed`, err)
-    })
-}
-
-function deleteJobConfirm(name: string, version: string) {
-    const objectDescription = `${name} ${version}`
-    DialogService.showDialog(`Are you sure you want to delete the job "${objectDescription}"?`, () => {
-        deleteJob(name, version)
-    })
-}
-
-function deleteJob(name: string, version: string) {
-    ToastService.info(`Deleting a job ${name} ${version}...`)
-    DialogService.startLoading()
-    axios.delete(`/api/job/${name}/${version}`, {
-        headers: { [AUTH_HEADER]: userData.authToken },
-    }).then(response => {
-        ToastService.success(`Job ${name} ${version} has been deleted.`)
-        fetchJobs()
-        DialogService.stopLoading()
-    }).catch(err => {
-        ToastService.showRequestError(`Failed to delete a job`, err)
-        DialogService.stopLoading()
-    })
-}
-
-fetchJobs()
 </script>
 
 <template>
