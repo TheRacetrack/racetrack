@@ -1,5 +1,5 @@
-import { type Ref } from 'vue'
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import type { Ref } from 'vue'
+import type ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 
 
 export class DialogService {

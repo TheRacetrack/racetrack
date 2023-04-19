@@ -23,6 +23,11 @@ export function setUserData(data: UserData) {
     saveUserData()
 }
 
+export function setAuthToken(newToken: string) {
+    userData.authToken = newToken
+    saveUserData()
+}
+
 export function deleteUserData() {
     userData.isAuthenticated = false
     userData.username = ''

@@ -72,6 +72,16 @@ def setup_account_endpoints(app: FastAPI):
         user_client = UserAccountClient(auth_token=get_auth_token(request))
         user_client.change_password(payload.old_password, payload.new_password1)
 
+    @app.post("/api/accounts/token/regenerate")
+    def _regenerate_user_token(request: Request):
+        client = UserAccountClient(auth_token=get_auth_token(request))
+        new_token = client.regen_user_token()
+        response = JSONResponse({
+            'new_token': new_token,
+        })
+        set_auth_token_cookie(new_token, response)
+        return response
+
 
 def get_auth_token(request: Request) -> str:
     auth_token = request.headers.get(RT_AUTH_HEADER)

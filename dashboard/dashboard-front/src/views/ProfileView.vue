@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import axios from "axios"
 import { copyToClipboard } from 'quasar'
-import { userData } from '@/services/UserDataStore'
+import { userData, setAuthToken } from '@/services/UserDataStore'
 import { envInfo } from '@/services/EnvironmentInfo'
 import { ToastService } from '@/services/ToastService'
+import { AUTH_HEADER } from '@/services/RequestUtils'
 
 function copyAuthToken() {
   copyToClipboard(userData.authToken || '')
@@ -30,7 +32,14 @@ function copyLoginCommand() {
 }
 
 function regenerateToken() {
-
+  axios.post(`/api/accounts/token/regenerate`, {}, {
+      headers: { [AUTH_HEADER]: userData.authToken },
+    }).then(response => {
+      setAuthToken(response.data.new_token)
+      ToastService.success(`Token regenerated.`)
+    }).catch(err => {
+      ToastService.showRequestError(`Failed to regenerate token`, err)
+    })
 }
 </script>
 
