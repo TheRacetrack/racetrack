@@ -17,5 +17,8 @@ run-local-rt-docker:
 	SITE_NAME=dev \
 	python -u dashboard/main.py
 
+run-frontend:
+	(cd dashboard-front && make npm-run)
+
 test:
 	pytest -vv --tb=short -ra $(test)

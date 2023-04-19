@@ -1,3 +1,22 @@
+FROM node:16.20 AS frontend-builder
+
+WORKDIR /build
+COPY dashboard/dashboard-front/index.html \
+  dashboard/dashboard-front/env.d.ts \
+  dashboard/dashboard-front/package.json \
+  dashboard/dashboard-front/package-lock.json \
+  dashboard/dashboard-front/tsconfig.json \
+  dashboard/dashboard-front/tsconfig.node.json \
+  dashboard/dashboard-front/vite.config.js \
+  /build/
+RUN npm install
+
+COPY dashboard/dashboard-front/public /build/public
+COPY dashboard/dashboard-front/src /build/src
+
+RUN npm install && npm run build
+
+
 FROM python:3.9-slim-bullseye
 
 WORKDIR /src/dashboard
@@ -23,7 +42,8 @@ RUN cd /src/racetrack_client && python setup.py develop &&\
 COPY dashboard/dashboard/. /src/dashboard/dashboard/
 
 COPY docs/. /src/docs/
-COPY dashboard/static/. /src/dashboard/static/
+
+COPY --from=frontend-builder /build/dist /src/dashboard/static/
 
 CMD python -u dashboard/main.py
 

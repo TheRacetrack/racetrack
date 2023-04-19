@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, onUpdated } from 'vue'
 import axios from "axios"
-import TableFilter from 'tablefilter'
+import '@/assets/tablefilter'
 import { ToastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
-
 
 const portfolioData: PortfolioData = reactive({
     jobs: [],
@@ -43,7 +42,7 @@ interface PortfolioData {
 function initTableFilter() {
     // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
     var tfConfig = {
-        base_path: '/dashboard/static/racetrack/tablefilter/',
+        base_path: '/assets/tablefilter/',
         paging: {
             results_per_page: ['Rows: ', [10, 25, 50, 100]]
         },
@@ -92,11 +91,14 @@ function initTableFilter() {
             name: 'sort'
         }],
     }
+    // @ts-ignore
     var tf = new TableFilter('table-filter-1', tfConfig)
     tf.init()
 }
 
-initTableFilter()
+onUpdated(() => {
+    initTableFilter()
+})
 
 axios.get(`/api/job/portfolio`, {
     headers: {

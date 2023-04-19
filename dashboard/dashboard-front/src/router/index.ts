@@ -16,22 +16,14 @@ import PageNotFound from '@/views/PageNotFound.vue'
 import { userData } from '@/services/UserDataStore'
 import { ToastService } from '@/services/ToastService'
 
-const basePath = '/dashboard/ui'
+const basePath = ''
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '',
-      redirect: { name: 'home' },
-    },
-    {
-      path: '/dashboard',
-      redirect: { name: 'home' },
-    },
-    {
       name: 'home',
-      path: '/dashboard/ui',
       redirect: { name: 'jobs' },
     },
     {
