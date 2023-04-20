@@ -16,7 +16,7 @@ export class ToastService {
     }
 
     static error(msg: string) {
-        this.showToast(msg, this.toast.error, 7000, false)
+        this.showToast(msg, this.toast.error, 7000, false, "top-center")
     }
 
     static success(msg: string) {
