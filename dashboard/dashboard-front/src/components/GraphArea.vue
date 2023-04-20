@@ -4,9 +4,8 @@ import axios from "axios"
 import { ToastService } from '@/services/ToastService'
 import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
-import { DataSet, DataView } from "vis-data";
-import { Network, type Options } from "vis-network";
-
+import { DataSet, DataView } from "vis-data"
+import { Network, type Options } from "vis-network"
 
 const graphData: GraphData = reactive({
     job_graph: {
@@ -14,6 +13,11 @@ const graphData: GraphData = reactive({
         edges: [],
     },
 })
+const graphContainerRef: Ref<HTMLElement | null> = ref(null)
+const focusedNodes: Ref<string[]> = ref([])
+const legendTitle: Ref<string> = ref('')
+const legendBody: Ref<string> = ref('')
+const physics: Ref<boolean> = ref(true)
 
 interface GraphData {
     job_graph: JobGraph
@@ -51,78 +55,39 @@ function fetchGraph() {
     })
 }
 
-fetchGraph()
-
 onMounted(() => {
     initVisNetwork()
+    fetchGraph()
 })
 
 watch(graphData, () => {
     initVisNetwork()
 })
 
-function shapeOfNodeByType(nodeType: string) {
-    if (nodeType == 'esc')
-        return 'box'
-    return 'ellipse'
-}
-
-function colorOfNodeByType(nodeType: string) {
-    if (nodeType == 'esc')
-        return '#97C2FC'
-    return '#7BE141'
-}
-
-const graphContainerRef: Ref<HTMLElement | null> = ref(null)
-const enablePhysicsCheckbox: Ref<HTMLElement | null> = ref(null)
-
-const nodeMapper = (node: JobGraphNode) => ({
-    id: node.id,
-    label: node.title, 
-    title: node.subtitle, 
-    shape: shapeOfNodeByType(node.type),
-    color: colorOfNodeByType(node.type)
+watch(physics, () => {
+    networkOptions.physics.enabled = physics.value
+    network?.setOptions(networkOptions)
 })
+
 const nodeStructs = computed(() =>
-    graphData.job_graph.nodes.map(nodeMapper)
+    graphData.job_graph.nodes.map((node: JobGraphNode) => ({
+        id: node.id,
+        label: node.title, 
+        title: node.subtitle, 
+        shape: shapeOfNodeByType(node.type),
+        color: colorOfNodeByType(node.type)
+    }))
 )
 
-const edgeMapper = (edge: JobGraphEdge) => ({
-    from: edge.from_id,
-    to: edge.to_id,
-    color: { inherit: "both" },
-    arrows: "to",
-    title: "has access to",
-})
 const edgeStructs = computed(() =>
-    graphData.job_graph.edges.map(edgeMapper)
+    graphData.job_graph.edges.map((edge: JobGraphEdge) => ({
+        from: edge.from_id,
+        to: edge.to_id,
+        color: { inherit: "both" },
+        arrows: "to",
+        title: "has access to",
+    }))
 )
-
-const focusedNodes: Ref<string[]> = ref([])
-const legend: Ref<string> = ref('')
-const physics: Ref<boolean> = ref(true)
-
-function showSelectedNodeDetails(nodeId: string) {
-    for (var node of nodeStructs.value) {
-        if (node.id == nodeId) {
-            const subtitle = node.title || ''
-
-            const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
-            const subtitle2 = subtitle.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
-            var nodeDetailsHtml = `
-            <div class="card">
-                <div class="card-body">
-                    <h5>${node.label}</h5>
-                    <p style="white-space: pre-line">${subtitle2}</p>
-                </div>
-            </div>
-            `;
-            legend.value = nodeDetailsHtml
-            return
-        }
-    }
-    legend.value = ''
-}
 
 var network: Network | null = null
 var networkOptions: Options = {
@@ -148,21 +113,20 @@ function initVisNetwork() {
 
     const nodesFilter = (node: any) => {
         if (focusedNodes.value.length === 0) {
-            return true;
+            return true
         }
-        return focusedNodes.value.includes(node.id);
+        return focusedNodes.value.includes(node.id)
     }
-
     const edgesFilter = (edge: any) => {
-        return true;
+        return true
     }
 
-    const nodesView = new DataView(nodes, { filter: nodesFilter });
-    const edgesView = new DataView(edges, { filter: edgesFilter });
+    const nodesView = new DataView(nodes, { filter: nodesFilter })
+    const edgesView = new DataView(edges, { filter: edgesFilter })
     var data = {
         nodes: nodesView,
         edges: edgesView,
-    };
+    }
     console.log('Rendering network graph', data)
     network = new Network(graphContainerRef.value as HTMLElement, data as any, networkOptions)
 
@@ -187,14 +151,42 @@ function initVisNetwork() {
     })
 }
 
-watch(physics, () => {
-    networkOptions.physics.enabled = physics.value
-    network?.setOptions(networkOptions)
-})
+function showSelectedNodeDetails(nodeId: string) {
+    for (var node of nodeStructs.value) {
+        if (node.id == nodeId) {
+            const subtitle = node.title || ''
+            const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim
+            const subtitle2 = subtitle.replace(urlPattern, '<a href="$1" target="_blank">$1</a>')
+            var nodeDetailsHtml = `<p style="white-space: pre-line">${subtitle2}</p>`
+            legendTitle.value = node.label
+            legendBody.value = nodeDetailsHtml
+            return
+        }
+    }
+    legendTitle.value = ''
+    legendBody.value = ''
+}
+
+function shapeOfNodeByType(nodeType: string) {
+    if (nodeType == 'esc')
+        return 'box'
+    return 'ellipse'
+}
+
+function colorOfNodeByType(nodeType: string) {
+    if (nodeType == 'esc')
+        return '#97C2FC'
+    return '#7BE141'
+}
 </script>
 
 <template>
     <q-checkbox v-model="physics" label="Enable physics" />
     <div ref="graphContainerRef" style="box-sizing: border-box; height: 640px; border: 1px solid lightgray;"></div>
-    <div>{{legend}}</div>
+    <q-card v-if="legendTitle != ''">
+        <q-card-section>
+            <div class="text-h6">{{ legendTitle }}</div>
+            <div v-html="legendBody"></div>
+        </q-card-section>
+    </q-card>
 </template>
