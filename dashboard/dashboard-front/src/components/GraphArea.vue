@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { reactive, onUpdated, computed } from 'vue'
+import { reactive, watch, computed, ref, onMounted, type Ref } from 'vue'
 import axios from "axios"
 import { ToastService } from '@/services/ToastService'
-import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
-import { DialogService } from '@/services/DialogService'
 import { DataSet, DataView } from "vis-data";
-import { Network } from "vis-network";
+import { Network, type Options } from "vis-network";
 
 
 const graphData: GraphData = reactive({
@@ -55,7 +53,11 @@ function fetchGraph() {
 
 fetchGraph()
 
-onUpdated(() => {
+onMounted(() => {
+    initVisNetwork()
+})
+
+watch(graphData, () => {
     initVisNetwork()
 })
 
@@ -71,6 +73,9 @@ function colorOfNodeByType(nodeType: string) {
     return '#7BE141'
 }
 
+const graphContainerRef: Ref<HTMLElement | null> = ref(null)
+const enablePhysicsCheckbox: Ref<HTMLElement | null> = ref(null)
+
 const nodeMapper = (node: JobGraphNode) => ({
     id: node.id,
     label: node.title, 
@@ -78,12 +83,9 @@ const nodeMapper = (node: JobGraphNode) => ({
     shape: shapeOfNodeByType(node.type),
     color: colorOfNodeByType(node.type)
 })
-
-var nodeStructs = computed(() => 
+const nodeStructs = computed(() =>
     graphData.job_graph.nodes.map(nodeMapper)
 )
-
-var nodes = new DataSet(nodeStructs as any)
 
 const edgeMapper = (edge: JobGraphEdge) => ({
     from: edge.from_id,
@@ -92,104 +94,107 @@ const edgeMapper = (edge: JobGraphEdge) => ({
     arrows: "to",
     title: "has access to",
 })
-
-var edgeStructs = computed(() =>
+const edgeStructs = computed(() =>
     graphData.job_graph.edges.map(edgeMapper)
 )
 
-var edges = new DataSet(edgeStructs as any)
+const focusedNodes: Ref<string[]> = ref([])
+const legend: Ref<string> = ref('')
+const physics: Ref<boolean> = ref(true)
 
-var focusedNodes: string[] = []
+function showSelectedNodeDetails(nodeId: string) {
+    for (var node of nodeStructs.value) {
+        if (node.id == nodeId) {
+            const subtitle = node.title || ''
 
-const nodesFilter = (node: any) => {
-    if (focusedNodes.length === 0) {
-        return true;
+            const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+            const subtitle2 = subtitle.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+            var nodeDetailsHtml = `
+            <div class="card">
+                <div class="card-body">
+                    <h5>${node.label}</h5>
+                    <p style="white-space: pre-line">${subtitle2}</p>
+                </div>
+            </div>
+            `;
+            legend.value = nodeDetailsHtml
+            return
+        }
     }
-    return focusedNodes.includes(node.id);
+    legend.value = ''
 }
 
-const edgesFilter = (edge: any) => {
-    return true;
-}
+var network: Network | null = null
+var networkOptions: Options = {
+    nodes: {
+        borderWidth: 2,
+        shadow: true,
+    },
+    edges: {
+        shadow: true,
+        smooth: {
+            type: "cubicBezier",
+            forceDirection: "none"
+        }
+    },
+    physics: {
+        enabled: physics.value,
+    },
+} as Options
 
 function initVisNetwork() {
+    var nodes = new DataSet(nodeStructs.value as any)
+    var edges = new DataSet(edgeStructs.value as any)
+
+    const nodesFilter = (node: any) => {
+        if (focusedNodes.value.length === 0) {
+            return true;
+        }
+        return focusedNodes.value.includes(node.id);
+    }
+
+    const edgesFilter = (edge: any) => {
+        return true;
+    }
+
     const nodesView = new DataView(nodes, { filter: nodesFilter });
     const edgesView = new DataView(edges, { filter: edgesFilter });
     var data = {
         nodes: nodesView,
         edges: edgesView,
     };
-    var options = {
-        nodes: {
-            borderWidth: 2,
-            shadow: true,
-        },
-        edges: {
-            shadow: true,
-            smooth: {
-                type: "cubicBezier",
-                forceDirection: "none"
+    console.log('Rendering network graph', data)
+    network = new Network(graphContainerRef.value as HTMLElement, data as any, networkOptions)
+
+    network.on("click", function (params) {
+        focusedNodes.value = params.nodes
+        if (focusedNodes.value.length == 1) {
+            // include nodes connected to it
+            var mainNodeId = focusedNodes.value[0]
+            showSelectedNodeDetails(mainNodeId)
+            for (var edge of edgeStructs.value) {
+                if (edge.from == mainNodeId) {
+                    focusedNodes.value.push(edge.to)
+                }
+                if (edge.to == mainNodeId) {
+                    focusedNodes.value.push(edge.from)
+                }
             }
-        },
-        physics: {
-            enabled: true,
-        },
-    }
-    var container = document.getElementById("graph-area") as HTMLElement
-    var network = new Network(container, data as any, options as any)
+        } else if (focusedNodes.value.length == 0) {
+            showSelectedNodeDetails('')
+        }
+        nodesView.refresh()
+    })
 }
 
-// network.on("click", function (params) {
-//     focusedNodes = params.nodes;
-//     if (focusedNodes.length == 1) {
-//         // include nodes connected to it
-//         var mainNodeId = focusedNodes[0];
-//         showSelectedNodeDetails(mainNodeId)
-//         for (var edge of edgeStructs) {
-//             if (edge.from == mainNodeId) {
-//                 focusedNodes.push(edge.to);
-//             }
-//             if (edge.to == mainNodeId) {
-//                 focusedNodes.push(edge.from);
-//             }
-//         }
-//     } else if (focusedNodes.length == 0) {
-//         showSelectedNodeDetails('')
-//     }
-//     nodesView.refresh();
-// });
-
-// function showSelectedNodeDetails(nodeId) {
-//     for (var node of nodeStructs) {
-//         if (node.id == nodeId) {
-//             subtitle = node.title;
-
-//             urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
-//             subtitle = subtitle.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
-//             var nodeDetailsHtml = `
-//             <div class="card">
-//                 <div class="card-body">
-//                     <h5>${node.label}</h5>
-//                     <p style="white-space: pre-line">${subtitle}</p>
-//                 </div>
-//             </div>
-//             `;
-//             $('#graph-area-legend').html(nodeDetailsHtml);
-//             return;
-//         }
-//     }
-//     $('#graph-area-legend').html('');
-// }
-
-// document.getElementById("enablePhysicsCheckbox").addEventListener("change", (e) => {
-//     const { value, checked } = e.target;
-//     options.physics.enabled = checked;
-//     network.setOptions(options);
-// })
+watch(physics, () => {
+    networkOptions.physics.enabled = physics.value
+    network?.setOptions(networkOptions)
+})
 </script>
 
 <template>
-    <label><input type="checkbox" id="enablePhysicsCheckbox" value="true" checked />Enable physics</label>
-    <div id="graph-area" style="box-sizing: border-box; height: 640px; border: 1px solid lightgray;"></div>
-    <div id="graph-area-legend"></div>
+    <q-checkbox v-model="physics" label="Enable physics" />
+    <div ref="graphContainerRef" style="box-sizing: border-box; height: 640px; border: 1px solid lightgray;"></div>
+    <div>{{legend}}</div>
 </template>
