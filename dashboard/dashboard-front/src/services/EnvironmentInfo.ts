@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, computed } from 'vue'
 import { ToastService } from './ToastService'
 import { apiClient } from '@/services/ApiClient'
 
@@ -40,3 +40,5 @@ export function loadEnvironmentInfo() {
             ToastService.showRequestError(`Backend connection failed`, err)
         })
 }
+
+export const versionFull = computed(() => `${envInfo.docker_tag} (${envInfo.git_version})`)

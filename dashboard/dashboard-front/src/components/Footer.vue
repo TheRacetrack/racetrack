@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { envInfo } from '@/services/EnvironmentInfo'
+import { versionFull } from '@/services/EnvironmentInfo'
 </script>
 
 <template>
   <q-footer elevated class="bg-grey-7 text-white">
-    <div class="text-center q-my-sm">Racetrack version {{ envInfo.docker_tag }} ({{ envInfo.git_version }})</div>
+    <div class="text-center q-my-sm">Racetrack version {{ versionFull }}</div>
   </q-footer>
 </template>

@@ -8,12 +8,11 @@ import { apiClient } from '@/services/ApiClient'
 
 function copyAuthToken() {
     copyToClipboard(userData.authToken || '')
-    .then(() => {
-        ToastService.success(`Auth Token copied to clipboard.`)
-    })
-    .catch((error) => {
-        ToastService.error(`Failed to copy to clipboard.`)
-    })
+        .then(() => {
+            ToastService.success(`Auth Token copied to clipboard.`)
+        }).catch((error) => {
+            ToastService.error(`Failed to copy to clipboard.`)
+        })
 }
 
 const loginCommand = computed(() => 

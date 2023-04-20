@@ -4,6 +4,8 @@ import collections
 import os
 
 from fastapi import Request, FastAPI, Response
+from pydantic import BaseModel
+
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.time import days_ago
 from racetrack_commons.entities.audit import explain_audit_log_event
@@ -113,6 +115,11 @@ def setup_api_endpoints(app: FastAPI):
         content = remove_ansi_sequences(content)
         return Response(content, media_type='text/plain; charset=utf-8')
 
+
+    class InfrastructureGroup(BaseModel):
+        kind: str
+        instances: list[str]
+
     @app.get("/api/administration")
     def get_administration(request: Request) -> dict:
         plugin_client = LifecyclePluginClient()
@@ -122,15 +129,18 @@ def setup_api_endpoints(app: FastAPI):
         _infrastructure_instances: dict[str, list[str]] = collections.defaultdict(list)
         for infrastructure_name, plugin_manifest in infrastructure_targets.items():
             _infrastructure_instances[plugin_manifest.name].append(infrastructure_name)
-        infrastructure_instances: list[tuple[str, list[str]]] = sorted(_infrastructure_instances.items())
+        infrastructure_instances: list[InfrastructureGroup] = [
+            InfrastructureGroup(kind=k, instances=v)
+            for k, v in _infrastructure_instances.items()
+        ]
 
         return {
             'plugins': plugin_client.get_plugins_info(),
             'job_type_versions': plugin_client.get_job_type_versions(),
             'infrastructure_targets': infrastructure_targets,
-            'infrastructure_instances': infrastructure_instances,
+            'infrastructure_instances': sorted(infrastructure_instances, key=lambda i: i.kind),
         }
-    
+
 
     @app.get("/api/plugin/{plugin_name}/{plugin_version}")
     def get_plugin_config(request: Request, plugin_name: str, plugin_version: str) -> dict:
