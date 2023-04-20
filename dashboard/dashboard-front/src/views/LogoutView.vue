@@ -10,7 +10,7 @@ function logout() {
   deleteUserData()
   router.push({ name: 'login' })
 
-  axios.get(`/api/accounts/logout`)
+  axios.get(`/dashboard/api/accounts/logout`)
   .then(response => {
     ToastService.success(`You're logged out.`)
   }).catch(err => {

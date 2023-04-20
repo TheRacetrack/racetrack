@@ -41,7 +41,7 @@ interface JobGraphEdge {
 }
 
 function fetchGraph() {
-    axios.get(`/api/job/graph`, {
+    axios.get(`/dashboard/api/job/graph`, {
         headers: {
             [AUTH_HEADER]: userData.authToken,
         },

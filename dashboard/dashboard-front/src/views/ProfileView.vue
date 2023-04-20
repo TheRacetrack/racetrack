@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from 'vue'
 import axios from "axios"
 import { copyToClipboard } from 'quasar'
 import { userData, setAuthToken } from '@/services/UserDataStore'
@@ -32,7 +32,7 @@ function copyLoginCommand() {
 }
 
 function regenerateToken() {
-  axios.post(`/api/accounts/token/regenerate`, {}, {
+  axios.post(`/dashboard/api/accounts/token/regenerate`, {}, {
       headers: { [AUTH_HEADER]: userData.authToken },
     }).then(response => {
       setAuthToken(response.data.new_token)

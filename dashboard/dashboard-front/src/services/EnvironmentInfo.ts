@@ -24,7 +24,7 @@ export interface EnvironmentInfo {
 
 export function loadEnvironmentInfo() {
     /** Fetch backend version from API */
-    axios.get(`/api/status`)
+    axios.get(`/dashboard/api/status`)
         .then(response => {
             const data: EnvironmentInfo = response.data
 

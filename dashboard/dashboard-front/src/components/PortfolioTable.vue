@@ -40,7 +40,7 @@ interface PortfolioData {
 }
 
 function fetchJobs() {
-    axios.get(`/api/job/portfolio`, {
+    axios.get(`/dashboard/api/job/portfolio`, {
         headers: {
             [AUTH_HEADER]: userData.authToken,
         },
@@ -66,7 +66,7 @@ function deleteJobConfirm(name: string, version: string) {
 function deleteJob(name: string, version: string) {
     ToastService.info(`Deleting a job ${name} ${version}...`)
     DialogService.startLoading()
-    axios.delete(`/api/job/${name}/${version}`, {
+    axios.delete(`/dashboard/api/job/${name}/${version}`, {
         headers: { [AUTH_HEADER]: userData.authToken },
     }).then(response => {
         ToastService.success(`Job ${name} ${version} has been deleted.`)

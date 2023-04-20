@@ -14,7 +14,7 @@ const router = useRouter()
 function register() {
     loading.value = true
 
-    axios.post(`/api/accounts/register`,
+    axios.post(`/dashboard/api/accounts/register`,
         {
             'username': username.value, 
             'password1': password.value,

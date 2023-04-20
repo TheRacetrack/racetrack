@@ -30,7 +30,7 @@ function login() {
 
     loading.value = true
 
-    axios.post(`/api/accounts/login`,
+    axios.post(`/dashboard/api/accounts/login`,
         {'username': username.value, 'password': password.value},
     ).then(response => {
         

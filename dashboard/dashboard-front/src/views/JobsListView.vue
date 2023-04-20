@@ -3,14 +3,14 @@ import { reactive } from 'vue'
 import axios from "axios"
 import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
-import { ToastService } from '@/services/ToastService';
+import { ToastService } from '@/services/ToastService'
 
 const jobsData = reactive({
   jobs: [],
 })
 
 function fetchJobs() {
-    axios.get(`/api/job/list`, {
+    axios.get(`/dashboard/api/job/list`, {
         headers: {
             [AUTH_HEADER]: userData.authToken,
         },
