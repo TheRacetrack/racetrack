@@ -3,7 +3,7 @@ import { isEmpty } from './StringUtils';
 
 export const userData: UserData = reactive({
     isAuthenticated: false,
-    username: 'dupa',
+    username: '',
     authToken: '',
     isAdmin: false,
 })
