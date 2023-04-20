@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { reactive, onUpdated } from 'vue'
-import axios from "axios"
+import { reactive, onMounted, onUpdated, ref, type Ref } from 'vue'
 import { ToastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
-import { AUTH_HEADER } from '@/services/RequestUtils'
 import { userData } from '@/services/UserDataStore'
 import { DialogService } from '@/services/DialogService'
+import { formatDecimalNumber } from '@/services/StringUtils'
+import { apiClient } from '@/services/ApiClient'
 
 const portfolioData: PortfolioData = reactive({
     jobs: [],
@@ -40,15 +40,9 @@ interface PortfolioData {
 }
 
 function fetchJobs() {
-    axios.get(`/dashboard/api/job/portfolio`, {
-        headers: {
-            [AUTH_HEADER]: userData.authToken,
-        },
-    }).then(response => {
-
+    apiClient.get(`/api/job/portfolio`).then(response => {
         const data: PortfolioData = response.data
         portfolioData.jobs = data.jobs
-
     }).catch(err => {
         ToastService.showRequestError(`Fetching jobs portfolio failed`, err)
     })
@@ -66,9 +60,7 @@ function deleteJobConfirm(name: string, version: string) {
 function deleteJob(name: string, version: string) {
     ToastService.info(`Deleting a job ${name} ${version}...`)
     DialogService.startLoading()
-    axios.delete(`/dashboard/api/job/${name}/${version}`, {
-        headers: { [AUTH_HEADER]: userData.authToken },
-    }).then(response => {
+    apiClient.delete(`/api/job/${name}/${version}`).then(response => {
         ToastService.success(`Job ${name} ${version} has been deleted.`)
         fetchJobs()
         DialogService.stopLoading()
@@ -78,70 +70,74 @@ function deleteJob(name: string, version: string) {
     })
 }
 
-function initTableFilter() {
-    // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
-    var tfConfig = {
-        base_path: '/dashboard/ui/assets/tablefilter/',
-        paging: {
-            results_per_page: ['Rows: ', [10, 25, 50, 100]]
-        },
-        auto_filter: { delay: 500 }, // Delay for automatic filtering (milliseconds)
-        state: { // Enable state persistence
-            types: ['local_storage'], // Possible values: 'local_storage' 'hash' or 'cookie'  
-            filters: true, // Persist filters values, enabled by default  
-            columns_visibility: true, // Persist columns visibility  
-            filters_visibility: true, // Persist filters row visibility  
-        },
-        alternate_rows: true,
-        rows_counter: true,
-        toolbar: true,
-        btn_reset: {
-            text: 'Clear'
-        },
-        status_bar: true,
-        col_types: [
-            'string', // 0. family name
-            'string', // 1. version
-            'string', // 2. status
-            'string', // 3. job type version
-            'string', // 4. deployed by
-            'number', // 5. last updated ago
-            'number', // 6. last called ago
-            'string', // 7. purge reasons
-            'number', // 8. purge score
-            'number', // 9. newer versions
-            { type: 'date' }, // 10. last call time
-            { type: 'date' }, // 11. update time
-            { type: 'date' }, // 12. creation time
-            'string', // 13. infrastructure target
-            'none', // 14. actions
-        ],
-        col_12: 'none',
-        no_results_message: {
-            content: 'No results',
-        },
-        extensions: [{
-            name: 'colsVisibility',
-            at_start: [6, 7, 8, 9, 10, 11, 12, 13, 14],
-            text: 'Columns: ',
-            enable_tick_all: true,
-            tick_to_hide: false,
-        }, {
-            name: 'sort'
-        }],
-    }
-    // @ts-ignore
-    var tf = new TableFilter('table-filter-1', tfConfig)
-    tf.init()
+
+// see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
+var tfConfig = {
+    base_path: '/dashboard/ui/assets/tablefilter/',
+    paging: {
+        results_per_page: ['Rows: ', [10, 25, 50, 100]]
+    },
+    auto_filter: { delay: 500 }, // Delay for automatic filtering (milliseconds)
+    state: { // Enable state persistence
+        types: ['local_storage'], // Possible values: 'local_storage' 'hash' or 'cookie'  
+        filters: true, // Persist filters values, enabled by default  
+        columns_visibility: true, // Persist columns visibility  
+        filters_visibility: true, // Persist filters row visibility  
+    },
+    alternate_rows: true,
+    rows_counter: true,
+    toolbar: true,
+    btn_reset: {
+        text: 'Clear'
+    },
+    status_bar: true,
+    col_types: [
+        'string', // 0. family name
+        'string', // 1. version
+        'string', // 2. status
+        'string', // 3. job type version
+        'string', // 4. deployed by
+        'number', // 5. last updated ago
+        'number', // 6. last called ago
+        'string', // 7. purge reasons
+        'number', // 8. purge score
+        'number', // 9. newer versions
+        { type: 'date' }, // 10. last call time
+        { type: 'date' }, // 11. update time
+        { type: 'date' }, // 12. creation time
+        'string', // 13. infrastructure target
+        'none', // 14. actions
+    ],
+    col_12: 'none',
+    no_results_message: {
+        content: 'No results',
+    },
+    extensions: [{
+        name: 'colsVisibility',
+        at_start: [6, 7, 8, 9, 10, 11, 12, 13, 14],
+        text: 'Columns: ',
+        enable_tick_all: true,
+        tick_to_hide: false,
+    }, {
+        name: 'sort'
+    }],
 }
 
+const tableRef: Ref<HTMLElement | null> = ref(null)
+var tf: any = null
+
+onMounted(() => {
+    // @ts-ignore
+    tf = new TableFilter(tableRef.value, tfConfig)
+})
+
 onUpdated(() => {
-    initTableFilter()
+    tf.init()
 })
 </script>
 
 <template>
-    <table id="table-filter-1">
+    <table id="table-filter-1" ref="tableRef">
         <thead>
             <tr>
                 <th>Family name</th>
@@ -174,10 +170,10 @@ onUpdated(() => {
                 <td>{{ job.status.toUpperCase() }}</td>
                 <td>{{ job.job_type_version }}</td>
                 <td>{{ job.deployed_by || '' }}</td>
-                <td>{{ job.update_time_days_ago.toFixed(2) }}</td>
-                <td>{{ job.last_call_time_days_ago.toFixed(2) }}</td>
+                <td>{{ formatDecimalNumber(job.update_time_days_ago) }}</td>
+                <td>{{ formatDecimalNumber(job.last_call_time_days_ago) }}</td>
                 <td>{{ job.purge_reasons }}</td>
-                <td>{{ job.purge_score.toFixed(2) }}</td>
+                <td>{{ formatDecimalNumber(job.purge_score) }}</td>
                 <td>{{ job.purge_newer_versions }}</td>
                 <td>{{ formatTimestampIso8601(job.last_call_time) }}</td>
                 <td>{{ formatTimestampIso8601(job.update_time) }}</td>

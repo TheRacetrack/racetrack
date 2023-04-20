@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import axios from "axios"
+import { apiClient } from '@/services/ApiClient'
 import { ToastService } from '@/services/ToastService'
 import { setUserData } from '@/services/UserDataStore'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
@@ -30,8 +30,9 @@ function login() {
 
     loading.value = true
 
-    axios.post(`/dashboard/api/accounts/login`,
+    apiClient.post(`/api/accounts/login`,
         {'username': username.value, 'password': password.value},
+        false,
     ).then(response => {
         
         loading.value = false

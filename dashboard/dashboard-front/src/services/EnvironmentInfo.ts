@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
-import axios from "axios"
 import { ToastService } from './ToastService'
+import { apiClient } from '@/services/ApiClient'
 
 export const envInfo: EnvironmentInfo = reactive({
     live: null,
@@ -24,7 +24,7 @@ export interface EnvironmentInfo {
 
 export function loadEnvironmentInfo() {
     /** Fetch backend version from API */
-    axios.get(`/dashboard/api/status`)
+    apiClient.get(`/api/status`, false)
         .then(response => {
             const data: EnvironmentInfo = response.data
 

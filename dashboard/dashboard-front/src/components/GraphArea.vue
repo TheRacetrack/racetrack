@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch, computed, ref, onMounted, type Ref } from 'vue'
-import axios from "axios"
 import { ToastService } from '@/services/ToastService'
-import { AUTH_HEADER } from '@/services/RequestUtils'
-import { userData } from '@/services/UserDataStore'
+import { apiClient } from '@/services/ApiClient'
 import { DataSet, DataView } from "vis-data"
 import { Network, type Options } from "vis-network"
 
@@ -41,15 +39,9 @@ interface JobGraphEdge {
 }
 
 function fetchGraph() {
-    axios.get(`/dashboard/api/job/graph`, {
-        headers: {
-            [AUTH_HEADER]: userData.authToken,
-        },
-    }).then(response => {
-
+    apiClient.get(`/api/job/graph`).then(response => {
         const data: GraphData = response.data
         graphData.job_graph = data.job_graph
-
     }).catch(err => {
         ToastService.showRequestError(`Failed to fetch a jobs graph`, err)
     })
