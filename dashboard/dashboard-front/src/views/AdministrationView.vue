@@ -205,7 +205,8 @@ function deletePlugin(name: string, version: string) {
 
                     <q-item-section side>
                         <div class="text-grey-8 q-gutter-xs">
-                            <q-btn class="gt-xs" size="12px" flat dense round icon="edit">
+                            <q-btn class="gt-xs" size="12px" flat dense round icon="edit"
+                                :to="{name: 'plugin-config', params: {pluginName: plugin.name, pluginVersion: plugin.version}}">
                                 <q-tooltip>Edit plugin's config</q-tooltip>
                             </q-btn>
                             <q-btn class="gt-xs" size="12px" flat dense round icon="delete"

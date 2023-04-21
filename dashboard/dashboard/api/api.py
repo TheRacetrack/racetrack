@@ -157,10 +157,14 @@ def setup_api_endpoints(app: FastAPI):
         client.delete_plugin(plugin_name, plugin_version)
         return Response(status_code=204)
 
+
+    class PluginConfigUpdate(BaseModel):
+        config: str
+
     @app.post("/api/plugin/{plugin_name}/{plugin_version}/config")
-    def save_plugin_config(request: Request, plugin_name: str, plugin_version: str, payload: str):
+    def save_plugin_config(request: Request, plugin_name: str, plugin_version: str, payload: PluginConfigUpdate):
         client = LifecyclePluginClient(auth_token=get_auth_token(request))
-        client.write_plugin_config(plugin_name, plugin_version, payload)
+        client.write_plugin_config(plugin_name, plugin_version, payload.config)
 
     @app.post('/plugin/upload/{filename}')
     async def _upload_plugin(filename: str, request: Request):

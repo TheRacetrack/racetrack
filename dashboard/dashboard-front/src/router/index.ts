@@ -12,6 +12,7 @@ import LogoutView from '@/views/LogoutView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import ChangePasswordView from '@/views/ChangePasswordView.vue'
+import PluginConfigView from '@/views/PluginConfigView.vue'
 import PageNotFound from '@/views/PageNotFound.vue'
 import { userData } from '@/services/UserDataStore'
 import { toastService } from '@/services/ToastService'
@@ -90,6 +91,11 @@ const router = createRouter({
       path: '/reset-password',
       name: 'reset-password',
       component: ResetPasswordView,
+    },
+    {
+      path: '/plugin/config-editor/:pluginName/:pluginVersion',
+      name: 'plugin-config',
+      component: PluginConfigView,
     },
     { path: '/:catchAll(.*)', component: PageNotFound },
   ]
