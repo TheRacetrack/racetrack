@@ -38,11 +38,11 @@ export class ProgressService {
             }).finally(() => {
                 toastService.dismissLoading()
                 
-            }).then(response => {
+            }).then((response: any) => {
                 onSuccess(response)
                 toastService.success(successMsg)
 
-            }).catch(err => {
+            }).catch((err: any) => {
                 toastService.showErrorDetails(errorMsg, err)
 
             }).finally(() => {

@@ -6,11 +6,12 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "allowJs": true
+    "allowJs": true,
+    "lib": [
+      "dom",
+      "es2021",
+    ],
   },
-  "lib": [
-    "ES2018"
-  ],
   "references": [
     {
       "path": "./tsconfig.node.json"
