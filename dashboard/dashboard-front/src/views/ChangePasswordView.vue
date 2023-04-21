@@ -23,7 +23,7 @@ function changePassword() {
         toastService.success(`Your password has been changed.`)
         
     }).catch(err => {
-        toastService.showRequestError(`Failed to change password`, err)
+        toastService.showErrorDetails(`Failed to change password`, err)
         loading.value = false
     })
 }

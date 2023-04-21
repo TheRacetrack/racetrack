@@ -1,6 +1,16 @@
 import type { Ref } from 'vue'
 import type ProgressComponent from '@/components/ProgressComponent.vue'
+import { toastService } from '@/services/ToastService'
 
+
+interface ConfirmWithLoadingOptions {
+    confirmQuestion: string
+    progressMsg: string
+    successMsg: string
+    errorMsg: string
+    onConfirm: () => Promise<any>
+    onSuccess: (response: any) => void
+}
 
 export class ProgressService {
     
@@ -10,17 +20,42 @@ export class ProgressService {
         this.progressCompononentRef = progressCompononentRef
     }
 
-    showDialog(body: string): Promise<boolean> {
+    showDialog(body: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.progressCompononentRef?.value?.showDialog(body, resolve)
         })
     }
 
-    startProgressLoading() {
+    confirmWithLoading(
+        {confirmQuestion, progressMsg, successMsg, errorMsg, onConfirm, onSuccess}: ConfirmWithLoadingOptions
+    ) {
+        this.showDialog(confirmQuestion)
+            .then(() => {
+                this.startLoadingProgress()
+                toastService.loading(progressMsg)
+                return onConfirm()
+
+            }).finally(() => {
+                toastService.dismissLoading()
+                
+            }).then(response => {
+                onSuccess(response)
+                toastService.success(successMsg)
+
+            }).catch(err => {
+                toastService.showErrorDetails(errorMsg, err)
+
+            }).finally(() => {
+                this.stopLoadingProgress()
+                toastService.dismissLoading()
+            })
+    }
+
+    startLoadingProgress() {
         this.progressCompononentRef?.value?.startLoading()
     }
 
-    stopProgressLoading() {
+    stopLoadingProgress() {
         this.progressCompononentRef?.value?.stopLoading()
     }
 }

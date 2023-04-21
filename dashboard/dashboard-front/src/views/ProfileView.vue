@@ -34,7 +34,7 @@ function regenerateToken() {
         setAuthToken(response.data.new_token)
         toastService.success(`Token regenerated.`)
     }).catch(err => {
-        toastService.showRequestError(`Failed to regenerate token`, err)
+        toastService.showErrorDetails(`Failed to regenerate token`, err)
     })
 }
 </script>

@@ -43,32 +43,26 @@ function fetchJobs() {
         const data: PortfolioData = response.data
         portfolioData.jobs = data.jobs
     }).catch(err => {
-        toastService.showRequestError(`Fetching jobs portfolio failed`, err)
+        toastService.showErrorDetails(`Fetching jobs portfolio failed`, err)
     })
 }
 
 fetchJobs()
 
-function deleteJobConfirm(name: string, version: string) {
-    const objectDescription = `${name} ${version}`
-    progressService.showDialog(`Are you sure you want to delete the job "${objectDescription}"?`).then(() => {
-        deleteJob(name, version)
-    })
-}
-
 function deleteJob(name: string, version: string) {
-    toastService.info(`Deleting a job ${name} ${version}...`)
-    progressService.startProgressLoading()
-    apiClient.delete(`/api/job/${name}/${version}`).then(response => {
-        toastService.success(`Job ${name} ${version} has been deleted.`)
-        fetchJobs()
-        progressService.stopProgressLoading()
-    }).catch(err => {
-        toastService.showRequestError(`Failed to delete a job`, err)
-        progressService.stopProgressLoading()
+    progressService.confirmWithLoading({
+        confirmQuestion: `Are you sure you want to delete the job "${name} ${version}"?`,
+        onConfirm: () => {
+            return apiClient.delete(`/api/job/${name}/${version}`)
+        },
+        progressMsg: `Deleting job ${name} ${version}...`,
+        successMsg: `Job ${name} ${version} has been deleted.`,
+        errorMsg: `Failed to delete a job ${name} ${version}`,
+        onSuccess: () => {
+            fetchJobs()
+        },
     })
 }
-
 
 // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
 var tfConfig = {
@@ -180,7 +174,7 @@ onUpdated(() => {
                 <td>{{ job.infrastructure_target }}</td>
                 <td>
                     <q-btn color="negative" push label="Delete" icon="delete"
-                        @click="deleteJobConfirm(job.name, job.version)" />
+                        @click="deleteJob(job.name, job.version)" />
                 </td>
             </tr>
 

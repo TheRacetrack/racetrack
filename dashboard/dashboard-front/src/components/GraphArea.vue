@@ -43,7 +43,7 @@ function fetchGraph() {
         const data: GraphData = response.data
         graphData.job_graph = data.job_graph
     }).catch(err => {
-        toastService.showRequestError(`Failed to fetch a jobs graph`, err)
+        toastService.showErrorDetails(`Failed to fetch a jobs graph`, err)
     })
 }
 

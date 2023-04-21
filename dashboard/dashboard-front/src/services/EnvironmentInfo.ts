@@ -37,7 +37,7 @@ export function loadEnvironmentInfo() {
             envInfo.site_name = data.site_name
 
         }).catch(err => {
-            toastService.showRequestError(`Backend connection failed`, err)
+            toastService.showErrorDetails(`Backend connection failed`, err)
         })
 }
 

@@ -11,7 +11,7 @@ function fetchJobs() {
     apiClient.get(`/api/job/list`).then(response => {
         jobsData.jobs = response.data.jobs
     }).catch(err => {
-        toastService.showRequestError(`Failed to fetch the jobs`, err)
+        toastService.showErrorDetails(`Failed to fetch the jobs`, err)
     })
 }
 

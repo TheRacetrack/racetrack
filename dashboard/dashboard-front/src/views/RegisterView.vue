@@ -31,7 +31,7 @@ function register() {
         toastService.notify(`Your account "${username.value}" have been registered. Now wait till Racetrack admin activates your account.`)
         
     }).catch(err => {
-        toastService.showRequestError(`Registering failed`, err)
+        toastService.showErrorDetails(`Registering failed`, err)
         loading.value = false
     })
 }

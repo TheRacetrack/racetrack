@@ -56,7 +56,7 @@ function login() {
         toastService.success(`Logged in as ${responseData.username}`)
         
     }).catch(err => {
-        toastService.showRequestError(`Login failed`, err)
+        toastService.showErrorDetails(`Login failed`, err)
         loading.value = false
     })
 }

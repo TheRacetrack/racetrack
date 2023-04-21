@@ -72,25 +72,6 @@ watch(infrastructureTargetsTree, () => {
     })
 })
 
-function getAllTreeLabels(obj: any, labels: string[] = []): string[] {
-    if (Array.isArray(obj)) {
-        for (const child of obj) {
-            getAllTreeLabels(child, labels)
-        }
-    }
-    if (obj.hasOwnProperty('label')) {
-        labels.push(obj['label'])
-    }
-    if (obj.hasOwnProperty('children')) {
-        const children = obj['children']
-        for (const index in children) {
-            const child = children[index]
-            getAllTreeLabels(child, labels)
-        }
-    }
-    return labels
-}
-
 function copyText(text: string | null) {
     if (text == null)
         return
@@ -106,7 +87,7 @@ function fetchAdministrationData() {
     apiClient.get(`/api/administration`).then(response => {
         adminDataRef.value = response.data
     }).catch(err => {
-        toastService.showRequestError(`Failed to fetch administration data`, err)
+        toastService.showErrorDetails(`Failed to fetch administration data`, err)
     })
 }
 
@@ -115,25 +96,18 @@ onMounted(() => {
 })
 
 function deletePlugin(name: string, version: string) {
-    progressService.showDialog(`Are you sure you want to delete the plugin "${name} ${version}"?`)
-        .then(async () => {
-            toastService.info(`Deleting a plugin ${name} ${version}...`)
-            progressService.startProgressLoading()
-
-            await new Promise(r => setTimeout(r, 2000))
-
-            //TODO DELETE
-            return apiClient.get(`/api/plugin/${name}/${version}`)
-
-        }).then(response => {
-            toastService.success(`Plugin ${name} ${version} has been deleted.`)
+    progressService.confirmWithLoading({
+        confirmQuestion: `Are you sure you want to delete the plugin "${name} ${version}"?`,
+        onConfirm: () => {
+            return apiClient.delete(`/api/plugin/${name}/${version}`)
+        },
+        progressMsg: `Deleting plugin ${name} ${version}...`,
+        successMsg: `Plugin ${name} ${version} has been deleted.`,
+        errorMsg: `Failed to delete plugin ${name} ${version}`,
+        onSuccess: () => {
             fetchAdministrationData()
-
-        }).catch(err => {
-            toastService.showRequestError(`Failed to delete a plugin`, err)
-        }).finally(() => {
-            progressService.stopProgressLoading()
-        })
+        },
+    })
 }
 </script>
 

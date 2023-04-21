@@ -13,7 +13,7 @@ function logout() {
     apiClient.get(`/api/accounts/logout`, false).then(response => {
         toastService.success(`You're logged out.`)
     }).catch(err => {
-        toastService.showRequestError(`Failed to log out`, err)
+        toastService.showErrorDetails(`Failed to log out`, err)
     })
 }
 
