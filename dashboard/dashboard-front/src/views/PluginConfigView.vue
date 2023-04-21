@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch, type Ref, onMounted, nextTick } from 'vue'
-import { envInfo } from '@/services/EnvironmentInfo'
+import { ref, type Ref, onMounted } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { versionFull } from '@/services/EnvironmentInfo'
-import { progressService } from '@/services/ProgressService'
-import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
-
 const pluginName = route.params.pluginName
 const pluginVersion = route.params.pluginVersion
 

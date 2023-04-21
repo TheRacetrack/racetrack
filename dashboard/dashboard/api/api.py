@@ -19,6 +19,10 @@ from dashboard.utils import remove_ansi_sequences
 from dashboard.api.account import get_auth_token, setup_account_endpoints
 
 
+class PluginConfigUpdate(BaseModel):
+    config: str
+
+
 def setup_api_endpoints(app: FastAPI):
 
     setup_account_endpoints(app)
@@ -157,12 +161,8 @@ def setup_api_endpoints(app: FastAPI):
         client.delete_plugin(plugin_name, plugin_version)
         return Response(status_code=204)
 
-
-    class PluginConfigUpdate(BaseModel):
-        config: str
-
     @app.post("/api/plugin/{plugin_name}/{plugin_version}/config")
-    def save_plugin_config(request: Request, plugin_name: str, plugin_version: str, payload: PluginConfigUpdate):
+    def save_plugin_config(payload: PluginConfigUpdate, plugin_name: str, plugin_version: str, request: Request):
         client = LifecyclePluginClient(auth_token=get_auth_token(request))
         client.write_plugin_config(plugin_name, plugin_version, payload.config)
 
