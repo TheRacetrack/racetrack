@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiClient } from '@/services/ApiClient'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 
 const username = ref('')
 const password = ref('')
@@ -28,10 +28,10 @@ function register() {
         password2.value = ''
         
         router.push({ name: 'login' })
-        ToastService.notify(`Your account "${username.value}" have been registered. Now wait till Racetrack admin activates your account.`)
+        toastService.notify(`Your account "${username.value}" have been registered. Now wait till Racetrack admin activates your account.`)
         
     }).catch(err => {
-        ToastService.showRequestError(`Registering failed`, err)
+        toastService.showRequestError(`Registering failed`, err)
         loading.value = false
     })
 }

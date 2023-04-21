@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { apiClient } from '@/services/ApiClient'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 
 const jobsData = reactive({
     jobs: [],
@@ -11,7 +11,7 @@ function fetchJobs() {
     apiClient.get(`/api/job/list`).then(response => {
         jobsData.jobs = response.data.jobs
     }).catch(err => {
-        ToastService.showRequestError(`Failed to fetch the jobs`, err)
+        toastService.showRequestError(`Failed to fetch the jobs`, err)
     })
 }
 

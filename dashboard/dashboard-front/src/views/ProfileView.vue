@@ -3,15 +3,15 @@ import { computed } from 'vue'
 import { copyToClipboard } from 'quasar'
 import { userData, setAuthToken } from '@/services/UserDataStore'
 import { envInfo } from '@/services/EnvironmentInfo'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 
 function copyAuthToken() {
     copyToClipboard(userData.authToken || '')
         .then(() => {
-            ToastService.success(`Auth Token copied to clipboard.`)
+            toastService.success(`Auth Token copied to clipboard.`)
         }).catch((error) => {
-            ToastService.error(`Failed to copy to clipboard.`)
+            toastService.error(`Failed to copy to clipboard.`)
         })
 }
 
@@ -22,19 +22,19 @@ const loginCommand = computed(() =>
 function copyLoginCommand() {
     copyToClipboard(loginCommand.value)
     .then(() => {
-        ToastService.success(`Command copied to clipboard.`)
+        toastService.success(`Command copied to clipboard.`)
     })
     .catch((error) => {
-        ToastService.error(`Failed to copy to clipboard.`)
+        toastService.error(`Failed to copy to clipboard.`)
     })
 }
 
 function regenerateToken() {
     apiClient.post(`/api/accounts/token/regenerate`).then(response => {
         setAuthToken(response.data.new_token)
-        ToastService.success(`Token regenerated.`)
+        toastService.success(`Token regenerated.`)
     }).catch(err => {
-        ToastService.showRequestError(`Failed to regenerate token`, err)
+        toastService.showRequestError(`Failed to regenerate token`, err)
     })
 }
 </script>

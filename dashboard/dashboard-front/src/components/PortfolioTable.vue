@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, onMounted, onUpdated, ref, type Ref } from 'vue'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { progressService } from '@/services/ProgressService'
 import { formatDecimalNumber } from '@/services/StringUtils'
@@ -43,7 +43,7 @@ function fetchJobs() {
         const data: PortfolioData = response.data
         portfolioData.jobs = data.jobs
     }).catch(err => {
-        ToastService.showRequestError(`Fetching jobs portfolio failed`, err)
+        toastService.showRequestError(`Fetching jobs portfolio failed`, err)
     })
 }
 
@@ -57,14 +57,14 @@ function deleteJobConfirm(name: string, version: string) {
 }
 
 function deleteJob(name: string, version: string) {
-    ToastService.info(`Deleting a job ${name} ${version}...`)
+    toastService.info(`Deleting a job ${name} ${version}...`)
     progressService.startProgressLoading()
     apiClient.delete(`/api/job/${name}/${version}`).then(response => {
-        ToastService.success(`Job ${name} ${version} has been deleted.`)
+        toastService.success(`Job ${name} ${version} has been deleted.`)
         fetchJobs()
         progressService.stopProgressLoading()
     }).catch(err => {
-        ToastService.showRequestError(`Failed to delete a job`, err)
+        toastService.showRequestError(`Failed to delete a job`, err)
         progressService.stopProgressLoading()
     })
 }

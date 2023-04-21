@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { apiClient } from '@/services/ApiClient'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 import { setUserData } from '@/services/UserDataStore'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 
@@ -20,11 +20,11 @@ const route = useRoute()
 
 function login() {
     if (username.value == '') {
-        ToastService.error(`Username is empty`)
+        toastService.error(`Username is empty`)
         return
     }
     if (password.value == '') {
-        ToastService.error(`Password is empty`)
+        toastService.error(`Password is empty`)
         return
     }
 
@@ -53,10 +53,10 @@ function login() {
             router.push({ name: 'home' })
         }
 
-        ToastService.success(`Logged in as ${responseData.username}`)
+        toastService.success(`Logged in as ${responseData.username}`)
         
     }).catch(err => {
-        ToastService.showRequestError(`Login failed`, err)
+        toastService.showRequestError(`Login failed`, err)
         loading.value = false
     })
 }

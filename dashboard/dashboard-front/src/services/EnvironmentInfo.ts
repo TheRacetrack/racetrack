@@ -1,5 +1,5 @@
 import { reactive, computed } from 'vue'
-import { ToastService } from './ToastService'
+import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 
 export const envInfo: EnvironmentInfo = reactive({
@@ -37,7 +37,7 @@ export function loadEnvironmentInfo() {
             envInfo.site_name = data.site_name
 
         }).catch(err => {
-            ToastService.showRequestError(`Backend connection failed`, err)
+            toastService.showRequestError(`Backend connection failed`, err)
         })
 }
 

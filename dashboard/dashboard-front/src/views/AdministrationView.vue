@@ -2,7 +2,7 @@
 import { computed, ref, watch, type Ref, onMounted, nextTick } from 'vue'
 import { copyToClipboard, QTree } from 'quasar'
 import { envInfo } from '@/services/EnvironmentInfo'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { versionFull } from '@/services/EnvironmentInfo'
 import { progressService } from '@/services/ProgressService'
@@ -96,9 +96,9 @@ function copyText(text: string | null) {
         return
     copyToClipboard(text)
         .then(() => {
-            ToastService.success(`Copied to clipboard.`)
+            toastService.success(`Copied to clipboard.`)
         }).catch((error) => {
-            ToastService.error(`Failed to copy to clipboard.`)
+            toastService.error(`Failed to copy to clipboard.`)
         })
 }
 
@@ -106,7 +106,7 @@ function fetchAdministrationData() {
     apiClient.get(`/api/administration`).then(response => {
         adminDataRef.value = response.data
     }).catch(err => {
-        ToastService.showRequestError(`Failed to fetch administration data`, err)
+        toastService.showRequestError(`Failed to fetch administration data`, err)
     })
 }
 
@@ -117,20 +117,20 @@ onMounted(() => {
 function deletePlugin(name: string, version: string) {
     progressService.showDialog(`Are you sure you want to delete the plugin "${name} ${version}"?`)
         .then(async () => {
-            ToastService.info(`Deleting a plugin ${name} ${version}...`)
+            toastService.info(`Deleting a plugin ${name} ${version}...`)
             progressService.startProgressLoading()
 
             await new Promise(r => setTimeout(r, 2000))
 
             //TODO DELETE
             return apiClient.get(`/api/plugin/${name}/${version}`)
-            
+
         }).then(response => {
-            ToastService.success(`Plugin ${name} ${version} has been deleted.`)
+            toastService.success(`Plugin ${name} ${version} has been deleted.`)
             fetchAdministrationData()
 
         }).catch(err => {
-            ToastService.showRequestError(`Failed to delete a plugin`, err)
+            toastService.showRequestError(`Failed to delete a plugin`, err)
         }).finally(() => {
             progressService.stopProgressLoading()
         })

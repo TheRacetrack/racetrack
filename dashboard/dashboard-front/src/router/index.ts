@@ -14,7 +14,7 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import ChangePasswordView from '@/views/ChangePasswordView.vue'
 import PageNotFound from '@/views/PageNotFound.vue'
 import { userData } from '@/services/UserDataStore'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -105,7 +105,7 @@ router.beforeEach((to, from, next) => {
           next: nextPath,
         },
       })
-      ToastService.info(`Please log in to see this page.`)
+      toastService.info(`Please log in to see this page.`)
     } else {
       next()
     }

@@ -6,32 +6,32 @@ type ToasterFunction = (content: ToastContent, options?: _ToastOptions | undefin
 
 export class ToastService {
 
-    static toast = useToast()
+    toast = useToast()
 
-    static lastToastId: ToastID | null = null
-    static lastToastMessage: string | null = null
+    lastToastId: ToastID | null = null
+    lastToastMessage: string | null = null
 
-    static info(msg: string): ToastID {
-        return this.showToast(msg, this.toast.info, 5000)
+    info(msg: string): ToastID {
+        return this.showToast(msg, this.toast.info, 5000, true, "top-right")
     }
 
-    static error(msg: string): ToastID {
+    error(msg: string): ToastID {
         return this.showToast(msg, this.toast.error, 7000, false, "top-center")
     }
 
-    static success(msg: string): ToastID {
-        return this.showToast(msg, this.toast.success, 3000)
+    success(msg: string): ToastID {
+        return this.showToast(msg, this.toast.success, 3000, true, "top-right")
     }
 
-    static warning(msg: string): ToastID {
-        return this.showToast(msg, this.toast.warning, 5000)
+    warning(msg: string): ToastID {
+        return this.showToast(msg, this.toast.warning, 5000, true, "top-right")
     }
 
-    static notify(msg: string): ToastID {
+    notify(msg: string): ToastID {
         return this.showToast(msg, this.toast.success, 15000, false, "top-center")
     }
 
-    static showToast(
+    showToast(
         msg: string, toaster: ToasterFunction,
         timeout: number = 5000, closeOnClick: boolean = true, position: string = "top-right",
     ): ToastID {
@@ -56,7 +56,7 @@ export class ToastService {
         return this.lastToastId
     }
 
-    static showRequestError(context: string, err: any) {
+    showRequestError(context: string, err: any) {
         console.error(`Request error: ${context}: ${err}`)
         if (err.response !== undefined) {
             if (err.response.hasOwnProperty('data')){

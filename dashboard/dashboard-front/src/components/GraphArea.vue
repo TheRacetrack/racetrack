@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, watch, computed, ref, onMounted, type Ref } from 'vue'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { DataSet, DataView } from "vis-data"
 import { Network, type Options } from "vis-network"
@@ -43,7 +43,7 @@ function fetchGraph() {
         const data: GraphData = response.data
         graphData.job_graph = data.job_graph
     }).catch(err => {
-        ToastService.showRequestError(`Failed to fetch a jobs graph`, err)
+        toastService.showRequestError(`Failed to fetch a jobs graph`, err)
     })
 }
 

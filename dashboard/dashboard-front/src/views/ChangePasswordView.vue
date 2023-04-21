@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { apiClient } from '@/services/ApiClient'
-import { ToastService } from '@/services/ToastService'
+import { toastService } from '@/services/ToastService'
 
 const oldPassword = ref('')
 const newPassword = ref('')
@@ -20,10 +20,10 @@ function changePassword() {
         oldPassword.value = ''
         newPassword.value = ''
         newPassword2.value = ''
-        ToastService.success(`Your password has been changed.`)
+        toastService.success(`Your password has been changed.`)
         
     }).catch(err => {
-        ToastService.showRequestError(`Failed to change password`, err)
+        toastService.showRequestError(`Failed to change password`, err)
         loading.value = false
     })
 }
