@@ -2,8 +2,7 @@
 import { reactive, onMounted, onUpdated, ref, type Ref } from 'vue'
 import { ToastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
-import { userData } from '@/services/UserDataStore'
-import { DialogService } from '@/services/DialogService'
+import { progressService } from '@/services/ProgressService'
 import { formatDecimalNumber } from '@/services/StringUtils'
 import { apiClient } from '@/services/ApiClient'
 
@@ -52,21 +51,21 @@ fetchJobs()
 
 function deleteJobConfirm(name: string, version: string) {
     const objectDescription = `${name} ${version}`
-    DialogService.showDialog(`Are you sure you want to delete the job "${objectDescription}"?`, () => {
+    progressService.showDialog(`Are you sure you want to delete the job "${objectDescription}"?`).then(() => {
         deleteJob(name, version)
     })
 }
 
 function deleteJob(name: string, version: string) {
     ToastService.info(`Deleting a job ${name} ${version}...`)
-    DialogService.startLoading()
+    progressService.startProgressLoading()
     apiClient.delete(`/api/job/${name}/${version}`).then(response => {
         ToastService.success(`Job ${name} ${version} has been deleted.`)
         fetchJobs()
-        DialogService.stopLoading()
+        progressService.stopProgressLoading()
     }).catch(err => {
         ToastService.showRequestError(`Failed to delete a job`, err)
-        DialogService.stopLoading()
+        progressService.stopProgressLoading()
     })
 }
 

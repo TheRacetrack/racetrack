@@ -5,8 +5,14 @@ import { envInfo } from '@/services/EnvironmentInfo'
 import { ToastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { versionFull } from '@/services/EnvironmentInfo'
+import { progressService } from '@/services/ProgressService'
 
-const adminDataRef: Ref<AdminData> = ref({} as AdminData)
+const adminDataRef: Ref<AdminData> = ref({
+    plugins: [],
+    job_type_versions: [],
+    infrastructure_targets: new Map(),
+    infrastructure_instances: [],
+} as AdminData)
 const lifecycleAdminUrl = computed(() => `${envInfo.lifecycle_url}/admin`)
 const jobTypeVersionsTreeRef: Ref<QTree | null> = ref(null)
 const infrastructureTargetsTreeRef: Ref<QTree | null> = ref(null)
@@ -96,13 +102,39 @@ function copyText(text: string | null) {
         })
 }
 
-onMounted(() => {
+function fetchAdministrationData() {
     apiClient.get(`/api/administration`).then(response => {
         adminDataRef.value = response.data
     }).catch(err => {
         ToastService.showRequestError(`Failed to fetch administration data`, err)
     })
+}
+
+onMounted(() => {
+    fetchAdministrationData()
 })
+
+function deletePlugin(name: string, version: string) {
+    progressService.showDialog(`Are you sure you want to delete the plugin "${name} ${version}"?`)
+        .then(async () => {
+            ToastService.info(`Deleting a plugin ${name} ${version}...`)
+            progressService.startProgressLoading()
+
+            await new Promise(r => setTimeout(r, 2000))
+
+            //TODO DELETE
+            return apiClient.get(`/api/plugin/${name}/${version}`)
+            
+        }).then(response => {
+            ToastService.success(`Plugin ${name} ${version} has been deleted.`)
+            fetchAdministrationData()
+
+        }).catch(err => {
+            ToastService.showRequestError(`Failed to delete a plugin`, err)
+        }).finally(() => {
+            progressService.stopProgressLoading()
+        })
+}
 </script>
 
 <template>
@@ -181,7 +213,35 @@ onMounted(() => {
         <q-card-section class="q-pb-none">
             <div class="text-h6">Plugins</div>
         </q-card-section>
-        <q-card-section class="q-pt-none">
+        <q-card-section>
+
+            <q-list bordered separator class="rounded-borders">
+                <q-item-label header>Active plugins</q-item-label>
+
+                <q-item v-if="adminDataRef.plugins.length == 0" class="text-grey-6">(empty)</q-item>
+
+                <q-item v-for="plugin in adminDataRef.plugins">
+                    <q-item-section>
+                        <q-item-label>{{ plugin.name }}</q-item-label>
+                        <q-item-label caption>Version {{plugin.version}}</q-item-label>
+                        <q-item-label caption v-if="plugin.url">
+                            <a :href="plugin.url" target="_blank">{{ plugin.url }}</a>
+                        </q-item-label>
+                    </q-item-section>
+
+                    <q-item-section side>
+                        <div class="text-grey-8 q-gutter-xs">
+                            <q-btn class="gt-xs" size="12px" flat dense round icon="edit">
+                                <q-tooltip>Edit plugin's config</q-tooltip>
+                            </q-btn>
+                            <q-btn class="gt-xs" size="12px" flat dense round icon="delete"
+                                @click="deletePlugin(plugin.name, plugin.version)">
+                                <q-tooltip>Delete plugin</q-tooltip>
+                            </q-btn>
+                        </div>
+                    </q-item-section>
+                </q-item>
+            </q-list>
             
         </q-card-section>
     </q-card>

@@ -5,13 +5,13 @@ import { RouterView } from 'vue-router'
 import Footer from './components/Footer.vue'
 import NavDrawer from './components/NavDrawer.vue'
 import HeaderBar from './components/HeaderBar.vue'
-import ConfirmationDialog from './components/ConfirmationDialog.vue'
+import ProgressComponent from './components/ProgressComponent.vue'
 import { loadUserData } from '@/services/UserDataStore'
-import { DialogService } from '@/services/DialogService'
+import { progressService } from '@/services/ProgressService'
 import { loadEnvironmentInfo } from '@/services/EnvironmentInfo'
 
 const navDrawer: Ref<typeof NavDrawer | null> = ref(null)
-const confirmDialog: Ref<typeof ConfirmationDialog | null> = ref(null)
+const progressCompononent: Ref<typeof ProgressComponent | null> = ref(null)
 
 function toggleLeftDrawer() {
   navDrawer.value?.toggleLeftDrawer()
@@ -19,15 +19,15 @@ function toggleLeftDrawer() {
 
 loadUserData()
 loadEnvironmentInfo()
-DialogService.init(confirmDialog)
+progressService.init(progressCompononent)
 </script>
 
 <template>
   <q-layout view="hHh lpR lff">
 
+    <ProgressComponent ref="progressCompononent"/>
     <HeaderBar @toggleDrawer="(msg) => toggleLeftDrawer()"/>
     <NavDrawer ref="navDrawer"/>
-    <ConfirmationDialog ref="confirmDialog"/>
 
     <q-page-container>
       <div id="app-container">

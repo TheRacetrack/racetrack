@@ -8,7 +8,9 @@
     },
     "allowJs": true
   },
-
+  "lib": [
+    "ES2018"
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"
