@@ -9,11 +9,19 @@ const newPassword2 = ref('')
 const loading = ref(false)
 
 function changePassword() {
+    if (newPassword.value == '') {
+        toastService.error(`Password cannot be empty`)
+        return
+    }
+    if (newPassword.value != newPassword2.value) {
+        toastService.error(`Passwords do not match`)
+        return
+    }
+
     loading.value = true
-    apiClient.post(`/api/accounts/change_password`, {
+    apiClient.post(`/api/v1/users/change_password`, {
         'old_password': oldPassword.value, 
-        'new_password1': newPassword.value,
-        'new_password2': newPassword2.value,
+        'new_password': newPassword.value,
     }).then(response => {
 
         loading.value = false
@@ -60,7 +68,7 @@ function changePassword() {
             </q-form>
         </q-card-section>
         <q-card-actions class="q-px-md">
-            <q-btn color="primary" size="md" class="full-width" label="Register" push
+            <q-btn color="primary" size="md" class="full-width" label="Change password" push
             :loading="loading" @click="changePassword" />
         </q-card-actions>
     </q-card>

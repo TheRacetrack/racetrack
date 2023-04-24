@@ -3,11 +3,16 @@ import asyncio
 import collections
 import os
 
-from fastapi import Request, FastAPI, Response
+from fastapi import FastAPI, Request, Response, Body
 from pydantic import BaseModel
+from starlette.background import BackgroundTask
+from starlette.datastructures import MutableHeaders
+import httpx
 
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.time import days_ago
+from racetrack_client.log.logs import get_logger
+from racetrack_client.utils.url import trim_url
 from racetrack_commons.entities.audit import explain_audit_log_event
 from racetrack_commons.entities.audit_client import AuditClient
 from racetrack_commons.entities.dto import AuditLogEventDto, JobDto
@@ -18,15 +23,11 @@ from dashboard.purge import enrich_jobs_purge_info
 from dashboard.utils import remove_ansi_sequences
 from dashboard.api.account import get_auth_token, setup_account_endpoints
 
-
-class PluginConfigUpdate(BaseModel):
-    config: str
+logger = get_logger(__name__)
 
 
 def setup_api_endpoints(app: FastAPI):
 
-    setup_account_endpoints(app)
-    
     @app.get("/api/status")
     def _status():
         """Report current application status"""
@@ -41,6 +42,46 @@ def setup_api_endpoints(app: FastAPI):
             'external_pub_url': get_external_pub_url(),
             'site_name': site_name,
         }
+    
+    setup_proxy_endpoints(app)
+
+
+def setup_proxy_endpoints(app: FastAPI):
+    """Forward all API endpoints to Lifecycle service"""
+    lifecycle_api_url = trim_url(os.environ.get('LIFECYCLE_URL', 'http://localhost:7202'))
+    logger.info(f'Forwarding API requests to "{lifecycle_api_url}"')
+    client = httpx.AsyncClient(base_url=f"{lifecycle_api_url}/")
+    
+    async def _proxy_api_call(request: Request, path: str, payload=Body(default={})):
+        """Forward API call to Lifecycle service"""
+        subpath = f'/api/v1/{request.path_params["path"]}'
+        url = httpx.URL(path=subpath, query=request.url.query.encode("utf-8"))
+        request_headers = MutableHeaders(request.headers)
+        request_headers['referer'] = request.url.path
+
+        rp_req = client.build_request(request.method, url,
+                                      headers=request_headers.raw,
+                                      content=await request.body())
+        httpx_response = await client.send(rp_req, stream=True)
+        content: bytes = await httpx_response.aread()
+        return Response(
+            content=content,
+            status_code=httpx_response.status_code,
+            headers=httpx_response.headers,
+            background=BackgroundTask(httpx_response.aclose),
+        )
+
+    app.router.add_api_route("/api/v1/{path:path}", _proxy_api_call,
+                             methods=["GET", "POST", "PUT", "DELETE"])
+
+
+class PluginConfigUpdate(BaseModel):
+    config: str
+
+
+def _setup_extra_api_endpoints(app: FastAPI):
+
+    setup_account_endpoints(app)
 
     @app.get("/api/job/list")
     def jobs_list(request: Request) -> dict:

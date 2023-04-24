@@ -10,7 +10,7 @@ function logout() {
     deleteUserData()
     router.push({ name: 'login' })
     
-    apiClient.get(`/api/accounts/logout`, false).then(response => {
+    apiClient.get(`/api/v1/users/logout`, false).then(response => {
         toastService.success(`You're logged out.`)
     }).catch(err => {
         toastService.showErrorDetails(`Failed to log out`, err)

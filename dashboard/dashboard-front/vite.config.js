@@ -28,11 +28,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       },
-      '/dashboard/api': {
-        target: 'http://localhost:7103',
-        changeOrigin: true,
-        secure: false
-      }
     }
   }
 })

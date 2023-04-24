@@ -12,13 +12,20 @@ const loading = ref(false)
 const router = useRouter()
 
 function register() {
+    if (password.value == '') {
+        toastService.error(`Password cannot be empty`)
+        return
+    }
+    if (password.value != password2.value) {
+        toastService.error(`Passwords do not match`)
+        return
+    }
+
     loading.value = true
-    
-    apiClient.post(`/api/accounts/register`,
+    apiClient.post(`/api/v1/users/register`,
         {
             'username': username.value, 
-            'password1': password.value,
-            'password2': password2.value,
+            'password': password.value,
         },
         false,
     ).then(response => {
