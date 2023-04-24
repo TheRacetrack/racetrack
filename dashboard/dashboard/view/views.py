@@ -7,8 +7,6 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
 
-from dashboard.purge import enrich_jobs_purge_info
-from dashboard.utils import remove_ansi_sequences, login_required, get_auth_token
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
 from racetrack_client.utils.time import days_ago

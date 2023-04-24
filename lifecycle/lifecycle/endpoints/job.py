@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
 from lifecycle.deployer.redeploy import redeploy_job, reprovision_job, move_job
+from lifecycle.job.ansi import remove_ansi_sequences
 from lifecycle.job.graph import build_job_dependencies_graph
 from lifecycle.job.portfolio import enrich_jobs_purge_info
 from lifecycle.job.registry import (
@@ -15,7 +16,7 @@ from lifecycle.job.registry import (
     read_versioned_job,
 )
 from lifecycle.job.public_endpoints import read_active_job_public_endpoints
-from lifecycle.job.logs import read_build_logs, read_runtime_logs, remove_ansi_sequences
+from lifecycle.job.logs import read_build_logs, read_runtime_logs
 from lifecycle.auth.authenticate import get_username_from_token
 from racetrack_client.utils.time import days_ago
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto

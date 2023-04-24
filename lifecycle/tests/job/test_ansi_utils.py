@@ -1,4 +1,4 @@
-from lifecycle.job.logs import remove_ansi_sequences
+from lifecycle.job.ansi import remove_ansi_sequences
 
 
 def test_remove_ansi_sequences():

@@ -11,6 +11,8 @@
       "dom",
       "es2021",
     ],
+    "importsNotUsedAsValues": "preserve",
+    "ignoreDeprecations": "5.0",
   },
   "references": [
     {
