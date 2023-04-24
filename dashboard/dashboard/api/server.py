@@ -21,7 +21,7 @@ def run_server():
     http_port = int(os.environ.get('DASHBOARD_PORT', 7203))
     app = create_fastapi_app()
 
-    serve_asgi_app(app, '0.0.0.0', http_port)
+    serve_asgi_app(app, http_port)
 
 
 def create_fastapi_app() -> ASGIApp:
