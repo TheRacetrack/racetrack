@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { mdiAccountCircle, mdiLogout } from '@quasar/extras/mdi-v7'
-
-import { userData } from '@/services/UserDataStore'
+import { isAuthenticated } from '@/services/UserDataStore'
 
 const emit = defineEmits(['toggleDrawer'])
 
@@ -14,7 +13,7 @@ function toggleDrawer () {
   <q-header reveal elevated class="bg-black text-white" height-hint="64">
     <q-toolbar>
       <q-btn dense flat round icon="menu"
-        @click="toggleDrawer" v-if="userData.isAuthenticated" />
+        @click="toggleDrawer" v-if="isAuthenticated" />
 
       <q-toolbar-title>
         <router-link :to="{name: 'home'}" style="text-decoration: none; color: inherit;">
@@ -26,11 +25,11 @@ function toggleDrawer () {
 
       <div class="q-gutter-sm row items-center no-wrap">
         <q-btn round flat :icon="mdiAccountCircle"
-          :to="{name: 'profile'}" v-if="userData.isAuthenticated">
+          :to="{name: 'profile'}" v-if="isAuthenticated">
           <q-tooltip>Profile</q-tooltip>
         </q-btn>
         <q-btn round dense flat color="grey-5" :icon="mdiLogout"
-          :to="{name: 'logout'}" v-if="userData.isAuthenticated">
+          :to="{name: 'logout'}" v-if="isAuthenticated">
           <q-tooltip>Logout</q-tooltip>
         </q-btn>
       </div>

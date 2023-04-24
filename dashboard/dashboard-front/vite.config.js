@@ -23,7 +23,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
+      '/dashboard/api': {
         target: 'http://localhost:7103',
         changeOrigin: true,
         secure: false

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { copyToClipboard } from 'quasar'
-import { userData, setAuthToken } from '@/services/UserDataStore'
+import { authToken, setAuthToken, isAdmin, username } from '@/services/UserDataStore'
 import { envInfo } from '@/services/EnvironmentInfo'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 
 function copyAuthToken() {
-    copyToClipboard(userData.authToken || '')
+    copyToClipboard(authToken.value || '')
         .then(() => {
             toastService.success(`Auth Token copied to clipboard.`)
         }).catch((error) => {
@@ -16,7 +16,7 @@ function copyAuthToken() {
 }
 
 const loginCommand = computed(() => 
-    `racetrack login --remote ${envInfo.lifecycle_url} ${userData.authToken}`
+    `racetrack login --remote ${envInfo.lifecycle_url} ${authToken.value}`
 )
 
 function copyLoginCommand() {
@@ -44,7 +44,7 @@ function regenerateToken() {
         <q-card-section>
             <div class="text-h6">
                 User Profile
-                <q-badge color="primary" v-if="userData.isAdmin">admin</q-badge>
+                <q-badge color="primary" v-if="isAdmin">admin</q-badge>
             </div>
         </q-card-section>
         
@@ -52,14 +52,14 @@ function regenerateToken() {
             
             <q-field outlined label="Username" stack-label>
                 <template v-slot:control>
-                    <div>{{ userData.username }}</div>
+                    <div>{{ username }}</div>
                 </template>
             </q-field>
             
             <q-field outlined label="Auth Token" stack-label class="q-mt-md">
                 <template v-slot:control>
                     <span class="x-monospace x-overflow-any">
-                        {{ userData.authToken }}
+                        {{ authToken }}
                     </span>
                 </template>
                 <template v-slot:append>

@@ -40,7 +40,6 @@ function login() {
 
         const responseData: LoginData = response.data
         setUserData({
-            isAuthenticated: true,
             username: responseData.username,
             authToken: responseData.token,
             isAdmin: responseData.is_staff,

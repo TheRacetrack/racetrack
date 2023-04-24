@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, type Ref } from 'vue'
-import { RouterView } from 'vue-router'
+import { useRouter, RouterView } from 'vue-router'
 
 import Footer from './components/Footer.vue'
 import NavDrawer from './components/NavDrawer.vue'
@@ -13,12 +13,12 @@ import { loadEnvironmentInfo } from '@/services/EnvironmentInfo'
 const navDrawer: Ref<typeof NavDrawer | null> = ref(null)
 const progressCompononent: Ref<typeof ProgressComponent | null> = ref(null)
 
-function toggleLeftDrawer() {
+function toggleNavDrawer() {
   navDrawer.value?.toggleLeftDrawer()
 }
 
-loadUserData()
 loadEnvironmentInfo()
+loadUserData(useRouter())
 progressService.init(progressCompononent)
 </script>
 
@@ -26,7 +26,7 @@ progressService.init(progressCompononent)
   <q-layout view="hHh lpR lff">
 
     <ProgressComponent ref="progressCompononent"/>
-    <HeaderBar @toggleDrawer="(msg) => toggleLeftDrawer()"/>
+    <HeaderBar @toggleDrawer="(msg) => toggleNavDrawer()"/>
     <NavDrawer ref="navDrawer"/>
 
     <q-page-container>

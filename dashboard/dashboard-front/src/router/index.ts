@@ -14,7 +14,7 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import ChangePasswordView from '@/views/ChangePasswordView.vue'
 import PluginConfigView from '@/views/PluginConfigView.vue'
 import PageNotFound from '@/views/PageNotFound.vue'
-import { userData } from '@/services/UserDataStore'
+import { isAuthenticated } from '@/services/UserDataStore'
 import { toastService } from '@/services/ToastService'
 
 const router = createRouter({
@@ -103,7 +103,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!userData.isAuthenticated) {
+    if (!isAuthenticated.value) {
       const nextPath = to.path
       next({ // redirect to login page
         name: 'login',

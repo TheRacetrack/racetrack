@@ -2,8 +2,7 @@
 import { ref } from 'vue'
 import { mdiGraphOutline, mdiTable, mdiMessageAlertOutline, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant } from '@quasar/extras/mdi-v7'
 import { outlinedMemory } from '@quasar/extras/material-icons-outlined'
-
-import { userData } from '@/services/UserDataStore'
+import { isAuthenticated, isAdmin } from '@/services/UserDataStore'
 
 const drawerOpen = ref(false)
 const miniState = ref(true)
@@ -27,7 +26,7 @@ defineExpose({
     mini-to-overlay
     side="left"
     bordered
-    v-if="userData.isAuthenticated"
+    v-if="isAuthenticated"
   >
     <q-scroll-area class="fit">
       <q-list padding class="text-grey-8">
@@ -80,7 +79,7 @@ defineExpose({
         </q-item>
 
         <q-item v-ripple clickable :to="{name: 'administration'}"
-          v-if="userData.isAdmin">
+          v-if="isAdmin">
           <q-item-section avatar>
             <q-icon :name="mdiTools" />
           </q-item-section>

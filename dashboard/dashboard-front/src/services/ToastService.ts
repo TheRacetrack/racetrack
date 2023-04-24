@@ -1,4 +1,5 @@
-import { TYPE, useToast } from "vue-toastification"
+import { AxiosError } from "axios"
+import { useToast } from "vue-toastification"
 import type { ToastContent, ToastID, ToastOptions } from "vue-toastification/dist/types/types"
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
@@ -18,7 +19,7 @@ export class ToastService {
     }
 
     error(msg: string): ToastID {
-        return this.showToast(msg, this.toast.error, 7000, false, "top-center")
+        return this.showToast(msg, this.toast.error, 20000, false, "top-center")
     }
 
     success(msg: string): ToastID {
@@ -69,17 +70,20 @@ export class ToastService {
     }
 
     showErrorDetails(context: string, err: any) {
-        console.error(`Error: ${context}: ${err}`)
-        if (err.response !== undefined) {
-            if (err.response.hasOwnProperty('data')){
-                const data = err.response.data
-                if (data !== undefined && data.hasOwnProperty('error')){
-                    const errorDetails = data.error
-                    this.error(`${context}: ${errorDetails}`)
-                    return
+        if (err instanceof AxiosError) {
+            if (err.response !== undefined) {
+                if (err.response.hasOwnProperty('data')){
+                    const data = err.response.data
+                    if (data !== undefined && data.hasOwnProperty('error')){
+                        const errorDetails = data.error
+                        console.error(`Request Error: ${context}: ${err.message}`)
+                        this.error(`${context}: ${errorDetails}`)
+                        return
+                    }
                 }
             }
         }
+        console.error(`Error: ${context}: ${err}`)
         this.error(`${context}: ${err}`)
     }
 
