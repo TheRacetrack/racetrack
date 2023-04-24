@@ -126,6 +126,11 @@ function onPluginUploadFailed(err: any) {
     }
     toastService.showErrorDetails(`Failed to upload plugin`, details)
 }
+
+function onPluginUploaded(info: any) {
+    toastService.success(`Plugin uploaded`)
+    fetchPluginsData()
+}
 </script>
 
 <template>
@@ -237,9 +242,6 @@ function onPluginUploadFailed(err: any) {
             
         </q-card-section>
 
-        <q-card-section class="q-pb-none">
-            <div class="text-h6">Upload plugin</div>
-        </q-card-section>
         <q-card-section>
             <q-uploader
                 url="/dashboard/api/v1/plugin/upload"
@@ -247,6 +249,8 @@ function onPluginUploadFailed(err: any) {
                 :headers="[{name: authHeader, value: authToken}]"
                 field-name="file"
                 @failed="onPluginUploadFailed"
+                @uploaded="onPluginUploaded"
+                style="width: 100%"
                 />
         </q-card-section>
     </q-card>
