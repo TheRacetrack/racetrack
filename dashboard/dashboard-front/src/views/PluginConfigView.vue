@@ -23,7 +23,7 @@ onMounted(() => {
 })
 
 function saveConfig() {
-    apiClient.post(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`, {
+    apiClient.put(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`, {
         config_data: configRef.value,
     }).then(response => {
         toastService.success(`Plugin's config saved.`)
@@ -51,7 +51,11 @@ function saveConfig() {
                     autogrow
                     />
             </div>
-            <q-btn color="primary" push label="Save" icon="save" @click="saveConfig" />
+            <div class="row q-pt-sm">
+                <q-space />
+                <q-btn color="primary" push label="Save" icon="save"
+                    @click="saveConfig" />
+            </div>
         </q-card-section>
     </q-card>
 </template>

@@ -9,7 +9,7 @@
     "allowJs": true,
     "lib": [
       "dom",
-      "es2021",
+      "es2022",
     ],
     "importsNotUsedAsValues": "preserve",
     "ignoreDeprecations": "5.0",

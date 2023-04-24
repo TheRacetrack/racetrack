@@ -1,7 +1,7 @@
 import axios, { type AxiosResponse, type AxiosRequestConfig } from "axios"
 import { authToken } from "./UserDataStore"
 
-const authHeader: string = 'X-Racetrack-Auth'
+export const authHeader: string = 'X-Racetrack-Auth'
 const basePath: string = '/dashboard'
 
 export class ApiClient {

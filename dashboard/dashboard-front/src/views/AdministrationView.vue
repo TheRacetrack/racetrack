@@ -3,9 +3,10 @@ import { computed, ref, watch, type Ref, onMounted, nextTick } from 'vue'
 import { copyToClipboard, QTree } from 'quasar'
 import { envInfo } from '@/services/EnvironmentInfo'
 import { toastService } from '@/services/ToastService'
-import { apiClient } from '@/services/ApiClient'
+import { apiClient, authHeader } from '@/services/ApiClient'
 import { versionFull } from '@/services/EnvironmentInfo'
 import { progressService } from '@/services/ProgressService'
+import { authToken } from '@/services/UserDataStore'
 
 const pluginDataRef: Ref<PluginData> = ref({
     plugins: [],
@@ -108,6 +109,22 @@ function deletePlugin(name: string, version: string) {
             fetchPluginsData()
         },
     })
+}
+
+function onPluginUploadFailed(err: any) {
+    console.error(err)
+    let details = err
+    if (err.hasOwnProperty('xhr')){
+        const xhr = err.xhr
+        if ('response' in xhr){
+            const response = xhr.response
+            const json = JSON.parse(response)
+            if (json.hasOwnProperty('error')){
+                details = json.error
+            }
+        }
+    }
+    toastService.showErrorDetails(`Failed to upload plugin`, details)
 }
 </script>
 
@@ -218,6 +235,19 @@ function deletePlugin(name: string, version: string) {
                 </q-item>
             </q-list>
             
+        </q-card-section>
+
+        <q-card-section class="q-pb-none">
+            <div class="text-h6">Upload plugin</div>
+        </q-card-section>
+        <q-card-section>
+            <q-uploader
+                url="/dashboard/api/v1/plugin/upload"
+                label="Upload plugin"
+                :headers="[{name: authHeader, value: authToken}]"
+                field-name="file"
+                @failed="onPluginUploadFailed"
+                />
         </q-card-section>
     </q-card>
 </template>
