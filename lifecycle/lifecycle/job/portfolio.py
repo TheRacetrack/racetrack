@@ -1,10 +1,9 @@
-from typing import Dict, List, Tuple
 from racetrack_client.utils.semver import SemanticVersion
 from racetrack_client.utils.time import days_ago
 from racetrack_commons.entities.dto import JobDto, JobStatus
 
 
-def enrich_jobs_purge_info(jobs: List[JobDto]) -> List[Dict]:
+def enrich_jobs_purge_info(jobs: list[JobDto]) -> list[dict]:
     """Enrich jobs with removal candidates info: score and reasons"""
     job_dicts = []
     for job in jobs:
@@ -17,7 +16,7 @@ def enrich_jobs_purge_info(jobs: List[JobDto]) -> List[Dict]:
     return sorted(job_dicts, key=lambda f: -f['purge_score'])
 
 
-def assess_job_usability(job: JobDto, all_jobs: List[JobDto]) -> Tuple[float, List[str]]:
+def assess_job_usability(job: JobDto, all_jobs: list[JobDto]) -> tuple[float, list[str]]:
     """
     Assess usability of a job.
     Return score number representing penalty points with descriptions of reasons.
@@ -54,7 +53,7 @@ def assess_job_usability(job: JobDto, all_jobs: List[JobDto]) -> Tuple[float, Li
     return score, reasons
 
 
-def _count_job_newer_versions(job: JobDto, all_jobs: List[JobDto]) -> int:
+def _count_job_newer_versions(job: JobDto, all_jobs: list[JobDto]) -> int:
     """Count how many job (from the same family) are newer than this one"""
     count = 0
     job_version = SemanticVersion(job.version)

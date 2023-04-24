@@ -1,3 +1,5 @@
+import re
+
 from lifecycle.config import Config
 from lifecycle.django.registry import models
 from lifecycle.job.registry import read_versioned_job
@@ -26,3 +28,8 @@ def read_build_logs(job_name: str, job_version: str, tail: int) -> str:
     if tail > 0:
         logs = '\n'.join(logs.splitlines()[-tail:])
     return logs
+
+
+def remove_ansi_sequences(content: str) -> str:
+    """Remove ANSI escape codes controlling font colors"""
+    return re.sub(r'\x1b\[\d+(;\d+)?m', '', content)

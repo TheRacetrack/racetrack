@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { ref } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 
-const jobsData = reactive({
-    jobs: [],
-})
+const jobsData = ref([])
 
 function fetchJobs() {
-    apiClient.get(`/api/job/list`).then(response => {
-        jobsData.jobs = response.data.jobs
+    apiClient.get(`/api/v1/job`).then(response => {
+        jobsData.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch the jobs`, err)
     })
@@ -27,7 +25,7 @@ fetchJobs()
         </q-card-section>
         
         <q-card-section class="q-pt-none">
-            {{ jobsData.jobs }}
+            {{ jobsData }}
         </q-card-section>
     </q-card>
 </template>

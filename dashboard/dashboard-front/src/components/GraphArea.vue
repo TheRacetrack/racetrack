@@ -5,21 +5,15 @@ import { apiClient } from '@/services/ApiClient'
 import { DataSet, DataView } from "vis-data"
 import { Network, type Options } from "vis-network"
 
-const graphData: GraphData = reactive({
-    job_graph: {
-        nodes: [],
-        edges: [],
-    },
+const graphData: JobGraph = reactive({
+    nodes: [],
+    edges: [],
 })
 const graphContainerRef: Ref<HTMLElement | null> = ref(null)
 const focusedNodes: Ref<string[]> = ref([])
 const legendTitle: Ref<string> = ref('')
 const legendBody: Ref<string> = ref('')
 const physics: Ref<boolean> = ref(true)
-
-interface GraphData {
-    job_graph: JobGraph
-}
 
 interface JobGraph {
     nodes: JobGraphNode[]
@@ -39,9 +33,10 @@ interface JobGraphEdge {
 }
 
 function fetchGraph() {
-    apiClient.get(`/api/job/graph`).then(response => {
-        const data: GraphData = response.data
-        graphData.job_graph = data.job_graph
+    apiClient.get(`/api/v1/job/graph`).then(response => {
+        const data: JobGraph = response.data
+        graphData.nodes = data.nodes
+        graphData.edges = data.edges
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch a jobs graph`, err)
     })
@@ -62,7 +57,7 @@ watch(physics, () => {
 })
 
 const nodeStructs = computed(() =>
-    graphData.job_graph.nodes.map((node: JobGraphNode) => ({
+    graphData.nodes.map((node: JobGraphNode) => ({
         id: node.id,
         label: node.title, 
         title: node.subtitle, 
@@ -72,7 +67,7 @@ const nodeStructs = computed(() =>
 )
 
 const edgeStructs = computed(() =>
-    graphData.job_graph.edges.map((edge: JobGraphEdge) => ({
+    graphData.edges.map((edge: JobGraphEdge) => ({
         from: edge.from_id,
         to: edge.to_id,
         color: { inherit: "both" },

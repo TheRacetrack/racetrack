@@ -8,19 +8,11 @@ const route = useRoute()
 const pluginName = route.params.pluginName
 const pluginVersion = route.params.pluginVersion
 
-const pluginDataRef: Ref<PluginData | null> = ref(null)
 const configRef: Ref<string> = ref('')
 
-interface PluginData {
-    plugin_name: string
-    plugin_version: string
-    plugin_config: string
-}
-
 function fetchPluginData() {
-    apiClient.get(`/api/plugin/${pluginName}/${pluginVersion}`).then(response => {
-        pluginDataRef.value = response.data
-        configRef.value = response.data.plugin_config
+    apiClient.get(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`).then(response => {
+        configRef.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch plugin data`, err)
     })
@@ -31,8 +23,8 @@ onMounted(() => {
 })
 
 function saveConfig() {
-    apiClient.post(`/api/plugin/${pluginName}/${pluginVersion}/config`, {
-        config: configRef.value,
+    apiClient.post(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`, {
+        config_data: configRef.value,
     }).then(response => {
         toastService.success(`Plugin's config saved.`)
     }).catch(err => {

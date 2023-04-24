@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { reactive, onMounted, onUpdated, ref, type Ref } from 'vue'
+import { onMounted, onUpdated, ref, type Ref } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { progressService } from '@/services/ProgressService'
 import { formatDecimalNumber } from '@/services/StringUtils'
 import { apiClient } from '@/services/ApiClient'
 
-const portfolioData: PortfolioData = reactive({
-    jobs: [],
-})
+const portfolioJobs: Ref<PortfolioJob[]> = ref([])
 
 interface PortfolioJob {
     name: string
@@ -34,14 +32,9 @@ interface PortfolioJob {
     last_call_time_days_ago: number
 }
 
-interface PortfolioData {
-    jobs: PortfolioJob[]
-}
-
 function fetchJobs() {
-    apiClient.get(`/api/job/portfolio`).then(response => {
-        const data: PortfolioData = response.data
-        portfolioData.jobs = data.jobs
+    apiClient.get(`/api/v1/job/portfolio`).then(response => {
+        portfolioJobs.value = response.data as PortfolioJob[]
     }).catch(err => {
         toastService.showErrorDetails(`Fetching jobs portfolio failed`, err)
     })
@@ -53,7 +46,7 @@ function deleteJob(name: string, version: string) {
     progressService.confirmWithLoading({
         confirmQuestion: `Are you sure you want to delete the job "${name} ${version}"?`,
         onConfirm: () => {
-            return apiClient.delete(`/api/job/${name}/${version}`)
+            return apiClient.delete(`/api/v1/job/${name}/${version}`)
         },
         progressMsg: `Deleting job ${name} ${version}...`,
         successMsg: `Job ${name} ${version} has been deleted.`,
@@ -157,7 +150,7 @@ onUpdated(() => {
         </thead>
         <tbody>
 
-            <tr v-for="job in portfolioData.jobs">
+            <tr v-for="job in portfolioJobs">
                 <td>{{ job.name }}</td>
                 <td>{{ job.version }}</td>
                 <td>{{ job.status.toUpperCase() }}</td>

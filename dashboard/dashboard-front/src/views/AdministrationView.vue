@@ -7,12 +7,12 @@ import { apiClient } from '@/services/ApiClient'
 import { versionFull } from '@/services/EnvironmentInfo'
 import { progressService } from '@/services/ProgressService'
 
-const adminDataRef: Ref<AdminData> = ref({
+const pluginDataRef: Ref<PluginData> = ref({
     plugins: [],
     job_type_versions: [],
     infrastructure_targets: new Map(),
     infrastructure_instances: [],
-} as AdminData)
+} as PluginData)
 const lifecycleAdminUrl = computed(() => `${envInfo.lifecycle_url}/admin`)
 const jobTypeVersionsTreeRef: Ref<QTree | null> = ref(null)
 const infrastructureTargetsTreeRef: Ref<QTree | null> = ref(null)
@@ -28,7 +28,7 @@ interface InfrastructureGroup {
     instances: string[]
 }
 
-interface AdminData {
+interface PluginData {
     plugins: PluginManifest[]
     job_type_versions: string[]
     infrastructure_targets: Map<string, PluginManifest>
@@ -38,7 +38,7 @@ interface AdminData {
 const jobTypeVersionsTree = computed(() => [
     {
         label: 'Available Job Type versions',
-        children: adminDataRef.value?.job_type_versions?.map(jobTypeVersion => ({
+        children: pluginDataRef.value?.job_type_versions?.map(jobTypeVersion => ({
             label: jobTypeVersion,
         }))
     },
@@ -47,7 +47,7 @@ const jobTypeVersionsTree = computed(() => [
 const infrastructureTargetsTree = computed(() => [
     {
         label: 'Available Infrastructure Targets',
-        children: adminDataRef.value?.infrastructure_instances?.map(populateInfraTargetGroup),
+        children: pluginDataRef.value?.infrastructure_instances?.map(populateInfraTargetGroup),
     },
 ])
 
@@ -83,29 +83,29 @@ function copyText(text: string | null) {
         })
 }
 
-function fetchAdministrationData() {
-    apiClient.get(`/api/administration`).then(response => {
-        adminDataRef.value = response.data
+function fetchPluginsData() {
+    apiClient.get(`/api/v1/plugin/tree`).then(response => {
+        pluginDataRef.value = response.data
     }).catch(err => {
-        toastService.showErrorDetails(`Failed to fetch administration data`, err)
+        toastService.showErrorDetails(`Failed to fetch plugins data`, err)
     })
 }
 
 onMounted(() => {
-    fetchAdministrationData()
+    fetchPluginsData()
 })
 
 function deletePlugin(name: string, version: string) {
     progressService.confirmWithLoading({
         confirmQuestion: `Are you sure you want to delete the plugin "${name} ${version}"?`,
         onConfirm: () => {
-            return apiClient.delete(`/api/plugin/${name}/${version}`)
+            return apiClient.delete(`/api/v1/plugin/${name}/${version}`)
         },
         progressMsg: `Deleting plugin ${name} ${version}...`,
         successMsg: `Plugin ${name} ${version} has been deleted.`,
         errorMsg: `Failed to delete plugin ${name} ${version}`,
         onSuccess: () => {
-            fetchAdministrationData()
+            fetchPluginsData()
         },
     })
 }
@@ -192,9 +192,9 @@ function deletePlugin(name: string, version: string) {
             <q-list bordered separator class="rounded-borders">
                 <q-item-label header>Active plugins</q-item-label>
 
-                <q-item v-if="adminDataRef.plugins.length == 0" class="text-grey-6">(empty)</q-item>
+                <q-item v-if="pluginDataRef.plugins.length == 0" class="text-grey-6">(empty)</q-item>
 
-                <q-item v-for="plugin in adminDataRef.plugins">
+                <q-item v-for="plugin in pluginDataRef.plugins">
                     <q-item-section>
                         <q-item-label>{{ plugin.name }}</q-item-label>
                         <q-item-label caption>Version {{plugin.version}}</q-item-label>
