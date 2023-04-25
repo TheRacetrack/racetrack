@@ -8,6 +8,7 @@ from starlette.datastructures import MutableHeaders
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.url import trim_url
 from racetrack_commons.urls import get_external_lifecycle_url, get_external_pub_url
+from dashboard.api.docs import setup_docs_endpoints
 
 logger = get_logger(__name__)
 
@@ -28,6 +29,7 @@ def setup_api_endpoints(app: FastAPI):
             'site_name': os.environ.get('SITE_NAME', ''),
         }
     
+    setup_docs_endpoints(app)
     setup_proxy_endpoints(app)
 
 

@@ -1,2 +1,2 @@
-markdown==3.4.1
 httpx==0.24.0
+markdown==3.4.1

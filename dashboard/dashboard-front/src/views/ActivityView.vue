@@ -35,13 +35,14 @@ function fetchAuditLogData() {
     const encodedJobName = encodeURI(jobNameFilter.value)
     const encodedJobVersion = encodeURI(jobVersionFilter.value)
     const encodedRelatedToMe = relatedToMeFilter.value ? '1' : '0'
-    apiClient.get(`/api/v1/audit/activity?job_name=${encodedJobName}&job_version=${encodedJobVersion}&related_to_me=${encodedRelatedToMe}`).then(response => {
-        auditLogData.value = response.data
-    }).catch(err => {
-        toastService.showErrorDetails(`Failed to fetch audit log`, err)
-    }).finally(() => {
-        loading.value = false
-    })
+    apiClient.get(`/api/v1/audit/activity?job_name=${encodedJobName}&job_version=${encodedJobVersion}&related_to_me=${encodedRelatedToMe}`)
+        .then(response => {
+            auditLogData.value = response.data
+        }).catch(err => {
+            toastService.showErrorDetails(`Failed to fetch audit log`, err)
+        }).finally(() => {
+            loading.value = false
+        })
 }
 
 function capitalizeEventType(title: string): string {
