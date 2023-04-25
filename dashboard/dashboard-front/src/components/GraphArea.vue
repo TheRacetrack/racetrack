@@ -114,7 +114,6 @@ function initVisNetwork() {
         nodes: nodesView,
         edges: edgesView,
     }
-    console.log('Rendering network graph', data)
     network = new Network(graphContainerRef.value as HTMLElement, data as any, networkOptions)
 
     network.on("click", function (params) {
