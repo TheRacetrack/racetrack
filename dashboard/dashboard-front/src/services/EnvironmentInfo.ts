@@ -1,6 +1,7 @@
-import { reactive, computed } from 'vue'
+import { reactive, computed, type Ref } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
+import { isNotEmpty } from '@/services/StringUtils'
 
 export const envInfo: EnvironmentInfo = reactive({
     live: null,
@@ -36,9 +37,13 @@ export function loadEnvironmentInfo() {
             envInfo.external_pub_url = data.external_pub_url
             envInfo.site_name = data.site_name
 
+            if (isNotEmpty(envInfo.site_name)) {
+                document.title = `[${envInfo.site_name}] Racetrack Dashboard`
+            }
+
         }).catch(err => {
             toastService.showErrorDetails(`Backend connection failed`, err)
         })
 }
 
-export const versionFull = computed(() => `${envInfo.docker_tag} (${envInfo.git_version})`)
+export const versionFull: Ref<string> = computed(() => `${envInfo.docker_tag} (${envInfo.git_version})`)

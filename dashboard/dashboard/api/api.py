@@ -17,7 +17,6 @@ def setup_api_endpoints(app: FastAPI):
     @app.get("/api/status")
     def _status():
         """Report current application status"""
-        site_name = os.environ.get('SITE_NAME', '')
         return {
             'service': 'dashboard',
             'live': True,
@@ -26,7 +25,7 @@ def setup_api_endpoints(app: FastAPI):
             'docker_tag': os.environ.get('DOCKER_TAG', ''),
             'lifecycle_url': get_external_lifecycle_url(),
             'external_pub_url': get_external_pub_url(),
-            'site_name': site_name,
+            'site_name': os.environ.get('SITE_NAME', ''),
         }
     
     setup_proxy_endpoints(app)

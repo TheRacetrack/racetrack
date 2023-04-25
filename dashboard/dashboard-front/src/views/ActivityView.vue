@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch, type Ref, onMounted, nextTick } from 'vue'
-import { copyToClipboard, QTree } from 'quasar'
-import { envInfo } from '@/services/EnvironmentInfo'
+import { ref, type Ref, onMounted } from 'vue'
 import { toastService } from '@/services/ToastService'
-import { apiClient, authHeader } from '@/services/ApiClient'
-import { versionFull } from '@/services/EnvironmentInfo'
-import { progressService } from '@/services/ProgressService'
-import { authToken } from '@/services/UserDataStore'
-import { timestampToLocalTime, formatTimestampIso8601 } from '@/services/DateUtils'
+import { apiClient } from '@/services/ApiClient'
+import { timestampToLocalTime } from '@/services/DateUtils'
 
 const auditLogData: Ref<AuditLogData> = ref({
     events: [],
@@ -15,6 +10,7 @@ const auditLogData: Ref<AuditLogData> = ref({
 const jobNameFilter: Ref<string> = ref('')
 const jobVersionFilter: Ref<string> = ref('')
 const relatedToMeFilter: Ref<boolean> = ref(false)
+const loading = ref(false)
 
 interface AuditLogData {
     events: AuditLogEvent[]
@@ -35,6 +31,7 @@ interface AuditLogEvent {
 }
 
 function fetchAuditLogData() {
+    loading.value = true
     const encodedJobName = encodeURI(jobNameFilter.value)
     const encodedJobVersion = encodeURI(jobVersionFilter.value)
     const encodedRelatedToMe = relatedToMeFilter.value ? '1' : '0'
@@ -42,6 +39,8 @@ function fetchAuditLogData() {
         auditLogData.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch audit log`, err)
+    }).finally(() => {
+        loading.value = false
     })
 }
 
@@ -71,7 +70,7 @@ onMounted(() => {
                     <q-input outlined v-model="jobVersionFilter" label="Job Version" @keydown.enter.prevent="fetchAuditLogData" />
                     <q-checkbox v-model="relatedToMeFilter" label="Related to me" />
                     <q-space />
-                    <q-btn push label="Filter" icon="search" color="primary" @click="fetchAuditLogData" />
+                    <q-btn push label="Filter" icon="search" color="primary" :loading="loading" @click="fetchAuditLogData" />
                 </div>
             </q-card>
         </q-card-section>
