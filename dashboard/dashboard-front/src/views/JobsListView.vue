@@ -3,6 +3,9 @@ import { nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
+import JobDetails from '@/components/JobDetails.vue'
+import JobStatus from '@/components/JobStatus.vue'
+import { type JobData } from '@/utils/schema'
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
@@ -11,26 +14,7 @@ const treeFilter: Ref<string> = ref('')
 const jobFamilies: Ref<Map<string, JobData[]>> = ref(new Map())
 const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
-const selectedJob: Ref<JobData | null> = ref(null)
-
-interface JobData {
-    name: string
-    version: string
-    status: string
-    create_time: number
-    update_time: number
-    id?: string
-    manifest?: Map<string, any>
-    internal_name?: string
-    pub_url?: string
-    error?: string
-    image_tag?: string
-    deployed_by?: string
-    last_call_time?: number
-    infrastructure_target?: string
-    replica_internal_names: string[]
-    job_type_version: string
-}
+const currentJob: Ref<JobData | null> = ref(null)
 
 function fetchJobs() {
     apiClient.get(`/api/v1/job`).then(response => {
@@ -57,20 +41,23 @@ function populateJobsData() {
         familyLeafs.push({
             label: familyName,
             key: `job-family:${familyName}`,
+            type: 'job-family',
             children: jobs.map(job => ({
                 label: `${job.name} v${job.version}`,
                 key: `job:${job.name}-${job.version}`,
+                type: 'job',
             }))
         })
     }
 
-    jobsTree.value = [
-        {
-            label: 'Job families',
-            key: 'root',
-            children: familyLeafs,
-        },
-    ]
+    const jobsCount = jobsData.value?.length || 0
+
+    jobsTree.value = [{
+        label: `All jobs (${jobsCount})`,
+        key: 'root',
+        type: 'root',
+        children: familyLeafs,
+    }]
 
     jobsByKey.value = new Map()
     jobsData.value?.forEach(job => {
@@ -80,10 +67,17 @@ function populateJobsData() {
 
 function selectJobNode(key: string | null) {
     if (key != null) {
-        selectedJob.value = jobsByKey.value?.get(key) as JobData | null
+        const job = getJobByKey(key)
+        if (job != null) {
+            currentJob.value = job
+        }
     } else {
-        selectedJob.value = null
+        currentJob.value = null
     }
+}
+
+function getJobByKey(key: string): JobData | null {
+    return jobsByKey.value?.get(key) || null
 }
 
 watch(jobsData, () => {
@@ -110,40 +104,37 @@ onMounted(() => {
             <q-splitter v-model="splitterModel">
                 <template v-slot:before>
 
-
-                    <q-input filled v-model="treeFilter" label="Filter" />
-
-                    <q-tree
-                        ref="jobsQTreeRef"
-                        :nodes="jobsTree"
-                        node-key="key"
-                        selected-color="primary"
-                        default-expand-all
-                        accordion
-                        :filter="treeFilter"
-                        >
-                        <template v-slot:default-header="prop">
-                            <div @click="selectJobNode(prop.node.key)">{{ prop.node.label }}</div>
-                        </template>
-                    </q-tree>
+                    <div class="q-mr-sm">
+                        <q-input filled v-model="treeFilter" label="Filter" />
+                        <q-tree
+                            ref="jobsQTreeRef"
+                            :nodes="jobsTree"
+                            node-key="key"
+                            selected-color="primary"
+                            default-expand-all
+                            accordion
+                            :filter="treeFilter"
+                            >
+                            <template v-slot:default-header="prop">
+                                <template v-if="prop.node.type == 'job'">
+                                <div @click="selectJobNode(prop.node.key)" class="q-hoverable cursor-pointer full-width">
+                                    {{ prop.node.label }}
+                                    <JobStatus :status="getJobByKey(prop.node.key)?.status" />
+                                </div>
+                                </template>
+                                <template v-else>
+                                    {{ prop.node.label }}
+                                </template>
+                            </template>
+                        </q-tree>
+                    </div>
 
                 </template>
                 <template v-slot:after>
 
-                    <p>Job data</p>
-
-                    <p>Name: {{ selectedJob?.name }}</p>
-                    <p>Version: {{ selectedJob?.version }}</p>
-                    <p>Status: {{ selectedJob?.status }}</p>
-                    <p>Created: {{ selectedJob?.create_time }}</p>
-                    <p>Updated: {{ selectedJob?.update_time }}</p>
-                    <p>Pub URL: {{ selectedJob?.pub_url }}</p>
-                    <p>Error: {{ selectedJob?.error }}</p>
-                    <p>Deployed by: {{ selectedJob?.deployed_by }}</p>
-                    <p>Last call time: {{ selectedJob?.last_call_time }}</p>
-                    <p>Infrastructure target: {{ selectedJob?.infrastructure_target }}</p>
-                    <p>Job type version: {{ selectedJob?.job_type_version }}</p>
-                    <p>Manifest: {{ selectedJob?.manifest }}</p>
+                    <div class="q-ml-sm">
+                        <JobDetails :currentJob="currentJob" v-if="currentJob != null"/>
+                    </div>
                     
                 </template>
             </q-splitter>

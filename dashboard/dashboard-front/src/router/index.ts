@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import JobsListView from '@/views/JobsListView.vue'
 import GraphView from '@/views/GraphView.vue'
 import PortfolioView from '@/views/PortfolioView.vue'
-import ActivityView from '@/views/ActivityView.vue'
+import AuditLogView from '@/views/AuditLogView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdministrationView from '@/views/AdministrationView.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -48,7 +48,7 @@ const router = createRouter({
     {
       path: '/activity',
       name: 'activity',
-      component: ActivityView,
+      component: AuditLogView,
       meta: { requiresAuth: true },
     },
     {
