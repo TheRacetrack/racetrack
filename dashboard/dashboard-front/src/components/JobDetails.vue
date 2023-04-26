@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { type Ref, computed } from 'vue'
+import { openURL } from 'quasar'
 import { type JobData } from '@/utils/schema'
 import JobStatus from '@/components/JobStatus.vue'
 import { timestampToLocalTime, timestampPrettyAgo } from '@/services/DateUtils'
 
 const props = defineProps(['currentJob'])
 const job: Ref<JobData | null> = computed(() => props.currentJob)
+
+function showBuildLogs(job: JobData | null) {
+}
+
+function showRuntimeLogs(job: JobData | null) {
+}
 </script>
 
 <template>
@@ -15,35 +22,45 @@ const job: Ref<JobData | null> = computed(() => props.currentJob)
         </template>
     </q-field>
 
-    <q-field outlined label="Status" stack-label>
-        <template v-slot:control>
-            <JobStatus :status="job?.status" />
-        </template>
-    </q-field>
+    <div class="full-width row wrap justify-start items-start content-start">
+        <div class="col-6">
 
-    <q-field outlined label="Infrastructure target" stack-label>
-        <template v-slot:control>
-            <div>{{ job?.infrastructure_target }}</div>
-        </template>
-    </q-field>
+            <q-field outlined label="Status" stack-label>
+                <template v-slot:control>
+                    <JobStatus :status="job?.status" />
+                </template>
+            </q-field>
 
-    <q-field outlined label="Job type version" stack-label>
-        <template v-slot:control>
-            <div>{{ job?.job_type_version }}</div>
-        </template>
-    </q-field>
+            <q-field outlined label="Infrastructure target" stack-label>
+                <template v-slot:control>
+                    <div>{{ job?.infrastructure_target }}</div>
+                </template>
+            </q-field>
+
+        </div>
+        <div class="col-6">
+
+            <q-field outlined label="Job type version" stack-label>
+                <template v-slot:control>
+                    <div>{{ job?.job_type_version }}</div>
+                </template>
+            </q-field>
+
+
+            <q-field outlined label="Deployed by" stack-label>
+                <template v-slot:control>
+                    {{job?.deployed_by}}
+                </template>
+            </q-field>
+
+        </div>
+    </div>
 
     <q-field v-if="job?.error" outlined label="Error" stack-label class="q-mt-md">
         <template v-slot:control>
             <span class="x-monospace x-overflow-any">
                 {{ job?.error }}
             </span>
-        </template>
-    </q-field>
-
-    <q-field outlined label="Deployed by" stack-label>
-        <template v-slot:control>
-            {{job?.deployed_by}}
         </template>
     </q-field>
 
@@ -82,5 +99,41 @@ const job: Ref<JobData | null> = computed(() => props.currentJob)
         </template>
     </q-field>
 
-    <p>Pub URL: {{ job?.pub_url }}</p>
+    <q-btn-group push class="q-mt-md">
+        <q-btn color="primary" push label="Open" icon="open_in_new"
+            @click="openURL(job?.pub_url as string)" />
+
+        <q-btn-dropdown push color="primary" label="Logs">
+            <q-list>
+                <q-item clickable v-close-popup @click="showBuildLogs(job)">
+                    <q-item-section>
+                        <q-item-label>Build logs</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="showRuntimeLogs(job)">
+                    <q-item-section>
+                        <q-item-label>Runtime logs</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+
+        <q-btn-dropdown push color="primary" label="Redeploy" icon="build">
+            <q-list>
+                <q-item clickable v-close-popup>
+                    <q-item-section>
+                        <q-item-label>Rebuild and provision</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup>
+                    <q-item-section>
+                        <q-item-label>Reprovision</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+
+        <q-btn color="negative" push label="Delete" icon="delete" />
+    </q-btn-group>
+
 </template>
