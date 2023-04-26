@@ -27,13 +27,13 @@ def setup_docs_endpoints(app: FastAPI):
             markdown_content = plugin_client.get_plugin_docs(plugin_manifest.name)
             if markdown_content:
                 plugin_pages.append({
-                    'url': f'{plugin_manifest.name}',
+                    'url': plugin_manifest.name,
                     'title': f'Plugin: {plugin_manifest.name}',
                 })
 
         return {
             'doc_pages': sorted(doc_pages, key=lambda x: x['title'].lower()),
-            'plugin_pages': plugin_pages
+            'plugin_pages': sorted(plugin_pages, key=lambda x: x['title'].lower()),
         }
     
     @app.get('/api/docs/page/{doc_path:path}')

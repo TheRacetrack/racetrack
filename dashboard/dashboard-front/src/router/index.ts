@@ -15,6 +15,7 @@ import PluginConfigView from '@/views/PluginConfigView.vue'
 import PageNotFound from '@/views/PageNotFound.vue'
 import DocsIndex from '@/views/docs/DocsIndex.vue'
 import DocsPage from '@/views/docs/DocsPage.vue'
+import DocsPlugin from '@/views/docs/DocsPlugin.vue'
 import { isAuthenticated } from '@/services/UserDataStore'
 import { toastService } from '@/services/ToastService'
 
@@ -102,6 +103,11 @@ const router = createRouter({
       path: '/docs/page/:pageName',
       name: 'docs-page',
       component: DocsPage,
+    },
+    {
+      path: '/docs/plugin/:pageName',
+      name: 'docs-plugin',
+      component: DocsPlugin,
     },
     { path: '/:catchAll(.*)', component: PageNotFound },
   ]
