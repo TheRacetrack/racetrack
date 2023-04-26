@@ -16,6 +16,46 @@ function showRuntimeLogs(job: JobData | null) {
 </script>
 
 <template>
+
+    <div class="full-width row wrap justify-end">
+    <q-btn-group push class="q-mb-md self-end">
+        <q-btn color="primary" push label="Open" icon="open_in_new"
+            @click="openURL(job?.pub_url as string)" />
+
+        <q-btn-dropdown push color="primary" label="Logs">
+            <q-list>
+                <q-item clickable v-close-popup @click="showBuildLogs(job)">
+                    <q-item-section>
+                        <q-item-label>Build logs</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="showRuntimeLogs(job)">
+                    <q-item-section>
+                        <q-item-label>Runtime logs</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+
+        <q-btn-dropdown push color="primary" label="Redeploy" icon="build">
+            <q-list>
+                <q-item clickable v-close-popup>
+                    <q-item-section>
+                        <q-item-label>Rebuild and provision</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup>
+                    <q-item-section>
+                        <q-item-label>Reprovision</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+
+        <q-btn color="negative" push label="Delete" icon="delete" />
+    </q-btn-group>
+    </div>
+
     <q-field outlined label="Job name (and version)" stack-label>
         <template v-slot:control>
             <div>{{ job?.name }} ({{ job?.version }})</div>
@@ -98,42 +138,5 @@ function showRuntimeLogs(job: JobData | null) {
             </span>
         </template>
     </q-field>
-
-    <q-btn-group push class="q-mt-md">
-        <q-btn color="primary" push label="Open" icon="open_in_new"
-            @click="openURL(job?.pub_url as string)" />
-
-        <q-btn-dropdown push color="primary" label="Logs">
-            <q-list>
-                <q-item clickable v-close-popup @click="showBuildLogs(job)">
-                    <q-item-section>
-                        <q-item-label>Build logs</q-item-label>
-                    </q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup @click="showRuntimeLogs(job)">
-                    <q-item-section>
-                        <q-item-label>Runtime logs</q-item-label>
-                    </q-item-section>
-                </q-item>
-            </q-list>
-        </q-btn-dropdown>
-
-        <q-btn-dropdown push color="primary" label="Redeploy" icon="build">
-            <q-list>
-                <q-item clickable v-close-popup>
-                    <q-item-section>
-                        <q-item-label>Rebuild and provision</q-item-label>
-                    </q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup>
-                    <q-item-section>
-                        <q-item-label>Reprovision</q-item-label>
-                    </q-item-section>
-                </q-item>
-            </q-list>
-        </q-btn-dropdown>
-
-        <q-btn color="negative" push label="Delete" icon="delete" />
-    </q-btn-group>
 
 </template>

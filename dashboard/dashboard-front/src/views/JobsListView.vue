@@ -112,7 +112,6 @@ onMounted(() => {
                             node-key="key"
                             selected-color="primary"
                             default-expand-all
-                            accordion
                             :filter="treeFilter"
                             >
                             <template v-slot:default-header="prop">
