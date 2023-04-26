@@ -88,7 +88,7 @@ defineExpose({
           </q-item-section>
         </q-item>
 
-        <q-item v-ripple clickable :to="{name: 'docs'}">
+        <q-item v-ripple clickable :to="{name: 'docs-index'}">
           <q-item-section avatar>
             <q-icon :name="mdiBookOpenVariant" />
           </q-item-section>

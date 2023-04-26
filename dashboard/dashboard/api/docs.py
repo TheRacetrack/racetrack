@@ -16,7 +16,7 @@ def setup_docs_endpoints(app: FastAPI):
         for doc_file in sorted(docs_path.rglob('*.md')):
             doc_path_str = doc_file.relative_to(docs_path)
             doc_pages.append({
-                'url': f'/docs/file/{doc_path_str.as_posix()}',
+                'url': f'{doc_path_str.as_posix()}',
                 'title': _humanize_path_title(doc_path_str),
             })
 
@@ -27,12 +27,12 @@ def setup_docs_endpoints(app: FastAPI):
             markdown_content = plugin_client.get_plugin_docs(plugin_manifest.name)
             if markdown_content:
                 plugin_pages.append({
-                    'url': f'/docs/plugin/{plugin_manifest.name}',
+                    'url': f'{plugin_manifest.name}',
                     'title': f'Plugin: {plugin_manifest.name}',
                 })
 
         return {
-            'doc_pages': doc_pages,
+            'doc_pages': sorted(doc_pages, key=lambda x: x['title'].lower()),
             'plugin_pages': plugin_pages
         }
     

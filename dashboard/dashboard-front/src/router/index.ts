@@ -4,7 +4,6 @@ import JobsListView from '@/views/JobsListView.vue'
 import GraphView from '@/views/GraphView.vue'
 import PortfolioView from '@/views/PortfolioView.vue'
 import ActivityView from '@/views/ActivityView.vue'
-import DocsView from '@/views/DocsView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdministrationView from '@/views/AdministrationView.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -14,6 +13,8 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import ChangePasswordView from '@/views/ChangePasswordView.vue'
 import PluginConfigView from '@/views/PluginConfigView.vue'
 import PageNotFound from '@/views/PageNotFound.vue'
+import DocsIndex from '@/views/docs/DocsIndex.vue'
+import DocsPage from '@/views/docs/DocsPage.vue'
 import { isAuthenticated } from '@/services/UserDataStore'
 import { toastService } from '@/services/ToastService'
 
@@ -48,11 +49,6 @@ const router = createRouter({
       name: 'activity',
       component: ActivityView,
       meta: { requiresAuth: true },
-    },
-    {
-      path: '/docs',
-      name: 'docs',
-      component: DocsView,
     },
     {
       path: '/profile',
@@ -96,6 +92,16 @@ const router = createRouter({
       path: '/plugin/config-editor/:pluginName/:pluginVersion',
       name: 'plugin-config',
       component: PluginConfigView,
+    },
+    {
+      path: '/docs',
+      name: 'docs-index',
+      component: DocsIndex,
+    },
+    {
+      path: '/docs/page/:pageName',
+      name: 'docs-page',
+      component: DocsPage,
     },
     { path: '/:catchAll(.*)', component: PageNotFound },
   ]
