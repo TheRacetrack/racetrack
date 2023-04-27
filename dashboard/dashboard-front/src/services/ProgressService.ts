@@ -10,7 +10,7 @@ interface ConfirmWithLoadingOptions {
     errorMsg: string
     onConfirm: () => Promise<any>
     onSuccess: (response: any) => void
-    onFinally?: () => void
+    onFinalize?: () => void
 }
 
 export class ProgressService {
@@ -28,7 +28,7 @@ export class ProgressService {
     }
 
     confirmWithLoading(
-        {confirmQuestion, progressMsg, successMsg, errorMsg, onConfirm, onSuccess, onFinally}: ConfirmWithLoadingOptions
+        {confirmQuestion, progressMsg, successMsg, errorMsg, onConfirm, onSuccess, onFinalize: onFinalize}: ConfirmWithLoadingOptions
     ) {
         this.showDialog(confirmQuestion)
             .then(() => {
@@ -49,7 +49,7 @@ export class ProgressService {
             }).finally(() => {
                 this.stopLoadingProgress()
                 toastService.dismissLoading()
-                onFinally?.()
+                onFinalize?.()
             })
     }
 

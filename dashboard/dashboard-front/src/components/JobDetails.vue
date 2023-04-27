@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { type Ref, computed } from 'vue'
+import { type Ref, computed, ref } from 'vue'
 import { openURL } from 'quasar'
 import * as yaml from 'js-yaml'
-import JobStatus from '@/components/JobStatus.vue'
-import DeleteJobButton from '@/components/DeleteJobButton.vue'
+import { progressService } from '@/services/ProgressService'
+import { apiClient } from '@/services/ApiClient'
 import { type JobData } from '@/utils/api-schema'
 import { removeNulls } from '@/utils/string'
 import { timestampToLocalTime, timestampPrettyAgo } from '@/utils/time'
+import JobStatus from '@/components/JobStatus.vue'
+import DeleteJobButton from '@/components/DeleteJobButton.vue'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
 const job: Ref<JobData> = computed(() => props.currentJob)
+const loadingRedeploy = ref(false)
 
 const manifestYaml: Ref<string> = computed(() => 
     yaml.dump(removeNulls(job.value?.manifest)) || ''
@@ -23,9 +26,45 @@ function showRuntimeLogs(job: JobData) {
 }
 
 function redeployJob(job: JobData) {
+    const name: string = job.name
+    const version: string = job.version
+    progressService.confirmWithLoading({
+        confirmQuestion: `Do you really want to redeploy the job "${name} ${version}" (rebuild it and reprovision)?`,
+        onConfirm: () => {
+            loadingRedeploy.value = true
+            return apiClient.post(`/api/v1/job/${name}/${version}/redeploy`)
+        },
+        progressMsg: `Redeploying job ${name} ${version}...`,
+        successMsg: `Job ${name} ${version} has been redeployed.`,
+        errorMsg: `Failed to redeploy a job ${name} ${version}`,
+        onSuccess: () => {
+            emit('refreshJobs', null)
+        },
+        onFinalize: () => {
+            loadingRedeploy.value = false
+        },
+    })
 }
 
 function reprovisionJob(job: JobData) {
+    const name: string = job.name
+    const version: string = job.version
+    progressService.confirmWithLoading({
+        confirmQuestion: `Do you really want to reprovision the job "${name} ${version}" (deploy it without rebuilding)?`,
+        onConfirm: () => {
+            loadingRedeploy.value = true
+            return apiClient.post(`/api/v1/job/${name}/${version}/reprovision`)
+        },
+        progressMsg: `Reprovisioning job ${name} ${version}...`,
+        successMsg: `Job ${name} ${version} has been reprovisioned.`,
+        errorMsg: `Failed to reprovision a job ${name} ${version}`,
+        onSuccess: () => {
+            emit('refreshJobs', null)
+        },
+        onFinalize: () => {
+            loadingRedeploy.value = false
+        },
+    })
 }
 </script>
 
@@ -51,14 +90,14 @@ function reprovisionJob(job: JobData) {
             </q-list>
         </q-btn-dropdown>
 
-        <q-btn-dropdown push color="primary" label="Redeploy" icon="build">
+        <q-btn-dropdown push color="primary" label="Redeploy" icon="build" :loading="loadingRedeploy">
             <q-list>
-                <q-item clickable v-close-popup>
+                <q-item clickable v-close-popup @click="redeployJob(job)">
                     <q-item-section>
                         <q-item-label>Rebuild and provision</q-item-label>
                     </q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup>
+                <q-item clickable v-close-popup @click="reprovisionJob(job)">
                     <q-item-section>
                         <q-item-label>Reprovision</q-item-label>
                     </q-item-section>

@@ -27,7 +27,7 @@ function deleteJob() {
         onSuccess: () => {
             emit('jobDeleted', null)
         },
-        onFinally: () => {
+        onFinalize: () => {
             loading.value = false
         },
     })

@@ -99,7 +99,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         return {'logs': read_runtime_logs(job_name, job_version, tail, config, plugin_engine)}
 
     @api.get('/job/{job_name}/{job_version}/logs/plain')
-    def _get_job_logs(request: Request, job_name: str, job_version: str, tail: int = 20):
+    def _get_plain_job_logs(request: Request, job_name: str, job_version: str, tail: int = 20):
         """Get last logs of particular Job in a plain text response"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         content = read_runtime_logs(job_name, job_version, tail, config, plugin_engine)
@@ -113,7 +113,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         return {'logs': read_build_logs(job_name, job_version, tail)}
 
     @api.get('/job/{job_name}/{job_version}/build-logs/plain')
-    def _get_job_build_logs(request: Request, job_name: str, job_version: str, tail: int = 0):
+    def _get_plain_job_build_logs(request: Request, job_name: str, job_version: str, tail: int = 0):
         """Get build logs of Job deployment attempt in a plain text response"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         content = read_build_logs(job_name, job_version, tail)
