@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch, type Ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
@@ -15,6 +15,7 @@ const jobFamilies: Ref<Map<string, JobData[]>> = ref(new Map())
 const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
 const currentJob: Ref<JobData | null> = ref(null)
+const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
 
 function fetchJobs() {
     apiClient.get(`/api/v1/job`).then(response => {
@@ -50,14 +51,7 @@ function populateJobsData() {
         })
     }
 
-    const jobsCount = jobsData.value?.length || 0
-
-    jobsTree.value = [{
-        label: `All jobs (${jobsCount})`,
-        key: 'root',
-        type: 'root',
-        children: familyLeafs,
-    }]
+    jobsTree.value = familyLeafs
 
     jobsByKey.value = new Map()
     jobsData.value?.forEach(job => {
@@ -80,6 +74,24 @@ function getJobByKey(key: string): JobData | null {
     return jobsByKey.value?.get(key) || null
 }
 
+function filterJobsTree(node: any, filter: string): boolean {
+    const filt = filter.toLowerCase()
+    const job = getJobByKey(node.key)
+    if (job != null) {
+        if (job.name.includes(filt))
+            return true
+        if (job.version.includes(filt))
+            return true
+        if (job.deployed_by?.includes(filt))
+            return true
+        if (job.job_type_version?.includes(filt))
+            return true
+        if (job.manifest?.['owner_email']?.includes(filt))
+            return true
+    }
+    return false
+}
+
 watch(jobsData, () => {
     populateJobsData()
 })
@@ -97,7 +109,7 @@ onMounted(() => {
 <template>
     <q-card>
         <q-card-section class="q-pb-none">
-            <div class="text-h6">Jobs</div>
+            <div class="text-h6">Jobs ({{jobsCount}})</div>
         </q-card-section>
         
         <q-card-section>
@@ -113,6 +125,7 @@ onMounted(() => {
                             selected-color="primary"
                             default-expand-all
                             :filter="treeFilter"
+                            :filter-method="filterJobsTree"
                             >
                             <template v-slot:default-header="prop">
                                 <template v-if="prop.node.type == 'job'">

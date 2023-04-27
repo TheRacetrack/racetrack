@@ -3,15 +3,35 @@ import { type Ref, computed } from 'vue'
 import { openURL } from 'quasar'
 import { type JobData } from '@/utils/schema'
 import JobStatus from '@/components/JobStatus.vue'
+import * as yaml from 'js-yaml'
 import { timestampToLocalTime, timestampPrettyAgo } from '@/services/DateUtils'
 
 const props = defineProps(['currentJob'])
 const job: Ref<JobData | null> = computed(() => props.currentJob)
 
+const manifestYaml: Ref<string> = computed(() => 
+    yaml.dump(removeNulls(job.value?.manifest)) || ''
+)
+
 function showBuildLogs(job: JobData | null) {
 }
 
 function showRuntimeLogs(job: JobData | null) {
+}
+
+function removeNulls(obj: any): any {
+    if (Array.isArray(obj)) {
+        return obj.filter(x => x != null).map(x => removeNulls(x))
+    } else if (typeof obj === 'object') {
+        const newObj: any = {}
+        for (let [k, v] of Object.entries(obj)) {
+            if (k !== null && v !== null) {
+                newObj[k] = removeNulls(v)
+            }
+        }
+        return newObj
+    }
+    return obj
 }
 </script>
 
@@ -133,9 +153,7 @@ function showRuntimeLogs(job: JobData | null) {
 
     <q-field outlined label="Manifest" stack-label class="q-mt-md">
         <template v-slot:control>
-            <span class="x-monospace x-overflow-any">
-                {{ job?.manifest }}
-            </span>
+            <pre class="x-monospace x-overflow-any">{{ manifestYaml }}</pre>
         </template>
     </q-field>
 

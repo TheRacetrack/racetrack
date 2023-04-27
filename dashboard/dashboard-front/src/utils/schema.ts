@@ -5,7 +5,7 @@ export interface JobData {
     create_time: number
     update_time: number
     id?: string
-    manifest?: Map<string, any>
+    manifest?: Record<string, any>
     internal_name?: string
     pub_url?: string
     error?: string
