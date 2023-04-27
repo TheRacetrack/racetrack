@@ -9,7 +9,17 @@ interface ConfirmWithLoadingOptions {
     successMsg: string
     errorMsg: string
     onConfirm: () => Promise<any>
-    onSuccess: (response: any) => void
+    onSuccess?: (response: any) => void
+    onFinalize?: () => void
+}
+
+interface RunLoadingOptions {
+    task: Promise<any>
+    loadingState: Ref<boolean>
+    progressMsg: string
+    successMsg: string
+    errorMsg: string
+    onSuccess?: (response: any) => void
     onFinalize?: () => void
 }
 
@@ -28,7 +38,7 @@ export class ProgressService {
     }
 
     confirmWithLoading(
-        {confirmQuestion, progressMsg, successMsg, errorMsg, onConfirm, onSuccess, onFinalize: onFinalize}: ConfirmWithLoadingOptions
+        {confirmQuestion, progressMsg, successMsg, errorMsg, onConfirm, onSuccess, onFinalize}: ConfirmWithLoadingOptions
     ) {
         this.showDialog(confirmQuestion)
             .then(() => {
@@ -40,7 +50,7 @@ export class ProgressService {
                 toastService.dismissLoading()
                 
             }).then((response: any) => {
-                onSuccess(response)
+                onSuccess?.(response)
                 toastService.success(successMsg)
 
             }).catch((err: any) => {
@@ -50,6 +60,28 @@ export class ProgressService {
                 this.stopLoadingProgress()
                 toastService.dismissLoading()
                 onFinalize?.()
+            })
+    }
+
+    runLoading(
+        {task, loadingState, progressMsg, successMsg, errorMsg, onSuccess, onFinalize}: RunLoadingOptions
+    ) {
+        toastService.loading(progressMsg)
+        loadingState.value = true
+        this.startLoadingProgress()
+
+        task.finally(() => {
+                toastService.dismissLoading()
+                loadingState.value = false
+                this.stopLoadingProgress()
+                onFinalize?.()
+                
+            }).then((response: any) => {
+                onSuccess?.(response)
+                toastService.success(successMsg)
+
+            }).catch((err: any) => {
+                toastService.showErrorDetails(errorMsg, err)
             })
     }
 

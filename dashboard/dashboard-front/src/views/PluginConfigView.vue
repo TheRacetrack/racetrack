@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref, type Ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { useRoute } from 'vue-router'
+import { progressService } from '@/services/ProgressService'
 
 const route = useRoute()
 const pluginName = route.params.pluginName
 const pluginVersion = route.params.pluginVersion
 
 const configRef: Ref<string> = ref('')
+const loading = ref(false)
 
 function fetchPluginData() {
     apiClient.get(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`).then(response => {
@@ -23,12 +25,14 @@ onMounted(() => {
 })
 
 function saveConfig() {
-    apiClient.put(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`, {
-        config_data: configRef.value,
-    }).then(response => {
-        toastService.success(`Plugin's config saved.`)
-    }).catch(err => {
-        toastService.showErrorDetails(`Failed to save plugin config`, err)
+    progressService.runLoading({
+        task: apiClient.put(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`, {
+            config_data: configRef.value,
+        }),
+        loadingState: loading,
+        progressMsg: `Saving plugin's config...`,
+        successMsg: `Plugin's config saved.`,
+        errorMsg: `Failed to save plugin config`,
     })
 }
 </script>
@@ -54,7 +58,7 @@ function saveConfig() {
             <div class="row q-pt-sm">
                 <q-space />
                 <q-btn color="primary" push label="Save" icon="save"
-                    @click="saveConfig" />
+                    @click="saveConfig" :loading="loading" />
             </div>
         </q-card-section>
     </q-card>
