@@ -2,6 +2,7 @@
 import { type Ref, computed, ref } from 'vue'
 import { openURL } from 'quasar'
 import * as yaml from 'js-yaml'
+import { mdiTextBoxOutline } from '@quasar/extras/mdi-v7'
 import { progressService } from '@/services/ProgressService'
 import { apiClient } from '@/services/ApiClient'
 import { type JobData } from '@/utils/api-schema'
@@ -32,7 +33,7 @@ function showBuildLogs(job: JobData) {
         progressMsg: `Loading build logs...`,
         errorMsg: `Failed to load build logs`,
         onSuccess: (response) => {
-            logsTitle.value = `Build logs for ${job.name} ${job.version}`
+            logsTitle.value = `Build logs of ${job.name} ${job.version}`
             logsContent.value = response.data
             logsOpen.value = true
         },
@@ -46,7 +47,7 @@ function showRuntimeLogs(job: JobData) {
         progressMsg: `Loading runtime logs...`,
         errorMsg: `Failed to load runtime logs`,
         onSuccess: (response) => {
-            logsTitle.value = `Runtime logs for ${job.name} ${job.version}`
+            logsTitle.value = `Runtime logs of ${job.name} ${job.version}`
             logsContent.value = response.data
             logsOpen.value = true
         },
@@ -109,7 +110,7 @@ function reprovisionJob(job: JobData) {
         <q-btn color="primary" push label="Open" icon="open_in_new"
             @click="openURL(job?.pub_url as string)" />
 
-        <q-btn-dropdown push color="primary" label="Logs" :loading="loadingLogs">
+        <q-btn-dropdown push color="primary" label="Logs" :icon="mdiTextBoxOutline" :loading="loadingLogs">
             <q-list>
                 <q-item clickable v-close-popup @click="showBuildLogs(job)">
                     <q-item-section>

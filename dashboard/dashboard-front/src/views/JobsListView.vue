@@ -7,6 +7,11 @@ import JobDetails from '@/components/JobDetails.vue'
 import JobStatus from '@/components/JobStatus.vue'
 import { type JobData } from '@/utils/api-schema'
 
+enum JobSorting {
+    ByLatest,
+    ByName,
+}
+
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
 const splitterModel: Ref<number> = ref(30)
@@ -16,6 +21,8 @@ const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
 const currentJob: Ref<JobData | null> = ref(null)
 const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
+const selectedNodeKey: Ref<string | null> = ref(null)
+const jobSorting: Ref<JobSorting> = ref(JobSorting.ByLatest)
 
 function fetchJobs() {
     apiClient.get(`/api/v1/job`).then(response => {
@@ -26,6 +33,17 @@ function fetchJobs() {
 }
 
 function populateJobsData() {
+    const sortedJobs: JobData[] = jobsData.value
+    if (jobSorting.value == JobSorting.ByLatest) {
+        sortedJobs.sort((a, b) => {
+            return b.update_time - a.update_time
+        })
+    } else if (jobSorting.value == JobSorting.ByName) {
+        sortedJobs.sort((a, b) => {
+            return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        })
+    }
+
     const newJobFamilies = new Map<string, JobData[]>()
     jobsData.value?.forEach(job => {
         const family = newJobFamilies.get(job.name)
@@ -64,9 +82,11 @@ function selectJobNode(key: string | null) {
         const job = getJobByKey(key)
         if (job != null) {
             currentJob.value = job
+        } else {
+            const isExpanded = jobsQTreeRef.value?.isExpanded(key)
+            jobsQTreeRef.value?.setExpanded(key, !isExpanded)
+            selectedNodeKey.value = null
         }
-    } else {
-        currentJob.value = null
     }
 }
 
@@ -92,6 +112,24 @@ function filterJobsTree(node: any, filter: string): boolean {
             return true
     }
     return false
+}
+
+function expandAll() {
+    jobsQTreeRef.value?.expandAll()
+}
+
+function collapseAll() {
+    jobsQTreeRef.value?.collapseAll()
+}
+
+function sortByLatest() {
+    jobSorting.value = JobSorting.ByLatest
+    populateJobsData()
+}
+
+function sortByName() {
+    jobSorting.value = JobSorting.ByName
+    populateJobsData()
 }
 
 watch(jobsData, () => {
@@ -120,21 +158,49 @@ onMounted(() => {
 
                     <div class="q-mr-sm">
                         <q-input filled v-model="treeFilter" label="Filter" />
+
+                        <q-btn round flat color="grey-7" icon="unfold_less" @click="collapseAll">
+                            <q-tooltip>Collapse all</q-tooltip>
+                        </q-btn>
+                        <q-btn round flat color="grey-7" icon="unfold_more" @click="expandAll">
+                            <q-tooltip>Expand all</q-tooltip>
+                        </q-btn>
+
+                        <span>
+                        <q-tooltip anchor="top middle">Sort by</q-tooltip>
+                        <q-btn-dropdown round flat color="grey-7" icon="sort" dropdown-icon="none">
+                            <q-list>
+                                <q-item clickable v-close-popup @click="sortByLatest()">
+                                    <q-item-section>
+                                        <q-item-label>Sort by latest</q-item-label>
+                                    </q-item-section>
+                                </q-item>
+                                <q-item clickable v-close-popup @click="sortByName()">
+                                    <q-item-section>
+                                        <q-item-label>Sort by name</q-item-label>
+                                    </q-item-section>
+                                </q-item>
+                            </q-list>
+                        </q-btn-dropdown>
+                        </span>
+
                         <q-tree
                             ref="jobsQTreeRef"
                             :nodes="jobsTree"
                             node-key="key"
+                            v-model:selected="selectedNodeKey"
                             selected-color="primary"
                             default-expand-all
                             :filter="treeFilter"
                             :filter-method="filterJobsTree"
+                            @update:selected="(key) => selectJobNode(key)"
                             >
                             <template v-slot:default-header="prop">
                                 <template v-if="prop.node.type == 'job'">
-                                <div @click="selectJobNode(prop.node.key)" class="q-hoverable cursor-pointer full-width">
-                                    {{ prop.node.label }}
-                                    <JobStatus :status="getJobByKey(prop.node.key)?.status" />
-                                </div>
+                                    <div>
+                                        {{ prop.node.label }}
+                                        <JobStatus :status="getJobByKey(prop.node.key)?.status" />
+                                    </div>
                                 </template>
                                 <template v-else>
                                     {{ prop.node.label }}
