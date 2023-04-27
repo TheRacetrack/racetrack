@@ -5,6 +5,7 @@ import { formatTimestampIso8601 } from '@/services/DateUtils'
 import { progressService } from '@/services/ProgressService'
 import { formatDecimalNumber } from '@/services/StringUtils'
 import { apiClient } from '@/services/ApiClient'
+import DeleteJobButton from '@/components/DeleteJobButton.vue'
 
 const portfolioJobs: Ref<PortfolioJob[]> = ref([])
 
@@ -41,21 +42,6 @@ function fetchJobs() {
 }
 
 fetchJobs()
-
-function deleteJob(name: string, version: string) {
-    progressService.confirmWithLoading({
-        confirmQuestion: `Are you sure you want to delete the job "${name} ${version}"?`,
-        onConfirm: () => {
-            return apiClient.delete(`/api/v1/job/${name}/${version}`)
-        },
-        progressMsg: `Deleting job ${name} ${version}...`,
-        successMsg: `Job ${name} ${version} has been deleted.`,
-        errorMsg: `Failed to delete a job ${name} ${version}`,
-        onSuccess: () => {
-            fetchJobs()
-        },
-    })
-}
 
 // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
 var tfConfig = {
@@ -166,8 +152,7 @@ onUpdated(() => {
                 <td>{{ formatTimestampIso8601(job.create_time) }}</td>
                 <td>{{ job.infrastructure_target }}</td>
                 <td>
-                    <q-btn color="negative" push label="Delete" icon="delete"
-                        @click="deleteJob(job.name, job.version)" />
+                    <DeleteJobButton :jobName="job.name" :jobVersion="job.version" @deleteJob="fetchJobs()" />
                 </td>
             </tr>
 

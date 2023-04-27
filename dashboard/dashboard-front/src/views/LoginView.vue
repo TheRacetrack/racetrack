@@ -94,7 +94,7 @@ function clearCredentials() {
       <q-separator class="q-ma-sm"/>
 
       <q-card-section class="text-center q-pa-none">
-        <p class="q-pa-sm">
+        <p class="q-pt-sm">
           <router-link :to="{name: 'register'}" class="text-subtitle1 text-primary">Create an account</router-link>
         </p>
         <p class="q-pa-none">

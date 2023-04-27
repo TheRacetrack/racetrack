@@ -65,15 +65,13 @@ onMounted(() => {
         </q-card-section>
 
         <q-card-section>
-            <q-card>
-                <div class="row">
-                    <q-input outlined v-model="jobNameFilter" label="Job Name" @keydown.enter.prevent="fetchAuditLogData" />
-                    <q-input outlined v-model="jobVersionFilter" label="Job Version" @keydown.enter.prevent="fetchAuditLogData" />
-                    <q-checkbox v-model="relatedToMeFilter" label="Related to me" />
-                    <q-space />
-                    <q-btn push label="Filter" icon="search" color="primary" :loading="loading" @click="fetchAuditLogData" />
-                </div>
-            </q-card>
+            <div class="row">
+                <q-input dense outlined v-model="jobNameFilter" label="Filter by job name" @keydown.enter.prevent="fetchAuditLogData" />
+                <q-input dense outlined v-model="jobVersionFilter" label="Filter by job version" @keydown.enter.prevent="fetchAuditLogData" />
+                <q-checkbox v-model="relatedToMeFilter" label="Only related to me" />
+                <q-space />
+                <q-btn push label="Filter" icon="search" color="primary" :loading="loading" @click="fetchAuditLogData" />
+            </div>
         </q-card-section>
 
         <q-card-section>

@@ -1,5 +1,5 @@
 export function formatTimestampIso8601(timestampS: number | undefined): string {
-    if (timestampS == null) {
+    if (timestampS == null || timestampS == 0) {
         return ''
     }
     const date = new Date(timestampS * 1000)
@@ -7,7 +7,7 @@ export function formatTimestampIso8601(timestampS: number | undefined): string {
 }
 
 export function timestampToLocalTime(timestampS: number | undefined): string {
-    if (timestampS == null) {
+    if (timestampS == null || timestampS == 0) {
         return ''
     }
     const date = new Date(timestampS * 1000)
@@ -19,7 +19,7 @@ export function timestampPrettyAgo(timestampS: number | undefined): string {
     Convert past date to user-friendly description compared to current datetime.
     eg.: 'an hour ago', 'yesterday', '3 months ago', 'just now'
     */
-    if (timestampS == null)
+    if (timestampS == null || timestampS == 0)
         return 'never'
 
     const diffMs = new Date().getTime() - timestampS * 1000

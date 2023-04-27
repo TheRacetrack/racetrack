@@ -5,7 +5,9 @@ import { type JobData } from '@/utils/schema'
 import JobStatus from '@/components/JobStatus.vue'
 import * as yaml from 'js-yaml'
 import { timestampToLocalTime, timestampPrettyAgo } from '@/services/DateUtils'
+import DeleteJobButton from '@/components/DeleteJobButton.vue'
 
+const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
 const job: Ref<JobData | null> = computed(() => props.currentJob)
 
@@ -72,7 +74,8 @@ function removeNulls(obj: any): any {
             </q-list>
         </q-btn-dropdown>
 
-        <q-btn color="negative" push label="Delete" icon="delete" />
+        <DeleteJobButton :jobName="job?.name || ''" :jobVersion="job?.version || ''"
+            @deleteJob="emit('refreshJobs', null)" />
     </q-btn-group>
     </div>
 
@@ -84,35 +87,32 @@ function removeNulls(obj: any): any {
 
     <div class="full-width row wrap justify-start items-start content-start">
         <div class="col-6">
-
             <q-field outlined label="Status" stack-label>
                 <template v-slot:control>
                     <JobStatus :status="job?.status" />
                 </template>
             </q-field>
-
-            <q-field outlined label="Infrastructure target" stack-label>
-                <template v-slot:control>
-                    <div>{{ job?.infrastructure_target }}</div>
-                </template>
-            </q-field>
-
         </div>
         <div class="col-6">
-
-            <q-field outlined label="Job type version" stack-label>
-                <template v-slot:control>
-                    <div>{{ job?.job_type_version }}</div>
-                </template>
-            </q-field>
-
-
             <q-field outlined label="Deployed by" stack-label>
                 <template v-slot:control>
                     {{job?.deployed_by}}
                 </template>
             </q-field>
-
+        </div>
+        <div class="col-6">
+            <q-field outlined label="Job type version" stack-label>
+                <template v-slot:control>
+                    <div>{{ job?.job_type_version }}</div>
+                </template>
+            </q-field>
+        </div>
+        <div class="col-6">
+            <q-field outlined label="Infrastructure target" stack-label>
+                <template v-slot:control>
+                    <div>{{ job?.infrastructure_target }}</div>
+                </template>
+            </q-field>
         </div>
     </div>
 

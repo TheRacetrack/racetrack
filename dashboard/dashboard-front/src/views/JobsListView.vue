@@ -145,7 +145,8 @@ onMounted(() => {
                 <template v-slot:after>
 
                     <div class="q-ml-sm">
-                        <JobDetails :currentJob="currentJob" v-if="currentJob != null"/>
+                        <JobDetails :currentJob="currentJob" v-if="currentJob != null"
+                            @refreshJobs="fetchJobs()"/>
                     </div>
                     
                 </template>

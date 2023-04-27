@@ -76,6 +76,12 @@ function register() {
             <q-btn color="primary" size="md" class="full-width" label="Register" push
             :loading="loading" @click="register" />
         </q-card-actions>
+
+        <q-separator class="q-ma-sm"/>
+
+        <q-card-section class="text-center q-pa-none">
+            <p class="q-pt-sm"><router-link :to="{name: 'login'}" class="text-subtitle1 text-primary">Sign in</router-link></p>
+        </q-card-section>
         
     </q-card>
 </template>
