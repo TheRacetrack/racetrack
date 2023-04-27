@@ -2,7 +2,7 @@
 import { ref, type Ref, onMounted } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { timestampToLocalTime } from '@/services/DateUtils'
+import { timestampToLocalTime } from '@/utils/time'
 
 const auditLogData: Ref<AuditLogData> = ref({
     events: [],

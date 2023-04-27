@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUpdated, ref, type Ref } from 'vue'
 import { toastService } from '@/services/ToastService'
-import { formatTimestampIso8601 } from '@/services/DateUtils'
-import { progressService } from '@/services/ProgressService'
-import { formatDecimalNumber } from '@/services/StringUtils'
+import { formatTimestampIso8601 } from '@/utils/time'
+import { formatDecimalNumber } from '@/utils/string'
 import { apiClient } from '@/services/ApiClient'
 import DeleteJobButton from '@/components/DeleteJobButton.vue'
 

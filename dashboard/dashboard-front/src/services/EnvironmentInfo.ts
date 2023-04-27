@@ -1,7 +1,7 @@
 import { reactive, computed, type Ref } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { isNotEmpty } from '@/services/StringUtils'
+import { isNotEmpty } from '@/utils/string'
 
 export const envInfo: EnvironmentInfo = reactive({
     live: null,

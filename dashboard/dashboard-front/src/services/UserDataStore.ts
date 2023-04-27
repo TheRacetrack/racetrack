@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue'
 import { type Router } from 'vue-router'
-import { isEmpty } from './StringUtils'
+import { isEmpty } from '@/utils/string'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import { AxiosError } from 'axios'

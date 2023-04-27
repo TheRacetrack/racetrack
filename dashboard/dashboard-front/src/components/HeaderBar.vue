@@ -3,7 +3,7 @@ import { computed, type Ref } from 'vue'
 import { mdiAccountCircle, mdiLogout } from '@quasar/extras/mdi-v7'
 import { isAuthenticated } from '@/services/UserDataStore'
 import { envInfo } from '@/services/EnvironmentInfo'
-import { isNotEmpty } from '@/services/StringUtils'
+import { isNotEmpty } from '@/utils/string'
 
 const emit = defineEmits(['toggleDrawer'])
 

@@ -5,7 +5,7 @@ import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import JobDetails from '@/components/JobDetails.vue'
 import JobStatus from '@/components/JobStatus.vue'
-import { type JobData } from '@/utils/schema'
+import { type JobData } from '@/utils/api-schema'
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
@@ -78,15 +78,17 @@ function filterJobsTree(node: any, filter: string): boolean {
     const filt = filter.toLowerCase()
     const job = getJobByKey(node.key)
     if (job != null) {
-        if (job.name.includes(filt))
+        if (job.name.toLowerCase().includes(filt))
             return true
-        if (job.version.includes(filt))
+        if (job.version.toLowerCase().includes(filt))
             return true
-        if (job.deployed_by?.includes(filt))
+        if (job.deployed_by?.toLowerCase().includes(filt))
             return true
-        if (job.job_type_version?.includes(filt))
+        if (job.status.toLowerCase().includes(filt))
             return true
-        if (job.manifest?.['owner_email']?.includes(filt))
+        if (job.job_type_version?.toLowerCase().includes(filt))
+            return true
+        if (job.manifest?.['owner_email']?.toLowerCase().includes(filt))
             return true
     }
     return false
