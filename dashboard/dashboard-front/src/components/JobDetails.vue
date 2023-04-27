@@ -9,20 +9,53 @@ import { removeNulls } from '@/utils/string'
 import { timestampToLocalTime, timestampPrettyAgo } from '@/utils/time'
 import JobStatus from '@/components/JobStatus.vue'
 import DeleteJobButton from '@/components/DeleteJobButton.vue'
+import LogsView from '@/components/LogsView.vue'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
 const job: Ref<JobData> = computed(() => props.currentJob)
 const loadingRedeploy = ref(false)
 
+const logsTitle: Ref<string> = ref('')
+const logsContent: Ref<string> = ref('')
+const logsOpen: Ref<boolean> = ref(false)
+const loadingLogs: Ref<boolean> = ref(false)
+
 const manifestYaml: Ref<string> = computed(() => 
     yaml.dump(removeNulls(job.value?.manifest)) || ''
 )
 
 function showBuildLogs(job: JobData) {
+    progressService.runLoading({
+        task: apiClient.get(`/api/v1/job/${job.name}/${job.version}/build-logs/plain`),
+        loadingState: loadingLogs,
+        progressMsg: `Loading build logs...`,
+        errorMsg: `Failed to load build logs`,
+        onSuccess: (response) => {
+            logsTitle.value = `Build logs for ${job.name} ${job.version}`
+            logsContent.value = response.data
+            logsOpen.value = true
+        },
+    })
 }
 
 function showRuntimeLogs(job: JobData) {
+    progressService.runLoading({
+        task: apiClient.get(`/api/v1/job/${job.name}/${job.version}/logs/plain`),
+        loadingState: loadingLogs,
+        progressMsg: `Loading runtime logs...`,
+        errorMsg: `Failed to load runtime logs`,
+        onSuccess: (response) => {
+            logsTitle.value = `Runtime logs for ${job.name} ${job.version}`
+            logsContent.value = response.data
+            logsOpen.value = true
+        },
+    })
+}
+
+function closeLogs() {
+    logsOpen.value = false
+    logsContent.value = ''
 }
 
 function redeployJob(job: JobData) {
@@ -70,12 +103,13 @@ function reprovisionJob(job: JobData) {
 
 <template>
 
+    <LogsView :title="logsTitle" :content="logsContent" :open="logsOpen" @close="closeLogs" />
     <div class="full-width row wrap justify-end">
     <q-btn-group push class="q-mb-md self-end">
         <q-btn color="primary" push label="Open" icon="open_in_new"
             @click="openURL(job?.pub_url as string)" />
 
-        <q-btn-dropdown push color="primary" label="Logs">
+        <q-btn-dropdown push color="primary" label="Logs" :loading="loadingLogs">
             <q-list>
                 <q-item clickable v-close-popup @click="showBuildLogs(job)">
                     <q-item-section>

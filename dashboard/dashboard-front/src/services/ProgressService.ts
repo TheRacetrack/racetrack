@@ -17,7 +17,7 @@ interface RunLoadingOptions {
     task: Promise<any>
     loadingState: Ref<boolean>
     progressMsg: string
-    successMsg: string
+    successMsg?: string
     errorMsg: string
     onSuccess?: (response: any) => void
     onFinalize?: () => void
@@ -78,7 +78,8 @@ export class ProgressService {
                 
             }).then((response: any) => {
                 onSuccess?.(response)
-                toastService.success(successMsg)
+                if (successMsg)
+                    toastService.success(successMsg)
 
             }).catch((err: any) => {
                 toastService.showErrorDetails(errorMsg, err)
