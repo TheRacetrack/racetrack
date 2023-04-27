@@ -5,7 +5,6 @@ import { outlinedMemory } from '@quasar/extras/material-icons-outlined'
 import { isAuthenticated, isAdmin } from '@/services/UserDataStore'
 
 const drawerOpen = ref(false)
-const miniState = ref(true)
 
 function toggleLeftDrawer () {
   drawerOpen.value = !drawerOpen.value
@@ -20,10 +19,6 @@ defineExpose({
   <q-drawer
     show-if-above
     v-model="drawerOpen"
-    :mini="miniState"
-    @mouseover="miniState = false"
-    @mouseout="miniState = true"
-    mini-to-overlay
     side="left"
     bordered
     v-if="isAuthenticated"
