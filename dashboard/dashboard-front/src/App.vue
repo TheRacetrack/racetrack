@@ -23,7 +23,7 @@ progressService.init(progressCompononent)
 </script>
 
 <template>
-  <q-layout view="hHh lpR lff">
+  <q-layout view="hHh LpR lff">
 
     <ProgressComponent ref="progressCompononent"/>
     <HeaderBar @toggleDrawer="(msg) => toggleNavDrawer()"/>
