@@ -46,8 +46,10 @@ def setup_proxy_endpoints(app: FastAPI):
         request_headers = MutableHeaders(request.headers)
         request_headers['referer'] = request.url.path
 
+        timeout = httpx.Timeout(10, read=60)
         rp_req = client.build_request(request.method, url,
                                       headers=request_headers.raw,
+                                      timeout=timeout,
                                       content=await request.body())
         httpx_response = await client.send(rp_req, stream=True)
         content: bytes = await httpx_response.aread()

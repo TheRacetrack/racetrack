@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
-import { QTree, openURL } from 'quasar'
+import { QTree } from 'quasar'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import JobDetails from '@/components/JobDetails.vue'

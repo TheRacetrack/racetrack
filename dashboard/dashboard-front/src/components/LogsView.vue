@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, type Ref } from 'vue'
+import { computed, type Ref } from 'vue'
 
 const props = defineProps({
     title: { type: String, required: true },

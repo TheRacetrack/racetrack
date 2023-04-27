@@ -113,18 +113,25 @@ function deletePlugin(name: string, version: string) {
 
 function onPluginUploadFailed(err: any) {
     console.error(err)
-    let details = err
+    let details = getPluginErrorDetails(err)
+    toastService.showErrorDetails(`Failed to upload plugin`, details)
+}
+
+function getPluginErrorDetails(err: any): string {
     if (err.hasOwnProperty('xhr')){
         const xhr = err.xhr
         if ('response' in xhr){
-            const response = xhr.response
+            const response = xhr['response']
             const json = JSON.parse(response)
-            if (json.hasOwnProperty('error')){
-                details = json.error
+            if (json.hasOwnProperty('error') && json.error) {
+                return json.error
+            }
+            if (json.hasOwnProperty('type') && json.type) {
+                return json.type
             }
         }
     }
-    toastService.showErrorDetails(`Failed to upload plugin`, details)
+    return err
 }
 
 function onPluginUploaded(info: any) {
