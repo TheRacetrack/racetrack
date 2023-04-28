@@ -3,9 +3,9 @@ import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
-import JobDetails from '@/components/JobDetails.vue'
-import JobStatus from '@/components/JobStatus.vue'
 import { type JobData } from '@/utils/api-schema'
+import JobDetails from '@/components/jobs/JobDetails.vue'
+import JobStatus from '@/components/jobs/JobStatus.vue'
 
 enum JobOrder {
     ByLatestFamily,

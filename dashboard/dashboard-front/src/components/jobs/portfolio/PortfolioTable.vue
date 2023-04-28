@@ -4,7 +4,7 @@ import { toastService } from '@/services/ToastService'
 import { formatTimestampIso8601 } from '@/utils/time'
 import { formatDecimalNumber } from '@/utils/string'
 import { apiClient } from '@/services/ApiClient'
-import DeleteJobButton from '@/components/DeleteJobButton.vue'
+import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
 
 const portfolioJobs: Ref<PortfolioJob[]> = ref([])
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PortfolioTable from '@/components/PortfolioTable.vue'
+import PortfolioTable from '@/components/jobs/portfolio/PortfolioTable.vue'
 </script>
 
 <template>

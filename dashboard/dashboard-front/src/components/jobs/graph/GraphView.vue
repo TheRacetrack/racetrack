@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import GraphArea from '@/components/GraphArea.vue'
+import GraphArea from '@/components/jobs/graph/GraphArea.vue'
 </script>
 
 <template>

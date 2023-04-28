@@ -8,9 +8,9 @@ import { apiClient } from '@/services/ApiClient'
 import { type JobData } from '@/utils/api-schema'
 import { removeNulls } from '@/utils/string'
 import { timestampToLocalTime, timestampPrettyAgo } from '@/utils/time'
-import JobStatus from '@/components/JobStatus.vue'
-import DeleteJobButton from '@/components/DeleteJobButton.vue'
-import LogsView from '@/components/LogsView.vue'
+import JobStatus from '@/components/jobs/JobStatus.vue'
+import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
+import LogsView from '@/components/jobs/LogsView.vue'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
