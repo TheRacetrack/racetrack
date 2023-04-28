@@ -7,8 +7,9 @@ import JobDetails from '@/components/JobDetails.vue'
 import JobStatus from '@/components/JobStatus.vue'
 import { type JobData } from '@/utils/api-schema'
 
-enum JobSorting {
-    ByLatest,
+enum JobOrder {
+    ByLatestFamily,
+    ByLatestJob,
     ByName,
 }
 
@@ -16,13 +17,12 @@ const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
 const splitterModel: Ref<number> = ref(30)
 const treeFilter: Ref<string> = ref('')
-const jobFamilies: Ref<Map<string, JobData[]>> = ref(new Map())
 const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
 const currentJob: Ref<JobData | null> = ref(null)
 const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
 const selectedNodeKey: Ref<string | null> = ref(null)
-const jobSorting: Ref<JobSorting> = ref(JobSorting.ByLatest)
+const jobOrder: Ref<JobOrder> = ref(JobOrder.ByName)
 
 function fetchJobs() {
     apiClient.get(`/api/v1/job`).then(response => {
@@ -33,48 +33,58 @@ function fetchJobs() {
 }
 
 function populateJobsData() {
-    const sortedJobs: JobData[] = jobsData.value
-    if (jobSorting.value == JobSorting.ByLatest) {
+    const sortedJobs: JobData[] = [...jobsData.value]
+    if (jobOrder.value == JobOrder.ByLatestFamily || jobOrder.value == JobOrder.ByLatestJob) {
         sortedJobs.sort((a, b) => {
             return b.update_time - a.update_time
         })
-    } else if (jobSorting.value == JobSorting.ByName) {
+    } else if (jobOrder.value == JobOrder.ByName) {
         sortedJobs.sort((a, b) => {
             return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+                || compareVersions(b.version, a.version)
         })
     }
 
-    const newJobFamilies = new Map<string, JobData[]>()
-    jobsData.value?.forEach(job => {
-        const family = newJobFamilies.get(job.name)
-        if (family) {
-            family.push(job)
-        } else {
-            newJobFamilies.set(job.name, [job])
-        }
+    jobsByKey.value = new Map()
+    sortedJobs.forEach(job => {
+        jobsByKey.value?.set(`job:${job.name}-${job.version}`, job)
     })
-    jobFamilies.value = newJobFamilies
 
-    let familyLeafs = []
-    for (let [familyName, jobs] of newJobFamilies) {
-        familyLeafs.push({
-            label: familyName,
-            key: `job-family:${familyName}`,
-            type: 'job-family',
-            children: jobs.map(job => ({
+    let leafs = []
+    if (jobOrder.value == JobOrder.ByLatestJob) {
+        for (let job of sortedJobs) {
+            leafs.push({
                 label: `${job.name} v${job.version}`,
                 key: `job:${job.name}-${job.version}`,
                 type: 'job',
-            }))
+            })
+        }
+
+    } else {
+        const jobFamilies = new Map<string, JobData[]>()
+        sortedJobs.forEach(job => {
+            const family = jobFamilies.get(job.name)
+            if (family) {
+                family.push(job)
+            } else {
+                jobFamilies.set(job.name, [job])
+            }
         })
+
+        for (let [familyName, jobs] of jobFamilies) {
+            leafs.push({
+                label: familyName,
+                key: `job-family:${familyName}`,
+                type: 'job-family',
+                children: jobs.map(job => ({
+                    label: `${job.name} v${job.version}`,
+                    key: `job:${job.name}-${job.version}`,
+                    type: 'job',
+                }))
+            })
+        }
     }
-
-    jobsTree.value = familyLeafs
-
-    jobsByKey.value = new Map()
-    jobsData.value?.forEach(job => {
-        jobsByKey.value?.set(`job:${job.name}-${job.version}`, job)
-    })
+    jobsTree.value = leafs
 }
 
 function selectJobNode(key: string | null) {
@@ -88,6 +98,20 @@ function selectJobNode(key: string | null) {
             selectedNodeKey.value = null
         }
     }
+}
+
+function compareVersions(a: string, b: string): number {
+    const regexp = /^(\d+)\.(\d+)\.(\d+)(.*)$/g
+    const matchesA = regexp.exec(a)
+    regexp.lastIndex = 0
+    const matchesB = regexp.exec(b)
+    if (matchesA == null || matchesB == null) {
+        return 0
+    }
+    return parseInt(matchesA[1]) - parseInt(matchesB[1])
+        || parseInt(matchesA[2]) - parseInt(matchesB[2])
+        || parseInt(matchesA[3]) - parseInt(matchesB[3])
+        || matchesA[4].localeCompare(matchesB[4])
 }
 
 function getJobByKey(key: string): JobData | null {
@@ -122,13 +146,8 @@ function collapseAll() {
     jobsQTreeRef.value?.collapseAll()
 }
 
-function sortByLatest() {
-    jobSorting.value = JobSorting.ByLatest
-    populateJobsData()
-}
-
-function sortByName() {
-    jobSorting.value = JobSorting.ByName
+function changeJobOrder(order: JobOrder) {
+    jobOrder.value = order
     populateJobsData()
 }
 
@@ -170,12 +189,17 @@ onMounted(() => {
                         <q-tooltip anchor="top middle">Sort by</q-tooltip>
                         <q-btn-dropdown round flat color="grey-7" icon="sort" dropdown-icon="none">
                             <q-list>
-                                <q-item clickable v-close-popup @click="sortByLatest()">
+                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByLatestFamily)">
                                     <q-item-section>
-                                        <q-item-label>Sort by latest</q-item-label>
+                                        <q-item-label>Sort by latest family</q-item-label>
                                     </q-item-section>
                                 </q-item>
-                                <q-item clickable v-close-popup @click="sortByName()">
+                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByLatestJob)">
+                                    <q-item-section>
+                                        <q-item-label>Sort by latest job</q-item-label>
+                                    </q-item-section>
+                                </q-item>
+                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByName)">
                                     <q-item-section>
                                         <q-item-label>Sort by name</q-item-label>
                                     </q-item-section>
