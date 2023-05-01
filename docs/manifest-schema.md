@@ -10,7 +10,7 @@ fields:
 
 - `name` (**required**) - name of the current service to be deployed by means of
   this mainfest file. It cannot contain underscores (but can contain dashes).
-- `lang` (**required**) - Language wrapper used to embed model. This should be one
+- `jobtype` (**required**) - Jobtype wrapper used to embed model. This should be one
   of the supported wrapper names combined with the wrapper version:
   `python3:2.4.0`, `python3:latest`, `golang:latest` or `docker-http:latest`, etc.
 - `git` (**required**) - the object describes the place where the source code can be
@@ -23,12 +23,8 @@ fields:
 - `owner_email` (**required**) - email address of the Job's owner to reach out
 - `extends` - relative path to base manifest file, which will be extended by this manifest
 - `version` - Version of the Job. It should adhere to Semantic Versioning standard.
-- `python` - Manifest for Python projects
-    - `requirements_path` - path to `requirements.txt` relative to `git.directory`
-    - `entrypoint_path` - relative path to a file with Job Entrypoint class
-    - `entrypoint_class` - name of Python entrypoint class
-- `golang` - Manifest for Go projects
-    - `gomod` - relative path to `go.mod` requirements
+- `jobtype_extra` - Jobtype specific extra parameters
+    - Fields specified and validated by the jobtype.
 - `docker` - Manifest for Dockerfile job types
     - `dockerfile_path` - relative path to Dockerfile recipe
 - `build_env` - dictionary of environment variables that should be set when building the image
