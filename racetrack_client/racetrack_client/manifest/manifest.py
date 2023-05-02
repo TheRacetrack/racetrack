@@ -5,19 +5,6 @@ from pydantic import BaseModel, Extra, validator
 from racetrack_client.utils.quantity import Quantity
 
 
-class PythonManifest(BaseModel, extra=Extra.forbid):
-    requirements_path: Optional[str] = None
-    # path to a Python file with a entrypoint class
-    entrypoint_path: str = ''
-    # base name of Python entrypoint class
-    entrypoint_class: str = ''
-
-
-class GoManifest(BaseModel, extra=Extra.forbid):
-    # relative path to Go modules requirements
-    gomod: str = 'go.mod'
-
-
 class GitManifest(BaseModel, extra=Extra.forbid):
     # URL of git remote: HTTPS, SSH or directory path to a remote repository
     remote: str
@@ -72,12 +59,6 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None
 
-    # Python-specific configuration
-    python: Optional[PythonManifest] = None
-
-    # Go/Golang-specific configuration
-    golang: Optional[GoManifest] = None
-
     # Docker-specific configuration
     docker: Optional[DockerManifest] = None
 
@@ -108,8 +89,8 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # resources demands to allocate to the Job
     resources: Optional[ResourcesManifest] = None
 
-    # Language wrapper attributes
-    wrapper_properties: Optional[Dict[str, Any]] = None
+    # Extra parameters specified by the jobtype
+    jobtype_extra: Optional[Dict[str, Any]] = None
 
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
