@@ -92,16 +92,12 @@ export class ToastService {
 export const toastService: ToastService = new ToastService()
 
 function extractErrorDetails(err: any): string {
-    if (err instanceof AxiosError && err.response !== undefined) {
-        if (err.response.hasOwnProperty('data')) {
-            const data = err.response.data
-            if (data !== undefined) {
-                if (data.hasOwnProperty('error') && data.error)
-                    return data.console.error()
-                if (data.hasOwnProperty('type') && data.type)
-                    return data.type
-            }
-        }
+    if (err instanceof AxiosError) {
+        const data = err.response?.data
+        if (data?.error)
+            return data.error
+        if (data?.type)
+            return data.type
     }
     return err
 }

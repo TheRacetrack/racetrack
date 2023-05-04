@@ -40,8 +40,6 @@ function fetchJobs() {
     })
 }
 
-fetchJobs()
-
 // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
 const tfConfig = {
     base_path: '/dashboard/ui/assets/tablefilter/',
@@ -98,6 +96,7 @@ const tableRef: Ref<HTMLElement | null> = ref(null)
 let tf: any = null
 
 onMounted(() => {
+    fetchJobs()
     // @ts-ignore
     tf = new TableFilter(tableRef.value, tfConfig)
 })
