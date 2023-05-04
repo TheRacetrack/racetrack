@@ -39,7 +39,7 @@ const toolbarStyle: Ref<string> = computed(() => {
 </script>
 
 <template>
-  <q-header reveal elevated class="bg-black text-white" height-hint="64">
+  <q-header elevated class="bg-black text-white" height-hint="64">
     <q-toolbar :style="toolbarStyle">
       <q-btn dense flat round icon="menu"
         @click="toggleDrawer" v-if="isAuthenticated" />
