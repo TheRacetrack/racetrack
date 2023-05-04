@@ -75,14 +75,10 @@ export function loadUserData(router: Router) {
         })
 }
 
-export function saveUserData() {
-    setOrDeleteLocalStorage('userData.authToken', authToken.value)
-}
-
-function setOrDeleteLocalStorage(key: string, value: string | null) {
-    if (value == null) {
-        localStorage.removeItem(key)
+function saveUserData() {
+    if (authToken.value == null) {
+        localStorage.removeItem('userData.authToken')
     } else {
-        localStorage.setItem(key, value)
+        localStorage.setItem('userData.authToken', authToken.value)
     }
 }
