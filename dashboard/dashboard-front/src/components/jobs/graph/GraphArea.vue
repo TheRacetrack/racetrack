@@ -3,7 +3,7 @@ import { reactive, watch, computed, ref, onMounted, type Ref } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { DataSet, DataView } from "vis-data"
-import { Network, type Options } from "vis-network"
+import { Network, type EdgeOptions, type Options } from "vis-network"
 
 const graphData: JobGraph = reactive({
     nodes: [],
@@ -76,8 +76,8 @@ const edgeStructs = computed(() =>
     }))
 )
 
-var network: Network | null = null
-var networkOptions: Options = {
+let network: Network | null = null
+let networkOptions: Options = {
     nodes: {
         borderWidth: 2,
         shadow: true,
@@ -85,18 +85,19 @@ var networkOptions: Options = {
     edges: {
         shadow: true,
         smooth: {
+            enabled: true,
             type: "cubicBezier",
-            forceDirection: "none"
+            forceDirection: "none",
         }
-    },
+    } as EdgeOptions,
     physics: {
         enabled: physics.value,
     },
-} as Options
+}
 
 function initVisNetwork() {
-    var nodes = new DataSet(nodeStructs.value as any)
-    var edges = new DataSet(edgeStructs.value as any)
+    const nodes = new DataSet(nodeStructs.value as any)
+    const edges = new DataSet(edgeStructs.value as any)
 
     const nodesFilter = (node: any) => {
         if (focusedNodes.value.length === 0) {
@@ -110,7 +111,7 @@ function initVisNetwork() {
 
     const nodesView = new DataView(nodes, { filter: nodesFilter })
     const edgesView = new DataView(edges, { filter: edgesFilter })
-    var data = {
+    const data = {
         nodes: nodesView,
         edges: edgesView,
     }
@@ -120,9 +121,9 @@ function initVisNetwork() {
         focusedNodes.value = params.nodes
         if (focusedNodes.value.length == 1) {
             // include nodes connected to it
-            var mainNodeId = focusedNodes.value[0]
+            const mainNodeId = focusedNodes.value[0]
             showSelectedNodeDetails(mainNodeId)
-            for (var edge of edgeStructs.value) {
+            for (let edge of edgeStructs.value) {
                 if (edge.from == mainNodeId) {
                     focusedNodes.value.push(edge.to)
                 }
@@ -138,12 +139,12 @@ function initVisNetwork() {
 }
 
 function showSelectedNodeDetails(nodeId: string) {
-    for (var node of nodeStructs.value) {
+    for (let node of nodeStructs.value) {
         if (node.id == nodeId) {
             const subtitle = node.title || ''
             const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim
             const subtitle2 = subtitle.replace(urlPattern, '<a href="$1" target="_blank">$1</a>')
-            var nodeDetailsHtml = `<p style="white-space: pre-line">${subtitle2}</p>`
+            const nodeDetailsHtml = `<p style="white-space: pre-line">${subtitle2}</p>`
             legendTitle.value = node.label
             legendBody.value = nodeDetailsHtml
             return

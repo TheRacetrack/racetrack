@@ -34,11 +34,11 @@ function fetchJobs() {
 
 function populateJobsData() {
     const sortedJobs: JobData[] = [...jobsData.value]
-    if (jobOrder.value == JobOrder.ByLatestFamily || jobOrder.value == JobOrder.ByLatestJob) {
+    if (jobOrder.value === JobOrder.ByLatestFamily || jobOrder.value === JobOrder.ByLatestJob) {
         sortedJobs.sort((a, b) => {
             return b.update_time - a.update_time
         })
-    } else if (jobOrder.value == JobOrder.ByName) {
+    } else if (jobOrder.value === JobOrder.ByName) {
         sortedJobs.sort((a, b) => {
             return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
                 || compareVersions(b.version, a.version)
@@ -51,7 +51,7 @@ function populateJobsData() {
     })
 
     let leafs = []
-    if (jobOrder.value == JobOrder.ByLatestJob) {
+    if (jobOrder.value === JobOrder.ByLatestJob) {
         for (let job of sortedJobs) {
             leafs.push({
                 label: `${job.name} v${job.version}`,

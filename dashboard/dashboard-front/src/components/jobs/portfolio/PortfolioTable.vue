@@ -43,7 +43,7 @@ function fetchJobs() {
 fetchJobs()
 
 // see https://github.com/koalyptus/TableFilter/wiki/1.0-Configuration
-var tfConfig = {
+const tfConfig = {
     base_path: '/dashboard/ui/assets/tablefilter/',
     paging: {
         results_per_page: ['Rows: ', [10, 25, 50, 100]]
@@ -95,7 +95,7 @@ var tfConfig = {
 }
 
 const tableRef: Ref<HTMLElement | null> = ref(null)
-var tf: any = null
+let tf: any = null
 
 onMounted(() => {
     // @ts-ignore
