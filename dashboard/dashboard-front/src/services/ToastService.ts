@@ -1,6 +1,7 @@
 import { AxiosError } from "axios"
 import { useToast } from "vue-toastification"
 import type { ToastContent, ToastID, ToastOptions } from "vue-toastification/dist/types/types"
+import { extractErrorDetails } from "@/utils/error"
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 type _ToastOptions = ToastOptions & {type?: any}
@@ -90,14 +91,3 @@ export class ToastService {
 }
 
 export const toastService: ToastService = new ToastService()
-
-function extractErrorDetails(err: any): string {
-    if (err instanceof AxiosError) {
-        const data = err.response?.data
-        if (data?.error)
-            return data.error
-        if (data?.type)
-            return data.type
-    }
-    return err
-}

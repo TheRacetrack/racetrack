@@ -7,6 +7,7 @@ import { apiClient, authHeader } from '@/services/ApiClient'
 import { versionFull } from '@/services/EnvironmentInfo'
 import { progressService } from '@/services/ProgressService'
 import { authToken } from '@/services/UserDataStore'
+import { extractErrorDetails } from "@/utils/error"
 
 const pluginDataRef: Ref<PluginData> = ref({
     plugins: [],
@@ -74,7 +75,7 @@ watch(infrastructureTargetsTree, () => {
 })
 
 function copyText(text: string | null) {
-    if (text == null)
+    if (!text)
         return
     copyToClipboard(text)
         .then(() => {
@@ -113,25 +114,8 @@ function deletePlugin(name: string, version: string) {
 
 function onPluginUploadFailed(err: any) {
     console.error(err)
-    let details = getPluginErrorDetails(err)
+    let details = extractErrorDetails(err)
     toastService.showErrorDetails(`Failed to upload plugin`, details)
-}
-
-function getPluginErrorDetails(err: any): string {
-    if (err.hasOwnProperty('xhr')){
-        const xhr = err.xhr
-        if ('response' in xhr){
-            const response = xhr['response']
-            const json = JSON.parse(response)
-            if (json.hasOwnProperty('error') && json.error) {
-                return json.error
-            }
-            if (json.hasOwnProperty('type') && json.type) {
-                return json.type
-            }
-        }
-    }
-    return err
 }
 
 function onPluginUploaded(info: any) {

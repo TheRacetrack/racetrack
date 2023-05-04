@@ -1,6 +1,5 @@
 import { ref, type Ref } from 'vue'
 import { type Router } from 'vue-router'
-import { isEmpty } from '@/utils/string'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import { AxiosError } from 'axios'
@@ -46,7 +45,7 @@ export function deleteUserData() {
 export function loadUserData(router: Router) {
     /** Load stored auth token and fetch more details about user account */
     const storedAuthToken = localStorage.getItem('userData.authToken')
-    if (isEmpty(storedAuthToken)) {
+    if (!storedAuthToken) {
         return
     }
     
@@ -76,7 +75,7 @@ export function loadUserData(router: Router) {
 }
 
 function saveUserData() {
-    if (authToken.value == null) {
+    if (!authToken.value) {
         localStorage.removeItem('userData.authToken')
     } else {
         localStorage.setItem('userData.authToken', authToken.value)

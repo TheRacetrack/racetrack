@@ -3,7 +3,6 @@ import { computed, type Ref } from 'vue'
 import { mdiAccountCircle, mdiLogout } from '@quasar/extras/mdi-v7'
 import { isAuthenticated } from '@/services/UserDataStore'
 import { envInfo } from '@/services/EnvironmentInfo'
-import { isNotEmpty } from '@/utils/string'
 
 const emit = defineEmits(['toggleDrawer'])
 
@@ -12,7 +11,7 @@ function toggleDrawer () {
 }
 
 const siteNamePrefix: Ref<string> = computed(() => {
-    if (isNotEmpty(envInfo.site_name)) {
+    if (!!envInfo.site_name) {
         return `[${envInfo.site_name}]`
     } else {
         return ''

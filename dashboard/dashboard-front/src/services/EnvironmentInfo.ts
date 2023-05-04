@@ -1,7 +1,6 @@
 import { reactive, computed, type Ref } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { isNotEmpty } from '@/utils/string'
 
 export const envInfo: EnvironmentInfo = reactive({
     live: null,
@@ -37,7 +36,7 @@ export function loadEnvironmentInfo() {
             envInfo.external_pub_url = data.external_pub_url
             envInfo.site_name = data.site_name
 
-            if (isNotEmpty(envInfo.site_name)) {
+            if (!!envInfo.site_name) {
                 document.title = `[${envInfo.site_name}] Racetrack Dashboard`
             }
 

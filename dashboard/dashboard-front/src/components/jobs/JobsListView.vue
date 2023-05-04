@@ -88,9 +88,9 @@ function populateJobsData() {
 }
 
 function selectJobNode(key: string | null) {
-    if (key != null) {
+    if (key) {
         const job = getJobByKey(key)
-        if (job != null) {
+        if (job) {
             currentJob.value = job
         } else {
             const isExpanded = jobsQTreeRef.value?.isExpanded(key)
@@ -105,7 +105,7 @@ function compareVersions(a: string, b: string): number {
     const matchesA = regexp.exec(a)
     regexp.lastIndex = 0
     const matchesB = regexp.exec(b)
-    if (matchesA == null || matchesB == null) {
+    if (!matchesA || !matchesB) {
         return 0
     }
     return parseInt(matchesA[1]) - parseInt(matchesB[1])

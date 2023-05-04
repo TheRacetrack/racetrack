@@ -9,11 +9,11 @@ const newPassword2 = ref('')
 const loading = ref(false)
 
 function changePassword() {
-    if (newPassword.value == '') {
+    if (!newPassword.value) {
         toastService.error(`Password cannot be empty`)
         return
     }
-    if (newPassword.value != newPassword2.value) {
+    if (newPassword.value !== newPassword2.value) {
         toastService.error(`Passwords do not match`)
         return
     }
