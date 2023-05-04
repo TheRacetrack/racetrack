@@ -1,7 +1,7 @@
 setup:
 	. ~/.nvm/nvm.sh &&\
-	nvm install v16.20.0 &&\
-	nvm use v16.20.0 &&\
+	nvm install v18.16 &&\
+	nvm use v18.16 &&\
 	npm install
 
 run: 

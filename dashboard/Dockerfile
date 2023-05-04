@@ -1,4 +1,4 @@
-FROM node:16.20 AS frontend-builder
+FROM node:18.16 AS frontend-builder
 
 WORKDIR /build
 COPY dashboard/dashboard-front/index.html \
