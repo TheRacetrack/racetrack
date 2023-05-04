@@ -16,13 +16,13 @@ export function removeNulls(obj: any): any {
     if (Array.isArray(obj)) {
         return obj.filter(x => x != null).map(x => removeNulls(x))
     } else if (typeof obj === 'object') {
-        const newObj: any = {}
-        for (let [k, v] of Object.entries(obj)) {
-            if (k !== null && v !== null) {
-                newObj[k] = removeNulls(v)
-            }
-        }
-        return newObj
+        return Object.entries(obj)
+            .filter(([k, v]) => k !== null && v !== null)
+            .map(([k, v]) => [k, removeNulls(v)])
+            .reduce((acc: any, [k, v]) => {
+                acc[k] = v
+                return acc
+            }, {})
     }
     return obj
 }
