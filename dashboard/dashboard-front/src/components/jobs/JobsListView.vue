@@ -45,10 +45,10 @@ function populateJobsData() {
         })
     }
 
-    jobsByKey.value = new Map()
-    sortedJobs.forEach(job => {
-        jobsByKey.value?.set(`job:${job.name}-${job.version}`, job)
-    })
+    jobsByKey.value = jobsData.value?.reduce((map, job) => {
+        map.set(`job:${job.name}-${job.version}`, job)
+        return map
+    }, new Map())
 
     let leafs = []
     if (jobOrder.value === JobOrder.ByLatestJob) {
@@ -121,20 +121,20 @@ function getJobByKey(key: string): JobData | null {
 function filterJobsTree(node: any, filter: string): boolean {
     const filt = filter.toLowerCase()
     const job = getJobByKey(node.key)
-    if (job != null) {
-        if (job.name.toLowerCase().includes(filt))
-            return true
-        if (job.version.toLowerCase().includes(filt))
-            return true
-        if (job.deployed_by?.toLowerCase().includes(filt))
-            return true
-        if (job.status.toLowerCase().includes(filt))
-            return true
-        if (job.job_type_version?.toLowerCase().includes(filt))
-            return true
-        if (job.manifest?.['owner_email']?.toLowerCase().includes(filt))
-            return true
-    }
+    if (!job)
+        return false
+    if (job?.name.toLowerCase().includes(filt))
+        return true
+    if (job?.version.toLowerCase().includes(filt))
+        return true
+    if (job?.deployed_by?.toLowerCase().includes(filt))
+        return true
+    if (job?.status.toLowerCase().includes(filt))
+        return true
+    if (job?.job_type_version?.toLowerCase().includes(filt))
+        return true
+    if (job?.manifest?.['owner_email']?.toLowerCase().includes(filt))
+        return true
     return false
 }
 

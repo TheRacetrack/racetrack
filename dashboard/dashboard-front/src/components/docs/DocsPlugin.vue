@@ -10,7 +10,7 @@ const pageName = route.params.pageName
 const docPageContent: Ref<PageContent> = ref({
     doc_name: '',
     html_content: '',
-} as PageContent)
+})
 
 interface PageContent {
     doc_name: string

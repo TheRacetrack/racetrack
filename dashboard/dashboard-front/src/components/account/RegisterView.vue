@@ -12,11 +12,11 @@ const loading = ref(false)
 const router = useRouter()
 
 function register() {
-    if (password.value == '') {
+    if (!password.value) {
         toastService.error(`Password cannot be empty`)
         return
     }
-    if (password.value != password2.value) {
+    if (password.value !== password2.value) {
         toastService.error(`Passwords do not match`)
         return
     }
