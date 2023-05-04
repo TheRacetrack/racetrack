@@ -1,5 +1,5 @@
 export function formatTimestampIso8601(timestampS: number | undefined): string {
-    if (timestampS == null || timestampS == 0) {
+    if (!timestampS) {
         return ''
     }
     const date = new Date(timestampS * 1000)
