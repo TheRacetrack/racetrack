@@ -16,7 +16,7 @@ infrastructure.
 
 It makes extensive use of plugins. Thus, the type of code which it can accept is
 broad and covers languages such as Python 3 or golang, frameworks such as
-django, and actual applications such as Sphinx or Drupal.
+django, and actual applications such as Sphinx, Drupal or even Quake 3.
 
 These "job types", in Racetrack lingo, can be deployed to different
 "infrastructure targets". We currently support Kubernetes and Docker. This is
@@ -93,6 +93,7 @@ See the [Documentation](https://theracetrack.github.io/racetrack/) for more deta
 * [HUGO framework](https://github.com/TheRacetrack/plugin-hugo-job-type)
 * [Drupal](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/drupal)
 * [Sphinx](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/sphinx)
+* [Quake III](https://github.com/iszulcdeepsense/racetrack-quake)
 
 ### Where can we deploy to?
 
