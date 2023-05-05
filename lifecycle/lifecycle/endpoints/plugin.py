@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import collections
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -16,6 +17,11 @@ from lifecycle.auth.check import check_staff_user
 
 class PluginUpdate(BaseModel):
     config_data: str = Field(description='text content of configuration file')
+
+
+class PluginInfrastructureGroup(BaseModel):
+    kind: str
+    instances: list[str]
 
 
 def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
@@ -61,7 +67,7 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
 
     @api.get('/plugin/{plugin_name}/docs')
     def _info_plugin_docs(plugin_name: str) -> Optional[str]:
-        """Get documentation for this plugin in markdown format"""
+        """Get documentation for this plugin in Markdown format"""
         return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.markdown_docs)
 
     @api.get('/plugin/job_type/versions')
@@ -74,3 +80,26 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _get_infrastructure_targets() -> dict[str, PluginManifest]:
         """Return names of available infrastructure targets mapped to the plugin of origin"""
         return list_infrastructure_names_with_origins(plugin_engine)
+
+    @api.get('/plugin/tree')
+    def _get_plugins_tree() -> dict:
+        infrastructure_targets: dict[str, PluginManifest] = list_infrastructure_names_with_origins(plugin_engine)
+        plugins: list[PluginManifest] = plugin_engine.plugin_manifests
+        r = Requests.get(f'{config.image_builder_url}/api/v1/job_type/versions')
+        job_type_versions: list[str] = parse_response_list(r, 'Image builder API error')
+
+        # Collect instances running on the same infrastructure
+        _infrastructure_instances: dict[str, list[str]] = collections.defaultdict(list)
+        for infrastructure_name, plugin_manifest in infrastructure_targets.items():
+            _infrastructure_instances[plugin_manifest.name].append(infrastructure_name)
+        infrastructure_instances: list[PluginInfrastructureGroup] = [
+            PluginInfrastructureGroup(kind=k, instances=v)
+            for k, v in _infrastructure_instances.items()
+        ]
+
+        return {
+            'plugins': plugins,
+            'job_type_versions': job_type_versions,
+            'infrastructure_targets': infrastructure_targets,
+            'infrastructure_instances': sorted(infrastructure_instances, key=lambda i: i.kind),
+        }

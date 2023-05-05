@@ -3,11 +3,10 @@ from multiprocessing import Process
 import backoff
 
 from lifecycle.config import Config
-from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.server.api import run_api_server
 from racetrack_client.utils.request import Requests, RequestError
-
-from .socket import free_tcp_port
+from racetrack_commons.plugin.engine import PluginEngine
+from racetrack_commons.socket import free_tcp_port
 
 
 def test_bootstrap_server():

@@ -6,8 +6,7 @@ from lifecycle.monitor.base import LogsStreamer
 from lifecycle.server.socketio import SocketIOServer
 from racetrack_client.client.socketio import LogsConsumer
 from racetrack_client.log.logs import get_logger
-
-from .socket import free_tcp_port
+from racetrack_commons.socket import free_tcp_port
 
 logger = get_logger(__name__)
 

@@ -29,16 +29,6 @@ These files are available under BSD 3-Clause License, which you can find at http
 
 ----------------------------------------------------------------------
 
-This project uses jQuery (unmodified)
-
-https://github.com/jquery/jquery
-
-Copyright OpenJS Foundation and other contributors, https://openjsf.org/
-
-These files are available under MIT License, which you can find at https://github.com/jquery/jquery/blob/main/LICENSE.txt
-
-----------------------------------------------------------------------
-
 This project uses Bootstrap (unmodified)
 
 https://github.com/twbs/bootstrap
@@ -262,5 +252,104 @@ https://github.com/encode/uvicorn
 Copyright © 2017-present, Encode OSS Ltd. All rights reserved.
 
 These files are available under BSD 3-Clause License, which you can find at https://github.com/encode/uvicorn/blob/master/LICENSE.md
+
+----------------------------------------------------------------------
+
+This project uses Vite (unmodified)
+
+https://github.com/vitejs/vite
+
+Copyright (c) 2019-present, Yuxi (Evan) You and Vite contributors
+
+These files are available under MIT License, which you can find at https://github.com/vitejs/vite/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses Node.js (unmodified)
+
+https://github.com/nodejs/node
+
+Copyright Node.js contributors. All rights reserved.
+
+These files are available under License, which you can find at https://github.com/nodejs/node/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses nvm (unmodified)
+
+https://github.com/nvm-sh/nvm
+
+Copyright (c) 2010 Tim Caswell
+Copyright (c) 2014 Jordan Harband
+
+These files are available under MIT License, which you can find at https://github.com/nvm-sh/nvm/blob/master/LICENSE.md
+
+----------------------------------------------------------------------
+
+This project uses Vue.js (unmodified)
+
+https://github.com/vuejs/core
+
+Copyright (c) 2018-present, Yuxi (Evan) You
+
+These files are available under MIT License, which you can find at https://github.com/vuejs/core/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses vue-router (unmodified)
+
+https://github.com/vuejs/router
+
+Copyright (c) 2019-present Eduardo San Martin Morote
+
+These files are available under MIT License, which you can find at https://github.com/vuejs/router/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses vue-toastification (unmodified)
+
+https://github.com/Maronato/vue-toastification
+
+Copyright (c) 2019 maronato
+
+These files are available under MIT License, which you can find at https://github.com/Maronato/vue-toastification/blob/next/LICENCE
+
+----------------------------------------------------------------------
+
+This project uses Quasar Framework (unmodified)
+
+https://github.com/quasarframework/quasar
+
+Copyright (c) 2015-present Razvan Stoenescu
+
+These files are available under MIT License, which you can find at https://github.com/quasarframework/quasar/blob/dev/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses Typescript (unmodified)
+
+https://github.com/microsoft/TypeScript
+
+These files are available under Apache 2.0 License, which you can find at https https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt
+
+----------------------------------------------------------------------
+
+This project uses Axios (unmodified)
+
+https://github.com/axios/axios
+
+Copyright (c) 2014-present Matt Zabriskie & Collaborators
+
+These files are available under MIT License, which you can find at https://github.com/axios/axios/blob/v1.x/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses js-yaml (unmodified)
+
+https://github.com/nodeca/js-yaml
+
+Copyright (C) 2011-2015 by Vitaly Puzrin
+
+These files are available under MIT License, which you can find at https://github.com/nodeca/js-yaml/blob/master/LICENSE
 
 ----------------------------------------------------------------------
