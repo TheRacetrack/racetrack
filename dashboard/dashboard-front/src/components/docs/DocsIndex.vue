@@ -2,7 +2,7 @@
 import { ref, type Ref, onMounted } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import '@/assets/github-markdown.css'
+import 'github-markdown-css/github-markdown.css'
 
 const docIndexData: Ref<DocIndexData> = ref({
     doc_pages: [],
