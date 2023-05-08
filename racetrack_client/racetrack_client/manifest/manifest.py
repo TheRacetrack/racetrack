@@ -53,8 +53,8 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # version of the Job
     version: str = '0.0.1'
 
-    # Language wrapper used to embed model
-    lang: str = 'python3'
+    # Jobtype wrapper used to embed model
+    jobtype: str = 'python3'
 
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None

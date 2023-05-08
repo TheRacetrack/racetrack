@@ -35,7 +35,7 @@ def validate_manifest(manifest: Manifest):
     with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
 
-    assert ':' in manifest.lang, '"lang" should specify the version in a format "name:version"'
+    assert ':' in manifest.jobtype, '"jobtype" should specify the version in a format "name:version"'
 
     assert 1 <= manifest.replicas <= 15, 'replicas count out of allowed range'
 
