@@ -23,12 +23,16 @@ const currentJob: Ref<JobData | null> = ref(null)
 const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
 const selectedNodeKey: Ref<string | null> = ref(null)
 const jobOrder: Ref<JobOrder> = ref(JobOrder.ByName)
+const loadingTree = ref(true)
 
 function fetchJobs() {
+    loadingTree.value = true
     apiClient.get(`/api/v1/job`).then(response => {
         jobsData.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch the jobs`, err)
+    }).finally(() => {
+        loadingTree.value = false
     })
 }
 
@@ -119,21 +123,27 @@ function getJobByKey(key: string): JobData | null {
 }
 
 function filterJobsTree(node: any, filter: string): boolean {
-    const filt = filter.toLowerCase()
+    const keywords: string[] = filter.toLowerCase().split(' ')
     const job = getJobByKey(node.key)
     if (!job)
         return false
-    if (job?.name.toLowerCase().includes(filt))
+    if (keywords.length === 0)
         return true
-    if (job?.version.toLowerCase().includes(filt))
+    return keywords.every(keyword => filterJobByKeyword(job, keyword))
+}
+
+function filterJobByKeyword(job: JobData, keyword: string): boolean {
+    if (job.name.toLowerCase().includes(keyword))
         return true
-    if (job?.deployed_by?.toLowerCase().includes(filt))
+    if (job.version.toLowerCase().includes(keyword))
         return true
-    if (job?.status.toLowerCase().includes(filt))
+    if (job.deployed_by?.toLowerCase().includes(keyword))
         return true
-    if (job?.job_type_version?.toLowerCase().includes(filt))
+    if (job.status.toLowerCase().includes(keyword))
         return true
-    if (job?.manifest?.['owner_email']?.toLowerCase().includes(filt))
+    if (job.job_type_version?.toLowerCase().includes(keyword))
+        return true
+    if (job.manifest?.['owner_email']?.toLowerCase().includes(keyword))
         return true
     return false
 }
@@ -176,7 +186,11 @@ onMounted(() => {
                 <template v-slot:before>
 
                     <div class="q-mr-sm">
-                        <q-input filled v-model="treeFilter" label="Filter" />
+                        <q-input filled v-model="treeFilter" label="Filter">
+                            <template v-if="treeFilter" v-slot:append>
+                                <q-icon name="cancel" @click.stop.prevent="treeFilter = ''" class="cursor-pointer" />
+                            </template>
+                        </q-input>
 
                         <q-btn round flat color="grey-7" icon="unfold_less" @click="collapseAll">
                             <q-tooltip>Collapse all</q-tooltip>
@@ -217,7 +231,7 @@ onMounted(() => {
                             default-expand-all
                             :filter="treeFilter"
                             :filter-method="filterJobsTree"
-                            @update:selected="(key) => selectJobNode(key)"
+                            @update:selected="(key: string | null) => selectJobNode(key)"
                             >
                             <template v-slot:default-header="prop">
                                 <template v-if="prop.node.type == 'job'">
@@ -232,6 +246,10 @@ onMounted(() => {
                             </template>
                         </q-tree>
                     </div>
+
+                    <q-inner-loading :showing="loadingTree">
+                        <q-spinner-gears size="50px" color="primary" />
+                    </q-inner-loading>
 
                 </template>
                 <template v-slot:after>
