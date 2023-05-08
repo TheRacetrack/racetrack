@@ -1,12 +1,13 @@
 name: adder
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
 
 git:
-  remote: https://github.com/TheRacetrack/racetrack
+  remote: https://github.com/lookacastle/racetrack
+  branch: 231-job-manifest-improvement
   directory: sample/python-class
 
-python:
+jobtype_extra:
   requirements_path: 'requirements.txt'
   entrypoint_path: 'adder.py'
   entrypoint_class: 'AdderModel'
