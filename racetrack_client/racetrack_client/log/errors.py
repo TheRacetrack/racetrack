@@ -4,3 +4,7 @@ class EntityNotFound(RuntimeError):
 
 class AlreadyExists(RuntimeError):
     pass
+
+
+class ValidationError(RuntimeError):
+    pass
