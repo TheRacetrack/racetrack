@@ -49,7 +49,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
 
     @api.get('/job/portfolio')
     def _get_job_portfolio(request: Request) -> list[dict]:
-        """Get Jobs list with extra portfolio data"""
+        """Get Job list with extra portfolio data"""
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
         jobs: list[JobDto] = list_job_registry(config, auth_subject)
         job_dicts: list[dict] = enrich_jobs_purge_info(jobs)
