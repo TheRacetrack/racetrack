@@ -36,7 +36,7 @@ export function loadEnvironmentInfo() {
             envInfo.external_pub_url = data.external_pub_url
             envInfo.site_name = data.site_name
 
-            if (!!envInfo.site_name) {
+            if (envInfo.site_name) {
                 document.title = `[${envInfo.site_name}] Racetrack Dashboard`
             }
 

@@ -11,7 +11,7 @@ function toggleDrawer () {
 }
 
 const siteNamePrefix: Ref<string> = computed(() => {
-    if (!!envInfo.site_name) {
+    if (envInfo.site_name) {
         return `[${envInfo.site_name}]`
     } else {
         return ''
@@ -33,7 +33,7 @@ function getToolbarColor(siteName: string): string {
 const toolbarStyle: Ref<string> = computed(() => {
     const siteName = (envInfo.site_name || '').toLowerCase()
     const toolbarColor = getToolbarColor(siteName)
-    return 'background-color: ' + toolbarColor + ';'
+    return `background-color: ${toolbarColor};`
 })
 </script>
 

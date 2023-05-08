@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { ref, type Ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { useRoute } from 'vue-router'
+import type { DocPageContent } from '@/utils/api-schema'
 
 const route = useRoute()
 const pageName = route.params.pageName
 
-const docPageContent: Ref<PageContent> = ref({
+const docPageContent: Ref<DocPageContent> = ref({
     doc_name: '',
     html_content: '',
-} as PageContent)
-
-interface PageContent {
-    doc_name: string
-    html_content: string
-}
+})
 
 function fetchDocPageData() {
     apiClient.get(`/api/docs/page/${pageName}`).then(response => {
@@ -33,10 +29,8 @@ onMounted(() => {
 <template>
     <q-card>
         <q-card-section class="q-py-lg">
-
             <article class="markdown-body" style="padding-top: 0;" v-html="docPageContent.html_content">
             </article>
-
         </q-card-section>
     </q-card>
 </template>

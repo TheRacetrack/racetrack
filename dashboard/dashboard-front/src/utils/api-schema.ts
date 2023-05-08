@@ -16,3 +16,8 @@ export interface JobData {
     replica_internal_names: string[]
     job_type_version: string
 }
+
+export interface DocPageContent {
+    doc_name: string
+    html_content: string
+}
