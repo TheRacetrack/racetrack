@@ -10,7 +10,7 @@ from racetrack_client.utils.auth import RT_AUTH_HEADER
 def set_auth_token_cookie(auth_token: str, response: Response):
     # if cookie value contains /, it would get unnecessarily double quoted, so encode
     value = quote(auth_token, safe="")
-    secure_cookie: bool = os.environ.get('ENFORCE_SECURE_COOKIE', 'false').lower() == 'true'
+    secure_cookie: bool = os.environ.get('ENFORCE_SECURE_COOKIE') == 'true'
 
     # Domain defines the host to which the cookie will be sent.
     # Empty domain means that cookie will be created for current host, not including subdomains.
