@@ -88,8 +88,9 @@ let networkOptions: Options = {
             enabled: true,
             type: "cubicBezier",
             forceDirection: "none",
+            roundness: 0.5,
         }
-    } as EdgeOptions,
+    },
     physics: {
         enabled: physics.value,
     },
