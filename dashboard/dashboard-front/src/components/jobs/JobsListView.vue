@@ -237,7 +237,7 @@ onMounted(() => {
                                 <template v-if="prop.node.type == 'job'">
                                     <div class="text-no-wrap">
                                         {{ prop.node.label }}
-                                        <JobStatus :status="getJobByKey(prop.node.key)?.status" />
+                                        <JobStatus :status="getJobByKey(prop.node.key)?.status" short />
                                     </div>
                                 </template>
                                 <template v-else>
