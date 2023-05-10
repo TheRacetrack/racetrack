@@ -150,7 +150,7 @@ onUpdated(() => {
                 <td>{{ formatTimestampIso8601(job.create_time) }}</td>
                 <td>{{ job.infrastructure_target }}</td>
                 <td>
-                    <DeleteJobButton :jobName="job.name" :jobVersion="job.version" @deleteJob="fetchJobs()" />
+                    <DeleteJobButton :jobName="job.name" :jobVersion="job.version" @jobDeleted="fetchJobs()" />
                 </td>
             </tr>
 

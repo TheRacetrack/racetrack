@@ -141,7 +141,7 @@ function reprovisionJob(job: JobData) {
         </q-btn-dropdown>
 
         <DeleteJobButton :jobName="job?.name || ''" :jobVersion="job?.version || ''"
-            @deleteJob="emit('refreshJobs', null)" />
+            @jobDeleted="emit('refreshJobs', null)" />
     </q-btn-group>
     </div>
 

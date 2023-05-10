@@ -75,6 +75,10 @@ function populateJobsTree() {
         }
     }
     jobsTree.value = leafs
+
+    if (selectedNodeKey.value && !getJobByKey(selectedNodeKey.value)) { // current job has been deleted
+        currentJob.value = null
+    }
 }
 
 function selectJobNode(key: string | null) {
