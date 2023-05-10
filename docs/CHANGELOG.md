@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.13.0] - 2023-05-10
 ### Added
 - "Jobs" tab now shows the tree of jobs grouped by the family name.
   Jobs tree can be filtered by name, version, owner, job type version or infrastructure target.
