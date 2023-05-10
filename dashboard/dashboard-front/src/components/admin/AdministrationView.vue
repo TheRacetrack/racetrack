@@ -155,7 +155,7 @@ function onPluginUploaded(info: any) {
 
             <q-field outlined label="Grafana dashboards" stack-label class="q-mt-md">
                 <template v-slot:control>
-                    <a :href="envInfo.grafana_url" target="_blank" class="x-overflow-any">
+                    <a :href="envInfo.grafana_url || ''" target="_blank" class="x-overflow-any">
                         {{ envInfo.grafana_url }}
                     </a>
                 </template>
