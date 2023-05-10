@@ -72,9 +72,9 @@ function clearCredentials() {
 
       <h5 class="text-h5 q-my-sm text-center text-grey-9">Sign In</h5>
 
-      <q-card-section>
-        <q-form class="q-gutter-md">
-          <q-input outlined autofocus type="email" label="Email" autocomplete="username"
+      <q-form autocomple="on" @submit.prevent="login">
+        <q-card-section class="q-gutter-md">
+          <q-input outlined autofocus type="text" label="Email" autocomplete="username"
             v-model="username" @keydown.enter.prevent="login"
             >
             <template v-if="username" v-slot:append>
@@ -84,12 +84,12 @@ function clearCredentials() {
           <q-input outlined type="password" label="Password" autocomplete="password"
             v-model="password" @keydown.enter.prevent="login"
             />
-        </q-form>
-      </q-card-section>
-      <q-card-actions class="q-px-md">
-        <q-btn color="primary" size="lg" class="full-width" label="Login" push
-          :loading="loading" @click="login" />
-      </q-card-actions>
+        </q-card-section>
+        <q-card-actions class="q-px-md">
+          <q-btn color="primary" size="lg" class="full-width" label="Login" type="submit" push
+          :loading="loading" />
+        </q-card-actions>
+      </q-form>
       
       <q-separator class="q-ma-sm"/>
 
