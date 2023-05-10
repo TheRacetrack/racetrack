@@ -172,7 +172,7 @@ onMounted(() => {
 
                         <span>
                         <q-tooltip anchor="top middle">Sort by</q-tooltip>
-                        <q-btn-dropdown rounded flat color="grey-7" icon="sort" dropdown-icon="none">
+                        <q-btn-dropdown rounded flat color="grey-7" dropdown-icon="sort" no-icon-animation>
                             <q-list>
                                 <q-item>
                                     <q-radio v-model="jobOrder" :val="JobOrder.ByName" @click="updatedJobOrder()" v-close-popup

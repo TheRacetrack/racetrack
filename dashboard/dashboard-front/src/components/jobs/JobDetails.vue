@@ -2,7 +2,7 @@
 import { type Ref, computed, ref } from 'vue'
 import { openURL } from 'quasar'
 import * as yaml from 'js-yaml'
-import { mdiTextBoxOutline } from '@quasar/extras/mdi-v7'
+import { mdiDotsVertical, mdiTextBoxOutline } from '@quasar/extras/mdi-v7'
 import { progressService } from '@/services/ProgressService'
 import { apiClient } from '@/services/ApiClient'
 import { type JobData } from '@/utils/api-schema'
@@ -11,6 +11,7 @@ import { timestampToLocalTime, timestampPrettyAgo } from '@/utils/time'
 import JobStatus from '@/components/jobs/JobStatus.vue'
 import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
 import LogsView from '@/components/jobs/LogsView.vue'
+import { getJobGraphanaUrl } from '@/utils/jobs'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
@@ -100,6 +101,10 @@ function reprovisionJob(job: JobData) {
         },
     })
 }
+
+function openJobGrafanaDashboard(job: JobData) {
+    openURL(getJobGraphanaUrl(job))
+}
 </script>
 
 <template>
@@ -142,6 +147,16 @@ function reprovisionJob(job: JobData) {
 
         <DeleteJobButton :jobName="job?.name || ''" :jobVersion="job?.version || ''"
             @jobDeleted="emit('refreshJobs', null)" />
+
+        <q-btn-dropdown push color="white" label="" :dropdown-icon="mdiDotsVertical" text-color="black" no-icon-animation>
+            <q-list>
+                <q-item clickable v-close-popup @click="openJobGrafanaDashboard(job)">
+                    <q-item-section>
+                        <q-item-label>Open Grafana Dashboard <q-icon name="open_in_new" /></q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
     </q-btn-group>
     </div>
 

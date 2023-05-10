@@ -133,7 +133,7 @@ function onPluginUploaded(info: any) {
             
             <q-field outlined label="Lifecycle API server address" stack-label class="q-mt-md">
                 <template v-slot:control>
-                    <a :href="envInfo.lifecycle_url || ''" target="_blank" class="x-monospace x-overflow-any">
+                    <a :href="envInfo.lifecycle_url || ''" target="_blank" class="x-overflow-any">
                         {{ envInfo.lifecycle_url }}
                     </a>
                 </template>
@@ -144,12 +144,23 @@ function onPluginUploaded(info: any) {
             
             <q-field outlined label="Lifecycle Admin panel" stack-label class="q-mt-md">
                 <template v-slot:control>
-                    <a :href="lifecycleAdminUrl" target="_blank" class="x-monospace x-overflow-any">
+                    <a :href="lifecycleAdminUrl" target="_blank" class="x-overflow-any">
                         {{ lifecycleAdminUrl }}
                     </a>
                 </template>
                 <template v-slot:append>
                     <q-btn round dense flat icon="content_copy" @click="copyText(lifecycleAdminUrl)" />
+                </template>
+            </q-field>
+
+            <q-field outlined label="Grafana dashboards" stack-label class="q-mt-md">
+                <template v-slot:control>
+                    <a :href="envInfo.grafana_url" target="_blank" class="x-overflow-any">
+                        {{ envInfo.grafana_url }}
+                    </a>
+                </template>
+                <template v-slot:append>
+                    <q-btn round dense flat icon="content_copy" @click="copyText(envInfo.grafana_url)" />
                 </template>
             </q-field>
 

@@ -7,7 +7,7 @@ from starlette.datastructures import MutableHeaders
 
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.url import trim_url
-from racetrack_commons.urls import get_external_lifecycle_url, get_external_pub_url
+from racetrack_commons.urls import get_external_grafana_url, get_external_lifecycle_url, get_external_pub_url
 from dashboard.api.docs import setup_docs_endpoints
 
 logger = get_logger(__name__)
@@ -26,6 +26,7 @@ def setup_api_endpoints(app: FastAPI):
             'docker_tag': os.environ.get('DOCKER_TAG', ''),
             'lifecycle_url': get_external_lifecycle_url(),
             'external_pub_url': get_external_pub_url(),
+            'grafana_url': get_external_grafana_url(),
             'site_name': os.environ.get('SITE_NAME', ''),
         }
     

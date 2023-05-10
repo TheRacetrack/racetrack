@@ -1,4 +1,5 @@
 import type { JobData } from "./api-schema"
+import { envInfo } from '@/services/EnvironmentInfo'
 
 export enum JobOrder {
     ByLatestFamily,
@@ -71,4 +72,9 @@ export function filterJobByKeyword(job: JobData, keyword: string): boolean {
     if (job.manifest?.['owner_email']?.toLowerCase().includes(keyword))
         return true
     return false
+}
+
+export function getJobGraphanaUrl(job: JobData): string {
+    // "Jobs" dashboard filtered by job name and version
+    return `${envInfo.grafana_url}/d/KZoFMs_nz/jobs?orgId=1&var-job_name=${job.name}&var-job_version=${job.version}`
 }
