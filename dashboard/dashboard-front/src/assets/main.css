@@ -1,0 +1,13 @@
+#app-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.x-monospace {
+  font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace;
+}
+
+.x-overflow-any {
+  overflow-wrap: anywhere;
+}

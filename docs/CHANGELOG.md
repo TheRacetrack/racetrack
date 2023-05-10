@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- "Jobs" tab now shows the tree of jobs grouped by the family name.
+  Jobs tree can be filtered by name, version, owner, job type version or infrastructure target.
+  [issue #212](https://github.com/TheRacetrack/racetrack/issues/212)
+
+### Changed
+- Dashboard UI has been revamped and turned into Single Page Application
+  using modern front-end frameworks, which made it more smooth and responsive.
+  [issue #212](https://github.com/TheRacetrack/racetrack/issues/212)
 
 ## [2.12.1] - 2023-04-21
 ### Changed

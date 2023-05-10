@@ -13,6 +13,7 @@ Install:
 - [kubectl v1.24.3+](https://kubernetes.io/docs/tasks/tools/#kubectl) - if you're going to deploy to Kind
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) - if you're going to deploy to Kind
 - [Go 1.19+](https://go.dev/doc/install) - if you're going to develop components in Go (PUB, go_wrapper)
+- [nvm](https://github.com/nvm-sh/nvm) - if you're going to rebuild Dashboard front-end
 
 ## Development Setup
 
