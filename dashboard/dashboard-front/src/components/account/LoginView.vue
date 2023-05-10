@@ -74,14 +74,14 @@ function clearCredentials() {
 
       <q-form autocomple="on" @submit.prevent="login">
         <q-card-section class="q-gutter-md">
-          <q-input outlined autofocus type="text" label="Email" autocomplete="username"
+          <q-input outlined autofocus type="text" label="Email" name="username" autocomplete="username"
             v-model="username" @keydown.enter.prevent="login"
             >
             <template v-if="username" v-slot:append>
               <q-icon name="cancel" @click.stop.prevent="clearCredentials" class="cursor-pointer" />
             </template>
           </q-input>
-          <q-input outlined type="password" label="Password" autocomplete="password"
+          <q-input outlined type="password" label="Password" name="password" autocomplete="password"
             v-model="password" @keydown.enter.prevent="login"
             />
         </q-card-section>
