@@ -67,7 +67,7 @@ function clearCredentials() {
 </script>
 
 <template>
-  <div class="row justify-center">
+  <div class="row justify-center app-container">
     <q-card bordered class="q-pa-lg shadow-1 col-xs-12 col-sm-6 col-md-5">
 
       <h5 class="text-h5 q-my-sm text-center text-grey-9">Sign In</h5>

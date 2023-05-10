@@ -30,7 +30,7 @@ progressService.init(progressCompononent)
     <NavDrawer ref="navDrawer"/>
 
     <q-page-container>
-      <div id="app-container">
+      <div class="app-container-full">
         <RouterView />
       </div>
     </q-page-container>

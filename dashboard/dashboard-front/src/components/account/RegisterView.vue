@@ -45,6 +45,7 @@ function register() {
 </script>
 
 <template>
+    <div class="app-container">
     <q-card bordered class="q-pa-md full-width">
         
         <h5 class="text-h5 q-my-sm text-center text-grey-9">Create an account</h5>
@@ -84,4 +85,5 @@ function register() {
         </q-card-section>
         
     </q-card>
+    </div>
 </template>
