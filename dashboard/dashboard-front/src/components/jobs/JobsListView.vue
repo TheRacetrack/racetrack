@@ -6,12 +6,7 @@ import { toastService } from '@/services/ToastService'
 import { type JobData } from '@/utils/api-schema'
 import JobDetails from '@/components/jobs/JobDetails.vue'
 import JobStatus from '@/components/jobs/JobStatus.vue'
-
-enum JobOrder {
-    ByLatestFamily,
-    ByLatestJob,
-    ByName,
-}
+import { JobOrder, filterJobByKeyword, sortedJobs } from '@/utils/jobs'
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
@@ -36,18 +31,8 @@ function fetchJobs() {
     })
 }
 
-function populateJobsData() {
-    const sortedJobs: JobData[] = [...jobsData.value]
-    if (jobOrder.value === JobOrder.ByLatestFamily || jobOrder.value === JobOrder.ByLatestJob) {
-        sortedJobs.sort((a, b) => {
-            return b.update_time - a.update_time
-        })
-    } else if (jobOrder.value === JobOrder.ByName) {
-        sortedJobs.sort((a, b) => {
-            return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-                || compareVersions(b.version, a.version)
-        })
-    }
+function populateJobsTree() {
+    const jobs: JobData[] = sortedJobs(jobsData.value, jobOrder.value)
 
     jobsByKey.value = jobsData.value?.reduce((map, job) => {
         map.set(`job:${job.name}-${job.version}`, job)
@@ -55,8 +40,8 @@ function populateJobsData() {
     }, new Map())
 
     let leafs = []
-    if (jobOrder.value === JobOrder.ByLatestJob) {
-        for (let job of sortedJobs) {
+    if (jobOrder.value === JobOrder.ByLatestJob || jobOrder.value === JobOrder.ByStatus) { // flat list
+        for (let job of jobs) {
             leafs.push({
                 label: `${job.name} v${job.version}`,
                 key: `job:${job.name}-${job.version}`,
@@ -64,9 +49,9 @@ function populateJobsData() {
             })
         }
 
-    } else {
+    } else { // tree grouped by families
         const jobFamilies = new Map<string, JobData[]>()
-        sortedJobs.forEach(job => {
+        jobs.forEach(job => {
             const family = jobFamilies.get(job.name)
             if (family) {
                 family.push(job)
@@ -104,20 +89,6 @@ function selectJobNode(key: string | null) {
     }
 }
 
-function compareVersions(a: string, b: string): number {
-    const regexp = /^(\d+)\.(\d+)\.(\d+)(.*)$/g
-    const matchesA = regexp.exec(a)
-    regexp.lastIndex = 0
-    const matchesB = regexp.exec(b)
-    if (!matchesA || !matchesB) {
-        return 0
-    }
-    return parseInt(matchesA[1]) - parseInt(matchesB[1])
-        || parseInt(matchesA[2]) - parseInt(matchesB[2])
-        || parseInt(matchesA[3]) - parseInt(matchesB[3])
-        || matchesA[4].localeCompare(matchesB[4])
-}
-
 function getJobByKey(key: string): JobData | null {
     return jobsByKey.value?.get(key) || null
 }
@@ -132,22 +103,6 @@ function filterJobsTree(node: any, filter: string): boolean {
     return keywords.every(keyword => filterJobByKeyword(job, keyword))
 }
 
-function filterJobByKeyword(job: JobData, keyword: string): boolean {
-    if (job.name.toLowerCase().includes(keyword))
-        return true
-    if (job.version.toLowerCase().includes(keyword))
-        return true
-    if (job.deployed_by?.toLowerCase().includes(keyword))
-        return true
-    if (job.status.toLowerCase().includes(keyword))
-        return true
-    if (job.job_type_version?.toLowerCase().includes(keyword))
-        return true
-    if (job.manifest?.['owner_email']?.toLowerCase().includes(keyword))
-        return true
-    return false
-}
-
 function expandAll() {
     jobsQTreeRef.value?.expandAll()
 }
@@ -156,13 +111,8 @@ function collapseAll() {
     jobsQTreeRef.value?.collapseAll()
 }
 
-function changeJobOrder(order: JobOrder) {
-    jobOrder.value = order
-    populateJobsData()
-}
-
 watch(jobsData, () => {
-    populateJobsData()
+    populateJobsTree()
 })
 
 watch(jobsTree, () => {
@@ -201,22 +151,23 @@ onMounted(() => {
 
                         <span>
                         <q-tooltip anchor="top middle">Sort by</q-tooltip>
-                        <q-btn-dropdown round flat color="grey-7" icon="sort" dropdown-icon="none">
+                        <q-btn-dropdown rounded flat color="grey-7" icon="sort" dropdown-icon="none">
                             <q-list>
-                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByLatestFamily)">
-                                    <q-item-section>
-                                        <q-item-label>Sort by latest family</q-item-label>
-                                    </q-item-section>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByName" @click="populateJobsTree()" v-close-popup
+                                        label="Sort by name"/>
                                 </q-item>
-                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByLatestJob)">
-                                    <q-item-section>
-                                        <q-item-label>Sort by latest job</q-item-label>
-                                    </q-item-section>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByLatestFamily" @click="populateJobsTree()" v-close-popup
+                                        label="Sort by latest family"/>
                                 </q-item>
-                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByName)">
-                                    <q-item-section>
-                                        <q-item-label>Sort by name</q-item-label>
-                                    </q-item-section>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByLatestJob" @click="populateJobsTree()" v-close-popup
+                                        label="Sort by latest job"/>
+                                </q-item>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByStatus" @click="populateJobsTree()" v-close-popup
+                                        label="Sort by status"/>
                                 </q-item>
                             </q-list>
                         </q-btn-dropdown>
