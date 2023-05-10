@@ -82,7 +82,7 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return list_infrastructure_names_with_origins(plugin_engine)
 
     @api.get('/plugin/tree')
-    def _get_plugins_tree() -> dict:
+    def _get_plugin_trees() -> dict:
         infrastructure_targets: dict[str, PluginManifest] = list_infrastructure_names_with_origins(plugin_engine)
         plugins: list[PluginManifest] = plugin_engine.plugin_manifests
         r = Requests.get(f'{config.image_builder_url}/api/v1/job_type/versions')

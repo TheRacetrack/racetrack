@@ -8,6 +8,7 @@ from lifecycle.auth.check import check_auth
 from lifecycle.auth.cookie import set_auth_token_cookie, delete_auth_cookie
 from lifecycle.auth.users import authenticate_username_with_password, register_user_account
 from lifecycle.auth.users import change_user_password
+from racetrack_client.log.errors import ValidationError
 from racetrack_commons.entities.dto import UserProfileDto
 
 
@@ -55,16 +56,16 @@ def setup_user_endpoints(api: APIRouter):
     @api.post('/users/register')
     def _register_user_account(payload: UserCredentialsModel):
         if "@" not in payload.username:
-            raise RuntimeError("You have to pass email as username")
+            raise ValidationError("You have to pass email as username")
         if not payload.password:
-            raise RuntimeError("Password cannot be empty")
+            raise ValidationError("Password cannot be empty")
 
         register_user_account(payload.username, payload.password)
 
     @api.put('/users/change_password')
     def _change_user_password(payload: ChangePasswordModel, request: Request):
         if not payload.new_password:
-            raise RuntimeError("Password cannot be empty")
+            raise ValidationError("Password cannot be empty")
 
         check_auth(request)
         username = get_username_from_token(request)

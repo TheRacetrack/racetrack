@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from racetrack_client.log.errors import EntityNotFound, AlreadyExists
+from racetrack_client.log.errors import EntityNotFound, AlreadyExists, ValidationError
 from racetrack_commons.api.tracing import log_request_exception_with_tracing
 from racetrack_commons.auth.auth import UnauthorizedError
 
@@ -51,6 +51,14 @@ def register_error_handlers(api: FastAPI):
         return JSONResponse(
             content={"error": str(error), "type": type(error).__name__},
             status_code=409,
+        )
+
+    @api.exception_handler(ValidationError)
+    async def validation_error_handler(request: Request, error: AlreadyExists):
+        """Validation Error"""
+        return JSONResponse(
+            content={"error": str(error), "type": type(error).__name__},
+            status_code=400,  # Bad Request
         )
 
     @api.middleware('http')

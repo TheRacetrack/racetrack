@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
 from lifecycle.deployer.redeploy import redeploy_job, reprovision_job, move_job
-from lifecycle.job.ansi import remove_ansi_sequences
+from lifecycle.job.ansi import strip_ansi_colors
 from lifecycle.job.graph import build_job_dependencies_graph
 from lifecycle.job.portfolio import enrich_jobs_purge_info
 from lifecycle.job.registry import (
@@ -49,7 +49,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
 
     @api.get('/job/portfolio')
     def _get_job_portfolio(request: Request) -> list[dict]:
-        """Get Jobs list with extra portfolio data"""
+        """Get Job list with extra portfolio data"""
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
         jobs: list[JobDto] = list_job_registry(config, auth_subject)
         job_dicts: list[dict] = enrich_jobs_purge_info(jobs)
@@ -103,7 +103,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         """Get last logs of particular Job in a plain text response"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         content = read_runtime_logs(job_name, job_version, tail, config, plugin_engine)
-        content = remove_ansi_sequences(content)
+        content = strip_ansi_colors(content)
         return Response(content, media_type='text/plain; charset=utf-8')
 
     @api.get('/job/{job_name}/{job_version}/build-logs')
@@ -117,7 +117,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         """Get build logs of Job deployment attempt in a plain text response"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         content = read_build_logs(job_name, job_version, tail)
-        content = remove_ansi_sequences(content)
+        content = strip_ansi_colors(content)
         return Response(content, media_type='text/plain; charset=utf-8')
 
     @api.get("/job/{job_name}/{job_version}/public-endpoints")

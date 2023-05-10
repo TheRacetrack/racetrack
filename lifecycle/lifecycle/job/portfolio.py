@@ -47,7 +47,7 @@ def assess_job_usability(job: JobDto, all_jobs: list[JobDto]) -> tuple[float, li
 
     newer_versions = _count_job_newer_versions(job, all_jobs)
     if newer_versions > 0:
-        score -= 1 * newer_versions
+        score -= 5 * _interpolate(newer_versions, 0, 5)
         reasons.append(f'Job has {newer_versions} newer versions.')
 
     return score, reasons
