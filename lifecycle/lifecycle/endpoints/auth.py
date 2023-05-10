@@ -5,6 +5,7 @@ from fastapi.responses import Response, JSONResponse
 
 from lifecycle.auth.authenticate import authenticate_token
 from lifecycle.auth.authorize import authorize_internal_token, authorize_resource_access, grant_permission
+from lifecycle.auth.cookie import set_auth_token_cookie
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
@@ -110,10 +111,15 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         return {'token': auth_subject.token}
 
     @api.post('/auth/token/user/regenerate')
-    def _generate_tokens_for_user(request: Request) -> str:
+    def _generate_tokens_for_user(request: Request) -> JSONResponse:
         """Generate new token for a User"""
         auth_subject = check_auth(request, subject_types=[AuthSubjectType.USER])
-        return regenerate_specific_user_token(auth_subject)
+        new_token = regenerate_specific_user_token(auth_subject)
+        response = JSONResponse({
+            'new_token': new_token,
+        })
+        set_auth_token_cookie(new_token, response)
+        return response
 
     @api.post('/auth/token/user/all/regenerate')
     def _generate_tokens_for_all_users(request: Request):
