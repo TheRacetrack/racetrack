@@ -15,7 +15,7 @@ enum JobOrder {
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
-const splitterModel: Ref<number> = ref(35)
+const splitterModel: Ref<number> = ref(25)
 const treeFilter: Ref<string> = ref('')
 const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
@@ -81,7 +81,7 @@ function populateJobsData() {
                 key: `job-family:${familyName}`,
                 type: 'job-family',
                 children: jobs.map(job => ({
-                    label: `${job.name} v${job.version}`,
+                    label: `v${job.version}`,
                     key: `job:${job.name}-${job.version}`,
                     type: 'job',
                 }))
