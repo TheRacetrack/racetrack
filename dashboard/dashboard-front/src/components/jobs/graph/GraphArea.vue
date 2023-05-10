@@ -14,6 +14,7 @@ const focusedNodes: Ref<string[]> = ref([])
 const legendTitle: Ref<string> = ref('')
 const legendBody: Ref<string> = ref('')
 const physics: Ref<boolean> = ref(true)
+const loading = ref(true)
 
 interface JobGraph {
     nodes: JobGraphNode[]
@@ -33,12 +34,15 @@ interface JobGraphEdge {
 }
 
 function fetchGraph() {
+    loading.value = true
     apiClient.get(`/api/v1/job/graph`).then(response => {
         const data: JobGraph = response.data
         graphData.nodes = data.nodes
         graphData.edges = data.edges
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch a jobs graph`, err)
+    }).finally(() => {
+        loading.value = false
     })
 }
 
@@ -177,4 +181,7 @@ function colorOfNodeByType(nodeType: string) {
             <div v-html="legendBody"></div>
         </q-card-section>
     </q-card>
+    <q-inner-loading :showing="loading">
+        <q-spinner-gears size="50px" color="primary" />
+    </q-inner-loading>
 </template>
