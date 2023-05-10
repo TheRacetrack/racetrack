@@ -15,7 +15,7 @@ enum JobOrder {
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
-const splitterModel: Ref<number> = ref(30)
+const splitterModel: Ref<number> = ref(35)
 const treeFilter: Ref<string> = ref('')
 const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
@@ -185,7 +185,7 @@ onMounted(() => {
             <q-splitter v-model="splitterModel">
                 <template v-slot:before>
 
-                    <div class="q-mr-sm">
+                    <div class="q-mr-sm" style="overflow-x: auto;">
                         <q-input filled v-model="treeFilter" label="Filter">
                             <template v-if="treeFilter" v-slot:append>
                                 <q-icon name="cancel" @click.stop.prevent="treeFilter = ''" class="cursor-pointer" />
@@ -235,7 +235,7 @@ onMounted(() => {
                             >
                             <template v-slot:default-header="prop">
                                 <template v-if="prop.node.type == 'job'">
-                                    <div>
+                                    <div class="text-no-wrap">
                                         {{ prop.node.label }}
                                         <JobStatus :status="getJobByKey(prop.node.key)?.status" />
                                     </div>
