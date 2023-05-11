@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Dashboard links to job-related Grafana dashobards.
+
+### Changed
+- Minor UI improvements and styling for Dashboard, including:
+  - Shwoing spinner during loading the graph tab
+  - Narrower navbar
+  - Status indicator (green/red/yellow) on a jobs tree
+  - Panel takes up the whole space available - no white bars on the sides
+  - Sorting jobs by status (starting from faulty ones)
+  - Jobs ordering is persisted in local storage
+  - Number of jobs near family
+  - Refreshing tree of jobs after deleting one
 
 ## [2.13.0] - 2023-05-10
 ### Added
