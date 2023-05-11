@@ -7,12 +7,13 @@ const props = defineProps({
 })
 const status: Ref<string> = computed(() => props.status || "")
 const color: Ref<string> = computed(() => {
-    if (status.value == "running") {
-        return "green"
-    } else if (status.value == "error") {
-        return "red"
-    } else {
-        return "orange"
+    switch (status.value) {
+        case "running": 
+            return "green"
+        case "error": 
+            return "red"
+        default: 
+            return "orange"
     }
 })
 </script>
