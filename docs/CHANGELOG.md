@@ -7,17 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Dashboard links to job-related Grafana dashobards.
+  [issue #206](https://github.com/TheRacetrack/racetrack/issues/206)
 
 ### Changed
 - Minor UI improvements and styling for Dashboard, including:
-  - Shwoing spinner during loading the graph tab
-  - Narrower navbar
-  - Status indicator (green/red/yellow) on a jobs tree
-  - Panel takes up the whole space available - no white bars on the sides
   - Sorting jobs by status (starting from faulty ones)
   - Jobs ordering is persisted in local storage
-  - Number of jobs near family
-  - Refreshing tree of jobs after deleting one
+  - Spinner indicators during loading the data
+  - Status indicator (green/red/yellow) and number of jobs on a jobs tree
+  - Panel takes up the whole space available - no white bars on the sides
+
+### Fixed
+- Tree of jobs is refreshed after deleting a job.
+  [issue #211](https://github.com/TheRacetrack/racetrack/issues/211)
 
 ## [2.13.0] - 2023-05-10
 ### Added
