@@ -1,0 +1,143 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "RTCore manifest validation",
+    "type": "object",
+    "properties": {
+        "name": {
+            "required": true,
+            "type": "string"
+        },
+        "jobtype": {
+            "type": "string"
+        },
+        "lang": {
+            "type": "string",
+            "deprecated": true
+        },
+        "git": {
+            "required": true,
+            "additionalProperties": false,
+            "properties": {
+                "remote": {
+                    "required": true,
+                    "type": "string"
+                },
+                "branch": {
+                    "type": "string"
+                },
+                "directory": {
+                    "type": "string"
+                }
+            }
+        },
+        "owner_email": {
+            "required": true,
+            "type": "string",
+            "format": "email"
+        },
+        "extends": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string"
+        },
+        "jobtype_extra": {},
+        "python": {
+            "deprecated": true
+        },
+        "go": {
+            "deprecated": true
+        },
+        "wrapper_properties": {
+            "deprecated": true
+        },
+        "docker": {
+            "properties": {
+                "dockerfile_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "build_env": {
+            "type": "object",
+            "properties": {
+                "type": "string"
+            }
+        },
+        "image_type": {
+            "type": "string"
+        },
+        "infrastructure_target": {
+            "type": "string"
+        },
+        "labels": {
+            "properties": {
+                "dockerfile_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "public_endpoints": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "replicas": {
+            "type": "number"
+        },
+        "resources": {
+            "properties": {
+                "memory_min": {
+                    "type": "string"
+                },
+                "memory_max": {
+                    "type": "string",
+                    "required": true
+                },
+                "cpu_min": {
+                    "type": "string"
+                },
+                "cpu_max": {
+                    "type": "string"
+                }
+            }
+        },
+        "runtime_env": {
+            "type": "object",
+            "properties": {
+                "type": "string"
+            }
+        },
+        "secret_build_env_file": {
+            "type": "string"
+        },
+        "secret_runtime_env_file": {
+            "type": "string"
+        },
+        "system_dependencies": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "allOf": [
+            {"oneOf": [
+                {"required": ["lang"]},
+                {"required": ["jobtype"]}
+            ]},
+            {"oneOf": [
+                {"required": ["jobtype_extra"]},
+                {"required": ["python"]},
+                {"required": ["go"]},
+                {"required": ["wrapper_properties"]},
+                {"allOf": [
+                    {"not": {"required": ["jobtype_extra"]}},
+                    {"not": {"required": ["python"]}},
+                    {"not": {"required": ["go"]}},
+                    {"not": {"required": ["wrapper_properties"]}}
+                ]}
+            ]}
+        ],
+        "additionalProperties": false
+}
