@@ -20,7 +20,8 @@
             "properties": {
                 "remote": {
                     "required": true,
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^https://"
                 },
                 "branch": {
                     "type": "string"
