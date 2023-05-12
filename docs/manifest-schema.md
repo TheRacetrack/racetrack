@@ -35,7 +35,7 @@ fields:
 - `replicas` - number of running instances of the Job to deploy
 - `resources` - resources demands to allocate to the Job
     - `memory_min` - minimum memory amount in bytes, eg. 256Mi
-    - `memory_max` (**required**) - maximum memory amount in bytes, eg. 1Gi
+    - `memory_max` - maximum memory amount in bytes, eg. 1Gi
     - `cpu_min` - minimum CPU consumption in cores, eg. 10m
     - `cpu_max` - maximum CPU consumption in cores, eg. 1000m
 - `runtime_env` - dictionary of environment variables that should be set when running Job

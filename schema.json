@@ -92,8 +92,7 @@
                     "type": "string"
                 },
                 "memory_max": {
-                    "type": "string",
-                    "required": true
+                    "type": "string"
                 },
                 "cpu_min": {
                     "type": "string"
@@ -122,6 +121,7 @@
             }
         },
         "allOf": [
+            "$comment": "The below ensures that deprecated keys aren't used alongside non-deprecated versions of themselves",
             {"oneOf": [
                 {"required": ["lang"]},
                 {"required": ["jobtype"]}
