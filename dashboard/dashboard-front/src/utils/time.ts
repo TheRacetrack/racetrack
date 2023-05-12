@@ -58,3 +58,10 @@ export function timestampPrettyAgo(timestampS: number | undefined): string {
         return 'a year ago'
     return `${Math.floor(diffDays / 365)} years ago`
 }
+
+export function timestampSecondsAgo(timestampS: number | undefined): number | null {
+    if (!timestampS)
+        return null
+    const diffMs = new Date().getTime() - timestampS * 1000
+    return Math.floor(diffMs / 1000)
+}

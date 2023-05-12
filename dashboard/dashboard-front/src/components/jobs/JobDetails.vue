@@ -13,6 +13,7 @@ import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
 import LogsView from '@/components/jobs/LogsView.vue'
 import { getJobGraphanaUrl } from '@/utils/jobs'
 import ManifestEditDialog from './ManifestEditDialog.vue'
+import TimeAgoLabel from './TimeAgoLabel.vue'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
@@ -223,7 +224,7 @@ function editJobManifest(job: JobData) {
         <template v-slot:control>
             {{timestampToLocalTime(job?.create_time)}}
             <span>&nbsp;</span>
-            <q-badge color="primary" rounded outline>{{timestampPrettyAgo(job?.create_time)}}</q-badge>
+            <TimeAgoLabel :timestamp="job?.create_time" />
         </template>
     </q-field>
 
@@ -232,7 +233,7 @@ function editJobManifest(job: JobData) {
         <template v-slot:control>
             {{timestampToLocalTime(job?.update_time)}}
             <span>&nbsp;</span>
-            <q-badge color="primary" rounded outline>{{timestampPrettyAgo(job?.update_time)}}</q-badge>
+            <TimeAgoLabel :timestamp="job?.update_time" />
         </template>
     </q-field>
 
@@ -241,7 +242,7 @@ function editJobManifest(job: JobData) {
         <template v-slot:control>
             {{timestampToLocalTime(job?.last_call_time)}}
             <span>&nbsp;</span>
-            <q-badge color="primary" rounded outline>{{timestampPrettyAgo(job?.last_call_time)}}</q-badge>
+            <TimeAgoLabel :timestamp="job?.last_call_time" />
         </template>
     </q-field>
 
