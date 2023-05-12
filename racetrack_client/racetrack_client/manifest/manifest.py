@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, Extra, validator, Field
 
 from racetrack_client.utils.quantity import Quantity
 
@@ -28,8 +28,8 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
     cpu_max: Optional[Quantity] = None
 
     @validator(
-        'memory_min', 
-        'memory_max', 
+        'memory_min',
+        'memory_max',
         'cpu_min',
         'cpu_max',
         pre=True)
@@ -39,8 +39,15 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
         return Quantity(str(v))
 
 
-class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
+class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allow_population_by_field_name=True):
     """Job Manifest file - build recipe to get deployable image from source code workspace"""
+
+    # For backwards compatability
+    # TODO: Pydantic v2 will support multiple aliases, see jobtype
+    # https://docs.pydantic.dev/latest/blog/pydantic-v2/#more-powerful-aliases
+    go: Optional[Dict[str, Any]] = None
+    python: Optional[Dict[str, Any]] = None
+    wrapper_properties: Optional[Dict[str, Any]] = None
 
     # name of the Job Workload
     name: str
@@ -54,7 +61,7 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     version: str = '0.0.1'
 
     # Jobtype wrapper used to embed model
-    jobtype: str = 'python3'
+    jobtype: str = Field('python3', alias='lang')
 
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None

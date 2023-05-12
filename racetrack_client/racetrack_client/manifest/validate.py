@@ -31,9 +31,10 @@ def load_validated_manifest(path: str) -> Manifest:
 
 def validate_manifest(manifest: Manifest):
     """Check whether manifest is valid. Raise exception in case of error"""
+    serialized_manifest = manifest.dict(exclude_none=True)
     with open('racetrack_client/racetrack_client/manifest/schema.json', 'r') as f:
         schema = json.load(f)
-        validate(manifest, schema=schema)
+        validate(serialized_manifest, schema=schema)
 
 def validate_and_show_manifest(path: str):
     manifest = load_validated_manifest(path)
