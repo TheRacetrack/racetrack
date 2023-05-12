@@ -12,6 +12,7 @@ import JobStatus from '@/components/jobs/JobStatus.vue'
 import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
 import LogsView from '@/components/jobs/LogsView.vue'
 import { getJobGraphanaUrl } from '@/utils/jobs'
+import ManifestEditDialog from './ManifestEditDialog.vue'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
@@ -22,6 +23,7 @@ const logsTitle: Ref<string> = ref('')
 const logsContent: Ref<string> = ref('')
 const logsOpen: Ref<boolean> = ref(false)
 const loadingLogs: Ref<boolean> = ref(false)
+const manifestDialogRef: Ref<typeof ManifestEditDialog | null> = ref(null)
 
 const manifestYaml: Ref<string> = computed(() => 
     yaml.dump(removeNulls(job.value?.manifest)) || ''
@@ -105,11 +107,17 @@ function reprovisionJob(job: JobData) {
 function openJobGrafanaDashboard(job: JobData) {
     openURL(getJobGraphanaUrl(job))
 }
+
+function editJobManifest(job: JobData) {
+    manifestDialogRef.value?.openDialog(job)
+}
 </script>
 
 <template>
 
     <LogsView :title="logsTitle" :content="logsContent" :open="logsOpen" @close="closeLogs" />
+    <ManifestEditDialog ref="manifestDialogRef" />
+
     <div class="full-width row wrap justify-end">
     <q-btn-group push class="q-mb-md self-end">
         <q-btn color="primary" push label="Open" icon="open_in_new"
@@ -152,7 +160,12 @@ function openJobGrafanaDashboard(job: JobData) {
             <q-list>
                 <q-item clickable v-close-popup @click="openJobGrafanaDashboard(job)">
                     <q-item-section>
-                        <q-item-label>Open Grafana Dashboard <q-icon name="open_in_new" /></q-item-label>
+                        <q-item-label><q-icon name="open_in_new" /> Open Grafana Dashboard</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="editJobManifest(job)">
+                    <q-item-section>
+                        <q-item-label><q-icon name="edit" /> Edit Manifest</q-item-label>
                     </q-item-section>
                 </q-item>
             </q-list>
