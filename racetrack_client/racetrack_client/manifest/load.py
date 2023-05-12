@@ -30,8 +30,7 @@ def load_manifest_dict_from_yaml(path: Path) -> Dict:
 
 def load_manifest_from_dict(manifest_dict: Dict) -> Manifest:
     """Return manifest as data class"""
-    #with wrap_context('parsing manifest data types'):
-    with wrap_context(f'\n {manifest_dict}'):
+    with wrap_context('parsing manifest data types'):
         return parse_dict_datamodel(manifest_dict, Manifest)
 
 

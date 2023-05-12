@@ -2,24 +2,44 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "RTCore manifest validation",
     "type": "object",
+    "required": ["owner_email", "git", "name"],
+    "allOf": [
+        {"oneOf": [
+            {"required": ["lang"]},
+            {"required": ["jobtype"]}
+        ]},
+        {"oneOf": [
+            {"required": ["jobtype_extra"]},
+            {"required": ["python"]},
+            {"required": ["go"]},
+            {"required": ["wrapper_properties"]},
+            {"allOf": [
+                {"not": {"required": ["jobtype_extra"]}},
+                {"not": {"required": ["python"]}},
+                {"not": {"required": ["go"]}},
+                {"not": {"required": ["wrapper_properties"]}}
+            ]}
+        ]}
+    ],
+    "uniqueItems": true,
+    "additionalProperties": false,
     "properties": {
         "name": {
-            "required": true,
             "type": "string"
         },
         "jobtype": {
-            "type": "string"
+            "type": "string",
+            "$comment": "Required, logic handled elsewhere for backwards compatability with the depricated version of the same key; lang"
         },
         "lang": {
             "type": "string",
             "deprecated": true
         },
         "git": {
-            "required": true,
             "additionalProperties": false,
+            "required": ["remote"],
             "properties": {
                 "remote": {
-                    "required": true,
                     "type": "string",
                     "pattern": "^https://"
                 },
@@ -32,9 +52,7 @@
             }
         },
         "owner_email": {
-            "required": true,
-            "type": "string",
-            "format": "email"
+            "type": "string"
         },
         "extends": {
             "type": "string"
@@ -42,7 +60,9 @@
         "version": {
             "type": "string"
         },
-        "jobtype_extra": {},
+        "jobtype_extra": {
+            "$comment": "Replaces python, go, wrapper_properties keys. Cannot appear next to any of these"
+        },
         "python": {
             "deprecated": true
         },
@@ -61,8 +81,10 @@
         },
         "build_env": {
             "type": "object",
-            "properties": {
-                "type": "string"
+            "patternProperties": {
+                ".": {
+                    "type": "string"
+                }
             }
         },
         "image_type": {
@@ -105,8 +127,10 @@
         },
         "runtime_env": {
             "type": "object",
-            "properties": {
-                "type": "string"
+            "patternProperties": {
+                ".": {
+                    "type": "string"
+                }
             }
         },
         "secret_build_env_file": {
@@ -120,25 +144,7 @@
             "items": {
                 "type": "string"
             }
-        },
-        "allOf": [
-            "$comment": "The below ensures that deprecated keys aren't used alongside non-deprecated versions of themselves",
-            {"oneOf": [
-                {"required": ["lang"]},
-                {"required": ["jobtype"]}
-            ]},
-            {"oneOf": [
-                {"required": ["jobtype_extra"]},
-                {"required": ["python"]},
-                {"required": ["go"]},
-                {"required": ["wrapper_properties"]},
-                {"allOf": [
-                    {"not": {"required": ["jobtype_extra"]}},
-                    {"not": {"required": ["python"]}},
-                    {"not": {"required": ["go"]}},
-                    {"not": {"required": ["wrapper_properties"]}}
-                ]}
-            ]}
-        ],
-        "additionalProperties": false
+        }
+    }
 }
+
