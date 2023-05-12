@@ -6,16 +6,11 @@ import { toastService } from '@/services/ToastService'
 import { type JobData } from '@/utils/api-schema'
 import JobDetails from '@/components/jobs/JobDetails.vue'
 import JobStatus from '@/components/jobs/JobStatus.vue'
-
-enum JobOrder {
-    ByLatestFamily,
-    ByLatestJob,
-    ByName,
-}
+import { JobOrder, filterJobByKeyword, sortedJobs } from '@/utils/jobs'
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
-const splitterModel: Ref<number> = ref(30)
+const splitterModel: Ref<number> = ref(25)
 const treeFilter: Ref<string> = ref('')
 const jobsByKey: Ref<Map<string, JobData>> = ref(new Map())
 const jobsTree: Ref<any[]> = ref([])
@@ -36,18 +31,8 @@ function fetchJobs() {
     })
 }
 
-function populateJobsData() {
-    const sortedJobs: JobData[] = [...jobsData.value]
-    if (jobOrder.value === JobOrder.ByLatestFamily || jobOrder.value === JobOrder.ByLatestJob) {
-        sortedJobs.sort((a, b) => {
-            return b.update_time - a.update_time
-        })
-    } else if (jobOrder.value === JobOrder.ByName) {
-        sortedJobs.sort((a, b) => {
-            return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-                || compareVersions(b.version, a.version)
-        })
-    }
+function populateJobsTree() {
+    const jobs: JobData[] = sortedJobs(jobsData.value, jobOrder.value)
 
     jobsByKey.value = jobsData.value?.reduce((map, job) => {
         map.set(`job:${job.name}-${job.version}`, job)
@@ -55,8 +40,8 @@ function populateJobsData() {
     }, new Map())
 
     let leafs = []
-    if (jobOrder.value === JobOrder.ByLatestJob) {
-        for (let job of sortedJobs) {
+    if (jobOrder.value === JobOrder.ByLatestJob || jobOrder.value === JobOrder.ByStatus) { // flat list
+        for (let job of jobs) {
             leafs.push({
                 label: `${job.name} v${job.version}`,
                 key: `job:${job.name}-${job.version}`,
@@ -64,9 +49,9 @@ function populateJobsData() {
             })
         }
 
-    } else {
+    } else { // tree grouped by families
         const jobFamilies = new Map<string, JobData[]>()
-        sortedJobs.forEach(job => {
+        jobs.forEach(job => {
             const family = jobFamilies.get(job.name)
             if (family) {
                 family.push(job)
@@ -80,8 +65,9 @@ function populateJobsData() {
                 label: familyName,
                 key: `job-family:${familyName}`,
                 type: 'job-family',
+                childrenCount: jobs.length,
                 children: jobs.map(job => ({
-                    label: `${job.name} v${job.version}`,
+                    label: `v${job.version}`,
                     key: `job:${job.name}-${job.version}`,
                     type: 'job',
                 }))
@@ -89,6 +75,10 @@ function populateJobsData() {
         }
     }
     jobsTree.value = leafs
+
+    if (selectedNodeKey.value && !getJobByKey(selectedNodeKey.value)) { // current job has been deleted
+        currentJob.value = null
+    }
 }
 
 function selectJobNode(key: string | null) {
@@ -102,20 +92,6 @@ function selectJobNode(key: string | null) {
             selectedNodeKey.value = null
         }
     }
-}
-
-function compareVersions(a: string, b: string): number {
-    const regexp = /^(\d+)\.(\d+)\.(\d+)(.*)$/g
-    const matchesA = regexp.exec(a)
-    regexp.lastIndex = 0
-    const matchesB = regexp.exec(b)
-    if (!matchesA || !matchesB) {
-        return 0
-    }
-    return parseInt(matchesA[1]) - parseInt(matchesB[1])
-        || parseInt(matchesA[2]) - parseInt(matchesB[2])
-        || parseInt(matchesA[3]) - parseInt(matchesB[3])
-        || matchesA[4].localeCompare(matchesB[4])
 }
 
 function getJobByKey(key: string): JobData | null {
@@ -132,22 +108,6 @@ function filterJobsTree(node: any, filter: string): boolean {
     return keywords.every(keyword => filterJobByKeyword(job, keyword))
 }
 
-function filterJobByKeyword(job: JobData, keyword: string): boolean {
-    if (job.name.toLowerCase().includes(keyword))
-        return true
-    if (job.version.toLowerCase().includes(keyword))
-        return true
-    if (job.deployed_by?.toLowerCase().includes(keyword))
-        return true
-    if (job.status.toLowerCase().includes(keyword))
-        return true
-    if (job.job_type_version?.toLowerCase().includes(keyword))
-        return true
-    if (job.manifest?.['owner_email']?.toLowerCase().includes(keyword))
-        return true
-    return false
-}
-
 function expandAll() {
     jobsQTreeRef.value?.expandAll()
 }
@@ -156,13 +116,13 @@ function collapseAll() {
     jobsQTreeRef.value?.collapseAll()
 }
 
-function changeJobOrder(order: JobOrder) {
-    jobOrder.value = order
-    populateJobsData()
+function updatedJobOrder() {
+    localStorage.setItem('jobs.order', JSON.stringify(jobOrder.value))
+    populateJobsTree()
 }
 
 watch(jobsData, () => {
-    populateJobsData()
+    populateJobsTree()
 })
 
 watch(jobsTree, () => {
@@ -172,20 +132,31 @@ watch(jobsTree, () => {
 })
 
 onMounted(() => {
+    const storedOrder = localStorage.getItem('jobs.order')
+    if (storedOrder) {
+        try {
+            jobOrder.value = JSON.parse(storedOrder) as JobOrder
+        } catch(e) {
+            console.error(e)
+        }
+    }
+
     fetchJobs()
 })
 </script>
 <template>
     <q-card>
         <q-card-section class="q-pb-none">
-            <div class="text-h6">Jobs ({{jobsCount}})</div>
+            <div class="text-h6">Jobs
+                <q-badge outline color="grey">{{jobsCount}}</q-badge>
+            </div>
         </q-card-section>
         
         <q-card-section>
             <q-splitter v-model="splitterModel">
                 <template v-slot:before>
 
-                    <div class="q-mr-sm">
+                    <div class="q-mr-sm" style="overflow-x: auto;">
                         <q-input filled v-model="treeFilter" label="Filter">
                             <template v-if="treeFilter" v-slot:append>
                                 <q-icon name="cancel" @click.stop.prevent="treeFilter = ''" class="cursor-pointer" />
@@ -201,22 +172,23 @@ onMounted(() => {
 
                         <span>
                         <q-tooltip anchor="top middle">Sort by</q-tooltip>
-                        <q-btn-dropdown round flat color="grey-7" icon="sort" dropdown-icon="none">
+                        <q-btn-dropdown rounded flat color="grey-7" dropdown-icon="sort" no-icon-animation>
                             <q-list>
-                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByLatestFamily)">
-                                    <q-item-section>
-                                        <q-item-label>Sort by latest family</q-item-label>
-                                    </q-item-section>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByName" @click="updatedJobOrder()" v-close-popup
+                                        label="Sort by name"/>
                                 </q-item>
-                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByLatestJob)">
-                                    <q-item-section>
-                                        <q-item-label>Sort by latest job</q-item-label>
-                                    </q-item-section>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByLatestFamily" @click="updatedJobOrder()" v-close-popup
+                                        label="Sort by latest family"/>
                                 </q-item>
-                                <q-item clickable v-close-popup @click="changeJobOrder(JobOrder.ByName)">
-                                    <q-item-section>
-                                        <q-item-label>Sort by name</q-item-label>
-                                    </q-item-section>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByLatestJob" @click="updatedJobOrder()" v-close-popup
+                                        label="Sort by latest job"/>
+                                </q-item>
+                                <q-item>
+                                    <q-radio v-model="jobOrder" :val="JobOrder.ByStatus" @click="updatedJobOrder()" v-close-popup
+                                        label="Sort by status"/>
                                 </q-item>
                             </q-list>
                         </q-btn-dropdown>
@@ -235,10 +207,15 @@ onMounted(() => {
                             >
                             <template v-slot:default-header="prop">
                                 <template v-if="prop.node.type == 'job'">
-                                    <div>
+                                    <div class="text-no-wrap">
                                         {{ prop.node.label }}
-                                        <JobStatus :status="getJobByKey(prop.node.key)?.status" />
+                                        <JobStatus :status="getJobByKey(prop.node.key)?.status" short />
                                     </div>
+                                </template>
+                                <template v-else-if="prop.node.type == 'job-family'">
+                                    {{ prop.node.label }}
+                                    &nbsp;
+                                    <q-badge outline color="grey">{{prop.node.childrenCount}}</q-badge>
                                 </template>
                                 <template v-else>
                                     {{ prop.node.label }}

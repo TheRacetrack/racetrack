@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Dashboard links to job-related Grafana dashobards.
+  [issue #206](https://github.com/TheRacetrack/racetrack/issues/206)
+
+### Changed
+- Minor UI improvements and styling for Dashboard, including:
+  - Sorting jobs by status (starting from faulty ones)
+  - Jobs ordering is persisted in local storage
+  - Spinner indicators during loading the data
+  - Status indicator (green/red/yellow) and number of jobs on a jobs tree
+  - Panel takes up the whole space available - no white bars on the sides
+
+### Fixed
+- Tree of jobs is refreshed after deleting a job.
+  [issue #211](https://github.com/TheRacetrack/racetrack/issues/211)
 
 ## [2.13.0] - 2023-05-10
 ### Added

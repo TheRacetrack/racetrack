@@ -67,29 +67,29 @@ function clearCredentials() {
 </script>
 
 <template>
-  <div class="row justify-center">
+  <div class="row justify-center app-container">
     <q-card bordered class="q-pa-lg shadow-1 col-xs-12 col-sm-6 col-md-5">
 
       <h5 class="text-h5 q-my-sm text-center text-grey-9">Sign In</h5>
 
-      <q-card-section>
-        <q-form class="q-gutter-md">
-          <q-input outlined autofocus type="email" label="Email" autocomplete="username"
+      <q-form autocomple="on" @submit.prevent="login">
+        <q-card-section class="q-gutter-md">
+          <q-input outlined autofocus type="text" label="Email" name="username" autocomplete="username"
             v-model="username" @keydown.enter.prevent="login"
             >
             <template v-if="username" v-slot:append>
               <q-icon name="cancel" @click.stop.prevent="clearCredentials" class="cursor-pointer" />
             </template>
           </q-input>
-          <q-input outlined type="password" label="Password" autocomplete="password"
+          <q-input outlined type="password" label="Password" name="password" autocomplete="password"
             v-model="password" @keydown.enter.prevent="login"
             />
-        </q-form>
-      </q-card-section>
-      <q-card-actions class="q-px-md">
-        <q-btn color="primary" size="lg" class="full-width" label="Login" push
-          :loading="loading" @click="login" />
-      </q-card-actions>
+        </q-card-section>
+        <q-card-actions class="q-px-md">
+          <q-btn color="primary" size="lg" class="full-width" label="Login" type="submit" push
+          :loading="loading" />
+        </q-card-actions>
+      </q-form>
       
       <q-separator class="q-ma-sm"/>
 

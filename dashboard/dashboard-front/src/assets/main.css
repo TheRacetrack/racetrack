@@ -1,7 +1,10 @@
-#app-container {
+.app-container-full {
+  padding: 2rem;
+}
+
+.app-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
 }
 
 .x-monospace {

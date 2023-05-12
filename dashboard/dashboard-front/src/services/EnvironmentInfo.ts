@@ -9,6 +9,7 @@ export const envInfo: EnvironmentInfo = reactive({
     docker_tag: null,
     lifecycle_url: null,
     external_pub_url: null,
+    grafana_url: null,
     site_name: null,
 })
 
@@ -19,6 +20,7 @@ export interface EnvironmentInfo {
     docker_tag: string | null
     lifecycle_url: string | null
     external_pub_url: string | null
+    grafana_url: string | null
     site_name: string | null
 }
 
@@ -35,6 +37,7 @@ export function loadEnvironmentInfo() {
             envInfo.lifecycle_url = data.lifecycle_url
             envInfo.external_pub_url = data.external_pub_url
             envInfo.site_name = data.site_name
+            envInfo.grafana_url = data.grafana_url
 
             if (envInfo.site_name) {
                 document.title = `[${envInfo.site_name}] Racetrack Dashboard`

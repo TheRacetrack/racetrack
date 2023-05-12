@@ -22,6 +22,7 @@ defineExpose({
     side="left"
     bordered
     v-if="isAuthenticated"
+    :width="220"
   >
     <q-scroll-area class="fit">
       <q-list padding class="text-grey-8">
