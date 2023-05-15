@@ -11,12 +11,12 @@
         {"oneOf": [
             {"required": ["jobtype_extra"]},
             {"required": ["python"]},
-            {"required": ["go"]},
+            {"required": ["golang"]},
             {"required": ["wrapper_properties"]},
             {"allOf": [
                 {"not": {"required": ["jobtype_extra"]}},
                 {"not": {"required": ["python"]}},
-                {"not": {"required": ["go"]}},
+                {"not": {"required": ["golang"]}},
                 {"not": {"required": ["wrapper_properties"]}}
             ]}
         ]}
@@ -61,12 +61,12 @@
             "type": "string"
         },
         "jobtype_extra": {
-            "$comment": "Replaces python, go, wrapper_properties keys. Cannot appear next to any of these"
+            "$comment": "Replaces python, golang, wrapper_properties keys. Cannot appear next to any of these"
         },
         "python": {
             "deprecated": true
         },
-        "go": {
+        "golang": {
             "deprecated": true
         },
         "wrapper_properties": {

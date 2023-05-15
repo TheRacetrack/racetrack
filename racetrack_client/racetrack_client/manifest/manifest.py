@@ -95,7 +95,7 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
     # For backwards compatability
     # TODO: Pydantic v2 will support multiple aliases, see jobtype
     # https://docs.pydantic.dev/latest/blog/pydantic-v2/#more-powerful-aliases
-    go: Optional[Dict[str, Any]] = None
+    golang: Optional[Dict[str, Any]] = None
     python: Optional[Dict[str, Any]] = None
     wrapper_properties: Optional[Dict[str, Any]] = None
     
