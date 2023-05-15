@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Dashboard links to job-related Grafana dashobards.
   [issue #206](https://github.com/TheRacetrack/racetrack/issues/206)
+- Manifest of a job can be edited online on the Dashboard after selecting a job.
+  Keep in mind that your online changes can be overwritten by the next deployment,
+  if you didn't reflect these temporary changes in git after all.
+  [issue #217](https://github.com/TheRacetrack/racetrack/issues/217)
 
 ### Changed
 - Minor UI improvements and styling for Dashboard, including:
