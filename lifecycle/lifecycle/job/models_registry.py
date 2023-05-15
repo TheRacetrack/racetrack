@@ -159,6 +159,13 @@ def update_job_model(job: models.Job, job_dto: JobDto):
 
 
 @db_access
+def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
+    job_model = read_job_model(job_name, job_version)
+    job_model.manifest = manifest_yaml
+    job_model.save()
+
+
+@db_access
 def save_job_model(job_dto: JobDto) -> models.Job:
     """Create or update existing job"""
     try:

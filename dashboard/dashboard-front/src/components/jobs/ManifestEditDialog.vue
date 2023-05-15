@@ -18,9 +18,10 @@ function openDialog(jobData: JobData) {
 }
 
 function saveManifest() {
-    const manifestPayload = manifestYaml.value
     progressService.runLoading({
-        task: apiClient.put(`/api/v1/job/${job.value?.name}/${job.value?.version}/manifest`, manifestPayload),
+        task: apiClient.put(`/api/v1/job/${job.value?.name}/${job.value?.version}/manifest`, {
+            'manifest_yaml': manifestYaml.value,
+        }),
         loadingState: loading,
         progressMsg: `Saving manifest...`,
         successMsg: `Manifest saved.`,
