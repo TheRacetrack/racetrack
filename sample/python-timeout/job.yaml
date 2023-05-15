@@ -1,13 +1,12 @@
 name: windows12
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
+version: 0.0.2
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/python-timeout
   
-python:
+jobtype_extra:
   entrypoint_path: 'job.py'
   entrypoint_class: TimeoutJob
-
-version: '0.0.1'

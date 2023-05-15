@@ -1,10 +1,10 @@
 name: adder
 owner_email: sample@example.com
 jobtype: python3:latest
+version: 0.0.2
 
 git:
-  remote: https://github.com/lookacastle/racetrack
-  branch: 231-job-manifest-improvement
+  remote: https://github.com/theracetrack/racetrack
   directory: sample/python-class
 
 jobtype_extra:

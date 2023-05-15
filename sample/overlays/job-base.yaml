@@ -1,12 +1,13 @@
 name: overlays-base
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
+version: 0.0.2
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/overlays
 
-python:
+jobtype_extra:
   entrypoint_path: 'entrypoint.py'
   entrypoint_class: 'JobEntrypoint'
 

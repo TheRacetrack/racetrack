@@ -1,12 +1,13 @@
 name: adder-recordkeeper
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
+version: 0.0.2
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/python-recordkeeper
 
-python:
+jobtype_extra:
   requirements_path: 'requirements.txt'
   entrypoint_path: 'adder.py'
   entrypoint_class: 'AdderModel'
