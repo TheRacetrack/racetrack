@@ -42,13 +42,6 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
 class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allow_population_by_field_name=True):
     """Job Manifest file - build recipe to get deployable image from source code workspace"""
 
-    # For backwards compatability
-    # TODO: Pydantic v2 will support multiple aliases, see jobtype
-    # https://docs.pydantic.dev/latest/blog/pydantic-v2/#more-powerful-aliases
-    go: Optional[Dict[str, Any]] = None
-    python: Optional[Dict[str, Any]] = None
-    wrapper_properties: Optional[Dict[str, Any]] = None
-
     # name of the Job Workload
     name: str
 
@@ -99,5 +92,12 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
     # Extra parameters specified by the jobtype
     jobtype_extra: Optional[Dict[str, Any]] = None
 
+    # For backwards compatability
+    # TODO: Pydantic v2 will support multiple aliases, see jobtype
+    # https://docs.pydantic.dev/latest/blog/pydantic-v2/#more-powerful-aliases
+    go: Optional[Dict[str, Any]] = None
+    python: Optional[Dict[str, Any]] = None
+    wrapper_properties: Optional[Dict[str, Any]] = None
+    
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
