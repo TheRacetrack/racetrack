@@ -2,7 +2,7 @@
 "golang" job type is intended to handle the calls to your Go function.
 Racetrack will wrap it up in a web server.
 
-Set `lang: golang:latest` in your `job.yaml` manifest file in order to use this type of job.
+Set `jobtype: golang:latest` in your `job.yaml` manifest file in order to use this type of job.
 
 # Job standards
 Let's assume you already have your code in a repository at `model.go`:
@@ -82,25 +82,25 @@ To sum up:
 When using `golang` job type, you MUST include the following fields in a `job.yaml` manifest file:
 - `name` - choose a meaningful text name for a job. It should be unique within the Racetrack cluster.
 - `owner_email` - email address of the Job's owner to reach out
-- `lang` - Set base image to "golang"
+- `jobtype` - Set base image to "golang"
 - `git.remote` - URL to your remote repo 
 
 You MAY include the following fields:
 - `git.branch` - git branch name (if different from "master").
 - `git.directory` - subdirectory relative to git repo root where the project is
-- `golang.gomod` - relative path to `go.mod` requirements
+- `jobtype_extra.gomod` - relative path to `go.mod` requirements
 - `labels` - dictionary with metadata describing Job for humans
 
 The final `job.yaml` may look like this:
 ```yaml
 name: supersmart
 owner_email: nobody@example.com
-lang: golang:latest
+jobtype: golang:latest
 
 git:
   remote: https://github.com/racetrack/supersmart-model
   branch: master
 
-golang:
+jobtype_extra:
   gomod: 'go.mod'
 ```

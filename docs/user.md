@@ -145,13 +145,13 @@ A typical `job.yaml` will look like this:
 ```yaml
 name: my_fantabulous_skynet_AI
 owner_email: nobody@example.com
-lang: python3:latest  # this would be your Job Type
+jobtype: python3:latest  # this would be your Job Type
 
 git:
   remote: https://github.com/racetrack/supersmart-model
   branch: master
 
-python:
+jobtype_extra:
   requirements_path: 'supersmart/requirements.txt'
   entrypoint_path: 'job_entrypoint.py'
 

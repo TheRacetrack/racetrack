@@ -56,12 +56,10 @@ git:
 owner_email: arnold@skynet.com
 extends: './base/job.yaml'
 version: '1.2.3-alpha'
-python:
+jobtype_extra:
   requirements_path: 'python/requirements.txt'
   entrypoint_path: 'python/entrypoint.py'
   entrypoint_class: 'JobClazz'
-golang:
-  gomod: 'golang/go.mod'
 docker:
   dockerfile_path: 'docker/Dockerfile'
 build_env:
