@@ -14,3 +14,7 @@
 .x-overflow-any {
   overflow-wrap: anywhere;
 }
+
+.fill-parent {
+  min-height: inherit;
+}

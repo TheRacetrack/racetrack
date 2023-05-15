@@ -156,6 +156,7 @@ onMounted(() => {
             <q-splitter v-model="splitterModel">
                 <template v-slot:before>
 
+                    <q-scroll-area style="height: 70vh;" visible>
                     <div class="q-mr-sm" style="overflow-x: auto;">
                         <q-input filled v-model="treeFilter" label="Filter">
                             <template v-if="treeFilter" v-slot:append>
@@ -223,6 +224,7 @@ onMounted(() => {
                             </template>
                         </q-tree>
                     </div>
+                    </q-scroll-area>
 
                     <q-inner-loading :showing="loadingTree">
                         <q-spinner-gears size="50px" color="primary" />
@@ -239,5 +241,6 @@ onMounted(() => {
                 </template>
             </q-splitter>
         </q-card-section>
+
     </q-card>
 </template>
