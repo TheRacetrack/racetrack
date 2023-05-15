@@ -164,11 +164,6 @@ function editJobManifest(job: JobData) {
                         <q-item-label><q-icon name="open_in_new" /> Open Grafana Dashboard</q-item-label>
                     </q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="editJobManifest(job)">
-                    <q-item-section>
-                        <q-item-label><q-icon name="edit" /> Edit Manifest</q-item-label>
-                    </q-item-section>
-                </q-item>
             </q-list>
         </q-btn-dropdown>
     </q-btn-group>
@@ -249,6 +244,11 @@ function editJobManifest(job: JobData) {
     <q-field outlined label="Manifest" stack-label class="q-mt-md">
         <template v-slot:control>
             <pre class="x-monospace x-overflow-any">{{ manifestYaml }}</pre>
+        </template>
+        <template v-slot:append>
+            <q-btn round flat icon="edit" @click="editJobManifest(job)">
+                <q-tooltip>Edit Manifest</q-tooltip>
+            </q-btn>
         </template>
     </q-field>
 
