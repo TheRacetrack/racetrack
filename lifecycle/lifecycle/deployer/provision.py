@@ -59,7 +59,7 @@ def provision_job(
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
         runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
 
-        job_type: JobType = load_job_type(plugin_engine, manifest.jobtype)
+        job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
         containers_num = len(job_type.template_paths)
 
         job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine,

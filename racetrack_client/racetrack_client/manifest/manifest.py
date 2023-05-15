@@ -54,7 +54,8 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
     version: str = '0.0.1'
 
     # Jobtype wrapper used to embed model
-    jobtype: str = Field('python3', alias='lang')
+    jobtype: Optional[str] = None
+    lang: Optional[str] = None #Deprecated
 
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None
@@ -91,13 +92,17 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
 
     # Extra parameters specified by the jobtype
     jobtype_extra: Optional[Dict[str, Any]] = None
-
-    # For backwards compatability
-    # TODO: Pydantic v2 will support multiple aliases, see jobtype
-    # https://docs.pydantic.dev/latest/blog/pydantic-v2/#more-powerful-aliases
-    golang: Optional[Dict[str, Any]] = None
-    python: Optional[Dict[str, Any]] = None
-    wrapper_properties: Optional[Dict[str, Any]] = None
+    golang: Optional[Dict[str, Any]] = None #Deprecated
+    python: Optional[Dict[str, Any]] = None #Deprecated  
+    wrapper_properties: Optional[Dict[str, Any]] = None #Deprecated
     
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
+
+    def get_jobtype(self):
+        return self.jobtype if self.lang is None else self.lang
+
+    def get_jobtype_extra(self):
+        for field in [self.jobtype_extra, self.golang, self.python, self.wrapper_properties]:
+            if field is not None:
+                return field
