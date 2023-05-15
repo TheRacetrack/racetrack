@@ -117,7 +117,7 @@ function editJobManifest(job: JobData) {
 <template>
 
     <LogsView :title="logsTitle" :content="logsContent" :open="logsOpen" @close="closeLogs" />
-    <ManifestEditDialog ref="manifestDialogRef" />
+    <ManifestEditDialog ref="manifestDialogRef" @jobUpdated="emit('refreshJobs', null)" />
 
     <div class="full-width row wrap justify-end">
     <q-btn-group push class="q-mb-md self-end">

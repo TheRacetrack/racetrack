@@ -27,10 +27,13 @@ function saveManifest() {
         successMsg: `Manifest saved.`,
         errorMsg: `Failed to save manifest`,
         onSuccess: () => {
-            dialogOpen.value = true
+            dialogOpen.value = false
+            emit('jobUpdated', null)
         },
     })
 }
+
+const emit = defineEmits(['jobUpdated'])
 
 defineExpose({
     openDialog,
