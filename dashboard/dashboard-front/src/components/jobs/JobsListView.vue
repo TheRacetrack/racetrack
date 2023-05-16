@@ -204,6 +204,8 @@ onMounted(() => {
                             default-expand-all
                             :filter="treeFilter"
                             :filter-method="filterJobsTree"
+                            no-nodes-label="No jobs available"
+                            no-results-label="No matching jobs found"
                             @update:selected="(key: string | null) => selectJobNode(key)"
                             >
                             <template v-slot:default-header="prop">
