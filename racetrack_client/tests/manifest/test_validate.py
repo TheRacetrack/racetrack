@@ -104,7 +104,7 @@ lang: golang:latest
 git:
   remote: https://github.com/TheRacetrack/racetrack
 """)
-    assert '"owner_email" is not a valid email' in str(excinfo.value)
+    assert "Failed validating 'pattern' in schema['properties']['owner_email']" in str(excinfo.value)
 
 
 def test_missing_file():
@@ -135,7 +135,7 @@ lang: python3:latest
 git:
   remote: git@github.com:TheRacetrack/racetrack.git
 """)
-    assert 'git remote URL should be HTTPS' in str(excinfo.value)
+    assert "Failed validating 'pattern' in schema['properties']['git']['properties']['remote']" in str(excinfo.value)
 
 
 def validate_tmp_manifest(content: str) -> Manifest:

@@ -1,5 +1,6 @@
 import re
 from jsonschema import validate
+from pathlib import Path
 import json
 
 from racetrack_client.log.context_error import wrap_context
@@ -32,7 +33,8 @@ def load_validated_manifest(path: str) -> Manifest:
 def validate_manifest(manifest: Manifest):
     """Check whether manifest is valid. Raise exception in case of error"""
     serialized_manifest = manifest.dict(exclude_none=True)
-    with open('racetrack_client/racetrack_client/manifest/schema.json', 'r') as f:
+    path = Path(__file__).with_name('schema.json')
+    with path.open('r') as f:
         schema = json.load(f)
         validate(serialized_manifest, schema=schema)
 

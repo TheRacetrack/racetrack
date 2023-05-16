@@ -52,7 +52,8 @@
             }
         },
         "owner_email": {
-            "type": "string"
+            "type": "string",
+            "pattern": ".+@.+"
         },
         "extends": {
             "type": "string"
@@ -111,18 +112,10 @@
         },
         "resources": {
             "properties": {
-                "memory_min": {
-                    "type": "string"
-                },
-                "memory_max": {
-                    "type": "string"
-                },
-                "cpu_min": {
-                    "type": "string"
-                },
-                "cpu_max": {
-                    "type": "string"
-                }
+                "memory_min": {},
+                "memory_max": {},
+                "cpu_min": {},
+                "cpu_max": {}
             }
         },
         "runtime_env": {
