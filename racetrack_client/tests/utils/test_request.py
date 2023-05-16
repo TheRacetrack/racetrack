@@ -25,7 +25,6 @@ def test_request_get_json():
     assert response.text == '{"result": "ok"}'
     assert response.json() == {'result': 'ok'}
     assert response.url == _url
-    assert response.method == 'GET'
     assert response.headers['content-type'] == 'application/json'
     assert response.headers['Content-Type'] == 'application/json'
     assert response.header('content-type') == 'application/json'

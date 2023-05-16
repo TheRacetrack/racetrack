@@ -32,13 +32,11 @@ class Response:
     def __init__(
         self,
         url: str,
-        method: str,
         status_code: int,
         content: bytes,
         headers: Message,
     ):
         self._url: str = url
-        self._method: str = method.upper()
         self._status_code: int = status_code
         self._content: bytes = content
         self._headers: Message = headers
@@ -82,19 +80,11 @@ class Response:
         return self._url
     
     @property
-    def method(self) -> str:
-        return self._method
-    
-    @property
     def headers(self) -> Message:
         return self._headers
     
     def header(self, name: str) -> Optional[str]:
         return self._headers[name]
-
-    @property
-    def error_details(self) -> str:
-        return f'{self.status_code} {self.status_reason} for url: {self.method} {self.url}'
 
 
 class Requests:
@@ -227,7 +217,6 @@ class Requests:
             http_response: HTTPResponse = request.urlopen(req, **kwargs)
             return Response(
                 url=url,
-                method=method,
                 status_code=http_response.status,
                 content=http_response.read(),
                 headers=http_response.headers,
@@ -235,7 +224,6 @@ class Requests:
         except HTTPError as e:
             return Response(
                 url=url,
-                method=method,
                 status_code=e.code,
                 content=e.read(),
                 headers=e.headers,
@@ -290,7 +278,7 @@ def parse_response(response: Response, error_context: str) -> Optional[Union[Dic
 
         if result is not None and isinstance(result, dict) and 'error' in result:
             raise ContextError(response.status_reason, RuntimeError(result.get("error")))
-        raise ResponseError(response.error_details, response.status_code)
+        raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
 
@@ -298,8 +286,7 @@ def parse_response(response: Response, error_context: str) -> Optional[Union[Dic
 def parse_response_object(response: Response, error_context: str) -> Dict:
     try:
         if 'application/json' not in response.headers['content-type']:
-            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}", '
-                               f'{response.error_details}')
+            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}" for url: {response.url}')
 
         result = response.json()
 
@@ -309,7 +296,7 @@ def parse_response_object(response: Response, error_context: str) -> Dict:
 
         if result is not None and isinstance(result, dict) and 'error' in result:
             raise ContextError(response.status_reason, RuntimeError(result.get("error")))
-        raise ResponseError(response.error_details, response.status_code)
+        raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
 
@@ -317,8 +304,7 @@ def parse_response_object(response: Response, error_context: str) -> Dict:
 def parse_response_list(response: Response, error_context: str) -> List:
     try:
         if 'application/json' not in response.headers['content-type']:
-            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}", '
-                               f'{response.error_details}')
+            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}" for url: {response.url}')
 
         result = response.json()
 
@@ -328,6 +314,6 @@ def parse_response_list(response: Response, error_context: str) -> List:
 
         if result is not None and isinstance(result, dict) and 'error' in result:
             raise ContextError(response.status_reason, RuntimeError(result.get("error")))
-        raise ResponseError(response.error_details, response.status_code)
+        raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
