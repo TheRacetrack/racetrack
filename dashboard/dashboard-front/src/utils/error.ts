@@ -8,13 +8,13 @@ export function extractErrorDetails(err: any): string {
         if (data?.type)
             return data.type
         if (err.message) {
-            const method = err.config?.method?.toUpperCase()
+            const method = err.config?.method?.toUpperCase();
+            const message = `${err.message}: ${method} ${err.config?.url}`;
             if (data) {
-                const dataJson = JSON.stringify(data)
-                return `${err.message}: ${method} ${err.config?.url}: ${dataJson}`
-            } else {
-                return `${err.message}: ${method} ${err.config?.url}`
-            }
+                const dataJson = JSON.stringify(data);
+                return `${message}: ${dataJson}`;
+            };
+            return message;
         }
     }
     if (err.hasOwnProperty('xhr')){
