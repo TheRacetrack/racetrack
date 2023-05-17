@@ -74,13 +74,15 @@ func handleProxyRequest(
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 	var job *JobDetails
-	var caller *string
+	var callerName string
 	var err error
 
 	if cfg.AuthRequired {
 		jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
 		job = jobCall.Job
-		caller = jobCall.Caller
+		if jobCall.Caller != nil {
+			callerName = *jobCall.Caller
+		}
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
@@ -110,7 +112,7 @@ func handleProxyRequest(
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
-	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, caller)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
 	return 200, nil
 }
 
@@ -121,7 +123,7 @@ func ServeReverseProxy(
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
-	caller *string,
+	callerName string,
 ) {
 
 	director := func(req *http.Request) {
@@ -131,6 +133,9 @@ func ServeReverseProxy(
 		req.Host = c.Request.Host
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Set(cfg.RequestTracingHeader, requestId)
+		if callerName != "" {
+			req.Header.Set(cfg.CallerNameHeader, callerName)
+		}
 		req.RequestURI = ""
 	}
 
@@ -152,7 +157,7 @@ func ServeReverseProxy(
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobPath":    target.Path,
-			"caller":     caller,
+			"caller":     callerName,
 			"status":     res.StatusCode,
 		})
 		statusCode := strconv.Itoa(res.StatusCode)
@@ -166,7 +171,7 @@ func ServeReverseProxy(
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
-			"caller":     caller,
+			"caller":     callerName,
 			"host":       target.Host,
 			"path":       target.Path,
 			"error":      errorStr,
@@ -178,7 +183,7 @@ func ServeReverseProxy(
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
 			"requestId":  requestId,
-			"caller":     caller,
+			"caller":     callerName,
 		})
 		metricJobProxyErrors.Inc()
 	}
