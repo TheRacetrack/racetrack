@@ -108,7 +108,8 @@
             }
         },
         "replicas": {
-            "type": "number"
+            "type": "number",
+            "maximum": 50
         },
         "resources": {
             "properties": {

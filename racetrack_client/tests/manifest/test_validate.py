@@ -123,7 +123,7 @@ git:
   remote: https://github.com/TheRacetrack/racetrack
 replicas: 100
 """)
-    assert 'replicas count out of allowed range' in str(excinfo.value)
+    assert "Failed validating 'maximum' in schema['properties']['replicas']" in str(excinfo.value)
 
 
 def test_invalid_ssh_git_remote():
