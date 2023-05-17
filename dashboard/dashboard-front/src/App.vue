@@ -29,8 +29,8 @@ progressService.init(progressCompononent)
     <HeaderBar @toggleDrawer="(msg) => toggleNavDrawer()"/>
     <NavDrawer ref="navDrawer"/>
 
-    <q-page-container>
-      <div class="app-container-full">
+    <q-page-container class="fill-parent fit row items-stretch">
+      <div class="app-container-full col-grow">
         <RouterView />
       </div>
     </q-page-container>
