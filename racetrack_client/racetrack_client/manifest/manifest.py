@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Extra, validator, Field
+from pydantic import BaseModel, Extra, validator
 
 from racetrack_client.utils.quantity import Quantity
 
@@ -93,9 +93,9 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
     # Extra parameters specified by the jobtype
     jobtype_extra: Optional[Dict[str, Any]] = None
     golang: Optional[Dict[str, Any]] = None #Deprecated
-    python: Optional[Dict[str, Any]] = None #Deprecated  
+    python: Optional[Dict[str, Any]] = None #Deprecated
     wrapper_properties: Optional[Dict[str, Any]] = None #Deprecated
-    
+
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
 
