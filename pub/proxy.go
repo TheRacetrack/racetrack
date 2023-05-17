@@ -79,11 +79,11 @@ func handleProxyRequest(
 
 	if cfg.AuthRequired {
 		jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
-		job = jobCall.Job
-		if jobCall.Caller != nil {
-			callerName = *jobCall.Caller
-		}
 		if err == nil {
+			job = jobCall.Job
+			if jobCall.Caller != nil {
+				callerName = *jobCall.Caller
+			}
 			metricAuthSuccessful.Inc()
 		} else {
 			metricAuthFailed.Inc()
