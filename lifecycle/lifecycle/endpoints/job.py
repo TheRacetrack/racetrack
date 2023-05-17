@@ -8,6 +8,7 @@ from lifecycle.config import Config
 from lifecycle.deployer.redeploy import redeploy_job, reprovision_job, move_job
 from lifecycle.job.ansi import strip_ansi_colors
 from lifecycle.job.graph import build_job_dependencies_graph
+from lifecycle.job.models_registry import update_job_manifest
 from lifecycle.job.portfolio import enrich_jobs_purge_info
 from lifecycle.job.registry import (
     delete_job,
@@ -28,6 +29,9 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
 
     class MoveJobPayload(BaseModel):
         infrastructure_target: str = Field(description='text content of configuration file')
+
+    class UpdateManifestPayload(BaseModel):
+        manifest_yaml: str = Field(description='Job manifest in YAML format')
 
     @api.get('/job')
     def _list_all_jobs(request: Request) -> List[JobDto]:
@@ -125,3 +129,9 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         """Get list of active public endpoints that can be accessed without authentication for a particular Job"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         return read_active_job_public_endpoints(job_name, job_version)
+
+    @api.put("/job/{job_name}/{job_version}/manifest")
+    def _update_job_manifest(request: Request, job_name: str, job_version: str, payload: UpdateManifestPayload):
+        """Update job manifest"""
+        check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
+        return update_job_manifest(job_name, job_version, payload.manifest_yaml)

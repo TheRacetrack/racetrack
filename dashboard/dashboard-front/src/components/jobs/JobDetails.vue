@@ -12,6 +12,8 @@ import JobStatus from '@/components/jobs/JobStatus.vue'
 import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
 import LogsView from '@/components/jobs/LogsView.vue'
 import { getJobGraphanaUrl } from '@/utils/jobs'
+import ManifestEditDialog from './ManifestEditDialog.vue'
+import TimeAgoLabel from './TimeAgoLabel.vue'
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
@@ -22,6 +24,7 @@ const logsTitle: Ref<string> = ref('')
 const logsContent: Ref<string> = ref('')
 const logsOpen: Ref<boolean> = ref(false)
 const loadingLogs: Ref<boolean> = ref(false)
+const manifestDialogRef: Ref<typeof ManifestEditDialog | null> = ref(null)
 
 const manifestYaml: Ref<string> = computed(() => 
     yaml.dump(removeNulls(job.value?.manifest)) || ''
@@ -105,11 +108,17 @@ function reprovisionJob(job: JobData) {
 function openJobGrafanaDashboard(job: JobData) {
     openURL(getJobGraphanaUrl(job))
 }
+
+function editJobManifest(job: JobData) {
+    manifestDialogRef.value?.openDialog(job)
+}
 </script>
 
 <template>
 
     <LogsView :title="logsTitle" :content="logsContent" :open="logsOpen" @close="closeLogs" />
+    <ManifestEditDialog ref="manifestDialogRef" @jobUpdated="emit('refreshJobs', null)" />
+
     <div class="full-width row wrap justify-end">
     <q-btn-group push class="q-mb-md self-end">
         <q-btn color="primary" push label="Open" icon="open_in_new"
@@ -152,7 +161,7 @@ function openJobGrafanaDashboard(job: JobData) {
             <q-list>
                 <q-item clickable v-close-popup @click="openJobGrafanaDashboard(job)">
                     <q-item-section>
-                        <q-item-label>Open Grafana Dashboard <q-icon name="open_in_new" /></q-item-label>
+                        <q-item-label><q-icon name="open_in_new" /> Open Grafana Dashboard</q-item-label>
                     </q-item-section>
                 </q-item>
             </q-list>
@@ -210,7 +219,7 @@ function openJobGrafanaDashboard(job: JobData) {
         <template v-slot:control>
             {{timestampToLocalTime(job?.create_time)}}
             <span>&nbsp;</span>
-            <q-badge color="primary" rounded outline>{{timestampPrettyAgo(job?.create_time)}}</q-badge>
+            <TimeAgoLabel :timestamp="job?.create_time" />
         </template>
     </q-field>
 
@@ -219,7 +228,7 @@ function openJobGrafanaDashboard(job: JobData) {
         <template v-slot:control>
             {{timestampToLocalTime(job?.update_time)}}
             <span>&nbsp;</span>
-            <q-badge color="primary" rounded outline>{{timestampPrettyAgo(job?.update_time)}}</q-badge>
+            <TimeAgoLabel :timestamp="job?.update_time" />
         </template>
     </q-field>
 
@@ -228,13 +237,18 @@ function openJobGrafanaDashboard(job: JobData) {
         <template v-slot:control>
             {{timestampToLocalTime(job?.last_call_time)}}
             <span>&nbsp;</span>
-            <q-badge color="primary" rounded outline>{{timestampPrettyAgo(job?.last_call_time)}}</q-badge>
+            <TimeAgoLabel :timestamp="job?.last_call_time" />
         </template>
     </q-field>
 
     <q-field outlined label="Manifest" stack-label class="q-mt-md">
         <template v-slot:control>
             <pre class="x-monospace x-overflow-any">{{ manifestYaml }}</pre>
+        </template>
+        <template v-slot:append>
+            <q-btn round flat icon="edit" @click="editJobManifest(job)">
+                <q-tooltip>Edit Manifest</q-tooltip>
+            </q-btn>
         </template>
     </q-field>
 

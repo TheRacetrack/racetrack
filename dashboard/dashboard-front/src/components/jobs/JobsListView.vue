@@ -76,8 +76,8 @@ function populateJobsTree() {
     }
     jobsTree.value = leafs
 
-    if (selectedNodeKey.value && !getJobByKey(selectedNodeKey.value)) { // current job has been deleted
-        currentJob.value = null
+    if (selectedNodeKey.value) {
+        currentJob.value = getJobByKey(selectedNodeKey.value)
     }
 }
 
@@ -194,6 +194,7 @@ onMounted(() => {
                         </q-btn-dropdown>
                         </span>
 
+                        <q-scroll-area style="height: 64vh;" visible>
                         <q-tree
                             ref="jobsQTreeRef"
                             :nodes="jobsTree"
@@ -203,6 +204,8 @@ onMounted(() => {
                             default-expand-all
                             :filter="treeFilter"
                             :filter-method="filterJobsTree"
+                            no-nodes-label="No jobs available"
+                            no-results-label="No matching jobs found"
                             @update:selected="(key: string | null) => selectJobNode(key)"
                             >
                             <template v-slot:default-header="prop">
@@ -222,6 +225,7 @@ onMounted(() => {
                                 </template>
                             </template>
                         </q-tree>
+                        </q-scroll-area>
                     </div>
 
                     <q-inner-loading :showing="loadingTree">
@@ -239,5 +243,6 @@ onMounted(() => {
                 </template>
             </q-splitter>
         </q-card-section>
+
     </q-card>
 </template>
