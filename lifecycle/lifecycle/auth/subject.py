@@ -138,11 +138,11 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
 
 def get_description_from_auth_subject(auth_subject: models.AuthSubject) -> str:
     if auth_subject.user is not None:
-        return f'User: {auth_subject.user.username}'
+        return f'User {auth_subject.user.username}'
     elif auth_subject.esc is not None:
-        return f'ESC: {auth_subject.esc.name}'
+        return f'ESC {auth_subject.esc.name}'
     elif auth_subject.job_family is not None:
-        return f'Job family: {auth_subject.job_family.name}'
+        return f'Job family {auth_subject.job_family.name}'
     else:
         raise ValueError("Unknown auth_subject type")
 
