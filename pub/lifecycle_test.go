@@ -37,7 +37,7 @@ func TestAuthorizeCaller(t *testing.T) {
 		assert.Equal(t, "running", job.Status)
 		assert.Equal(t, 1000, job.UpdateTime)
 		assert.Equal(t, "adder-v-0-0-1", job.InternalName)
-		assert.Equal(t, "bob", jobCall.Caller)
+		assert.Equal(t, "bob", *jobCall.Caller)
 	}
 	{
 		jobCall, err := lifecycleClient.AuthorizeCaller("skynet", "0.0.1", "/api/v1/perform")
