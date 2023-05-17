@@ -74,10 +74,13 @@ func handleProxyRequest(
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 	var job *JobDetails
+	var caller *string
 	var err error
 
 	if cfg.AuthRequired {
-		job, err = lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
+		jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
+		job = jobCall.Job
+		caller = jobCall.Caller
 		if err == nil {
 			metricAuthSuccessful.Inc()
 		} else {
@@ -107,7 +110,7 @@ func handleProxyRequest(
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
-	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, caller)
 	return 200, nil
 }
 
@@ -118,6 +121,7 @@ func ServeReverseProxy(
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
+	caller *string,
 ) {
 
 	director := func(req *http.Request) {
@@ -148,6 +152,7 @@ func ServeReverseProxy(
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobPath":    target.Path,
+			"caller":     caller,
 			"status":     res.StatusCode,
 		})
 		statusCode := strconv.Itoa(res.StatusCode)
@@ -161,6 +166,7 @@ func ServeReverseProxy(
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
+			"caller":     caller,
 			"host":       target.Host,
 			"path":       target.Path,
 			"error":      errorStr,
@@ -172,6 +178,7 @@ func ServeReverseProxy(
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
 			"requestId":  requestId,
+			"caller":     caller,
 		})
 		metricJobProxyErrors.Inc()
 	}
