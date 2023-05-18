@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- The name of the caller is recorded in the internal logs,
+  giving the ability to track down who made the request based on its ID.
+  Job types can also retrieve that information by extracting it from an HTTP header.
+  [issue #246](https://github.com/TheRacetrack/racetrack/issues/246)
 
 ## [2.14.0] - 2023-05-18
 ### Added
@@ -24,10 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Panel takes up the whole space available - no white bars on the sides
   - Jobs tree has its own scrollbar
   - "10 seconds ago" labels are refreshed over time.
-- The name of the caller is recorded in the internal logs,
-  providing the ability to track down who made the request based on its ID.
-  Job types can also retrieve that information by extracting it from an HTTP header.
-  [issue #246](https://github.com/TheRacetrack/racetrack/issues/246)
 
 ### Fixed
 - Tree of jobs is refreshed after deleting a job.
