@@ -16,11 +16,11 @@ class RequestTracingLogger(logging.LoggerAdapter):
         caller_name = self.extra.get('caller_name')
         caller_enabled = is_env_flag_enabled('LOG_CALLER_NAME')
         if tracing_id and caller_name and caller_enabled:
-            return f"[{tracing_id}, {caller_name}] {msg}", kwargs
+            return f"[{tracing_id}] <{caller_name}> {msg}", kwargs
         elif tracing_id:
             return f"[{tracing_id}] {msg}", kwargs
         elif caller_name and caller_enabled:
-            return f"[{caller_name}] {msg}", kwargs
+            return f"<{caller_name}> {msg}", kwargs
         else:
             return msg, kwargs
 
