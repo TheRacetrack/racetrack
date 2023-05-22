@@ -83,7 +83,7 @@ def test_response_failed():
     with pytest.raises(Exception) as excinfo:
         parse_response(response, 'deploying error')
     assert (
-        str(excinfo.value) == 'deploying error: 404 Not Found for url: http://localhost/blahblah'
+        str(excinfo.value) == 'deploying error: 404 Not Found for url: GET http://localhost/blahblah'
     )
 
 
