@@ -15,7 +15,7 @@ interface ConfirmWithLoadingOptions {
 
 interface RunLoadingOptions {
     task: Promise<any>
-    loadingState: Ref<boolean>
+    loadingState?: Ref<boolean>
     progressMsg: string
     successMsg?: string
     errorMsg: string
@@ -67,12 +67,14 @@ export class ProgressService {
         {task, loadingState, progressMsg, successMsg, errorMsg, onSuccess, onFinalize}: RunLoadingOptions
     ) {
         toastService.loading(progressMsg)
-        loadingState.value = true
+        if (loadingState != null)
+            loadingState.value = true
         this.startLoadingProgress()
 
         task.finally(() => {
                 toastService.dismissLoading()
-                loadingState.value = false
+                if (loadingState != null)
+                    loadingState.value = false
                 this.stopLoadingProgress()
                 onFinalize?.()
                 

@@ -26,9 +26,11 @@ const logsOpen: Ref<boolean> = ref(false)
 const loadingLogs: Ref<boolean> = ref(false)
 const manifestDialogRef: Ref<typeof ManifestEditDialog | null> = ref(null)
 
-const manifestYaml: Ref<string> = computed(() => 
-    yaml.dump(removeNulls(job.value?.manifest)) || ''
-)
+const manifestYaml: Ref<string> = computed(() => {
+    if (!job.value?.manifest)
+        return ''
+    return yaml.dump(removeNulls(job.value?.manifest)) || ''
+})
 
 function showBuildLogs(job: JobData) {
     progressService.runLoading({
@@ -110,14 +112,27 @@ function openJobGrafanaDashboard(job: JobData) {
 }
 
 function editJobManifest(job: JobData) {
-    manifestDialogRef.value?.openDialog(job)
+    manifestDialogRef.value?.openDialog(job, manifestYaml.value)
+}
+
+function onManifestUpdated() {
+    emit('refreshJobs', null)
+    const jobData: JobData = job.value
+    const name: string = jobData.name
+    const version: string = jobData.version
+    progressService.runLoading({
+        task: apiClient.post(`/api/v1/job/${name}/${version}/redeploy`),
+        progressMsg: `Redeploying job ${name} ${version}...`,
+        successMsg: `Job ${name} ${version} has been redeployed.`,
+        errorMsg: `Failed to redeploy a job ${name} ${version}`,
+    })
 }
 </script>
 
 <template>
 
     <LogsView :title="logsTitle" :content="logsContent" :open="logsOpen" @close="closeLogs" />
-    <ManifestEditDialog ref="manifestDialogRef" @jobUpdated="emit('refreshJobs', null)" />
+    <ManifestEditDialog ref="manifestDialogRef" @jobUpdated="onManifestUpdated" />
 
     <div class="full-width row wrap justify-end">
     <q-btn-group push class="q-mb-md self-end">
