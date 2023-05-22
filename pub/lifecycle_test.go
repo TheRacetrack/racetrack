@@ -18,6 +18,9 @@ func TestAuthorizeCaller(t *testing.T) {
 	httpmock.RegisterResponder("GET", "http://localhost:7202/lifecycle/api/v1/auth/can-call-job/skynet/0.0.1/api/v1/perform",
 		httpmock.NewStringResponder(200,
 			`{"job": {"id": "000", "name": "skynet", "version": "0.0.1", "status": "running", "create_time": 1000, "update_time": 1000, "manifest": null, "internal_name": "adder-v-0-0-1"}, "caller": "bob"}`))
+	httpmock.RegisterResponder("GET", "http://localhost:7202/lifecycle/api/v1/auth/can-call-job/skynet/0.0.1/metrics",
+		httpmock.NewStringResponder(200,
+			`{"job": {"id": "000", "name": "skynet", "version": "0.0.1", "status": "running", "create_time": 1000, "update_time": 1000, "manifest": null, "internal_name": "adder-v-0-0-1"}, "caller": null}`))
 
 	httpmock.RegisterResponder("GET", "http://localhost:7202/lifecycle/api/v1/auth/can-call-job/typo/0.0.1/api/v1/perform",
 		httpmock.NewStringResponder(404,
@@ -41,6 +44,11 @@ func TestAuthorizeCaller(t *testing.T) {
 	}
 	{
 		jobCall, err := lifecycleClient.AuthorizeCaller("skynet", "0.0.1", "/api/v1/perform")
+		assert.NoError(t, err)
+		assert.Equal(t, "adder-v-0-0-1", jobCall.Job.InternalName)
+	}
+	{
+		jobCall, err := lifecycleClient.AuthorizeCaller("skynet", "0.0.1", "/metrics")
 		assert.NoError(t, err)
 		assert.Equal(t, "adder-v-0-0-1", jobCall.Job.InternalName)
 	}
