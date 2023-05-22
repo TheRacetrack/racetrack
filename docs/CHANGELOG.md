@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Panel takes up the whole space available - no white bars on the sides
   - Jobs tree has its own scrollbar
   - "10 seconds ago" labels are refreshed over time.
+- racetrack-client shows more details in case of an HTTP error.
+  [issue #245](https://github.com/TheRacetrack/racetrack/issues/245)
 
 ### Fixed
 - Tree of jobs is refreshed after deleting a job.
