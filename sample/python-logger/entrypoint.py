@@ -12,8 +12,5 @@ class JobEntrypoint:
         return random.random()
 
     def get_caller_name(self) -> Optional[str]:
-        if hasattr(self, 'request_context'):
-            request = getattr(self, 'request_context').get()
-            return request.headers.get('X-Caller-Name')
-        else:
-            return None
+        request = getattr(self, 'request_context').get()
+        return request.headers.get('X-Caller-Name')
