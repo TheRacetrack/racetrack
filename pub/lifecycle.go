@@ -8,6 +8,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+type JobCallAuthData struct {
+	Job    *JobDetails `json:"job"`
+	Caller *string     `json:"caller"`
+}
+
 type JobDetails struct {
 	Id           string      `json:"id"`
 	Name         string      `json:"name"`
@@ -77,14 +82,14 @@ func (l *LifecycleClient) GetJobDetails(jobName string, jobVersion string) (*Job
 	return job, nil
 }
 
-func (l *LifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobDetails, error) {
+func (l *LifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobCallAuthData, error) {
 	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/can-call-job/", jobName, "/", jobVersion, "/", endpoint)
-	job := &JobDetails{}
-	err := l.getRequest(url, false, "Authorizing Job caller", true, job)
+	jobCall := &JobCallAuthData{}
+	err := l.getRequest(url, false, "Authorizing Job caller", true, jobCall)
 	if err != nil {
 		return nil, err
 	}
-	return job, nil
+	return jobCall, nil
 }
 
 func (l *LifecycleClient) getRequest(

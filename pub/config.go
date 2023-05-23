@@ -15,6 +15,7 @@ type Config struct {
 	AuthDebug             bool   `env:"AUTH_DEBUG" envDefault:"false"`
 	LifecycleToken        string `env:"LIFECYCLE_AUTH_TOKEN"` // Used to authenticate to Lifecycle for User endpoints
 	RequestTracingHeader  string `env:"REQUEST_TRACING_HEADER" envDefault:"X-Request-Tracing-Id"`
+	CallerNameHeader      string `env:"CALLER_NAME_HEADER" envDefault:"X-Caller-Name"`
 	OpenTelemetryEndpoint string `env:"OPENTELEMETRY_ENDPOINT" envDefault:""`
 }
 
