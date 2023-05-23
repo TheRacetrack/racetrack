@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 from fastapi import APIRouter, Request
 from fastapi.responses import Response, JSONResponse
+from pydantic import BaseModel
 
 from lifecycle.auth.authenticate import authenticate_token
 from lifecycle.auth.authorize import authorize_internal_token, authorize_resource_access, grant_permission
 from lifecycle.auth.cookie import set_auth_token_cookie
-from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
+from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, get_description_from_auth_subject, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
 from lifecycle.django.registry import models
@@ -67,19 +66,29 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
 
         return Response(content='', status_code=202)
     
-    @api.get('/auth/can-call-job/{job_name}/{job_version}/{endpoint:path}', response_model=JobDto)
-    def _auth_can_call_job_endpoint(job_name: str, job_version: str, endpoint: str, request: Request):
+    class JobCallAuthData(BaseModel):
+        job: JobDto
+        caller: str | None
+
+    @api.get('/auth/can-call-job/{job_name}/{job_version}/{endpoint:path}', response_model=JobCallAuthData)
+    def _auth_can_call_job_endpoint(
+        job_name: str,
+        job_version: str,
+        endpoint: str,
+        request: Request,
+    ):
         """
         Check if auth subject (read from token) is allowed to call an endpoint of a job.
         This is intended to check all permissions with a single request made by PUB.
         """
         endpoint = _normalize_endpoint_path(endpoint)
-
         job_model = models_registry.resolve_job_model(job_name, job_version)
         
         try:
-            _authorize_job_caller(job_model, endpoint, request)
-            return job_model_to_dto(job_model, config)
+            auth_subject = _authorize_job_caller(job_model, endpoint, request)
+            caller = get_description_from_auth_subject(auth_subject) if auth_subject else None
+            job = job_model_to_dto(job_model, config)
+            return JobCallAuthData(job=job, caller=caller)
 
         except UnauthorizedError as e:
             msg = e.describe(debug=config.auth_debug)
@@ -148,19 +157,20 @@ def _normalize_endpoint_path(endpoint: str) -> str:
     return endpoint
 
 
-def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request):
+def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request) -> models.AuthSubject | None:
     """
     Check if auth subject (read from request header's token) is allowed to call an endpoint of a job.
     In case it's not allowed, raise UnauthorizedError.
+    Return auth data of a caller.
     """
     if endpoint in unprotected_job_endpoints:
-        return
+        return None
 
     # check public endpoints
     public_endpoints: list[str] = read_job_model_public_endpoints(job_model)
     for public_endpoint in public_endpoints:
         if endpoint.startswith(public_endpoint):
-            return
+            return None
     
     scope = AuthScope.CALL_JOB.value
     token_payload, auth_subject = authenticate_token(request)
@@ -170,3 +180,4 @@ def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request
     else:
         assert auth_subject is not None
         authorize_resource_access(auth_subject, job_model.name, job_model.version, scope, endpoint)
+    return auth_subject

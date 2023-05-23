@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- The name of the caller is recorded in the internal logs,
+  giving the ability to track down who made the request based on its ID.
+  Job types can also retrieve that information by extracting it from an HTTP header.
+  [issue #246](https://github.com/TheRacetrack/racetrack/issues/246)
+
+### Changed
+- racetrack-client shows more details in case of an HTTP error.
+  [issue #245](https://github.com/TheRacetrack/racetrack/issues/245)
+
+## [2.14.0] - 2023-05-18
 ### Added
 - Dashboard links to job-related Grafana dashobards.
   [issue #206](https://github.com/TheRacetrack/racetrack/issues/206)

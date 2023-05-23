@@ -1,7 +1,7 @@
 import os
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
-import requests
+import httpx
 
 
 class JobEntrypoint:
@@ -20,7 +20,7 @@ class JobEntrypoint:
         self,
         job_name: str,
         path: str = '/api/v1/perform',
-        payload: Dict = None,
+        payload: Optional[Dict] = None,
         version: str = 'latest',
     ) -> Any:
         src_job = os.environ.get('JOB_NAME')
@@ -36,14 +36,14 @@ class JobEntrypoint:
             else:
                 tracing_id = ''
 
-            r = requests.post(url, json=payload, headers={
+            r = httpx.post(url, json=payload, headers={
                 'X-Racetrack-Auth': os.environ['AUTH_TOKEN'],
                 tracing_header: tracing_id,
             })
             r.raise_for_status()
             return r.json()
             
-        except requests.HTTPError as e:
+        except httpx.HTTPStatusError as e:
             raise RuntimeError(f'failed to call job "{job_name} {version}" by {src_job}: {e}: {e.response.text}') from e
         except BaseException as e:
             raise RuntimeError(f'failed to call job "{job_name} {version}" by {src_job}: {e}') from e
