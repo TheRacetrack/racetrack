@@ -22,7 +22,7 @@ fields:
     - `directory` - subdirectory relative to git repo root where the project is
 - `owner_email` (**required**) - email address of the Job's owner to reach out
 - `extends` - relative path to base manifest file, which will be extended by this manifest
-- `version` - Version of the Job. It should adhere to Semantic Versioning standard.
+- `version` - Version of the Job. It must adhere to Semantic Versioning standard.
 - `jobtype_extra` - Jobtype specific extra parameters
     - Fields specified and validated by the jobtype.
 - `docker` - Manifest for Dockerfile job types
