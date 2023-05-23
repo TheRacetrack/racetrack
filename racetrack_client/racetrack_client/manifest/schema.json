@@ -29,6 +29,7 @@
         },
         "jobtype": {
             "type": "string",
+            "pattern": ".+:.+",
             "$comment": "Required, logic handled elsewhere for backwards compatability with the depricated version of the same key; lang"
         },
         "lang": {
