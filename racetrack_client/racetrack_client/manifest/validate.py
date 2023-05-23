@@ -1,7 +1,8 @@
 import re
-from jsonschema import validate
 from pathlib import Path
 import json
+
+from jsonschema import validate
 
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.manifest import Manifest
