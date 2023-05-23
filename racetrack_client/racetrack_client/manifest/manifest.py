@@ -100,7 +100,7 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
     infrastructure_target: Optional[str] = None
 
     def get_jobtype(self):
-        return self.jobtype if self.lang is None else self.lang
+        return self.jobtype if self.jobtype else self.lang
 
     def get_jobtype_extra(self):
         for field in [self.jobtype_extra, self.golang, self.python, self.wrapper_properties]:
