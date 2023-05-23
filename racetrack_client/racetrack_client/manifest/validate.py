@@ -38,6 +38,9 @@ def validate_manifest(manifest: Manifest):
     with path.open('r') as f:
         schema = json.load(f)
         validate(serialized_manifest, schema=schema)
+        
+    with wrap_context('parsing Job version'):
+        SemanticVersion(manifest.version)
 
 def validate_and_show_manifest(path: str):
     manifest = load_validated_manifest(path)
