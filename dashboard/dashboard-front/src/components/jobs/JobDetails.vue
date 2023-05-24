@@ -27,8 +27,10 @@ const loadingLogs: Ref<boolean> = ref(false)
 const manifestDialogRef: Ref<typeof ManifestEditDialog | null> = ref(null)
 
 const manifestYaml: Ref<string> = computed(() => {
-    if (!job.value?.manifest)
+    if (!job.value?.manifest) {
+        console.log('Empty job manifest')
         return ''
+    }
     return yaml.dump(removeNulls(job.value?.manifest)) || ''
 })
 
