@@ -51,12 +51,12 @@ And a `sample/job.yaml` file describing what's inside:
 ```yaml
 name: adder
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
 
-python:
+jobtype_extra:
   entrypoint_path: 'entrypoint.py'
   entrypoint_class: 'Entrypoint'
 ```

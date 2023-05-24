@@ -25,13 +25,13 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             description='Manifest - build recipe for a Job',
             example={
                 'name': 'adder',
-                'lang': 'python3',
+                'jobtype': 'python3',
                 'owner_email': 'nobody@example.com',
                 'git': {
                     'remote': '.',
                     'directory': 'sample/python-class',
                 },
-                'python': {
+                'jobtype_extra': {
                     'requirements_path': 'requirements.txt',
                     'entrypoint_path': 'adder.py',
                 },

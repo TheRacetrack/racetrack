@@ -1,6 +1,7 @@
 name: python-metrics
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
+version: 0.0.2
 
 git:
   remote: https://github.com/TheRacetrack/racetrack

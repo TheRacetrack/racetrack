@@ -10,7 +10,7 @@ fields:
 
 - `name` (**required**) - name of the current service to be deployed by means of
   this mainfest file. It cannot contain underscores (but can contain dashes).
-- `lang` (**required**) - Language wrapper used to embed model. This should be one
+- `jobtype` (**required**) - Jobtype wrapper used to embed model. This should be one
   of the supported wrapper names combined with the wrapper version:
   `python3:2.4.0`, `python3:latest`, `golang:latest` or `docker-http:latest`, etc.
 - `git` (**required**) - the object describes the place where the source code can be
@@ -22,13 +22,9 @@ fields:
     - `directory` - subdirectory relative to git repo root where the project is
 - `owner_email` (**required**) - email address of the Job's owner to reach out
 - `extends` - relative path to base manifest file, which will be extended by this manifest
-- `version` - Version of the Job. It should adhere to Semantic Versioning standard.
-- `python` - Manifest for Python projects
-    - `requirements_path` - path to `requirements.txt` relative to `git.directory`
-    - `entrypoint_path` - relative path to a file with Job Entrypoint class
-    - `entrypoint_class` - name of Python entrypoint class
-- `golang` - Manifest for Go projects
-    - `gomod` - relative path to `go.mod` requirements
+- `version` - Version of the Job. It must adhere to Semantic Versioning standard.
+- `jobtype_extra` - Jobtype specific extra parameters
+    - Fields specified and validated by the jobtype.
 - `docker` - Manifest for Dockerfile job types
     - `dockerfile_path` - relative path to Dockerfile recipe
 - `build_env` - dictionary of environment variables that should be set when building the image
@@ -39,7 +35,7 @@ fields:
 - `replicas` - number of running instances of the Job to deploy
 - `resources` - resources demands to allocate to the Job
     - `memory_min` - minimum memory amount in bytes, eg. 256Mi
-    - `memory_max` (**required**) - maximum memory amount in bytes, eg. 1Gi
+    - `memory_max` - maximum memory amount in bytes, eg. 1Gi
     - `cpu_min` - minimum CPU consumption in cores, eg. 10m
     - `cpu_max` - maximum CPU consumption in cores, eg. 1000m
 - `runtime_env` - dictionary of environment variables that should be set when running Job
@@ -60,12 +56,10 @@ git:
 owner_email: arnold@skynet.com
 extends: './base/job.yaml'
 version: '1.2.3-alpha'
-python:
+jobtype_extra:
   requirements_path: 'python/requirements.txt'
   entrypoint_path: 'python/entrypoint.py'
   entrypoint_class: 'JobClazz'
-golang:
-  gomod: 'golang/go.mod'
 docker:
   dockerfile_path: 'docker/Dockerfile'
 build_env:

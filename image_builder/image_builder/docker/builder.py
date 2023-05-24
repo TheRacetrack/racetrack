@@ -40,7 +40,7 @@ class DockerBuilder(ImageBuilder):
         plugin_engine: PluginEngine,
     ) -> tuple[list[str], str, str | None]:
         """Build images from manifest file in a workspace directory and return built image name"""
-        job_type: JobType = load_job_type(plugin_engine, manifest.lang)
+        job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
 
         _wait_for_docker_engine_ready()
 

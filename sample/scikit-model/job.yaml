@@ -1,12 +1,13 @@
 name: scikit-sample
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
+version: 0.0.2
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/scikit-model
 
-python:
+jobtype_extra:
   requirements_path: 'requirements.txt'
   entrypoint_path: 'model.py'
   entrypoint_class: 'ScikitDummyModel'
