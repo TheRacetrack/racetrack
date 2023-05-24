@@ -2,7 +2,7 @@ import os
 import time
 import pytest
 
-from e2e.utils import _configure_env, _delete_workload, _deploy, _install_plugin
+from e2e.utils import PYTHON_PLUGIN_VERSION, _configure_env, _delete_workload, _deploy, _install_plugin
 
 suite_full = pytest.mark.skipif(
     os.getenv('TEST_SUITE') != 'full', reason='TEST_SUITE value != full'
@@ -12,7 +12,7 @@ suite_full = pytest.mark.skipif(
 @suite_full
 def test_deploy_delete_stress():
     _configure_env()
-    _install_plugin('github.com/TheRacetrack/plugin-python-job-type==2.6.1')
+    _install_plugin(f'github.com/TheRacetrack/plugin-python-job-type=={PYTHON_PLUGIN_VERSION}')
 
     start = time.time()
 
