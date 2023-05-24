@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { JobData } from '@/utils/api-schema'
 import { ref, type Ref } from 'vue'
-import * as yaml from 'js-yaml'
 import { progressService } from '@/services/ProgressService'
-import { removeNulls } from '@/utils/string'
 import { apiClient } from '@/services/ApiClient'
 
 const dialogOpen = ref(false)
@@ -11,9 +9,9 @@ const loading = ref(false)
 const job: Ref<JobData | null> = ref(null)
 const manifestYaml: Ref<string> = ref('')
 
-function openDialog(jobData: JobData) {
+function openDialog(jobData: JobData, yamlText: string) {
     job.value = jobData
-    manifestYaml.value = yaml.dump(removeNulls(jobData.manifest)) || ''
+    manifestYaml.value = yamlText
     dialogOpen.value = true
 }
 
