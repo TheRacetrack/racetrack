@@ -1,6 +1,7 @@
 from multiprocessing import Process
 
 import backoff
+import pytest
 
 from lifecycle.config import Config
 from lifecycle.server.api import run_api_server
@@ -10,6 +11,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.socket import free_tcp_port
 
 
+@pytest.mark.django_db(transaction=True)
 def test_bootstrap_server():
     port = free_tcp_port()
     unregister_metrics()
