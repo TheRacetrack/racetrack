@@ -55,20 +55,20 @@ class EventStreamServer:
 
     def watch_database_events(self):
         logger.debug('Starting watcher thread in Event Streamer')
-        last_job_ids: set[JobDto] = set()
+        last_jobs: dict[str, JobDto] = {}
         while len(self.clients) > 0:
             logger.debug('Periodic database check for new events')
 
             jobs = list_job_registry(self.config)
-            current_job_ids: set[JobDto] = set(jobs)
+            current_jobs: dict[str, JobDto] = {job.id: job for job in jobs}
 
-            if current_job_ids != last_job_ids:
+            if current_jobs != last_jobs:
                 logger.debug(f'Detected change in job models')
                 self.notify_clients({
                     'event': 'job_models_changed',
                 })
-            last_job_ids = last_job_ids
+            last_jobs = current_jobs
 
-            time.sleep(2_000)
+            time.sleep(1)
 
         logger.debug('Stopping watcher thread in Event Streamer')

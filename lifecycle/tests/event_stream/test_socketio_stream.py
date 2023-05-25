@@ -25,13 +25,6 @@ def anyio_backend():
     return 'asyncio'
 
 
-@pytest.fixture(autouse=True)
-def use_dummy_database(settings):
-    settings.DATABASES = {
-        "default": {'ENGINE': 'django.db.backends.sqlite3'},
-    }
-
-
 @pytest.mark.django_db(transaction=True, databases=['default'])
 def test_socketio_stream():
     configure_logs(log_level='debug')
@@ -50,8 +43,8 @@ def test_socketio_stream():
         with socket_client.connect_async():
             _wait_until(lambda: len(streamer.clients) > 0, 'no client sessions connected')
             _wait_until(lambda: streamer.watcher_thread.is_alive(), 'watcher thread not running')
-            streamer.notify_clients({'event': 'test_passed'})
-            _wait_until_equal(received_events, [{'event': 'test_passed'}], 'fetching next event failed')
+            streamer.notify_clients({'event': 'dummy'})
+            _wait_until_equal(received_events, [{'event': 'dummy'}], 'failed to receive dummy event')
             received_events.clear()
 
             new_job = JobDto(
@@ -72,7 +65,7 @@ def test_socketio_stream():
             )
             create_job_model(new_job)
 
-            _wait_until_equal(received_events, [{'event': 'job_models_changed'}], 'fetching next event failed')
+            _wait_until_equal(received_events, [{'event': 'job_models_changed'}], 'failed to receive job_models_changed event')
 
         _wait_until(lambda: len(streamer.clients) == 0, 'all clients should be disconnected')
         _wait_until(lambda: not streamer.watcher_thread.is_alive(), 'watcher thread should be dead')
