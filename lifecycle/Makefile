@@ -5,7 +5,8 @@ setup:
 		python setup.py develop
 
 test:
-		cd tests && SECRET_KEY=dev python -m pytest -vv --tb=short -ra $(test)
+		cd tests &&\
+ 		SECRET_KEY=dev AUTH_KEY=dev DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings" python -m pytest -vv --tb=short -ra $(test)
 
 run:
 		-docker network create racetrack_default

@@ -5,10 +5,15 @@ import pytest
 from lifecycle.config import Config
 from lifecycle.event_stream.client import EventStreamClient
 from lifecycle.event_stream.server import EventStreamServer
+from lifecycle.job.models_registry import create_job_model
 from lifecycle.server.api import create_fastapi_app
 from lifecycle.server.metrics import unregister_metrics
 from racetrack_client.log.logs import configure_logs
+from racetrack_client.manifest import Manifest
+from racetrack_client.manifest.manifest import GitManifest
+from racetrack_client.utils.time import datetime_to_timestamp, now
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_in_background
+from racetrack_commons.entities.dto import JobDto, JobStatus
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.socket import free_tcp_port
 
@@ -20,11 +25,19 @@ def anyio_backend():
     return 'asyncio'
 
 
+@pytest.fixture(autouse=True)
+def use_dummy_database(settings):
+    settings.DATABASES = {
+        "default": {'ENGINE': 'django.db.backends.sqlite3'},
+    }
+
+
+@pytest.mark.django_db(transaction=True, databases=['default'])
 def test_socketio_stream():
     configure_logs(log_level='debug')
     unregister_metrics()
     port = free_tcp_port()
-    streamer = EventStreamServer()
+    streamer = EventStreamServer(Config())
     app = create_fastapi_app(Config(), PluginEngine(), 'lifecycle', streamer)
 
     with serve_asgi_in_background(app, port):
@@ -37,8 +50,29 @@ def test_socketio_stream():
         with socket_client.connect_async():
             _wait_until(lambda: len(streamer.clients) > 0, 'no client sessions connected')
             _wait_until(lambda: streamer.watcher_thread.is_alive(), 'watcher thread not running')
-            streamer.notify_clients({'event': 'happened'})
-            _wait_until_equal(received_events, [{'event': 'happened'}], 'fetching next event failed')
+            streamer.notify_clients({'event': 'test_passed'})
+            _wait_until_equal(received_events, [{'event': 'test_passed'}], 'fetching next event failed')
+            received_events.clear()
+
+            new_job = JobDto(
+                name='tester',
+                version='0.0.0-alpha',
+                status=JobStatus.RUNNING.value,
+                create_time=datetime_to_timestamp(now()),
+                update_time=datetime_to_timestamp(now()),
+                manifest=Manifest(
+                    name='tester',
+                    owner_email='test@example.com',
+                    git=GitManifest(
+                        remote='github.com',
+                    ),
+                ),
+                internal_name='tester-0.0.0-alpha',
+                infrastructure_target='docker',
+            )
+            create_job_model(new_job)
+
+            _wait_until_equal(received_events, [{'event': 'job_models_changed'}], 'fetching next event failed')
 
         _wait_until(lambda: len(streamer.clients) == 0, 'all clients should be disconnected')
         _wait_until(lambda: not streamer.watcher_thread.is_alive(), 'watcher thread should be dead')

@@ -78,7 +78,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
     )
 
     if event_stream_server is None:
-        event_stream_server = EventStreamServer()
+        event_stream_server = EventStreamServer(config)
 
     dispatcher = AsgiDispatcher({
         '/admin': django_app,

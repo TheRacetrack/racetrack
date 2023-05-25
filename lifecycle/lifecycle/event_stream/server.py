@@ -4,17 +4,21 @@ import threading
 import socketio
 import time
 
+from lifecycle.config import Config
+from lifecycle.job.registry import list_job_registry
 from racetrack_client.log.logs import get_logger
+from racetrack_commons.entities.dto import JobDto
 
 logger = get_logger(__name__)
 
 
 class EventStreamServer:
-    def __init__(self):
+    def __init__(self, config: Config):
         """Socket.IO server for streaming events to clients"""
         self.sio = socketio.AsyncServer(async_mode='asgi')
         self.clients: list[str] = []  # List of Client IDs
         self.watcher_thread: threading.Thread | None = None
+        self.config = config
 
         @self.sio.event
         async def connect(client_id: str, environ):
@@ -51,8 +55,20 @@ class EventStreamServer:
 
     def watch_database_events(self):
         logger.debug('Starting watcher thread in Event Streamer')
+        last_job_ids: set[JobDto] = set()
         while len(self.clients) > 0:
             logger.debug('Periodic database check for new events')
-            time.sleep(5_000)
+
+            jobs = list_job_registry(self.config)
+            current_job_ids: set[JobDto] = set(jobs)
+
+            if current_job_ids != last_job_ids:
+                logger.debug(f'Detected change in job models')
+                self.notify_clients({
+                    'event': 'job_models_changed',
+                })
+            last_job_ids = last_job_ids
+
+            time.sleep(2_000)
 
         logger.debug('Stopping watcher thread in Event Streamer')
