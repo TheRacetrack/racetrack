@@ -23,6 +23,12 @@ def setup_lifecycle_metrics():
     REGISTRY.register(DatabaseConnectionCollector())
 
 
+def unregister_metrics():
+    collectors = list(REGISTRY._collector_to_names.keys())
+    for collector in collectors:
+        REGISTRY.unregister(collector)
+
+
 class DatabaseConnectionCollector(Collector):
     def collect(self):
         metric_name = 'lifecycle_database_connected'

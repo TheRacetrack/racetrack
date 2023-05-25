@@ -11,9 +11,10 @@ class AsgiDispatcher:
         app = None
         request_path = scope['path']
         for pattern_prefix, pattern_app in self.patterns.items():
-            if scope['type'] == 'http' and request_path.startswith(pattern_prefix):
-                app = pattern_app
-                break
+            if request_path.startswith(pattern_prefix):
+                if scope['type'] in {'http', 'websocket'}:
+                    app = pattern_app
+                    break
 
         if app is None:
             app = self.default_app

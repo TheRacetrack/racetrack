@@ -11,6 +11,7 @@ from lifecycle.endpoints.audit import setup_audit_endpoints
 from lifecycle.endpoints.auth import setup_auth_endpoints
 from lifecycle.endpoints.info import setup_info_endpoints
 from lifecycle.endpoints.plugin import setup_plugin_endpoints
+from lifecycle.event_stream.server import EventStreamServer
 from lifecycle.monitor.monitors import list_log_streamers
 from lifecycle.endpoints.health import setup_health_endpoint
 from lifecycle.endpoints.deploy import setup_deploy_endpoints
@@ -39,7 +40,7 @@ def run_api_server(config: Config, plugin_engine: PluginEngine, service_name: st
     serve_asgi_app(app, http_addr=config.http_addr, http_port=config.http_port)
 
 
-def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str) -> ASGIApp:
+def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str, event_stream_server: EventStreamServer | None = None) -> ASGIApp:
     """Create FastAPI app and register all endpoints without running a server"""
     base_url = f'/{service_name}'
     fastapi_app = create_fastapi(
@@ -76,6 +77,9 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
         base_url,
     )
 
+    if event_stream_server is None:
+        event_stream_server = EventStreamServer()
+
     dispatcher = AsgiDispatcher({
         '/admin': django_app,
         base_url + '/admin': django_app,
@@ -83,6 +87,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
         base_url + '/static': django_app,
         '/socket.io': WSGIMiddleware(sio_wsgi_app),
         base_url + '/socket.io': WSGIMiddleware(sio_wsgi_app),
+        '/lifecycle/socketio/events': event_stream_server.asgi_app,
     }, default=proxy)
 
     return dispatcher

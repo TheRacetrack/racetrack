@@ -4,6 +4,7 @@ import backoff
 
 from lifecycle.config import Config
 from lifecycle.server.api import run_api_server
+from lifecycle.server.metrics import unregister_metrics
 from racetrack_client.utils.request import Requests, RequestError
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.socket import free_tcp_port
@@ -11,6 +12,7 @@ from racetrack_commons.socket import free_tcp_port
 
 def test_bootstrap_server():
     port = free_tcp_port()
+    unregister_metrics()
     config = Config(http_port=port)
     plugin_engine = PluginEngine()
     server_process = Process(target=run_api_server, args=(config, plugin_engine))

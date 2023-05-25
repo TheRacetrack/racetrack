@@ -3,6 +3,7 @@ import os
 from fastapi.testclient import TestClient
 
 from lifecycle.config import Config
+from lifecycle.server.metrics import unregister_metrics
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.server.api import create_fastapi_app
 
@@ -10,6 +11,7 @@ from lifecycle.server.api import create_fastapi_app
 def test_health_version_endpoint():
     os.environ['GIT_VERSION'] = '0.0.1-g32c4b29-dirty'
     os.environ['DJANGO_DB_TYPE'] = 'sqlite'
+    unregister_metrics()
     fastapi_app = create_fastapi_app(Config(), PluginEngine(), 'lifecycle')
 
     client = TestClient(fastapi_app)
