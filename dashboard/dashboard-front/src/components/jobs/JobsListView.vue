@@ -140,7 +140,11 @@ watch(envInfo, () => {
 function setupEventStreamClient() {
     if (!envInfo.lifecycle_url)
         return
-    const socket: Socket = io("http://localhost:7102/", {
+
+    const url = new URL(envInfo.lifecycle_url)
+    url.pathname = ''
+    const trimmedLifecycleUrl = url.toString()
+    const socket: Socket = io(trimmedLifecycleUrl, {
         path: '/lifecycle/socketio/events',
     })
 
