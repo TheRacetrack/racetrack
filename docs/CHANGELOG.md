@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Jobs tree on the Dashboard is live refreshed as soon as someone else's change is detected.
+  [issue #239](https://github.com/TheRacetrack/racetrack/issues/239)
+
 ### Changed
 - The name of the caller is recorded in the internal logs,
   giving the ability to track down who made the request based on its ID.
