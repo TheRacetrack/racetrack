@@ -3,6 +3,7 @@ import sys
 from typing import Optional
 
 LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
+LOG_FORMAT_DEBUG = '\033[2m[%(asctime)s]\033[0m %(name)s %(filename)s %(lineno)s %(levelname)s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 

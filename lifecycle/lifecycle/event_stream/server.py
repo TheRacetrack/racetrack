@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 class EventStreamServer:
     def __init__(self, config: Config):
         """Socket.IO server for streaming events to clients"""
-        self.sio = socketio.AsyncServer(async_mode='asgi')
+        self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
         self.clients: list[str] = []  # List of Client IDs
         self.watcher_thread: threading.Thread | None = None
         self.config = config
@@ -55,20 +55,17 @@ class EventStreamServer:
 
     def watch_database_events(self):
         logger.debug('Starting watcher thread in Event Streamer')
-        last_jobs: dict[str, JobDto] = {}
+        last_jobs: dict[str, JobDto] | None = None
         while len(self.clients) > 0:
-            logger.debug('Periodic database check for new events')
 
             jobs = list_job_registry(self.config)
             current_jobs: dict[str, JobDto] = {job.id: job for job in jobs}
-
-            if current_jobs != last_jobs:
+            if last_jobs is not None and current_jobs != last_jobs:
                 logger.debug(f'Detected change in job models')
                 self.notify_clients({
                     'event': 'job_models_changed',
                 })
             last_jobs = current_jobs
 
-            time.sleep(1)
-
+            time.sleep(self.config.job_watcher_interval)
         logger.debug('Stopping watcher thread in Event Streamer')

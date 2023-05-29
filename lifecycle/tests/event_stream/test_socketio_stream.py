@@ -30,8 +30,9 @@ def test_socketio_stream():
     configure_logs(log_level='debug')
     unregister_metrics()
     port = free_tcp_port()
-    streamer = EventStreamServer(Config())
-    app = create_fastapi_app(Config(), PluginEngine(), 'lifecycle', streamer)
+    config = Config(job_watcher_interval=0.5)
+    streamer = EventStreamServer(config)
+    app = create_fastapi_app(config, PluginEngine(), 'lifecycle', streamer)
 
     with serve_asgi_in_background(app, port):
         _wait_until_server_ready(port)
