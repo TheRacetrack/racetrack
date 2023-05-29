@@ -68,6 +68,8 @@ or called with a curl command:
 
 ![](docs/assets/example-curl-call.png)
 
+[//]: # (https://carbon.now.sh/?bg=rgba%28255%2C255%2C255%2C1%29&t=material&wt=boxy&l=application%2Fx-sh&width=812&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%2524%2520curl%2520-X%2520POST%2520%2522http%253A%252F%252Flocalhost%253A7005%252Fpub%252Fjob%252Fadder%252Flatest%252Fapi%252Fv1%252Fperform%2522%2520%255C%250A%2520%2520-H%2520%2522X-Racetrack-Auth%253A%2520eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI%2522%2520%255C%250A%2520%2520-H%2520%2522Content-Type%253A%2520application%252Fjson%2522%2520%255C%250A%2520%2520-d%2520%27%257B%2522a%2522%253A%252040%252C%2520%2522b%2522%253A%25202%257D%27%250A42)
+
 ## Getting started
 
 For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.io/) environment;
