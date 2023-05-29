@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
+import { io, Socket } from "socket.io-client"
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import { type JobData } from '@/utils/api-schema'
 import JobDetails from '@/components/jobs/JobDetails.vue'
 import JobStatus from '@/components/jobs/JobStatus.vue'
 import { JobOrder, filterJobByKeyword, sortedJobs } from '@/utils/jobs'
+import { envInfo } from '@/services/EnvironmentInfo'
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
@@ -131,6 +133,30 @@ watch(jobsTree, () => {
     })
 })
 
+watch(envInfo, () => {
+    setupEventStreamClient()
+})
+
+function setupEventStreamClient() {
+    if (!envInfo.lifecycle_url)
+        return
+    const socket: Socket = io("http://localhost:7102/", {
+        path: '/lifecycle/socketio/events',
+    })
+
+    socket.on("connect", () => {
+        console.log(`connected to live events stream: ${socket.id}`)
+        socket.on("broadcast_event", (data) => {
+            console.log('live event received:', data)
+            fetchJobs()
+        })
+    })
+
+    socket.on("disconnect", () => {
+        console.log('disconnected')
+    })
+}
+
 onMounted(() => {
     const storedOrder = localStorage.getItem('jobs.order')
     if (storedOrder) {
@@ -142,6 +168,7 @@ onMounted(() => {
     }
 
     fetchJobs()
+    setupEventStreamClient()
 })
 </script>
 <template>
