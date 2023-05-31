@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
 import { io, Socket } from "socket.io-client"
 import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
@@ -198,6 +198,10 @@ onMounted(() => {
 
     fetchJobs()
     setupEventStreamClient()
+})
+
+onUnmounted(() => {
+    autoReloadSocket?.disconnect()
 })
 </script>
 <template>
