@@ -154,7 +154,7 @@ function setupEventStreamClient() {
         socket.on("broadcast_event", (data) => {
             console.log('live event received:', data)
             fetchJobs()
-            toastService.info('Jobs refreshed.')
+            toastService.info('Change detected, jobs reloaded.')
         })
     })
 
