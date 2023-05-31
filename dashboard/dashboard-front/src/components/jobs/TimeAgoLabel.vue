@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, ref, watch } from 'vue'
+import { type Ref, ref, watch, onMounted, onUnmounted } from 'vue'
 import { timestampPrettyAgo, timestampSecondsAgo } from '@/utils/time'
 
 const props = defineProps({
@@ -32,7 +32,15 @@ function renderAgoLabel() {
     }
 }
 
-renderAgoLabel()
+onMounted(() => {
+    renderAgoLabel()
+})
+
+onUnmounted(() => {
+    if (timerId.value != null) {
+        clearTimeout(timerId.value)
+    }
+})
 </script>
 
 <template>

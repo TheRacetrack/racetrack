@@ -5,11 +5,12 @@ import { io, Socket } from "socket.io-client"
 import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
+import { envInfo } from '@/services/EnvironmentInfo'
 import { type JobData } from '@/utils/api-schema'
 import JobDetails from '@/components/jobs/JobDetails.vue'
 import JobStatus from '@/components/jobs/JobStatus.vue'
+import TimeAgoLabel from '@/components/jobs/TimeAgoLabel.vue'
 import { JobOrder, filterJobByKeyword, sortedJobs } from '@/utils/jobs'
-import { envInfo } from '@/services/EnvironmentInfo'
 
 const jobsData: Ref<JobData[]> = ref([])
 const jobsQTreeRef: Ref<QTree | null> = ref(null)
@@ -23,10 +24,12 @@ const selectedNodeKey: Ref<string | null> = ref(null)
 const jobOrder: Ref<JobOrder> = ref(JobOrder.ByName)
 const loadingTree = ref(true)
 const autoUpdateEnabled = ref(true)
+const lastReloadTimestamp: Ref<number> = ref(0)
 
 function fetchJobs() {
     loadingTree.value = true
     apiClient.get(`/api/v1/job`).then(response => {
+        lastReloadTimestamp.value = new Date().getTime() / 1000
         jobsData.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch the jobs`, err)
@@ -166,9 +169,8 @@ function setupEventStreamClient() {
     socket.on("connect", () => {
         console.log(`connected to live events stream: ${socket.id}`)
         socket.on("broadcast_event", (data) => {
-            console.log('live event received:', data)
+            console.log('Change detected, reloading jobs')
             fetchJobs()
-            toastService.info('Change detected, jobs reloaded.')
         })
     })
 
@@ -256,6 +258,12 @@ onUnmounted(() => {
 
                         <q-btn-dropdown rounded flat color="grey-7" :dropdown-icon="mdiDotsVertical" no-icon-animation>
                             <q-list>
+                                <q-item>
+                                    <span class="q-mt-sm">
+                                        Last update:
+                                        <TimeAgoLabel :timestamp="lastReloadTimestamp" />
+                                    </span>
+                                </q-item>
                                 <q-item>
                                     <q-toggle v-model="autoUpdateEnabled" label="Auto-update">
                                         <q-tooltip anchor="center right" self="center left">
