@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 
 class EventStreamServer:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, socketio_path: str = 'lifecycle/socketio/events'):
         """Socket.IO server for streaming events to clients"""
         self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
         self.clients: list[str] = []  # List of Client IDs
@@ -39,7 +39,7 @@ class EventStreamServer:
         async def catch_all(event, sid, data):
             logger.warning(f'Unhandled Socket.IO event: {event}, {sid}, {data}')
 
-        self.asgi_app = socketio.ASGIApp(self.sio, socketio_path='lifecycle/socketio/events')
+        self.asgi_app = socketio.ASGIApp(self.sio, socketio_path=socketio_path)
 
     async def notify_clients_async(self, event: dict):
         for client_id in self.clients.copy():
