@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
 import { io, Socket } from "socket.io-client"
+import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import { type JobData } from '@/utils/api-schema'
@@ -21,6 +22,7 @@ const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
 const selectedNodeKey: Ref<string | null> = ref(null)
 const jobOrder: Ref<JobOrder> = ref(JobOrder.ByName)
 const loadingTree = ref(true)
+const autoUpdateEnabled = ref(true)
 
 function fetchJobs() {
     loadingTree.value = true
@@ -136,18 +138,30 @@ watch(jobsTree, () => {
 watch(envInfo, () => {
     setupEventStreamClient()
 })
+watch(autoUpdateEnabled, () => {
+    localStorage.setItem('jobs.autoUpdateEnabled', JSON.stringify(autoUpdateEnabled.value))
+    setupEventStreamClient()
+})
+
+var autoReloadSocket: Socket | null = null
 
 function setupEventStreamClient() {
+    autoReloadSocket?.disconnect()
+    autoReloadSocket = null
+
     if (!envInfo.lifecycle_url)
+        return
+    if (!autoUpdateEnabled.value)
         return
 
     // Socket.io needs URL without the path
     const url = new URL(envInfo.lifecycle_url)
     url.pathname = ''
     const trimmedLifecycleUrl = url.toString()
-    const socket: Socket = io(trimmedLifecycleUrl, {
+    const socket = io(trimmedLifecycleUrl, {
         path: '/lifecycle/socketio/events',
     })
+    autoReloadSocket = socket
 
     socket.on("connect", () => {
         console.log(`connected to live events stream: ${socket.id}`)
@@ -159,7 +173,7 @@ function setupEventStreamClient() {
     })
 
     socket.on("disconnect", () => {
-        console.log('disconnected')
+        console.log('disconnected from live events stream')
     })
 }
 
@@ -168,6 +182,15 @@ onMounted(() => {
     if (storedOrder) {
         try {
             jobOrder.value = JSON.parse(storedOrder) as JobOrder
+        } catch(e) {
+            console.error(e)
+        }
+    }
+
+    const storedAutoUpdateEnabled = localStorage.getItem('jobs.autoUpdateEnabled')
+    if (storedAutoUpdateEnabled) {
+        try {
+            autoUpdateEnabled.value = JSON.parse(storedAutoUpdateEnabled) as boolean
         } catch(e) {
             console.error(e)
         }
@@ -226,6 +249,18 @@ onMounted(() => {
                             </q-list>
                         </q-btn-dropdown>
                         </span>
+
+                        <q-btn-dropdown rounded flat color="grey-7" :dropdown-icon="mdiDotsVertical" no-icon-animation>
+                            <q-list>
+                                <q-item>
+                                    <q-toggle v-model="autoUpdateEnabled" label="Auto-update">
+                                        <q-tooltip anchor="center right" self="center left">
+                                            Refresh jobs in real time as soon as the change is detected.
+                                        </q-tooltip>
+                                    </q-toggle>
+                                </q-item>
+                            </q-list>
+                        </q-btn-dropdown>
 
                         <q-scroll-area style="height: 64vh;" visible>
                         <q-tree
