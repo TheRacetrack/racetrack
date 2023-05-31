@@ -24,6 +24,10 @@ def setup_lifecycle_metrics():
 
 
 def unregister_metrics():
+    """
+    Clean up Prometheus metrics registered by this app.
+    It's important if you want to run the server more than once, eg. in tests.
+    """
     collectors = list(REGISTRY._collector_to_names.keys())
     for collector in collectors:
         REGISTRY.unregister(collector)
