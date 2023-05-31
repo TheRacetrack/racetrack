@@ -141,6 +141,7 @@ function setupEventStreamClient() {
     if (!envInfo.lifecycle_url)
         return
 
+    // Socket.io needs URL without the path
     const url = new URL(envInfo.lifecycle_url)
     url.pathname = ''
     const trimmedLifecycleUrl = url.toString()
@@ -153,6 +154,7 @@ function setupEventStreamClient() {
         socket.on("broadcast_event", (data) => {
             console.log('live event received:', data)
             fetchJobs()
+            toastService.info('Jobs refreshed.')
         })
     })
 
