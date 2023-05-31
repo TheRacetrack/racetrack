@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Jobs tree on the Dashboard is live refreshed as soon as someone else's change is detected.
+- Jobs tree on the Dashboard is refreshed in real time as soon as someone else's change is detected.
+  You can turn it off on the "Jobs" page by clicking "3 dots menu", "Auto-update" toggle.
   [issue #239](https://github.com/TheRacetrack/racetrack/issues/239)
 
 ## [2.15.0] - 2023-05-26
