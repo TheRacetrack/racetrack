@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   You can turn it off on the "Jobs" page by clicking "3 dots menu", "Auto-update" toggle.
   [issue #239](https://github.com/TheRacetrack/racetrack/issues/239)
 
+### Changed
+- Chain calls to the jobs should be made by importing a dedicated function
+  from a library provided by the job type plugin.
+  This will keep the chain call function always up-to-date with the Racetrack version.
+  See the [example](https://github.com/TheRacetrack/plugin-python-job-type/blob/29f9ecc04b182072f3549c82923e252728bd7b61/sample/python-chain/entrypoint.py#LL9C19-L9C83).
+  ([issue #20](https://github.com/TheRacetrack/plugin-python-job-type/issues/20))
+
 ## [2.15.0] - 2023-05-26
 ### Changed
 - The name of the caller is recorded in the internal logs,
