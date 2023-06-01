@@ -4,7 +4,11 @@ from typing import Dict
 
 
 def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
-    django_db_type: str = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+    django_db_type: str = os.environ.get('DJANGO_DB_TYPE', 'default')
+    if django_db_type == 'default':
+        return {
+            "default": {'ENGINE': 'django.db.backends.sqlite3'},
+        }
     if django_db_type not in ['sqlite', 'postgres']:
         raise Exception("Error, unknown DJANGO_DB_TYPE: " + django_db_type)
 

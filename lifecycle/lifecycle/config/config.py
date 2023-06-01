@@ -55,6 +55,9 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # Default back-end platform where to deploy the services
     infrastructure_target: Optional[str] = None
 
+    # How often (in seconds) to check for changes made to jobs in a database and notify live clients
+    job_watcher_interval: float = 3
+
     @validator(
         'max_job_memory_limit',
         'default_job_memory_min',

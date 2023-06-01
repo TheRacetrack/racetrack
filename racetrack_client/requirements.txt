@@ -1,6 +1,6 @@
 PyYAML >= 6.0
 pydantic >= 1.10, < 2
 backoff >= 2.2
-python-socketio >= 5.7
+python-socketio[client] >= 5.8
 typer[all] >= 0.7.0
 jsonschema >= 4.17.3
