@@ -26,8 +26,8 @@ class JobDto(BaseModel, arbitrary_types_allowed=True):
     create_time: int
     update_time: int
     id: str | None = None
-    manifest: Manifest
-    manifest_yaml: str
+    manifest: Manifest | None = None
+    manifest_yaml: str | None = None
     # placeholder for the name of the resource seen internally by a cluster
     # (may contain port number depending on cluster type)
     internal_name: str | None = None
