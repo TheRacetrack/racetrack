@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { type Ref, computed, ref } from 'vue'
 import { openURL } from 'quasar'
-import * as yaml from 'js-yaml'
 import { mdiDotsVertical, mdiTextBoxOutline } from '@quasar/extras/mdi-v7'
+import hljs from 'highlight.js/lib/core'
+import hljs_yaml from 'highlight.js/lib/languages/yaml'
 import { progressService } from '@/services/ProgressService'
 import { apiClient } from '@/services/ApiClient'
 import { type JobData } from '@/utils/api-schema'
-import { removeNulls } from '@/utils/string'
 import { timestampToLocalTime } from '@/utils/time'
 import JobStatus from '@/components/jobs/JobStatus.vue'
 import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
@@ -14,6 +14,9 @@ import LogsView from '@/components/jobs/LogsView.vue'
 import { getJobGraphanaUrl } from '@/utils/jobs'
 import ManifestEditDialog from './ManifestEditDialog.vue'
 import TimeAgoLabel from './TimeAgoLabel.vue'
+import 'highlight.js/styles/github.css'
+
+hljs.registerLanguage('yaml', hljs_yaml)
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
@@ -27,11 +30,13 @@ const loadingLogs: Ref<boolean> = ref(false)
 const manifestDialogRef: Ref<typeof ManifestEditDialog | null> = ref(null)
 
 const manifestYaml: Ref<string> = computed(() => {
-    if (!job.value?.manifest) {
-        console.log('Empty job manifest')
-        return ''
-    }
-    return yaml.dump(removeNulls(job.value?.manifest)) || ''
+    return job.value?.manifest_yaml || ''
+})
+
+const manifestHtml: Ref<string> = computed(() => {
+    let html = hljs.highlight(manifestYaml.value, {language: 'yaml'}).value
+    html = html.replaceAll('\n', '<br>')
+    return html
 })
 
 function showBuildLogs(job: JobData) {
@@ -260,7 +265,7 @@ function onManifestUpdated() {
 
     <q-field outlined label="Manifest" stack-label class="q-mt-md">
         <template v-slot:control>
-            <pre class="x-monospace x-overflow-any">{{ manifestYaml }}</pre>
+            <div class="x-monospace x-overflow-any" v-html="manifestHtml" style="white-space: pre;"></div>
         </template>
         <template v-slot:append>
             <q-btn round flat icon="edit" @click="editJobManifest(job)">
