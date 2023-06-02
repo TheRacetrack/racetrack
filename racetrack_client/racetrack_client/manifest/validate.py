@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 import json
 
@@ -41,6 +40,7 @@ def validate_manifest(manifest: Manifest):
         
     with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
+
 
 def validate_and_show_manifest(path: str):
     manifest = load_validated_manifest(path)
