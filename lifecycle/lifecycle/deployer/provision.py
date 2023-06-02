@@ -65,6 +65,8 @@ def provision_job(
         job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine,
                                               tag, runtime_env_vars, family_dto, containers_num)
         job.deployed_by = deployment.deployed_by
+        job.manifest = manifest
+        job.manifest_yaml = deployment.manifest_yaml
         job.job_type_version = f'{job_type.lang_name}:{job_type.version}'
 
     with wrap_context('saving job in database'):

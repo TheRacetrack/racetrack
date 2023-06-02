@@ -27,7 +27,7 @@ def redeploy_job(
     assert manifest is not None, "job doesn't have Manifest data specified"
 
     infra_target = job.infrastructure_target
-    deployment = create_deployment(manifest, deployer_username, infra_target)
+    deployment = create_deployment(manifest, job.manifest_yaml, deployer_username, infra_target)
     try:
         job_secrets = _retrieve_job_secrets(manifest, plugin_engine, job)
 
@@ -62,7 +62,7 @@ def reprovision_job(
     assert job.image_tag is not None, "latest image tag is unknown"
 
     infra_target = job.infrastructure_target
-    deployment = create_deployment(manifest, deployer_username, infra_target)
+    deployment = create_deployment(manifest, job.manifest_yaml, deployer_username, infra_target)
     try:
         if manifest.secret_runtime_env_file:
             job_secrets = _retrieve_job_secrets(manifest, plugin_engine, job)
@@ -101,7 +101,7 @@ def move_job(
     assert new_infra_target, "infrastructure target has to be specified"
     assert new_infra_target != old_infra_target, "new infrastructure target has to be different from the current one"
 
-    deployment = create_deployment(manifest, deployer_username, new_infra_target)
+    deployment = create_deployment(manifest, job.manifest_yaml, deployer_username, new_infra_target)
     try:
         if manifest.secret_runtime_env_file:
             job_secrets = _retrieve_job_secrets(manifest, plugin_engine, job)

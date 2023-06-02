@@ -9,6 +9,7 @@ from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
+from racetrack_client.utils.datamodel import convert_to_yaml
 from racetrack_client.utils.time import now
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus, JobDto
@@ -81,6 +82,7 @@ def build_and_provision(
 def deploy_job_in_background(
     config: Config,
     manifest: Manifest,
+    manifest_dict: dict,
     git_credentials: Optional[Credentials],
     secret_vars: SecretVars,
     build_context: Optional[str],
@@ -94,7 +96,7 @@ def deploy_job_in_background(
     :return: deployment ID
     """
     infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
-    deployment = create_deployment(manifest, username, infra_target)
+    deployment = create_deployment(manifest, convert_to_yaml(manifest_dict), username, infra_target)
     logger.info(f'starting deployment {deployment.id} in background')
     args = (config, manifest, git_credentials, secret_vars, deployment,
             build_context, force, plugin_engine, auth_subject)

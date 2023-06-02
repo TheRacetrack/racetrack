@@ -47,6 +47,7 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         phase=model.phase,
         image_name=model.image_name,
         infrastructure_target=model.infrastructure_target,
+        manifest_yaml=model.manifest,
     )
 
 

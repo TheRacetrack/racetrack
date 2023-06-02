@@ -10,13 +10,13 @@ from lifecycle.job.models_registry import read_job_model
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.manifest.manifest import Manifest
-from racetrack_client.utils.datamodel import datamodel_to_yaml_str
 from racetrack_client.utils.time import now
 
 
 @db_access
 def create_deployment(
     manifest: Manifest,
+    manifest_yaml: str,
     username: str,
     infrastructure_target: str,
 ) -> DeploymentDto:
@@ -28,7 +28,7 @@ def create_deployment(
         status=DeploymentStatus.IN_PROGRESS.value,
         create_time=now(),
         update_time=now(),
-        manifest=datamodel_to_yaml_str(manifest),
+        manifest=manifest_yaml,
         job_name=manifest.name,
         job_version=manifest.version,
         deployed_by=username,
