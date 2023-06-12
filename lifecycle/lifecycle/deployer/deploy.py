@@ -37,7 +37,8 @@ def deploy_new_job(
     plugin_engine: PluginEngine,
 ):
     """Deploy (build and provision) new Job instance, providing secrets"""
-    _protect_job_overwriting(manifest, force)
+    if not config.allow_job_overwrite:
+        _protect_job_overwriting(manifest, force)
     check_deploy_permissions(auth_subject, manifest)
 
     with wrap_context('saving job secrets'):
