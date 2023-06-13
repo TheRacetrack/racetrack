@@ -1,4 +1,3 @@
-from __future__ import annotations
 from enum import Enum
 from typing import Dict, Optional
 
@@ -17,7 +16,7 @@ class JobStatus(Enum):
 
 class JobFamilyDto(BaseModel):
     name: str
-    id: Optional[str] = None
+    id: str | None = None
 
 
 class JobDto(BaseModel, arbitrary_types_allowed=True):
@@ -26,19 +25,20 @@ class JobDto(BaseModel, arbitrary_types_allowed=True):
     status: str
     create_time: int
     update_time: int
-    id: Optional[str] = None
-    manifest: Optional[Manifest] = None
+    id: str | None = None
+    manifest: Manifest | None = None
+    manifest_yaml: str | None = None
     # placeholder for the name of the resource seen internally by a cluster
     # (may contain port number depending on cluster type)
-    internal_name: Optional[str] = None
+    internal_name: str | None = None
     # public url of a job
-    pub_url: Optional[str] = None
-    error: Optional[str] = None
-    image_tag: Optional[str] = None
+    pub_url: str | None = None
+    error: str | None = None
+    image_tag: str | None = None
     # username of the last deployer
-    deployed_by: Optional[str] = None
-    last_call_time: Optional[int] = None
-    infrastructure_target: Optional[str] = None
+    deployed_by: str | None = None
+    last_call_time: int | None = None
+    infrastructure_target: str | None = None
     # internal hostnames of the job replicas (eg. pods)
     replica_internal_names: list[str] = []
     # exact name and version of a job type used to built this job
@@ -63,6 +63,7 @@ class DeploymentDto(BaseModel, arbitrary_types_allowed=True):
     phase: Optional[str] = None  # phase (step) of the deployment
     image_name: Optional[str] = None
     infrastructure_target: Optional[str] = None
+    manifest_yaml: str  # manifest represented as YAML string
 
 
 class EscDto(BaseModel):

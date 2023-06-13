@@ -24,6 +24,7 @@ def job_model_to_dto(model: models.Job, config: Config) -> JobDto:
         create_time=datetime_to_timestamp(model.create_time),
         update_time=datetime_to_timestamp(model.update_time),
         manifest=parse_manifest_or_empty(model.manifest),
+        manifest_yaml=model.manifest,
         internal_name=model.internal_name,
         pub_url=get_job_pub_url(model.name, model.version, config),
         error=model.error,
@@ -46,6 +47,7 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         phase=model.phase,
         image_name=model.image_name,
         infrastructure_target=model.infrastructure_target,
+        manifest_yaml=model.manifest,
     )
 
 

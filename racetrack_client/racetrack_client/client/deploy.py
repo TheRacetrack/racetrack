@@ -14,9 +14,10 @@ from racetrack_client.client_config.auth import get_user_auth
 from racetrack_client.client_config.client_config import ClientConfig, Credentials
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.manifest import Manifest
+from racetrack_client.manifest.load import get_manifest_path
+from racetrack_client.manifest.merge import load_merged_manifest_dict
 from racetrack_client.manifest.validate import load_validated_manifest
 from racetrack_client.utils.auth import get_auth_request_headers
-from racetrack_client.utils.datamodel import datamodel_to_dict
 from racetrack_client.utils.request import parse_response_object, Requests
 from racetrack_client.log.logs import get_logger
 
@@ -43,7 +44,6 @@ class BuildContextMethod(str, Enum):
 
 def send_deploy_request(
     workdir: str,
-    manifest: Optional[Manifest] = None,
     client_config: Optional[ClientConfig] = None,
     lifecycle_url: Optional[str] = None,
     force: bool = False,
@@ -52,7 +52,6 @@ def send_deploy_request(
     """
     Send request deploying a new Job to running Lifecycle instance
     :param workdir: directory with job.yaml manifest
-    :param manifest: manifest to overwrite (if not taken from workdir)
     :param client_config: client configuration to use (if not the defaullt)
     :param lifecycle_url: Racetrack server's URL or alias name
     :param force: overwrite existing job without asking
@@ -64,9 +63,9 @@ def send_deploy_request(
     """
     if client_config is None:
         client_config = load_client_config()
-    if manifest is None:
-        manifest = load_validated_manifest(workdir)
-        logger.debug(f'Manifest loaded: {manifest}')
+    manifest: Manifest = load_validated_manifest(workdir)
+    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir))
+    logger.debug(f'Manifest loaded: {manifest}')
 
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
@@ -80,7 +79,7 @@ def send_deploy_request(
     # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::DeployEndpoint` for server-side implementation
     r = Requests.post(
         f'{lifecycle_url}/api/v1/deploy',
-        json=get_deploy_request_payload(manifest, git_credentials, secret_vars, build_context, force),
+        json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, force),
         headers=get_auth_request_headers(user_auth),
     )
     response = parse_response_object(r, 'Lifecycle deploying error')
@@ -96,14 +95,14 @@ def send_deploy_request(
 
 
 def get_deploy_request_payload(
-        manifest: Manifest,
-        git_credentials: Optional[Credentials],
-        secret_vars: SecretVars,
-        build_context: Optional[str],
-        force: bool,
+    manifest_dict: Dict,
+    git_credentials: Optional[Credentials],
+    secret_vars: SecretVars,
+    build_context: Optional[str],
+    force: bool,
 ) -> Dict:
     return {
-        "manifest": datamodel_to_dict(manifest),
+        "manifest": manifest_dict,
         "git_credentials": git_credentials.dict() if git_credentials is not None else None,
         "secret_vars": secret_vars.dict(),
         "build_context": build_context,
@@ -125,7 +124,7 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
     if status == 'failed':
         raise RuntimeError(response['error'])
     if status == 'done':
-        return response.get('job', {}).get('pub_url')
+        return response.get('job', {}).get('pub_url', '')
 
     phase = response.get('phase')
     if not phases or phases[-1] != phase:  # don't print the same phase again
@@ -176,7 +175,7 @@ def _determine_default_build_context_method(lifecycle_url: str, manifest: Manife
     It avoids fetching from remote git when using samples from local project repository.
     """
     if _is_url_localhost(lifecycle_url) and manifest.owner_email == 'sample@example.com':
-        logger.warning('transferring build context due to local development')
+        logger.warning('using local build context due to local development')
         return BuildContextMethod.local
     return BuildContextMethod.git
 

@@ -29,7 +29,7 @@ The columns are:
 | [httpretty](https://pypi.org/project/httpretty/)                                                           | 1.1.4       | 1.1.4          | mocking HTTP requests                           |
 | [httpx](https://pypi.org/project/httpx/)                                                                   | 0.23.3      | 0.23.3         | making HTTP requests                            |
 | [Jinja2](https://pypi.org/project/Jinja2/)                                                                 | 3.1.2       | 3.1.2          | templating Dockerfiles                          |
-| [js-yaml](https://github.com/nodeca/js-yaml)                                                               | 4.1.0       | 4.1.0          | Displaying YAML on front-end                    |
+| [Highlight.js](https://github.com/highlightjs/highlight.js)                                                | 11.8.0      | 11.8.0         | YAML syntax highlighter on front-end            |
 | [kubectl](https://github.com/kubernetes/kubectl)                                                           | 1.26.2      | 1.26.2         | managing Kubernetes                             |
 | [Kubernetes Python Client](https://pypi.org/project/kubernetes/)                                           | 26.1.0      | 26.1.0         | managing Kubernetes                             |
 | [log15](https://github.com/inconshreveable/log15)                                                          | 3.0.0       | 3.0.0          | structured logging in Go                        | 
