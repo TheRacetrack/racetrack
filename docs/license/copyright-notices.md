@@ -40,16 +40,6 @@ These files are available under MIT License, which you can find at https://githu
 
 ----------------------------------------------------------------------
 
-This project uses TableFilter (unmodified)
-
-https://github.com/koalyptus/TableFilter
-
-Copyright (c) 2015 Max Guglielmi
-
-These files are available under MIT License, which you can find at https://github.com/koalyptus/TableFilter/blob/master/LICENSE
-
-----------------------------------------------------------------------
-
 This project uses vis-network (unmodified)
 
 https://github.com/visjs/vis-network
