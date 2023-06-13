@@ -70,6 +70,12 @@ def convert_to_json(obj) -> str:
     return json.dumps(obj)
 
 
+def convert_to_yaml(obj) -> str:
+    obj = convert_to_json_serializable(obj)
+    obj = remove_none(obj)
+    return yaml.dump(obj, sort_keys=False)
+
+
 def datamodel_to_dict(dt: BaseModel) -> Dict:
     data_dict = dt.dict()
     data_dict = remove_none(data_dict)

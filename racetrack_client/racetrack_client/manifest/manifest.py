@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, Extra, validator, Field
 
 from racetrack_client.utils.quantity import Quantity
 
@@ -55,7 +55,7 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
 
     # Jobtype wrapper used to embed model
     jobtype: Optional[str] = None
-    lang: Optional[str] = None #Deprecated
+    lang: Optional[str] = None  # Deprecated
 
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None
@@ -92,12 +92,15 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
 
     # Extra parameters specified by the jobtype
     jobtype_extra: Optional[Dict[str, Any]] = None
-    golang: Optional[Dict[str, Any]] = None #Deprecated
-    python: Optional[Dict[str, Any]] = None #Deprecated
-    wrapper_properties: Optional[Dict[str, Any]] = None #Deprecated
+    golang: Optional[Dict[str, Any]] = None  # Deprecated
+    python: Optional[Dict[str, Any]] = None  # Deprecated
+    wrapper_properties: Optional[Dict[str, Any]] = None  # Deprecated
 
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
+
+    # original YAML string from which the manifest was parsed, field for internal use only
+    origin_yaml_: Optional[str] = Field(None, exclude=True)
 
     def get_jobtype(self):
         return self.jobtype if self.jobtype else self.lang

@@ -8,6 +8,14 @@ from racetrack_client.manifest.load import load_manifest_dict_from_yaml, load_ma
 
 def load_merged_manifest(manifest_path: Path) -> Manifest:
     """Load manifest from YAML file, resolve overlay layer, merging it with base manifest"""
+    manifest_dict = load_merged_manifest_dict(manifest_path)
+    return load_manifest_from_dict(manifest_dict)
+
+
+def load_merged_manifest_dict(manifest_path: Path) -> Dict:
+    """
+    Load dictionary representation of a manifest from YAML file, resolve overlay layer, merging it with base manifest
+    """
     with wrap_context('loading manifest'):
         manifest_dict = load_manifest_dict_from_yaml(manifest_path)
 
@@ -23,8 +31,7 @@ def load_merged_manifest(manifest_path: Path) -> Manifest:
             with wrap_context('merging base & overlay layers'):
                 manifest_dict = merge_dicts(base_manifest_dict, manifest_dict)
                 manifest_dict['extends'] = None
-
-    return load_manifest_from_dict(manifest_dict)
+    return manifest_dict
 
 
 def merge_dicts(base: Dict, overlay: Dict) -> Dict:

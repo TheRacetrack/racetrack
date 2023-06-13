@@ -6,6 +6,7 @@ export interface JobData {
     update_time: number
     id?: string
     manifest?: Record<string, any>
+    manifest_yaml?: string
     internal_name?: string
     pub_url?: string
     error?: string
