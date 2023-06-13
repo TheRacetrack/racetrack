@@ -54,7 +54,6 @@ function fetchJobs() {
 
 onMounted(() => {
     rememberInLocalStorage(visibleColumns, 'portfolio.visible-columns')
-    rememberInLocalStorage(pagination, 'portfolio.pagination')
     fetchJobs()
 })
 
