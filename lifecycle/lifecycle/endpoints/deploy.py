@@ -78,7 +78,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         username = get_username_from_token(request)
         auth_subject = check_auth(request)
         deployment_id = deploy_job_in_background(
-            config, manifest, payload.manifest, git_credentials, secret_vars, build_context,
+            config, manifest, git_credentials, secret_vars, build_context,
             force, plugin_engine, username, auth_subject,
         )
         return {"id": deployment_id}
@@ -92,7 +92,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         secret_vars = load_secret_vars_from_dict(payload.secret_vars)
         build_context = payload.build_context
         username = get_username_from_token(request)
-        deployment_id = build_job_in_background(config, manifest, payload.manifest, git_credentials, secret_vars,
+        deployment_id = build_job_in_background(config, manifest, git_credentials, secret_vars,
                                                 build_context, username, plugin_engine)
         return {"id": deployment_id}
 

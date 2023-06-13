@@ -11,7 +11,7 @@ from lifecycle.job.deployment import create_deployment, save_deployment_build_lo
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.client.env import SecretVars
 from racetrack_client.utils.request import parse_response_object, Requests, RequestError
-from racetrack_client.utils.datamodel import datamodel_to_dict, convert_to_yaml
+from racetrack_client.utils.datamodel import datamodel_to_dict
 from racetrack_client.utils.time import now
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.exception import log_exception
@@ -89,7 +89,6 @@ def _build_image_request_payload(
 def build_job_in_background(
     config: Config,
     manifest: Manifest,
-    manifest_dict: dict,
     git_credentials: Optional[Credentials],
     secret_vars: SecretVars,
     build_context: Optional[str],
@@ -97,7 +96,7 @@ def build_job_in_background(
     plugin_engine: PluginEngine,
 ) -> str:
     infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
-    deployment = create_deployment(manifest, convert_to_yaml(manifest_dict), username, infra_target)
+    deployment = create_deployment(manifest, username, infra_target)
     
     logger.info(f'started building job {deployment.id} in background')
     args = (config, manifest, git_credentials, secret_vars, deployment, build_context)

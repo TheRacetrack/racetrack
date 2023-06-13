@@ -16,7 +16,6 @@ from racetrack_client.utils.time import now
 @db_access
 def create_deployment(
     manifest: Manifest,
-    manifest_yaml: str,
     username: str,
     infrastructure_target: str,
 ) -> DeploymentDto:
@@ -28,7 +27,7 @@ def create_deployment(
         status=DeploymentStatus.IN_PROGRESS.value,
         create_time=now(),
         update_time=now(),
-        manifest=manifest_yaml,
+        manifest=manifest.origin_yaml,
         job_name=manifest.name,
         job_version=manifest.version,
         deployed_by=username,
