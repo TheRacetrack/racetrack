@@ -26,7 +26,7 @@ export interface EnvironmentInfo {
 
 export function loadEnvironmentInfo() {
     /** Fetch backend version from API */
-    apiClient.get(`/api/status`, false)
+    apiClient.get<EnvironmentInfo>(`/api/status`, false)
         .then(response => {
             const data: EnvironmentInfo = response.data
 

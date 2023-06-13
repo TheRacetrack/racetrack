@@ -28,7 +28,7 @@ const lastReloadTimestamp: Ref<number> = ref(0)
 
 function fetchJobs() {
     loadingTree.value = true
-    apiClient.get(`/api/v1/job`).then(response => {
+    apiClient.get<JobData[]>(`/api/v1/job`).then(response => {
         lastReloadTimestamp.value = new Date().getTime() / 1000
         jobsData.value = response.data
     }).catch(err => {

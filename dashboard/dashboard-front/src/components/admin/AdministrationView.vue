@@ -86,7 +86,7 @@ function copyText(text: string | null) {
 }
 
 function fetchPluginsData() {
-    apiClient.get(`/api/v1/plugin/tree`).then(response => {
+    apiClient.get<PluginData>(`/api/v1/plugin/tree`).then(response => {
         pluginDataRef.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch plugins data`, err)

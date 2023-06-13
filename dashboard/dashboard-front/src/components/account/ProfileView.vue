@@ -29,8 +29,12 @@ function copyLoginCommand() {
     })
 }
 
+interface RegenerateTokenResponse {
+    new_token: string
+}
+
 function regenerateToken() {
-    apiClient.post(`/api/v1/auth/token/user/regenerate`).then(response => {
+    apiClient.post<RegenerateTokenResponse>(`/api/v1/auth/token/user/regenerate`).then(response => {
         setAuthToken(response.data.new_token)
         toastService.success(`Token regenerated.`)
     }).catch(err => {

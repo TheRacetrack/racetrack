@@ -13,7 +13,7 @@ const configRef: Ref<string> = ref('')
 const loading = ref(false)
 
 function fetchPluginData() {
-    apiClient.get(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`).then(response => {
+    apiClient.get<string>(`/api/v1/plugin/${pluginName}/${pluginVersion}/config`).then(response => {
         configRef.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch plugin data`, err)

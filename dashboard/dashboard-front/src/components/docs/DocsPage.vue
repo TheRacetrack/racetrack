@@ -14,7 +14,7 @@ const docPageContent: Ref<DocPageContent> = ref({
 })
 
 function fetchDocPageData() {
-    apiClient.get(`/api/docs/page/${pageName}`).then(response => {
+    apiClient.get<DocPageContent>(`/api/docs/page/${pageName}`).then(response => {
         docPageContent.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch documentation page`, err)

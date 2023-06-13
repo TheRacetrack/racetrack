@@ -35,7 +35,7 @@ function fetchAuditLogData() {
     const encodedJobName = encodeURI(jobNameFilter.value)
     const encodedJobVersion = encodeURI(jobVersionFilter.value)
     const encodedRelatedToMe = relatedToMeFilter.value ? '1' : '0'
-    apiClient.get(`/api/v1/audit/activity?job_name=${encodedJobName}&job_version=${encodedJobVersion}&related_to_me=${encodedRelatedToMe}`)
+    apiClient.get<AuditLogData>(`/api/v1/audit/activity?job_name=${encodedJobName}&job_version=${encodedJobVersion}&related_to_me=${encodedRelatedToMe}`)
         .then(response => {
             auditLogData.value = response.data
         }).catch(err => {
