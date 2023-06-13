@@ -2,13 +2,13 @@ import logging
 import random
 from typing import Optional
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('racetrack')
 
 
 class JobEntrypoint:
     def perform(self) -> float:
         caller_name = self.get_caller_name()
-        logger.info(f'perform called by {caller_name}')
+        logger.debug(f'perform was called by {caller_name}')
         return random.random()
 
     def get_caller_name(self) -> Optional[str]:

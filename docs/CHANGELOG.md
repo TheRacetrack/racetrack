@@ -5,24 +5,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.16.0] - 2023-06-05
 ### Added
 - Jobs tree on the Dashboard is refreshed in real time as soon as someone else's change is detected.
   You can turn it off on the "Jobs" page by clicking "3 dots menu", "Auto-update" toggle.
-  [issue #239](https://github.com/TheRacetrack/racetrack/issues/239)
+  ([#239](https://github.com/TheRacetrack/racetrack/issues/239))
+
+### Changed
+- Chain calls to the jobs should be made by importing a dedicated function
+  from a library provided by the job type plugin.
+  This will keep the chain call function always up-to-date with the Racetrack version.
+  See the [example](https://github.com/TheRacetrack/plugin-python-job-type/blob/29f9ecc04b182072f3549c82923e252728bd7b61/sample/python-chain/entrypoint.py#LL9C19-L9C83).
+  ([#20](https://github.com/TheRacetrack/plugin-python-job-type/issues/20))
 
 ## [2.15.0] - 2023-05-26
 ### Changed
 - The name of the caller is recorded in the internal logs,
   giving the ability to track down who made the request based on its ID.
   Job types can also retrieve that information by extracting it from an HTTP header.
-  [issue #246](https://github.com/TheRacetrack/racetrack/issues/246)
+  See the [python-job-type docs](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md#caller-name)
+  and [a job](https://github.com/TheRacetrack/racetrack/blob/master/sample/python-logger/job.yaml#LL14C1-L15C26) for example.
+  ([#246](https://github.com/TheRacetrack/racetrack/issues/246))
 - racetrack-client shows more details in case of an HTTP error.
-  [issue #245](https://github.com/TheRacetrack/racetrack/issues/245)
+  ([#245](https://github.com/TheRacetrack/racetrack/issues/245))
 - `golang`, `python`, and `wrapper_properties` fields are deprecated in Manifest schema,
   use `jobtype_extra` instead. This is backwards compatible.
-  (https://github.com/TheRacetrack/racetrack/issues/231)
+  ([#231](https://github.com/TheRacetrack/racetrack/issues/231))
 - Editing the manifest online triggers a redeployment of the job, keeping manifest up-to-date with running job.
-  (https://github.com/TheRacetrack/racetrack/issues/250)
+  ([#250](https://github.com/TheRacetrack/racetrack/issues/250))
 
 ## [2.14.0] - 2023-05-18
 ### Added
