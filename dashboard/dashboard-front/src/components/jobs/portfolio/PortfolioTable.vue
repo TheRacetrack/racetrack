@@ -45,8 +45,8 @@ interface PortfolioJob {
 }
 
 function fetchJobs() {
-    apiClient.get(`/api/v1/job/portfolio`).then(response => {
-        portfolioJobs.value = response.data as PortfolioJob[]
+    apiClient.get<PortfolioJob[]>(`/api/v1/job/portfolio`).then(response => {
+        portfolioJobs.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Fetching jobs portfolio failed`, err)
     })
