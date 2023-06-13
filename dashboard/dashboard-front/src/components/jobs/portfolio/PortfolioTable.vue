@@ -6,6 +6,7 @@ import { formatTimestampIso8601 } from '@/utils/time'
 import { formatDecimalNumber } from '@/utils/string'
 import { apiClient } from '@/services/ApiClient'
 import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
+import { rememberInLocalStorage } from '@/utils/storage'
 
 const portfolioJobs: Ref<PortfolioJob[]> = ref([])
 const visibleColumns = ref([
@@ -52,6 +53,8 @@ function fetchJobs() {
 }
 
 onMounted(() => {
+    rememberInLocalStorage(visibleColumns, 'portfolio.visible-columns')
+    rememberInLocalStorage(pagination, 'portfolio.pagination')
     fetchJobs()
 })
 
