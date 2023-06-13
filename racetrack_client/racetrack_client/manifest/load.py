@@ -32,7 +32,7 @@ def load_manifest_from_dict(manifest_dict: Dict) -> Manifest:
     """Return manifest as data class"""
     with wrap_context('parsing manifest data types'):
         manifest = parse_dict_datamodel(manifest_dict, Manifest)
-        manifest._origin_yaml = convert_to_yaml(manifest_dict)
+        manifest.origin_yaml_ = convert_to_yaml(manifest_dict)
         return manifest
 
 
@@ -42,7 +42,7 @@ def parse_manifest_or_empty(manifest_yaml: Optional[str]) -> Optional[Manifest]:
         return None
     try:
         manifest = parse_yaml_datamodel(manifest_yaml, Manifest)
-        manifest._origin_yaml = manifest_yaml
+        manifest.origin_yaml_ = manifest_yaml
         return manifest
     except Exception as e:
         logger.error(f'Job Manifest YAML contains syntax error: {e}')

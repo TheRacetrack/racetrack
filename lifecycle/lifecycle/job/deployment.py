@@ -27,7 +27,7 @@ def create_deployment(
         status=DeploymentStatus.IN_PROGRESS.value,
         create_time=now(),
         update_time=now(),
-        manifest=manifest.origin_yaml,
+        manifest=manifest.origin_yaml_,
         job_name=manifest.name,
         job_version=manifest.version,
         deployed_by=username,

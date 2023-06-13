@@ -99,12 +99,8 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allo
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
 
-    # original YAML string from which the manifest was parsed
-    _origin_yaml: Optional[str] = Field(None, exclude=True)
-
-    @property
-    def origin_yaml(self) -> Optional[str]:
-        return self._origin_yaml
+    # original YAML string from which the manifest was parsed, field for internal use only
+    origin_yaml_: Optional[str] = Field(None, exclude=True)
 
     def get_jobtype(self):
         return self.jobtype if self.jobtype else self.lang
