@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Dashboard displays original YAML for the job's manifest.
+  ([#262](https://github.com/TheRacetrack/racetrack/issues/262))
+
+### Fixed
+- Dashboard redirects to login page when session expires.
+  ([#266](https://github.com/TheRacetrack/racetrack/issues/266))
 
 ## [2.16.0] - 2023-06-05
 ### Added
