@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { isAuthenticated } from '@/services/UserDataStore'
+import { hasAuthCookie, isAuthenticated } from '@/services/UserDataStore'
 import { toastService } from '@/services/ToastService'
 import LoginView from '@/components/account/LoginView.vue'
 import LogoutView from '@/components/account/LogoutView.vue'
@@ -114,22 +114,20 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!isAuthenticated.value) {
-      const nextPath = to.path
-      next({ // redirect to login page
-        name: 'login',
-        query: {
-          next: nextPath,
-        },
-      })
-      toastService.info(`Please log in to see this page.`)
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+        if (!isAuthenticated.value || !hasAuthCookie()) {
+            const nextPath = to.path
+            next({ // redirect to login page
+                name: 'login',
+                query: {next: nextPath},
+            })
+            toastService.info(`Please log in to see this page.`)
+        } else {
+            next()
+        }
     } else {
-      next()
+        next()
     }
-  } else {
-    next()
-  }
 })
 
 export default router
