@@ -34,6 +34,7 @@ class JobDto(BaseModel, arbitrary_types_allowed=True):
     # public url of a job
     pub_url: str | None = None
     error: str | None = None
+    notice: str | None = None
     image_tag: str | None = None
     # username of the last deployer
     deployed_by: str | None = None

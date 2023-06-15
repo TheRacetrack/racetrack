@@ -28,6 +28,7 @@ def job_model_to_dto(model: models.Job, config: Config) -> JobDto:
         internal_name=model.internal_name,
         pub_url=get_job_pub_url(model.name, model.version, config),
         error=model.error,
+        notice=model.notice,
         image_tag=model.image_tag,
         deployed_by=model.deployed_by,
         last_call_time=datetime_to_timestamp(model.last_call_time) if model.last_call_time is not None else None,

@@ -13,6 +13,7 @@ from lifecycle.server.metrics import metric_jobs_count_by_status
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.scope import AuthScope
+from racetrack_commons.deploy.job_type import list_available_job_types
 from racetrack_commons.deploy.resource import job_resource_name
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
@@ -126,17 +127,16 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
     - if the job is expected to be present, but was not found in a cluster, it gets LOST status.
     - if there are extra jobs found in the cluster, called "orphans", they are ignored, but the log warning is written.
     """
-    logger.info("Synchronizing jobs")
-
     with wrap_context('synchronizing job'):
-        cluster_jobs = _generate_job_map(list_cluster_jobs(config, plugin_engine))
-        registry_jobs = _generate_job_map(list_job_registry(config))
-        logger.debug(f'Found {len(cluster_jobs)} jobs in the cluster, {len(registry_jobs)} in the database')
+        cluster_jobs: list[JobDto] = list(list_cluster_jobs(config, plugin_engine))
+        _apply_job_notices(cluster_jobs, plugin_engine)
+        cluster_jobs_map: dict[str, JobDto] = _generate_job_map(cluster_jobs)
+        registry_jobs_map: dict[str, JobDto] = _generate_job_map(list_job_registry(config))
         job_status_count: dict[str, int] = defaultdict(int)
 
-        for job_id, registry_job in registry_jobs.items():
-            if job_id in cluster_jobs:
-                cluster_job = cluster_jobs[job_id]
+        for job_id, registry_job in registry_jobs_map.items():
+            if job_id in cluster_jobs_map:
+                cluster_job = cluster_jobs_map[job_id]
                 _sync_registry_job(registry_job, cluster_job)
             else:
                 # job not present in Cluster
@@ -148,13 +148,15 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
             job_status_count[registry_job.status] += 1
 
         # Orphans - job missing in registry but present in cluster
-        for job_id, cluster_job in cluster_jobs.items():
-            if job_id not in registry_jobs:
+        for job_id, cluster_job in cluster_jobs_map.items():
+            if job_id not in registry_jobs_map:
                 cluster_job.status = JobStatus.ORPHANED.value
                 job_status_count[cluster_job.status] += 1
                 logger.warning(f'orphaned job found: {cluster_job}, internal name: {cluster_job.internal_name}')
 
-    logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')
+    all_jobs_count = sum(job_status_count.values())
+    if job_status_count[JobStatus.RUNNING.value] != all_jobs_count:
+        logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')
     for status in JobStatus:
         metric_jobs_count_by_status.labels(status=status.value).set(job_status_count[status.value])
 
@@ -172,6 +174,9 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
         logger.debug(f'job {registry_job} changed status to: {registry_job.status}')
     if registry_job.error != cluster_job.error:
         registry_job.error = cluster_job.error
+        changed = True
+    if registry_job.notice != cluster_job.notice:
+        registry_job.notice = cluster_job.notice
         changed = True
     if registry_job.infrastructure_target != cluster_job.infrastructure_target:
         registry_job.infrastructure_target = cluster_job.infrastructure_target
@@ -193,3 +198,10 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
 
 def _generate_job_map(jobs: Iterable[JobDto]) -> dict[str, JobDto]:
     return {job_resource_name(job.name, job.version): job for job in jobs}
+
+
+def _apply_job_notices(cluster_jobs: list[JobDto], plugin_engine: PluginEngine):
+    available_job_types: set[str] = set(list_available_job_types(plugin_engine))
+    for job in cluster_jobs:
+        if job.job_type_version not in available_job_types:
+            job.notice = f"Job type version {job.job_type_version} is deprecated and it's not available anymore"
