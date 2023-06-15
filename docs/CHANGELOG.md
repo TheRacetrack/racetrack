@@ -6,10 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Dashboard displays original YAML for the job's manifest.
+  ([#262](https://github.com/TheRacetrack/racetrack/issues/262))
 - Dashboard now renders a table on the portfolio tab with QTable rather than TableFilter,
   which occasionally seemed to have rendering issues.
   Plus, it's more consistent with the current UI styling.
   ([#258](https://github.com/TheRacetrack/racetrack/issues/258))
+
+### Fixed
+- Dashboard redirects to login page when session expires.
+  ([#266](https://github.com/TheRacetrack/racetrack/issues/266))
 
 ## [2.16.0] - 2023-06-05
 ### Added

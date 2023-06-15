@@ -9,6 +9,8 @@ export const username: Ref<string> = ref('')
 export const authToken: Ref<string> = ref('')
 export const isAdmin: Ref<boolean> = ref(false)
 
+const AUTH_COOKIE_NAME = 'X-Racetrack-Auth'
+
 export interface UserData {
     username: string
     authToken: string
@@ -80,4 +82,18 @@ function saveUserData() {
     } else {
         localStorage.setItem('userData.authToken', authToken.value)
     }
+}
+
+export function hasAuthCookie(): boolean {
+    return getCookie(AUTH_COOKIE_NAME) !== null
+}
+
+function getCookie(name: string): string | null {
+    const nameWithSuffix = `${name}=`;
+    const values = document.cookie
+        .split(';')
+        .map(c => c.trim())
+        .filter(cookie => cookie.substring(0, nameWithSuffix.length) === nameWithSuffix)
+        .map(cookie => decodeURIComponent(cookie.substring(nameWithSuffix.length)))
+    return values[0] || null
 }
