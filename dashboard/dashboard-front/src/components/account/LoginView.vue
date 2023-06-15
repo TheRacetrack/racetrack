@@ -30,7 +30,7 @@ function login() {
 
     loading.value = true
 
-    apiClient.post(`/api/v1/users/login`,
+    apiClient.post<LoginData>(`/api/v1/users/login`,
         {'username': username.value, 'password': password.value},
         false,
     ).then(response => {

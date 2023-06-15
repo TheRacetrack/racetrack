@@ -54,7 +54,7 @@ export function loadUserData(router: Router) {
     authToken.value = storedAuthToken as string
     isAuthenticated.value = true
 
-    apiClient.get(`/api/v1/users/validate_user_auth`, true)
+    apiClient.get<UserProfileDto>(`/api/v1/users/validate_user_auth`, true)
         .then(response => {
             const data: UserProfileDto = response.data
             isAuthenticated.value = true

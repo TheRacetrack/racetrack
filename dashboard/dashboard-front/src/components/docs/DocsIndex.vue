@@ -20,7 +20,7 @@ interface PageData {
 }
 
 function fetchDocIndexData() {
-    apiClient.get(`/api/docs/index`).then(response => {
+    apiClient.get<DocIndexData>(`/api/docs/index`).then(response => {
         docIndexData.value = response.data
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch documentation`, err)

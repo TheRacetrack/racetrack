@@ -6,28 +6,28 @@ const basePath: string = '/dashboard'
 
 export class ApiClient {
 
-    get<R = AxiosResponse<any>>(
+    get<R>(
         relativeUrl: string, authorized: boolean = true,
-    ): Promise<R> {
-        return makeRequest('get', relativeUrl, undefined, authorized)
+    ): Promise<AxiosResponse<R>> {
+        return makeRequest<AxiosResponse<R>>('get', relativeUrl, undefined, authorized)
     }
 
-    post<R = AxiosResponse<any>>(
+    post<R>(
         relativeUrl: string, data?: any, authorized: boolean = true,
-    ): Promise<R> {
-        return makeRequest('post', relativeUrl, data, authorized)
+    ): Promise<AxiosResponse<R>> {
+        return makeRequest<AxiosResponse<R>>('post', relativeUrl, data, authorized)
     }
 
-    put<R = AxiosResponse<any>>(
+    put<R>(
         relativeUrl: string, data?: any, authorized: boolean = true,
-    ): Promise<R> {
-        return makeRequest('put', relativeUrl, data, authorized)
+    ): Promise<AxiosResponse<R>> {
+        return makeRequest<AxiosResponse<R>>('put', relativeUrl, data, authorized)
     }
 
-    delete<R = AxiosResponse<any>>(
+    delete<R>(
         relativeUrl: string, data?: any, authorized: boolean = true,
-    ): Promise<R> {
-        return makeRequest('delete', relativeUrl, data, authorized)
+    ): Promise<AxiosResponse<R>> {
+        return makeRequest<AxiosResponse<R>>('delete', relativeUrl, data, authorized)
     }
 }
 

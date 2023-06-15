@@ -35,7 +35,7 @@ interface JobGraphEdge {
 
 function fetchGraph() {
     loading.value = true
-    apiClient.get(`/api/v1/job/graph`).then(response => {
+    apiClient.get<JobGraph>(`/api/v1/job/graph`).then(response => {
         const data: JobGraph = response.data
         graphData.nodes = data.nodes
         graphData.edges = data.edges

@@ -54,7 +54,6 @@ The columns are:
 | [PyYAML](https://pypi.org/project/PyYAML/)                                                                 | 6.0         | 6.0            | parsing YAML config files                       |
 | [Quasar Framework](https://github.com/quasarframework/quasar)                                              | 2.11.10     | 2.11.10        | UI components on Dashboard                      |
 | [schedule](https://pypi.org/project/schedule/)                                                             | 1.1.0       | 1.1.0          | running periodic tasks                          |
-| [TableFilter](https://github.com/koalyptus/TableFilter/releases)                                           | 0.7.3       | 0.7.3          | Portfolio table in Dashboard                    |
 | [typer](https://pypi.org/project/typer/)                                                                   | 0.7.0       | 0.7.0          | parsing command line arguments                  |
 | [Typescript](https://github.com/microsoft/TypeScript)                                                      | 4.8.4       | 5.0.4          | Dashboard UI code                               |
 | [uvicorn](https://pypi.org/project/uvicorn/)                                                               | 0.20.0      | 0.20.0         | serving ASGI app                                |
