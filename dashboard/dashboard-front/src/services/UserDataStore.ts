@@ -85,7 +85,7 @@ function saveUserData() {
 }
 
 export function hasAuthCookie(): boolean {
-    return getCookie(AUTH_COOKIE_NAME) != null
+    return getCookie(AUTH_COOKIE_NAME) !== null
 }
 
 function getCookie(name: string): string | null {
