@@ -128,9 +128,8 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
     - if there are extra jobs found in the cluster, called "orphans", they are ignored, but the log warning is written.
     """
     with wrap_context('synchronizing job'):
-        cluster_jobs: list[JobDto] = list(list_cluster_jobs(config, plugin_engine))
-        _apply_job_notices(cluster_jobs, plugin_engine)
-        cluster_jobs_map: dict[str, JobDto] = _generate_job_map(cluster_jobs)
+        available_job_types: set[str] = set(list_available_job_types(plugin_engine))
+        cluster_jobs_map: dict[str, JobDto] = _generate_job_map(list_cluster_jobs(config, plugin_engine))
         registry_jobs_map: dict[str, JobDto] = _generate_job_map(list_job_registry(config))
         job_status_count: dict[str, int] = defaultdict(int)
 
@@ -138,6 +137,7 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
             if job_id in cluster_jobs_map:
                 cluster_job = cluster_jobs_map[job_id]
                 _sync_registry_job(registry_job, cluster_job)
+                _apply_job_notice(registry_job, available_job_types)
             else:
                 # job not present in Cluster
                 if registry_job.status != JobStatus.LOST.value:
@@ -200,8 +200,10 @@ def _generate_job_map(jobs: Iterable[JobDto]) -> dict[str, JobDto]:
     return {job_resource_name(job.name, job.version): job for job in jobs}
 
 
-def _apply_job_notices(cluster_jobs: list[JobDto], plugin_engine: PluginEngine):
-    available_job_types: set[str] = set(list_available_job_types(plugin_engine))
-    for job in cluster_jobs:
-        if job.job_type_version not in available_job_types:
-            job.notice = f"Job type version {job.job_type_version} is deprecated and it's not available anymore"
+def _apply_job_notice(job: JobDto, available_job_types: set[str]):
+    notice = job.notice
+    if job.job_type_version not in available_job_types:
+        job.notice = f"This job type version is deprecated since it's not available anymore."
+
+    if notice != job.notice:
+        models_registry.save_job_model(job)
