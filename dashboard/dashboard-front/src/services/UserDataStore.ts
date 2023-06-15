@@ -89,11 +89,11 @@ export function hasAuthCookie(): boolean {
 }
 
 function getCookie(name: string): string | null {
-    const nameLenPlus = name.length + 1
+    const nameWithSuffix = `${name}=`;
     const values = document.cookie
         .split(';')
         .map(c => c.trim())
-        .filter(cookie => cookie.substring(0, nameLenPlus) === `${name}=`)
-        .map(cookie => decodeURIComponent(cookie.substring(nameLenPlus)))
+        .filter(cookie => cookie.substring(0, nameWithSuffix.length) === nameWithSuffix)
+        .map(cookie => decodeURIComponent(cookie.substring(nameWithSuffix.length)))
     return values[0] || null
 }
