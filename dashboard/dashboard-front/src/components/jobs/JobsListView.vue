@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from
 import { QTree } from 'quasar'
 import { io, Socket } from "socket.io-client"
 import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
+import { outlinedInfo } from '@quasar/extras/material-icons-outlined'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import { envInfo } from '@/services/EnvironmentInfo'
@@ -293,6 +294,10 @@ onUnmounted(() => {
                                     <div class="text-no-wrap">
                                         {{ prop.node.label }}
                                         <JobStatus :status="getJobByKey(prop.node.key)?.status" short />
+                                        <q-icon v-if="getJobByKey(prop.node.key)?.notice"
+                                            :name="outlinedInfo" color="orange" size="18px" style="position: relative; bottom: 0.14em;">
+                                            <q-tooltip>Notice: {{getJobByKey(prop.node.key)?.notice}}</q-tooltip>
+                                        </q-icon>
                                     </div>
                                 </template>
                                 <template v-else-if="prop.node.type == 'job-family'">
