@@ -35,7 +35,6 @@ const manifestYaml: Ref<string> = computed(() => {
 
 const manifestHtml: Ref<string> = computed(() => {
     let html = hljs.highlight(manifestYaml.value, {language: 'yaml'}).value
-    html = html.replaceAll('\n', '<br>')
     return html
 })
 
@@ -228,11 +227,17 @@ function onManifestUpdated() {
         </div>
     </div>
 
-    <q-field v-if="job?.error" outlined label="Error" stack-label class="q-mt-md">
+    <q-field v-if="job?.error" outlined label="Error" stack-label>
         <template v-slot:control>
             <span class="x-monospace x-overflow-any">
                 {{ job?.error }}
             </span>
+        </template>
+    </q-field>
+
+    <q-field v-if="job?.notice" outlined label="Notice" stack-label>
+        <template v-slot:control>
+            {{ job?.notice }}
         </template>
     </q-field>
 

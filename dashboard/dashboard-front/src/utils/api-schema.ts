@@ -10,6 +10,7 @@ export interface JobData {
     internal_name?: string
     pub_url?: string
     error?: string
+    notice?: string
     image_tag?: string
     deployed_by?: string
     last_call_time?: number

@@ -41,6 +41,7 @@ class Job(models.Model):
     manifest = models.TextField(null=True, blank=True)
     internal_name = models.CharField(max_length=512, null=True, blank=True)
     error = models.TextField(null=True, blank=True)
+    notice = models.TextField(null=True, blank=True)
     image_tag = models.CharField(max_length=256, null=True)
     deployed_by = models.CharField(max_length=256, null=True)
     last_call_time = models.DateTimeField(null=True, blank=True)

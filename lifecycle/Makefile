@@ -29,7 +29,7 @@ recreate-django-migrations:
 		DJANGO_DB_TYPE=sqlite ./migrate.sh
 
 add-migration:
-		export SECRET_KEY=dev && cd lifecycle/django &&\
+		export DJANGO_DB_TYPE=sqlite SECRET_KEY=dev AUTH_KEY=QaPU2UW8r7KXfRtLJVCKahCK93TKhVB5 && cd lifecycle/django &&\
 		python manage.py makemigrations registry &&\
 		python manage.py migrate
 

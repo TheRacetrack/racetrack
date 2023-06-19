@@ -149,6 +149,7 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.manifest = job_dto.manifest_yaml
     job.internal_name = job_dto.internal_name
     job.error = job_dto.error
+    job.notice = job_dto.notice
     job.image_tag = job_dto.image_tag
     job.deployed_by = job_dto.deployed_by
     job.last_call_time = timestamp_to_datetime(job_dto.last_call_time) if job_dto.last_call_time is not None else None
