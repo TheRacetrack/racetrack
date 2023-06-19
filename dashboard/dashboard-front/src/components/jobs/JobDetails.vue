@@ -35,7 +35,6 @@ const manifestYaml: Ref<string> = computed(() => {
 
 const manifestHtml: Ref<string> = computed(() => {
     let html = hljs.highlight(manifestYaml.value, {language: 'yaml'}).value
-    html = html.replaceAll('\n', '<br>')
     return html
 })
 
