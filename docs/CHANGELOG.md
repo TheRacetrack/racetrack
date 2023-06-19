@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- When a job is running a deprecated job type version (due to being no longer available),
+  there is a notice displayed on a dashboard - "info" icon in a jobs tree
+  and a "Notice" field after selecting a job.
+  ([#269](https://github.com/TheRacetrack/racetrack/issues/269))
 
 ## [2.16.1] - 2023-06-19
 ### Changed
