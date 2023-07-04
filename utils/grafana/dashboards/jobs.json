@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 9,
+  "id": 14,
   "links": [],
   "liveNow": true,
   "panels": [
@@ -111,6 +111,8 @@
         "y": 1
       },
       "id": 6,
+      "interval": "2m",
+      "maxDataPoints": 2000,
       "options": {
         "legend": {
           "calcs": [
@@ -136,7 +138,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (job_name,job_version)(irate(requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval]) > 0)",
+          "expr": "sum by (job_name,job_version)(rate(requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__interval]) > 0)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}}",
@@ -211,7 +213,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 163
+                "value": 123
               }
             ]
           },
@@ -259,7 +261,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 285
+                "value": 260
               }
             ]
           },
@@ -271,7 +273,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 171
+                "value": 133
               }
             ]
           },
@@ -283,7 +285,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 341
+                "value": 315
               }
             ]
           }
@@ -296,6 +298,8 @@
         "y": 1
       },
       "id": 29,
+      "interval": "1m",
+      "maxDataPoints": 2000,
       "options": {
         "footer": {
           "fields": [],
@@ -321,10 +325,11 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (job_name,job_version,endpoint)(idelta(endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) > 0",
+          "expr": "sum by (job_name,job_version,endpoint)(sum_over_time(((endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} - endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} offset $__interval) > 0)[$__range:$__interval]))",
           "format": "table",
           "hide": false,
           "instant": false,
+          "interval": "1m",
           "legendFormat": "__auto",
           "range": true,
           "refId": "B"
@@ -336,9 +341,12 @@
           "id": "groupBy",
           "options": {
             "fields": {
+              "Time": {
+                "aggregations": []
+              },
               "Value": {
                 "aggregations": [
-                  "sum"
+                  "last"
                 ],
                 "operation": "aggregate"
               },
@@ -368,6 +376,7 @@
               "job_version": 1
             },
             "renameByName": {
+              "Value (last)": "Total",
               "Value (sum)": "Total calls",
               "endpoint": "Endpoint",
               "job_name": "Job name",
@@ -377,6 +386,211 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "hideTimeOverride": false,
+      "id": 40,
+      "interval": "2m",
+      "maxDataPoints": 2000,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job_name,job_version,endpoint)((endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} - endpoint_requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} offset $__interval) > 0)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{job_name}} {{job_version}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Number of calls",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 12,
+      "interval": "1m",
+      "options": {
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Last",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum by (job_name,job_version)(requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} - requests_done_total{job_name=~\"$job_name\",job_version=~\"$job_version\"})",
+          "interval": "",
+          "legendFormat": "{{job_name}} {{job_version}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Active requests (Unfinished)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -440,9 +654,10 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 15
       },
       "id": 10,
+      "interval": "2m",
       "options": {
         "legend": {
           "calcs": [
@@ -467,7 +682,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by (job_name, job_version, endpoint)(idelta(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) > 0",
+          "expr": "sum by (job_name, job_version, endpoint)(delta(request_internal_errors_total{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__interval])) > 0",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}} {{endpoint}}",
@@ -476,104 +691,6 @@
         }
       ],
       "title": "Internal Errors",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "id": 12,
-      "options": {
-        "legend": {
-          "calcs": [
-            "last"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Last",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "sum by (job_name,job_version)(requests_started_total{job_name=~\"$job_name\",job_version=~\"$job_version\"} - requests_done_total{job_name=~\"$job_name\",job_version=~\"$job_version\"})",
-          "interval": "",
-          "legendFormat": "{{job_name}} {{job_version}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Active requests (Unfinished)",
       "type": "timeseries"
     },
     {
@@ -586,7 +703,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 21
       },
       "id": 28,
       "panels": [],
@@ -628,12 +745,13 @@
         "h": 16,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 22
       },
       "heatmap": {},
       "hideZeroBuckets": true,
       "highlightCards": true,
       "id": 26,
+      "interval": "2m",
       "legend": {
         "show": true
       },
@@ -685,7 +803,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(idelta(request_duration_bucket{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__rate_interval])) by (le)",
+          "expr": "sum(delta(request_duration_bucket{job_name=~\"$job_name\",job_version=~\"$job_version\"}[$__interval])) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -746,9 +864,10 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 22
       },
       "id": 24,
+      "interval": "2m",
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 10,
@@ -850,9 +969,10 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 30
       },
       "id": 9,
+      "interval": "1m",
       "options": {
         "legend": {
           "calcs": [
@@ -897,7 +1017,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 38
       },
       "id": 16,
       "panels": [],
@@ -951,8 +1071,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -967,7 +1086,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 32
+        "y": 39
       },
       "id": 33,
       "options": {
@@ -1018,8 +1137,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1031,7 +1149,7 @@
         "h": 7,
         "w": 11,
         "x": 8,
-        "y": 32
+        "y": 39
       },
       "id": 35,
       "options": {
@@ -1116,8 +1234,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1145,7 +1262,7 @@
         "h": 7,
         "w": 5,
         "x": 19,
-        "y": 32
+        "y": 39
       },
       "id": 2,
       "options": {
@@ -1202,7 +1319,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 46
       },
       "id": 39,
       "panels": [],
@@ -1254,8 +1371,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1271,7 +1387,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 40
+        "y": 47
       },
       "id": 37,
       "options": {
@@ -1351,8 +1467,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1368,7 +1483,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 40
+        "y": 47
       },
       "id": 31,
       "options": {
@@ -1500,6 +1615,6 @@
   "timezone": "",
   "title": "Jobs",
   "uid": "KZoFMs_nz",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
