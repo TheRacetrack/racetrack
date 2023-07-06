@@ -147,10 +147,10 @@ def _load_plugin_class(plugin_dir: Path, config_path: Path, plugin_manifest: Plu
         sys.path.remove(plugin_dir_posix)
         os.chdir(original_cwd)
         # Unload the cached plugin's modules to prevent from using them by other plugins
-        plugin_modules = set(sys.modules.keys()) - core_modules
-        if plugin_modules:
-            for mod in plugin_modules:
-                del sys.modules[mod]
+        # plugin_modules = set(sys.modules.keys()) - core_modules
+        # if plugin_modules:
+        #     for mod in plugin_modules:
+        #         del sys.modules[mod]
 
     return plugin
 
