@@ -16,6 +16,9 @@ if [ "${running}" != 'true' ]; then
     docker ps
 fi
 
+docker version
+docker compose version
+
 # create network "kind" if doesn't exist
 docker network inspect "kind" >/dev/null 2>&1 || \
     docker network create --driver bridge "kind"
