@@ -11,6 +11,9 @@ if [ "${running}" != 'true' ]; then
     --env=REGISTRY_STORAGE_DELETE_ENABLED=true \
     --name "${reg_name}" \
     registry:2
+
+    echo "docker registry created"
+    docker ps
 fi
 
 # create network "kind" if doesn't exist
@@ -18,3 +21,6 @@ docker network inspect "kind" >/dev/null 2>&1 || \
     docker network create --driver bridge "kind"
 # connect the registry to the cluster network
 docker network connect "kind" "${reg_name}" || true
+
+echo "docker network kind:"
+docker network inspect "kind"
