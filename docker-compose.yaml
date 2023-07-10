@@ -29,6 +29,8 @@ services:
       /src/lifecycle/wait-for-postgres.sh && 
       /src/lifecycle/wait-for-migration.sh && 
       python -u -m lifecycle serve"
+    stdin_open: true
+    tty: true
 
   lifecycle-supervisor:
     container_name: lifecycle-supervisor
