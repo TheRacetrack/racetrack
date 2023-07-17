@@ -5,11 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.17.0] - 2023-07-17
 ### Added
 - When a job is running a deprecated job type version (due to being no longer available),
   there is a notice displayed on a dashboard - "info" icon in a jobs tree
   and a "Notice" field after selecting a job.
   ([#269](https://github.com/TheRacetrack/racetrack/issues/269))
+
+### Fixed
+- Missing schema.json is now distributed in PyPI packages.
+  ([#283](https://github.com/TheRacetrack/racetrack/issues/283))
+- Corrected aggregated metrics on Grafana Dashboards.
+  ([#273](https://github.com/TheRacetrack/racetrack/issues/273))
+- Fixed reloading local modules by plugins.
+  ([#275](https://github.com/TheRacetrack/racetrack/issues/275))
 
 ## [2.16.1] - 2023-06-19
 ### Changed
