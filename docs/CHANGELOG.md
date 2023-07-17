@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Job types can read the manifest file from the job's directory.
+  It might be useful to configure the home page of a job
+  ([see example](https://github.com/TheRacetrack/plugin-python-job-type/blob/5625a2b892704da3a935df0049c5b9a0fc49870d/docs/job_python3.md#home-page)).
 
 ## [2.17.0] - 2023-07-17
 ### Added
