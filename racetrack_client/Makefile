@@ -1,4 +1,4 @@
-.PHONY: setup test
+.PHONY: setup test build
 
 setup:
 		pip install -r requirements.txt
@@ -12,10 +12,11 @@ release-clean:
 		rm -rf dist/
 		rm -rf ./*.egg-info
 
-release-test-pypi: release-clean
+build:
 		python setup.py sdist bdist_wheel
+
+release-test-pypi: release-clean build
 		python -m twine upload --repository testpypi dist/*
 
-release-pypi: release-clean
-		python setup.py sdist bdist_wheel
+release-pypi: release-clean build
 		python -m twine upload dist/*
