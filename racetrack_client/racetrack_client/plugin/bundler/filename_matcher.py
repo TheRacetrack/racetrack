@@ -58,7 +58,10 @@ class FilenameMatcher:
         return result
 
     def list_files(self, root: Path) -> Iterable[Path]:
-        """List all files in the given directory that match the patterns"""
+        """
+        List all files in the given directory that match the patterns.
+        Return relative paths.
+        """
         yield from self._list_files_in_subdir(root, root)
 
     def _list_files_in_subdir(self, root: Path, directory: Path) -> Iterable[Path]:

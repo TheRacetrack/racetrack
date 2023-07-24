@@ -201,8 +201,7 @@ def encode_build_context(workdir: str) -> str:
         inclusion_matcher = FilenameMatcher()
 
     with tarfile.open(fileobj=tar_fileobj, mode='w:gz') as tar:
-        for file in inclusion_matcher.list_files(workdir_path):
-            relative: Path = file.relative_to(workdir_path)
-            absolute: Path = workdir_path / relative
-            tar.add(str(absolute), arcname=str(relative))
+        for relative_path in inclusion_matcher.list_files(workdir_path):
+            absolute: Path = workdir_path / relative_path
+            tar.add(str(absolute), arcname=str(relative_path))
     return b64encode(tar_fileobj.getvalue()).decode()
