@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It might be useful to configure the home page of a job
   ([see example](https://github.com/TheRacetrack/plugin-python-job-type/blob/5625a2b892704da3a935df0049c5b9a0fc49870d/docs/job_python3.md#home-page)).
 
+### Changed
+- When a job is built from local files (with `--build-context=local`),
+  files matching `.gitignore` are excluded.
+  ([#281](https://github.com/TheRacetrack/racetrack/issues/281))
+
 ## [2.17.0] - 2023-07-17
 ### Added
 - When a job is running a deprecated job type version (due to being no longer available),
