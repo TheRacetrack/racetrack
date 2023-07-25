@@ -68,6 +68,9 @@ Every wrapper has to follow some rules:
 - You MAY implement [swagger](https://swagger.io/tools/swagger-ui/) documentation for your endpoints on root endpoint.
 - You MAY implement `/metrics` endpoint for exposing [Prometheus](https://prometheus.io/) metrics.
 - You MAY expose any other endpoints.
+- Chain calls to other jobs SHOULD be made by
+  importing a dedicated function from the job type plugin's library
+  ([example](https://github.com/TheRacetrack/plugin-python-job-type/blob/29f9ecc04b182072f3549c82923e252728bd7b61/sample/python-chain/entrypoint.py#LL9C19-L9C83)).
 - Be careful to isolate libraries / requirements installed by the user
   from the versions of the libraries used by the core wrapper.
 
