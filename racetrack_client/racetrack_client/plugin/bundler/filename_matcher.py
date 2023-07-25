@@ -1,6 +1,6 @@
 from pathlib import Path
 import fnmatch
-from typing import List
+from typing import List, Iterable
 
 DEFAULT_IGNORE_PATTERNS = [
     '*.zip',
@@ -56,6 +56,25 @@ class FilenameMatcher:
                 result = pattern_result
 
         return result
+
+    def list_files(self, root: Path) -> Iterable[Path]:
+        """
+        List all files in the given directory that match the patterns.
+        Return relative paths.
+        """
+        yield from self._list_files_in_subdir(root, root)
+
+    def _list_files_in_subdir(self, root: Path, directory: Path) -> Iterable[Path]:
+        for path in directory.iterdir():
+            relative_path = path.relative_to(root)
+
+            if not self.match_path(relative_path):
+                continue
+
+            if path.is_dir():
+                yield from self._list_files_in_subdir(root, path)
+            else:
+                yield relative_path
 
 
 def match_file_pattern(relative_path: Path, pattern: str) -> bool:

@@ -17,6 +17,7 @@ from racetrack_client.manifest import Manifest
 from racetrack_client.manifest.load import get_manifest_path
 from racetrack_client.manifest.merge import load_merged_manifest_dict
 from racetrack_client.manifest.validate import load_validated_manifest
+from racetrack_client.plugin.bundler.filename_matcher import FilenameMatcher
 from racetrack_client.utils.auth import get_auth_request_headers
 from racetrack_client.utils.request import parse_response_object, Requests
 from racetrack_client.log.logs import get_logger
@@ -191,9 +192,16 @@ def encode_build_context(workdir: str) -> str:
     workdir_path = Path(workdir)
     if workdir_path.is_file():
         workdir_path = workdir_path.parent
+
+    ignore_file = workdir_path / '.gitignore'
+    if ignore_file.is_file():
+        logger.debug(f'ignoring file patterns found in {ignore_file}')
+        inclusion_matcher = FilenameMatcher(ignore_file.read_text().splitlines())
+    else:
+        inclusion_matcher = FilenameMatcher()
+
     with tarfile.open(fileobj=tar_fileobj, mode='w:gz') as tar:
-        for p in workdir_path.iterdir():
-            relative = p.relative_to(workdir_path)
-            absolute = workdir_path / relative
-            tar.add(str(absolute), arcname=str(relative))
+        for relative_path in inclusion_matcher.list_files(workdir_path):
+            absolute: Path = workdir_path / relative_path
+            tar.add(str(absolute), arcname=str(relative_path))
     return b64encode(tar_fileobj.getvalue()).decode()
