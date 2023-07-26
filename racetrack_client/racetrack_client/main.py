@@ -218,9 +218,10 @@ cli.add_typer(cli_plugin, name="plugin")
 def _install_plugin(
     plugin_uri: str = typer.Argument(..., show_default=False, help='location of the plugin file: local file path, HTTP URL to a remote file or repository name'),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
+    replace: bool = typer.Option(False, '--replace', help='delete the existing versions of the same plugin'),
 ):
     """Install a plugin to a remote Racetrack server"""
-    install_plugin(plugin_uri, remote)
+    install_plugin(plugin_uri, remote, replace=replace)
 
 
 @cli_plugin.command('uninstall', no_args_is_help=True)
