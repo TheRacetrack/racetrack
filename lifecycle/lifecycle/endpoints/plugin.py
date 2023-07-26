@@ -32,11 +32,11 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return plugin_engine.plugin_manifests
 
     @api.post('/plugin/upload')
-    def _upload_plugin(file: UploadFile, request: Request):
+    def _upload_plugin(file: UploadFile, request: Request, replace: int = 0):
         """Upload plugin from ZIP file using multipart/form-data"""
         check_staff_user(request)
         file_bytes = file.file.read()
-        plugin_engine.upload_plugin(file.filename, file_bytes)
+        plugin_engine.upload_plugin(file.filename, file_bytes, bool(replace))
 
     @api.post('/plugin/upload/{filename}')
     async def _upload_plugin_bytes(filename: str, request: Request, replace: int = 0) -> PluginManifest:
