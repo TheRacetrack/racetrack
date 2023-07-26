@@ -18,7 +18,7 @@ class PluginManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True
     # order in plugins sequence, lowest priority gets executed first
     priority: int = 0
 
-    # kinds of the plugin, e.g. 'infrastructure', 'jobtype'
+    # kinds of the plugin, e.g. 'infrastructure', 'job-type'
     tags: list[str] = []
 
     # list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'

@@ -25,6 +25,7 @@ interface PluginManifest {
     name: string
     version: string
     url?: string
+    tags?: string[]
 }
 
 interface InfrastructureGroup {
@@ -125,6 +126,22 @@ function onPluginUploaded(info: any) {
     toastService.success(`Plugin uploaded`)
     fetchPluginsData()
 }
+
+const badgeColors = [
+    'red', 'pink', 'blue', 'purple', 'deep-purple', 'indigo', 'light-blue', 'cyan', 'teal', 'green',
+    'light-green', 'lime', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey',
+]
+
+function stringToColour(str: string) {
+    let hash: number = 0;
+    for (let i = 0; i < str.length; i++) {
+        const chr = str.charCodeAt(i)
+        hash = ((hash << 5) - hash) + chr
+        hash |= 0
+    }
+    const colorIndex = (hash % badgeColors.length + badgeColors.length) % badgeColors.length
+    return badgeColors[colorIndex]
+}
 </script>
 
 <template>
@@ -224,7 +241,12 @@ function onPluginUploaded(info: any) {
                 <q-item v-for="plugin in pluginDataRef.plugins">
                     <q-item-section>
                         <q-item-label>{{ plugin.name }}</q-item-label>
-                        <q-item-label caption>Version {{plugin.version}}</q-item-label>
+                        <q-item-label caption>
+                            Version {{plugin.version}}
+                            <span v-for="tag in plugin.tags">
+                                <q-badge :color="stringToColour(tag)" rounded :label="tag" class="q-ml-xs" />
+                            </span>
+                        </q-item-label>
                         <q-item-label caption v-if="plugin.url">
                             <a :href="plugin.url" target="_blank">{{ plugin.url }}</a>
                         </q-item-label>
