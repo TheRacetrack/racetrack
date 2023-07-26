@@ -56,6 +56,12 @@ class PluginCore(ABC):
         """
         return None
 
+    def run_action(self, **kwargs) -> Any:
+        """
+        Call a supplementary action of a plugin
+        """
+        return None
+
     def post_job_delete(self, job: JobDto, username_executor: str | None = None):
         """
         Supplementary actions invoked after job is deleted
