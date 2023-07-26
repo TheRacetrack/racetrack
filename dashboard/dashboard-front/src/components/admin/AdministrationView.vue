@@ -23,7 +23,7 @@ interface PluginManifest {
     name: string
     version: string
     url?: string
-    tags?: string[]
+    labels?: string[]
 }
 
 interface InfrastructureGroup {
@@ -240,8 +240,8 @@ function stringToColour(str: string) {
                         <q-item-label>{{ plugin.name }}</q-item-label>
                         <q-item-label caption>
                             Version {{plugin.version}}
-                            <span v-for="tag in plugin.tags">
-                                <q-badge :color="stringToColour(tag)" rounded :label="tag" class="q-ml-xs" />
+                            <span v-for="label in plugin.labels">
+                                <q-badge :color="stringToColour(label)" rounded :label="label" class="q-ml-xs" />
                             </span>
                         </q-item-label>
                         <q-item-label caption v-if="plugin.url">
