@@ -70,34 +70,39 @@ def load_plugin_from_zip(plugin_zip_path: Path) -> PluginData:
                 zip_ref.extractall(extracted_plugin_path)
             init_dir = True
 
-        return load_plugin_from_dir(extracted_plugin_path, config_file, plugin_zip_path, init_dir)
+        return _load_plugin_from_dir(extracted_plugin_path, config_file, plugin_zip_path, init_dir)
 
 
-def load_plugin_from_dir(plugin_dir: Path, config_path: Path, zip_path: Path, init_dir: bool) -> PluginData:
-    plugin_manifest = load_plugin_manifest(plugin_dir)
+def _load_plugin_from_dir(plugin_dir: Path, config_path: Path, zip_path: Path, init_dir: bool) -> PluginData:
+    plugin_manifest = _load_plugin_manifest(plugin_dir)
 
-    _install_plugin_dependencies(plugin_dir)
-    plugin = _load_plugin_class(plugin_dir, config_path, plugin_manifest)
-    setattr(plugin, 'plugin_manifest', plugin_manifest)
-    setattr(plugin, 'plugin_dir', plugin_dir)
-    setattr(plugin, 'config_path', config_path)
+    if _eligible_for_loading(plugin_manifest):
 
-    if init_dir:  # set permissions after loading a class due to *.pyc created after all
-        try:
-            plugin_dir.chmod(mode=0o777)
-            for p in plugin_dir.rglob("*"):
-                if p.is_dir():
-                    p.chmod(mode=0o777)
-                else:
-                    p.chmod(mode=0o666)
-        except PermissionError:
-            logger.warning(f'Can\'t change permissions in {plugin_dir}')
-    
-    logger.debug(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
+        _install_plugin_dependencies(plugin_dir)
+        plugin = _load_plugin_class(plugin_dir, config_path, plugin_manifest)
+        setattr(plugin, 'plugin_manifest', plugin_manifest)
+        setattr(plugin, 'plugin_dir', plugin_dir)
+        setattr(plugin, 'config_path', config_path)
+
+        if init_dir:  # set permissions after loading a class due to *.pyc created after all
+            try:
+                plugin_dir.chmod(mode=0o777)
+                for p in plugin_dir.rglob("*"):
+                    if p.is_dir():
+                        p.chmod(mode=0o777)
+                    else:
+                        p.chmod(mode=0o666)
+            except PermissionError:
+                logger.warning(f'Can\'t change permissions in {plugin_dir}')
+
+        logger.debug(f'plugin loaded: {plugin_manifest.name} (version {plugin_manifest.version})')
+    else:
+        plugin = PluginCore()
+
     return PluginData(zip_path=zip_path, config_path=config_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)
 
 
-def load_plugin_manifest(plugin_dir: Path) -> PluginManifest:
+def _load_plugin_manifest(plugin_dir: Path) -> PluginManifest:
     manifest_file = plugin_dir / PLUGIN_MANIFEST_FILENAME
     assert manifest_file.is_file(), f'plugin manifest file was not found in {manifest_file}'
     yaml_str = manifest_file.read_text()
@@ -174,3 +179,23 @@ def ensure_dir_exists(path: Path):
             path.chmod(mode=0o777)
         except PermissionError:
             logger.warning(f'Can\'t change permissions of {path}')
+
+
+def _eligible_for_loading(plugin_manifest: PluginManifest) -> bool:
+    """Check if the plugin is intended to be running on this Racetrack component"""
+    if not plugin_manifest.components:
+        return True
+    my_component = _my_component_name()
+    if my_component not in plugin_manifest.components:
+        logger.debug(f'skipping plugin {plugin_manifest.name} (version {plugin_manifest.version}) - not intended to be running on {my_component}')
+        return False
+    return True
+
+
+def _my_component_name() -> str:
+    if 'lifecycle' in sys.modules:
+        return 'lifecycle'
+    elif 'image_builder' in sys.modules:
+        return 'image-builder'
+    else:
+        raise RuntimeError('unknown Racetrack component name')
