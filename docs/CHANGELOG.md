@@ -9,12 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Job types can read the manifest file from the job's directory.
   It might be useful to configure the home page of a job
   ([see example](https://github.com/TheRacetrack/plugin-python-job-type/blob/5625a2b892704da3a935df0049c5b9a0fc49870d/docs/job_python3.md#home-page)).
-- Racetrack-client has new flag `--replace` available when uploading a plugin:
-  `racetrack plugin install <file.zip> --replace`.
-  It will delete the existing versions (with the same name) on uploading a new one.
-  Accordingly, there is a checkbox on the Dashboard's *Administration* tab for replacing a plugin on upload.
-  By default, uploading a new plugin doesn't replace the older versions.
-  ([#270](https://github.com/TheRacetrack/racetrack/issues/270))
 
 ### Changed
 - When a job is built from local files (with `--build-context=local`),

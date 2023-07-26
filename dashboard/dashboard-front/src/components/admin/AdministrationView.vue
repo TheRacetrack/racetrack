@@ -8,7 +8,6 @@ import { versionFull } from '@/services/EnvironmentInfo'
 import { progressService } from '@/services/ProgressService'
 import { authToken } from '@/services/UserDataStore'
 import { extractErrorDetails } from "@/utils/error"
-import { rememberInLocalStorage } from '@/utils/storage'
 
 const pluginDataRef: Ref<PluginData> = ref({
     plugins: [],
@@ -19,7 +18,6 @@ const pluginDataRef: Ref<PluginData> = ref({
 const lifecycleAdminUrl = computed(() => `${envInfo.lifecycle_url}/admin`)
 const jobTypeVersionsTreeRef: Ref<QTree | null> = ref(null)
 const infrastructureTargetsTreeRef: Ref<QTree | null> = ref(null)
-const replacePlugins: Ref<boolean> = ref(false)
 
 interface PluginManifest {
     name: string
@@ -97,7 +95,6 @@ function fetchPluginsData() {
 }
 
 onMounted(() => {
-    rememberInLocalStorage(replacePlugins, 'administration.replacePlugins')
     fetchPluginsData()
 })
 
@@ -270,11 +267,8 @@ function stringToColour(str: string) {
         </q-card-section>
 
         <q-card-section>
-            <q-checkbox v-model="replacePlugins" label="Replace on upload">
-                <q-tooltip>Delete the existing versions of the same uploaded plugin</q-tooltip>
-            </q-checkbox>
             <q-uploader
-                :url="`/dashboard/api/v1/plugin/upload?replace=${replacePlugins ? '1' : '0'}`"
+                url="/dashboard/api/v1/plugin/upload"
                 label="Upload plugin"
                 :headers="[{name: authHeader, value: authToken}]"
                 field-name="file"

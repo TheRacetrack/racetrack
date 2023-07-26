@@ -27,8 +27,8 @@ class LifecyclePluginClient:
     def delete_plugin(self, plugin_name: str, plugin_version: str):
         self.lc_client.request('delete', f'/api/v1/plugin/{plugin_name}/{plugin_version}')
 
-    def upload_plugin(self, filename: str, file_bytes: bytes, replace: bool = False):
-        r = Requests.post(f'{self.lc_client.lifecycle_api_url}/api/v1/plugin/upload/{filename}?replace={int(replace)}',
+    def upload_plugin(self, filename: str, file_bytes: bytes):
+        r = Requests.post(f'{self.lc_client.lifecycle_api_url}/api/v1/plugin/upload/{filename}',
                           data=file_bytes,
                           headers=self.lc_client.get_auth_headers())
         parse_response(r, 'Lifecycle response')

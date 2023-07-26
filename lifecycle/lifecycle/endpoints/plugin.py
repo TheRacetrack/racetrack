@@ -32,20 +32,20 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return plugin_engine.plugin_manifests
 
     @api.post('/plugin/upload')
-    def _upload_plugin(file: UploadFile, request: Request, replace: int = 0):
+    def _upload_plugin(file: UploadFile, request: Request):
         """Upload plugin from ZIP file using multipart/form-data"""
         check_staff_user(request)
         file_bytes = file.file.read()
-        plugin_engine.upload_plugin(file.filename, file_bytes, bool(replace))
+        plugin_engine.upload_plugin(file.filename, file_bytes)
 
     @api.post('/plugin/upload/{filename}')
-    async def _upload_plugin_bytes(filename: str, request: Request, replace: int = 0) -> PluginManifest:
+    async def _upload_plugin_bytes(filename: str, request: Request) -> PluginManifest:
         """Upload plugin from ZIP file sending raw bytes in body"""
         check_staff_user(request)
         file_bytes: bytes = await request.body()
         loop = asyncio.get_running_loop()
         # Run synchronous function asynchronously without blocking an event loop, using default ThreadPoolExecutor
-        return await loop.run_in_executor(None, plugin_engine.upload_plugin, filename, file_bytes, bool(replace))
+        return await loop.run_in_executor(None, plugin_engine.upload_plugin, filename, file_bytes)
     
     @api.delete('/plugin/{plugin_name}/{plugin_version}')
     def _delete_plugin_by_version(plugin_name: str, plugin_version: str, request: Request):

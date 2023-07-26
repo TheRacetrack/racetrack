@@ -21,12 +21,8 @@ def install_plugin(
     plugin_uri: str,
     lifecycle_url: Optional[str],
     client_config: Optional[ClientConfig] = None,
-    replace: bool = False,
 ):
-    """
-    Install a plugin to a remote Racetrack server
-    :param replace: whether to replace the older versions - delete the existing versions with the same name
-    """
+    """Install a plugin to a remote Racetrack server"""
     if client_config is None:
         client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
@@ -36,7 +32,7 @@ def install_plugin(
 
     logger.info(f'Uploading plugin {plugin_uri} to {lifecycle_url}')
     r = Requests.post(
-        f'{lifecycle_url}/api/v1/plugin/upload/{plugin_filename}?replace={int(replace)}',
+        f'{lifecycle_url}/api/v1/plugin/upload/{plugin_filename}',
         data=plugin_content,
         headers=get_auth_request_headers(user_auth),
     )
