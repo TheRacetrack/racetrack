@@ -127,8 +127,8 @@ function onPluginUploaded(info: any) {
 }
 
 const badgeColors = [
-    'red', 'pink', 'blue', 'purple', 'deep-purple', 'indigo', 'light-blue', 'cyan', 'teal', 'green',
-    'light-green', 'lime', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey',
+    'pink', 'light-green', 'purple', 'deep-purple', 'green', 'indigo', 'red', 'light-blue', 'cyan', 'teal',
+    'blue', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey',
 ]
 
 function stringToColour(str: string) {
