@@ -23,7 +23,7 @@ interface PluginManifest {
     name: string
     version: string
     url?: string
-    category?: string[]
+    category?: string
 }
 
 interface InfrastructureGroup {
