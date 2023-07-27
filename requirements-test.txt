@@ -3,5 +3,7 @@ pytest==7.2.1
 coverage==7.2.1
 backoff==2.2.1
 httpretty==1.1.4
-Flask==2.2.3
-httpx==0.23.3
+Flask==2.2.5
+httpx==0.24.0
+pytest-django==4.5.2
+anyio==3.6.2

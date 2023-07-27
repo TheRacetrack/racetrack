@@ -32,4 +32,5 @@ setuptools.setup(
             "racetrack = racetrack_client.main:main",
         ],
     },
+    include_package_data=True,
 )

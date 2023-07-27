@@ -24,3 +24,11 @@ def get_external_lifecycle_url() -> str:
     if not external_lifecycle_url:
         return 'neither CLUSTER_FQDN nor EXTERNAL_LIFECYCLE_URL has been set'
     return f'{external_lifecycle_url}'
+
+
+def get_external_grafana_url() -> str:
+    cluster_domain = os.environ.get('CLUSTER_FQDN')
+    if cluster_domain:
+        racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
+        return f'https://{racetrack_subdomain}.{cluster_domain}/grafana'
+    return os.environ.get('EXTERNAL_GRAFANA_URL', 'http://localhost:3000')

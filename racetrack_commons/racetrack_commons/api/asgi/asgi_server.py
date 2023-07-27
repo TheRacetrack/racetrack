@@ -1,3 +1,6 @@
+import contextlib
+import threading
+import time
 from typing import Union
 import logging
 
@@ -26,14 +29,30 @@ HIDDEN_ACCESS_LOGS = {
 
 def serve_asgi_app(
     app: Union[ASGIApp, str],
-    http_addr: str,
     http_port: int,
+    http_addr: str = '0.0.0.0',
     access_log: bool = False,
 ):
     use_reloader = is_deployment_local() and isinstance(app, str)
     mode_info = ' in RELOAD mode' if use_reloader else ''
     logger.info(f'Running ASGI server on http://{http_addr}:{http_port}{mode_info}')
+    _setup_uvicorn_logs(access_log)
+    uvicorn.run(app=app, host=http_addr, port=http_port, log_level="debug", reload=use_reloader)
 
+
+def serve_asgi_in_background(
+    app: Union[ASGIApp, str],
+    http_port: int,
+    http_addr: str = '0.0.0.0',
+    access_log: bool = False,
+) -> contextlib.AbstractContextManager:
+    logger.info(f'Running ASGI server in background on http://{http_addr}:{http_port}')
+    _setup_uvicorn_logs(access_log)
+    config = uvicorn.Config(app=app, host=http_addr, port=http_port, log_level="debug")
+    return BackgroundServer(config=config).run_in_thread()
+
+
+def _setup_uvicorn_logs(access_log: bool):
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s"
     LOGGING_CONFIG["formatters"]["default"]["datefmt"] = "%Y-%m-%d %H:%M:%S"
     LOGGING_CONFIG["formatters"]["default"]["()"] = "racetrack_commons.api.asgi.asgi_server.ColoredDefaultFormatter"
@@ -53,12 +72,12 @@ def serve_asgi_app(
     }
 
     LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'INFO'
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
 
     if not access_log:
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = 'CRITICAL'
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["handlers"] = []
-
-    uvicorn.run(app=app, host=http_addr, port=http_port, log_level="debug", reload=use_reloader)
 
 
 _log_level_templates = {
@@ -101,3 +120,20 @@ class NeedlessRequestsFilter(logging.Filter):
         if log_line in HIDDEN_ACCESS_LOGS:
             return False
         return True
+
+
+class BackgroundServer(uvicorn.Server):
+    def install_signal_handlers(self):
+        pass
+
+    @contextlib.contextmanager
+    def run_in_thread(self):
+        thread = threading.Thread(target=self.run)
+        thread.start()
+        try:
+            while not self.started:
+                time.sleep(1e-3)
+            yield
+        finally:
+            self.should_exit = True
+            thread.join()

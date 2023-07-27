@@ -24,7 +24,7 @@
     1. [Using a Production Racetrack](#in-prod)
         1. [Authentication](#racetrack-authentication)
     1. [Jobs in Private or Protected git Repositories](#repo-tokens)
-    1. [Setting aliases for Racetrack servers](config-aliases)
+    1. [Setting aliases for Racetrack servers](#config-aliases)
     1. [The Job Manifest File](#manifest-deep)
     1. [The Job Types](#job-types)
 1. [Guidelines](#guide)
@@ -145,13 +145,13 @@ A typical `job.yaml` will look like this:
 ```yaml
 name: my_fantabulous_skynet_AI
 owner_email: nobody@example.com
-lang: python3:latest  # this would be your Job Type
+jobtype: python3:latest  # this would be your Job Type
 
 git:
   remote: https://github.com/racetrack/supersmart-model
   branch: master
 
-python:
+jobtype_extra:
   requirements_path: 'supersmart/requirements.txt'
   entrypoint_path: 'job_entrypoint.py'
 

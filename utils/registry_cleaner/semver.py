@@ -16,7 +16,7 @@ class SemanticVersion:
 
     version_pattern = re.compile(r'(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?P<label>.*)')
 
-    def __init__ (self, vstring):
+    def __init__(self, vstring):
         match = self.version_pattern.fullmatch(vstring)
         if not match:
             self.invalid = True
@@ -35,7 +35,7 @@ class SemanticVersion:
     def sort_by_version(names: List[str]) -> List[str]:
         return sorted(names, key=lambda ver: SemanticVersion(ver))
 
-    def __str__ (self):
+    def __str__(self):
         if self.invalid:
             return self.label
         return f'{self.major}.{self.minor}.{self.patch}{self.label}'
@@ -99,7 +99,7 @@ class SemanticVersion:
             return 1
     
     def __members(self):
-        return (self.major, self.minor, self.patch, self.label)
+        return self.major, self.minor, self.patch, self.label
 
     def __hash__(self):
         return hash(self.__members())

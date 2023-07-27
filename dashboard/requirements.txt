@@ -1,4 +1,2 @@
-Django==4.1.7
-psycopg2-binary==2.9.5
+httpx==0.24.0
 markdown==3.4.1
-a2wsgi==1.7.0

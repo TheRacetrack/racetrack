@@ -29,13 +29,16 @@ class ResponseError(RequestError):
 
 class Response:
 
-    def __init__(self,
+    def __init__(
+        self,
         url: str,
+        method: str,
         status_code: int,
         content: bytes,
         headers: Message,
     ):
         self._url: str = url
+        self._method: str = method.upper()
         self._status_code: int = status_code
         self._content: bytes = content
         self._headers: Message = headers
@@ -79,11 +82,19 @@ class Response:
         return self._url
     
     @property
+    def method(self) -> str:
+        return self._method
+    
+    @property
     def headers(self) -> Message:
         return self._headers
     
     def header(self, name: str) -> Optional[str]:
         return self._headers[name]
+
+    @property
+    def error_details(self) -> str:
+        return f'{self.status_code} {self.status_reason} for url: {self.method} {self.url}'
 
 
 class Requests:
@@ -91,49 +102,54 @@ class Requests:
     insecure: bool = True  # whether to verify SSL certificates
 
     @classmethod
-    def get(cls, 
+    def get(
+            cls,
             url: str,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: Optional[float] = None,
-        ) -> Response:
+            ) -> Response:
         return cls._make_request('GET', url, None, None, params, headers, timeout)
 
     @classmethod
-    def post(cls,
+    def post(
+            cls,
             url: str,
             json: Optional[Any] = None,
             data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: Optional[float] = None,
-        ) -> Response:
+            ) -> Response:
         return cls._make_request('POST', url, json, data, params, headers, timeout)
 
     @classmethod
-    def put(cls,
+    def put(
+            cls,
             url: str,
             json: Optional[Any] = None,
             data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: Optional[float] = None,
-        ) -> Response:
+            ) -> Response:
         return cls._make_request('PUT', url, json, data, params, headers, timeout)
 
     @classmethod
-    def delete(cls,
+    def delete(
+            cls,
             url: str,
             json: Optional[Any] = None,
             data: Optional[bytes] = None,
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: Optional[float] = None,
-        ) -> Response:
+            ) -> Response:
         return cls._make_request('DELETE', url, json, data, params, headers, timeout)
 
     @classmethod
-    def request(cls,
+    def request(
+            cls,
             method: str,
             url: str,
             json: Optional[Any] = None,
@@ -141,11 +157,12 @@ class Requests:
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: Optional[float] = None,
-        ) -> Response:
+            ) -> Response:
         return cls._make_request(method.upper(), url, json, data, params, headers, timeout)
 
     @classmethod
-    def _make_request(cls, 
+    def _make_request(
+            cls,
             method: str,
             url: str,
             jsondata: Optional[Any] = None,
@@ -153,7 +170,7 @@ class Requests:
             params: Optional[Dict[str, Any]] = None,
             headers: Optional[Dict[str, str]] = None,
             timeout: Optional[float] = None,
-        ) -> Response:
+            ) -> Response:
         """
         Make HTTP request and return response object.
         :param method: HTTP method: GET, POST, PUT, DELETE
@@ -210,6 +227,7 @@ class Requests:
             http_response: HTTPResponse = request.urlopen(req, **kwargs)
             return Response(
                 url=url,
+                method=method,
                 status_code=http_response.status,
                 content=http_response.read(),
                 headers=http_response.headers,
@@ -217,6 +235,7 @@ class Requests:
         except HTTPError as e:
             return Response(
                 url=url,
+                method=method,
                 status_code=e.code,
                 content=e.read(),
                 headers=e.headers,
@@ -270,8 +289,8 @@ def parse_response(response: Response, error_context: str) -> Optional[Union[Dic
             return result
 
         if result is not None and isinstance(result, dict) and 'error' in result:
-            raise RuntimeError(f'{response.status_reason}: {result.get("error")}')
-        raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response._status_code)
+            raise ContextError(response.status_reason, RuntimeError(result.get("error")))
+        raise ResponseError(response.error_details, response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
 
@@ -279,7 +298,8 @@ def parse_response(response: Response, error_context: str) -> Optional[Union[Dic
 def parse_response_object(response: Response, error_context: str) -> Dict:
     try:
         if 'application/json' not in response.headers['content-type']:
-            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}" for url: {response.url}')
+            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}", '
+                               f'{response.error_details}')
 
         result = response.json()
 
@@ -288,8 +308,8 @@ def parse_response_object(response: Response, error_context: str) -> Dict:
             return result
 
         if result is not None and isinstance(result, dict) and 'error' in result:
-            raise RuntimeError(f'{response.status_reason}: {result.get("error")}')
-        raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response._status_code)
+            raise ContextError(response.status_reason, RuntimeError(result.get("error")))
+        raise ResponseError(response.error_details, response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e
 
@@ -297,7 +317,8 @@ def parse_response_object(response: Response, error_context: str) -> Dict:
 def parse_response_list(response: Response, error_context: str) -> List:
     try:
         if 'application/json' not in response.headers['content-type']:
-            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}" for url: {response.url}')
+            raise RuntimeError(f'expected JSON response, got "{response.headers["content-type"]}", '
+                               f'{response.error_details}')
 
         result = response.json()
 
@@ -306,7 +327,7 @@ def parse_response_list(response: Response, error_context: str) -> List:
             return result
 
         if result is not None and isinstance(result, dict) and 'error' in result:
-            raise RuntimeError(f'{response.status_reason}: {result.get("error")}')
-        raise ResponseError(f'{response.status_code} {response.status_reason} for url: {response.url}', response._status_code)
+            raise ContextError(response.status_reason, RuntimeError(result.get("error")))
+        raise ResponseError(response.error_details, response.status_code)
     except Exception as e:
         raise ResponseError(error_context, response.status_code) from e

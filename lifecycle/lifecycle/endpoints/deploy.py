@@ -16,7 +16,6 @@ from racetrack_client.manifest.load import load_manifest_from_dict
 
 
 def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
-
     class CredentialsModel(BaseModel):
         username: str = Field(example="admin")
         password: str = Field(example="hunter2")
@@ -26,13 +25,13 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             description='Manifest - build recipe for a Job',
             example={
                 'name': 'adder',
-                'lang': 'python3',
+                'jobtype': 'python3',
                 'owner_email': 'nobody@example.com',
                 'git': {
                     'remote': '.',
                     'directory': 'sample/python-class',
                 },
-                'python': {
+                'jobtype_extra': {
                     'requirements_path': 'requirements.txt',
                     'entrypoint_path': 'adder.py',
                 },
@@ -94,7 +93,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         build_context = payload.build_context
         username = get_username_from_token(request)
         deployment_id = build_job_in_background(config, manifest, git_credentials, secret_vars,
-                                                   build_context, username, plugin_engine)
+                                                build_context, username, plugin_engine)
         return {"id": deployment_id}
 
     @api.get('/deploy/{deploy_id}')

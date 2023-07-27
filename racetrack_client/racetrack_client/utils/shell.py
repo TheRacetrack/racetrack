@@ -23,6 +23,7 @@ def shell(
     :param cmd: shell command to run
     :param workdir: working directory for the command
     :param print_stdout: whether to print stdout from a subprocess to the main process stdout
+    :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
     :param output_filename: file to write the output in real time
     :raises:
         CommandError: in case of non-zero command exit code.
@@ -43,6 +44,7 @@ def shell_output(
     :param cmd: shell command to run
     :param workdir: working directory for the command
     :param print_stdout: whether to print stdout from a subprocess to the main process stdout
+    :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
     :param output_filename: file to write the output in real time
     """
     captured_stream = _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)

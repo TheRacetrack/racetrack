@@ -1,45 +1,72 @@
-from typing import Optional
+from django.contrib.auth.models import User
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel
 
 from lifecycle.auth.authenticate import get_username_from_token
-from lifecycle.django.registry.database import before_db_access
-from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
-from lifecycle.server.users import read_user_profile, init_user_profile
-from pydantic import BaseModel, Field
-from racetrack_commons.auth.scope import AuthScope
+from lifecycle.auth.cookie import set_auth_token_cookie, delete_auth_cookie
+from lifecycle.auth.users import authenticate_username_with_password, register_user_account
+from lifecycle.auth.users import change_user_password
+from racetrack_client.log.errors import ValidationError
+from racetrack_commons.entities.dto import UserProfileDto
 
 
-def setup_user_endpoints(api: APIRouter, config: Config):
+def setup_user_endpoints(api: APIRouter):
 
-    class UserProfileModel(BaseModel):
-        username: Optional[str] = Field(
-            default=None,
-            description='username',
-            example='admin',
-        )
-        token: Optional[str] = Field(
-            default=None,
-            description='auth token',
-            example='eyJ1c2VybmFtZSI6ICJhZG1pbiIsICJ0b2tlbiI6ICIwMjg1ZmIzZC1hNDVjLTQ5NjYtYTU5OC1mZmJiMzJiYzhkNTQifQ==',
-        )
+    class UserCredentialsModel(BaseModel):
+        username: str
+        password: str
 
-    @api.get('/users/{username}/profile', response_model=UserProfileModel)
-    def _get_user_profile(username: str, request: Request):
-        """Get profile of particular User"""
-        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
-        return read_user_profile(username)
-
-    @api.post('/users/{username}/profile', response_model=UserProfileModel)
-    def _init_user_profile(username: str, request: Request):
-        """Init profile of particular User"""
-        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
-        before_db_access()
-        return init_user_profile(username)
+    class ChangePasswordModel(BaseModel):
+        old_password: str
+        new_password: str
 
     @api.get('/users/validate_user_auth')
-    def _validate_user_auth(request: Request):
+    def _validate_user_auth(request: Request) -> UserProfileDto:
         """Validate auth token and return corresponding username"""
+        auth_subject = check_auth(request)
+        username = get_username_from_token(request)
+        user: User = auth_subject.user
+        return UserProfileDto(
+            username=username,
+            token=auth_subject.token,
+            is_staff=user.is_staff,
+        )
+
+    @api.post('/users/login')
+    def _login_user_account(payload: UserCredentialsModel) -> JSONResponse:
+        """Validate username and password and return auth token and user data"""
+        user, auth_subject = authenticate_username_with_password(payload.username, payload.password)
+        user_profile = UserProfileDto(
+            username=user.username,
+            token=auth_subject.token,
+            is_staff=user.is_staff,
+        )
+        response = JSONResponse(user_profile.dict())
+        set_auth_token_cookie(user_profile.token, response)
+        return response
+
+    @api.get('/users/logout')
+    def _logout() -> Response:
+        response = Response()
+        delete_auth_cookie(response)
+        return response
+
+    @api.post('/users/register')
+    def _register_user_account(payload: UserCredentialsModel):
+        if "@" not in payload.username:
+            raise ValidationError("You have to pass email as username")
+        if not payload.password:
+            raise ValidationError("Password cannot be empty")
+
+        register_user_account(payload.username, payload.password)
+
+    @api.put('/users/change_password')
+    def _change_user_password(payload: ChangePasswordModel, request: Request):
+        if not payload.new_password:
+            raise ValidationError("Password cannot be empty")
+
         check_auth(request)
         username = get_username_from_token(request)
-        return {'username': username}
+        change_user_password(username, payload.old_password, payload.new_password)

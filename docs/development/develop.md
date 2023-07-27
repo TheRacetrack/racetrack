@@ -13,6 +13,7 @@ Install:
 - [kubectl v1.24.3+](https://kubernetes.io/docs/tasks/tools/#kubectl) - if you're going to deploy to Kind
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) - if you're going to deploy to Kind
 - [Go 1.19+](https://go.dev/doc/install) - if you're going to develop components in Go (PUB, go_wrapper)
+- [nvm](https://github.com/nvm-sh/nvm) - if you're going to rebuild Dashboard front-end
 
 ## Development Setup
 
@@ -141,7 +142,7 @@ Jobs are deployed as k8s pods, and should be managed as such.
 ## Port numbers
 
 | service              | kind/Kubernetes (X) | docker-compose (X+100) | localhost (X+200) |
-| -------------------- | ---------------     | --------------         | ---------         |
+|----------------------|---------------------|------------------------|-------------------|
 | Lifecycle            | 7002                | 7102                   | 7202              |
 | Image Builder        | 7001                | 7101                   | 7201              |
 | Dashboard            | 7003                | 7103                   | 7203              |

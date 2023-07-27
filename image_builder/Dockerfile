@@ -1,4 +1,4 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.10-slim-bullseye
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
@@ -21,7 +21,7 @@ RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /
 RUN useradd -u 100000 -m racetrack &&\
   mkdir -p -m 777 \
     /home/racetrack/.docker \
-    /home/racetrack/.local/lib/python3.9/site-packages \
+    /home/racetrack/.local/lib/python3.10/site-packages \
     /var/log/racetrack/image-builder/build-logs \
     /src/workspaces
 

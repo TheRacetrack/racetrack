@@ -30,8 +30,8 @@ def test_invalid_quantity():
 
 
 def test_quantity_bool():
-    assert bool(Quantity('0.1')) == True
-    assert bool(Quantity('0')) == False
+    assert bool(Quantity('0.1')) is True
+    assert bool(Quantity('0')) is False
 
 
 def test_quantity_compare():

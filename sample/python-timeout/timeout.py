@@ -8,11 +8,11 @@ class DeadlyThread(threading.Thread):
     """threading.Thread that might be killed"""
     def __init__(self, *args, **keywords):
         threading.Thread.__init__(self, *args, **keywords)
+        self.__run_backup = self.run
+        self.run = self.__run
         self.killed = False
 
     def start(self):
-        self.__run_backup = self.run
-        self.run = self.__run     
         threading.Thread.start(self)
 
     def __run(self):
@@ -59,8 +59,8 @@ def timeout(max_time: int):
                 output = q.get_nowait()
                 # Reraise if an exception occured
                 if isinstance(output, tuple) \
-                    and type(output[0]) is type \
-                    and isinstance(output[0](), BaseException):
+                        and type(output[0]) is type \
+                        and isinstance(output[0](), BaseException):
                     raise output[0]
                 else:  # return the results otherwise
                     return output

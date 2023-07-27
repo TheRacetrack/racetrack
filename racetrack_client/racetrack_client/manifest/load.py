@@ -4,13 +4,14 @@ from typing import Dict, Optional
 import yaml
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.manifest.manifest import Manifest
-from racetrack_client.utils.datamodel import parse_dict_datamodel, parse_yaml_datamodel
+from racetrack_client.utils.datamodel import parse_dict_datamodel, parse_yaml_datamodel, convert_to_yaml
 from racetrack_client.log.logs import get_logger
 
 logger = get_logger(__name__)
 
 JOB_MANIFEST_FILENAME = 'job.yaml'
 FORMER_MANIFEST_FILENAME = 'fatman.yaml'
+
 
 def load_manifest_from_yaml(path: Path) -> Manifest:
     """Load Manifest from a YAML file. Data types validation happens here when parsing YAML."""
@@ -30,7 +31,9 @@ def load_manifest_dict_from_yaml(path: Path) -> Dict:
 def load_manifest_from_dict(manifest_dict: Dict) -> Manifest:
     """Return manifest as data class"""
     with wrap_context('parsing manifest data types'):
-        return parse_dict_datamodel(manifest_dict, Manifest)
+        manifest = parse_dict_datamodel(manifest_dict, Manifest)
+        manifest.origin_yaml_ = convert_to_yaml(manifest_dict)
+        return manifest
 
 
 def parse_manifest_or_empty(manifest_yaml: Optional[str]) -> Optional[Manifest]:
@@ -38,7 +41,9 @@ def parse_manifest_or_empty(manifest_yaml: Optional[str]) -> Optional[Manifest]:
     if not manifest_yaml:
         return None
     try:
-        return parse_yaml_datamodel(manifest_yaml, Manifest)
+        manifest = parse_yaml_datamodel(manifest_yaml, Manifest)
+        manifest.origin_yaml_ = manifest_yaml
+        return manifest
     except Exception as e:
         logger.error(f'Job Manifest YAML contains syntax error: {e}')
         return None

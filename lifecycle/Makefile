@@ -5,7 +5,9 @@ setup:
 		python setup.py develop
 
 test:
-		cd tests && SECRET_KEY=dev python -m pytest -vv --tb=short -ra $(test)
+		cd tests &&\
+ 		SECRET_KEY=dev AUTH_KEY=dev DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings" \
+ 		python -m pytest -vv --tb=short -ra $(test)
 
 run:
 		-docker network create racetrack_default
@@ -27,7 +29,7 @@ recreate-django-migrations:
 		DJANGO_DB_TYPE=sqlite ./migrate.sh
 
 add-migration:
-		export SECRET_KEY=dev && cd lifecycle/django &&\
+		export DJANGO_DB_TYPE=sqlite SECRET_KEY=dev AUTH_KEY=QaPU2UW8r7KXfRtLJVCKahCK93TKhVB5 && cd lifecycle/django &&\
 		python manage.py makemigrations registry &&\
 		python manage.py migrate
 

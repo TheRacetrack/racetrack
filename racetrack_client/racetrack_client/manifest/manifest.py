@@ -1,21 +1,8 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, Extra, validator, Field
 
 from racetrack_client.utils.quantity import Quantity
-
-
-class PythonManifest(BaseModel, extra=Extra.forbid):
-    requirements_path: Optional[str] = None
-    # path to a Python file with a entrypoint class
-    entrypoint_path: str = ''
-    # base name of Python entrypoint class
-    entrypoint_class: str = ''
-
-
-class GoManifest(BaseModel, extra=Extra.forbid):
-    # relative path to Go modules requirements
-    gomod: str = 'go.mod'
 
 
 class GitManifest(BaseModel, extra=Extra.forbid):
@@ -40,10 +27,9 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
     # maximum CPU consumption in cores, eg. 1000m
     cpu_max: Optional[Quantity] = None
 
-
     @validator(
-        'memory_min', 
-        'memory_max', 
+        'memory_min',
+        'memory_max',
         'cpu_min',
         'cpu_max',
         pre=True)
@@ -53,7 +39,7 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
         return Quantity(str(v))
 
 
-class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
+class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allow_population_by_field_name=True):
     """Job Manifest file - build recipe to get deployable image from source code workspace"""
 
     # name of the Job Workload
@@ -67,17 +53,12 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # version of the Job
     version: str = '0.0.1'
 
-    # Language wrapper used to embed model
-    lang: str = 'python3'
+    # Jobtype wrapper used to embed model
+    jobtype: Optional[str] = None
+    lang: Optional[str] = None  # Deprecated
 
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None
-
-    # Python-specific configuration
-    python: Optional[PythonManifest] = None
-
-    # Go/Golang-specific configuration
-    golang: Optional[GoManifest] = None
 
     # Docker-specific configuration
     docker: Optional[DockerManifest] = None
@@ -109,8 +90,22 @@ class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # resources demands to allocate to the Job
     resources: Optional[ResourcesManifest] = None
 
-    # Language wrapper attributes
-    wrapper_properties: Optional[Dict[str, Any]] = None
+    # Extra parameters specified by the jobtype
+    jobtype_extra: Optional[Dict[str, Any]] = None
+    golang: Optional[Dict[str, Any]] = None  # Deprecated
+    python: Optional[Dict[str, Any]] = None  # Deprecated
+    wrapper_properties: Optional[Dict[str, Any]] = None  # Deprecated
 
     # Back-end platform where to deploy the service
     infrastructure_target: Optional[str] = None
+
+    # original YAML string from which the manifest was parsed, field for internal use only
+    origin_yaml_: Optional[str] = Field(None, exclude=True)
+
+    def get_jobtype(self):
+        return self.jobtype if self.jobtype else self.lang
+
+    def get_jobtype_extra(self):
+        for field in [self.jobtype_extra, self.golang, self.python, self.wrapper_properties]:
+            if field is not None:
+                return field

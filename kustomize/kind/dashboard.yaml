@@ -37,14 +37,14 @@ spec:
               value: 'http://localhost:7002/lifecycle'
             - name: EXTERNAL_PUB_URL
               value: 'http://localhost:7005/pub'
+            - name: EXTERNAL_GRAFANA_URL
+              value: 'http://localhost:3000'
             - name: DJANGO_DEBUG
               value: 'true'
             - name: AUTH_REQUIRED
               value: 'true'
             - name: DASHBOARD_PORT
               value: '7003'
-            - name: LIFECYCLE_AUTH_TOKEN
-              value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4'
             - name: SITE_NAME
               value: 'dev'
             - name: PUBLIC_IP

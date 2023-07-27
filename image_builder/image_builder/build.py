@@ -63,6 +63,8 @@ def build_job_image(
 
             workspace, repo_dir, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
 
+            (workspace / 'job.yaml').write_text(manifest.origin_yaml_)
+
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
 
         update_deployment_phase(config, deployment_id, 'building image')

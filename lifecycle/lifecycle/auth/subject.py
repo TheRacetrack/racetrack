@@ -3,7 +3,6 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 
 from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
@@ -94,7 +93,7 @@ def generate_auth_token(
         subject=subject_name,
         subject_type=subject_type.value,
     )
-    auth_secret_key = os.environ.get('AUTH_KEY')
+    auth_secret_key = os.environ['AUTH_KEY']
     return encode_jwt(payload, auth_secret_key)
 
 
@@ -136,10 +135,23 @@ def _get_subject_name_from_auth_subject(auth_subject: models.AuthSubject) -> str
     else:
         raise ValueError("Unknown auth_subject type")
 
+
+def get_description_from_auth_subject(auth_subject: models.AuthSubject) -> str:
+    if auth_subject.user is not None:
+        return f'User {auth_subject.user.username}'
+    elif auth_subject.esc is not None:
+        return f'ESC {auth_subject.esc.name}'
+    elif auth_subject.job_family is not None:
+        return f'Job family {auth_subject.job_family.name}'
+    else:
+        raise ValueError("Unknown auth_subject type")
+
+
 def regenerate_specific_user_token(auth_subject: models.AuthSubject) -> str:
     regenerate_auth_token(auth_subject)
     logger.info(f'Regenerated token of User {auth_subject.user.username}')
     return auth_subject.token
+
 
 def regenerate_all_user_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(user__isnull=False))

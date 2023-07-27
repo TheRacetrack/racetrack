@@ -9,7 +9,7 @@ Reference: https://docs.djangoproject.com/en/3.2/topics/db/multi-db/#automatic-d
 
 class Router:
     def __init__(self):
-        self.db_type = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
+        self.db_type = os.environ.get('DJANGO_DB_TYPE', 'default')
 
     def db_for_read(self, model, **hints):
         return self.db_type

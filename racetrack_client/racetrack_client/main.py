@@ -1,3 +1,4 @@
+import os
 import sys
 from typing import List
 
@@ -35,8 +36,10 @@ def main():
         cli()
     except (DeploymentError, AuthError) as e:
         logger.error(str(e))  # no need for client's stacktrace in case of well known errors
+        sys.exit(os.EX_SOFTWARE)
     except Exception as e:
         log_exception(e)
+        sys.exit(os.EX_SOFTWARE)
 
 
 @cli.callback()

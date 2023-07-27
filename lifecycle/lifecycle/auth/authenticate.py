@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 
 from fastapi import Request
 
-from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
+from lifecycle.django.registry.database import db_access
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import RT_AUTH_HEADER
@@ -19,7 +19,7 @@ def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, Optional[mod
     """Ensure request has valid token and recognize identity of the requester"""
     auth_token = get_current_auth_token(request)
 
-    auth_secret_key = os.environ.get('AUTH_KEY')
+    auth_secret_key = os.environ['AUTH_KEY']
     token_payload = verify_and_decode_jwt(auth_token, auth_secret_key)
     if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
         return token_payload, None
@@ -70,5 +70,5 @@ def validate_auth_subject_access(subject: models.AuthSubject):
         raise UnauthorizedError('subject access has been revoked')
 
     if subject.expiry_time is not None:
-        if datetime_to_timestamp(now()) > subject.expiry_time:
+        if datetime_to_timestamp(now()) > subject.expiry_time.timestamp():
             raise UnauthorizedError('subject access has expired')

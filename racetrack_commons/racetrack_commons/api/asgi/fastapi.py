@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
@@ -15,15 +15,14 @@ def create_fastapi(
     description: str,
     base_url: str = '',
     version: str = '',
-    authorizations: Dict = None,
+    authorizations: Optional[Dict] = None,
     request_access_log: bool = False,
     response_access_log: bool = True,
     handle_errors: bool = True,
+    docs_url: str = '/',
 ) -> FastAPI:
 
-    fastapi_app = create_fastapi_docs(
-        title, description, base_url, version, authorizations,
-    )
+    fastapi_app = create_fastapi_docs(title, description, base_url, version, authorizations, docs_url)
 
     fastapi_app.add_middleware(
         CORSMiddleware,
@@ -52,7 +51,8 @@ def create_fastapi_docs(
     description: str,
     base_url: str = '',
     version: str = '',
-    authorizations: Dict = None,
+    authorizations: Optional[Dict] = None,
+    docs_url: str = '/',
 ) -> FastAPI:
     version = version or '1.0.0'
 
@@ -64,7 +64,7 @@ def create_fastapi_docs(
         title=title,
         description=description,
         version=version,
-        docs_url='/',
+        docs_url=docs_url,
         servers=servers,
         swagger_ui_parameters={
             'displayRequestDuration': True,

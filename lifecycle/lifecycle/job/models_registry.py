@@ -119,7 +119,7 @@ def create_job_model(job_dto: JobDto) -> models.Job:
         status=job_dto.status,
         create_time=timestamp_to_datetime(job_dto.create_time),
         update_time=timestamp_to_datetime(job_dto.update_time),
-        manifest=datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None,
+        manifest=job_dto.manifest_yaml,
         internal_name=job_dto.internal_name,
         error=job_dto.error,
         image_tag=job_dto.image_tag,
@@ -146,9 +146,10 @@ def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
 def update_job_model(job: models.Job, job_dto: JobDto):
     job.status = job_dto.status
     job.update_time = timestamp_to_datetime(job_dto.update_time)
-    job.manifest = datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None
+    job.manifest = job_dto.manifest_yaml
     job.internal_name = job_dto.internal_name
     job.error = job_dto.error
+    job.notice = job_dto.notice
     job.image_tag = job_dto.image_tag
     job.deployed_by = job_dto.deployed_by
     job.last_call_time = timestamp_to_datetime(job_dto.last_call_time) if job_dto.last_call_time is not None else None
@@ -156,6 +157,13 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
     job.job_type_version = job_dto.job_type_version
     job.save()
+
+
+@db_access
+def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
+    job_model = read_job_model(job_name, job_version)
+    job_model.manifest = manifest_yaml
+    job_model.save()
 
 
 @db_access
@@ -188,7 +196,7 @@ def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
         create_time=timestamp_to_datetime(job_dto.create_time),
         update_time=timestamp_to_datetime(job_dto.update_time),
         delete_time=now(),
-        manifest=datamodel_to_yaml_str(job_dto.manifest) if job_dto.manifest is not None else None,
+        manifest=job_dto.manifest_yaml,
         internal_name=job_dto.internal_name,
         error=job_dto.error,
         image_tag=job_dto.image_tag,

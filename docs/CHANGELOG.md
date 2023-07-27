@@ -5,6 +5,113 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Job types can read the manifest file from the job's directory.
+  It might be useful to configure the home page of a job
+  ([see example](https://github.com/TheRacetrack/plugin-python-job-type/blob/5625a2b892704da3a935df0049c5b9a0fc49870d/docs/job_python3.md#home-page)).
+
+### Changed
+- When a job is built from local files (with `--build-context=local`),
+  files matching `.gitignore` are excluded.
+  ([#281](https://github.com/TheRacetrack/racetrack/issues/281))
+
+## [2.17.0] - 2023-07-17
+### Added
+- When a job is running a deprecated job type version (due to being no longer available),
+  there is a notice displayed on a dashboard - "info" icon in a jobs tree
+  and a "Notice" field after selecting a job.
+  ([#269](https://github.com/TheRacetrack/racetrack/issues/269))
+
+### Fixed
+- Missing schema.json is now distributed in PyPI packages.
+  ([#283](https://github.com/TheRacetrack/racetrack/issues/283))
+- Corrected aggregated metrics on Grafana Dashboards.
+  ([#273](https://github.com/TheRacetrack/racetrack/issues/273))
+- Fixed reloading local modules by plugins.
+  ([#275](https://github.com/TheRacetrack/racetrack/issues/275))
+
+## [2.16.1] - 2023-06-19
+### Changed
+- Dashboard displays original YAML for the job's manifest.
+  ([#262](https://github.com/TheRacetrack/racetrack/issues/262))
+- Dashboard now renders a table on the portfolio tab with QTable rather than TableFilter,
+  which occasionally seemed to have rendering issues.
+  Plus, it's more consistent with the current UI styling.
+  ([#258](https://github.com/TheRacetrack/racetrack/issues/258))
+
+### Fixed
+- Dashboard redirects to login page when session expires.
+  ([#266](https://github.com/TheRacetrack/racetrack/issues/266))
+
+## [2.16.0] - 2023-06-05
+### Added
+- Jobs tree on the Dashboard is refreshed in real time as soon as someone else's change is detected.
+  You can turn it off on the "Jobs" page by clicking "3 dots menu", "Auto-update" toggle.
+  ([#239](https://github.com/TheRacetrack/racetrack/issues/239))
+
+### Changed
+- Chain calls to the jobs should be made by importing a dedicated function
+  from a library provided by the job type plugin.
+  This will keep the chain call function always up-to-date with the Racetrack version.
+  See the [example](https://github.com/TheRacetrack/plugin-python-job-type/blob/29f9ecc04b182072f3549c82923e252728bd7b61/sample/python-chain/entrypoint.py#LL9C19-L9C83).
+  ([#20](https://github.com/TheRacetrack/plugin-python-job-type/issues/20))
+
+## [2.15.0] - 2023-05-26
+### Changed
+- The name of the caller is recorded in the internal logs,
+  giving the ability to track down who made the request based on its ID.
+  Job types can also retrieve that information by extracting it from an HTTP header.
+  See the [python-job-type docs](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md#caller-name)
+  and [a job](https://github.com/TheRacetrack/racetrack/blob/master/sample/python-logger/job.yaml#LL14C1-L15C26) for example.
+  ([#246](https://github.com/TheRacetrack/racetrack/issues/246))
+- racetrack-client shows more details in case of an HTTP error.
+  ([#245](https://github.com/TheRacetrack/racetrack/issues/245))
+- `golang`, `python`, and `wrapper_properties` fields are deprecated in Manifest schema,
+  use `jobtype_extra` instead. This is backwards compatible.
+  ([#231](https://github.com/TheRacetrack/racetrack/issues/231))
+- Editing the manifest online triggers a redeployment of the job, keeping manifest up-to-date with running job.
+  ([#250](https://github.com/TheRacetrack/racetrack/issues/250))
+
+## [2.14.0] - 2023-05-18
+### Added
+- Dashboard links to job-related Grafana dashobards.
+  [issue #206](https://github.com/TheRacetrack/racetrack/issues/206)
+- Manifest of a job can be edited online on the Dashboard after selecting a job.
+  Keep in mind that your online changes can be overwritten by the next deployment,
+  if you didn't reflect these temporary changes in git after all.
+  [issue #217](https://github.com/TheRacetrack/racetrack/issues/217)
+
+### Changed
+- Minor UI improvements and styling for Dashboard, including:
+  - Sorting jobs by status (starting from faulty ones)
+  - Jobs ordering is persisted in local storage
+  - Spinner indicators during loading the data
+  - Status indicator (green/red/yellow) and number of jobs on a jobs tree
+  - Panel takes up the whole space available - no white bars on the sides
+  - Jobs tree has its own scrollbar
+  - "10 seconds ago" labels are refreshed over time.
+
+### Fixed
+- Tree of jobs is refreshed after deleting a job.
+  [issue #211](https://github.com/TheRacetrack/racetrack/issues/211)
+
+## [2.13.0] - 2023-05-10
+### Added
+- "Jobs" tab now shows the tree of jobs grouped by the family name.
+  Jobs tree can be filtered by name, version, owner, job type version or infrastructure target.
+  [issue #212](https://github.com/TheRacetrack/racetrack/issues/212)
+
+### Changed
+- Dashboard UI has been revamped and turned into Single Page Application
+  using modern front-end frameworks, which made it more smooth and responsive.
+  [issue #212](https://github.com/TheRacetrack/racetrack/issues/212)
+
+## [2.12.1] - 2023-04-21
+### Changed
+- Racetrack client returns non-zero exit code in case of error.
+  [issue #224](https://github.com/TheRacetrack/racetrack/issues/224)
+- Dashboard is more responsive in case of a database malfunction (shows error rather than hanging indefinitely),
+  since Postgres is no longer its hard dependency.
 
 ## [2.12.0] - 2023-03-29
 ### Added

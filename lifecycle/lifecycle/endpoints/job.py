@@ -1,12 +1,15 @@
-from typing import Any, Dict, List, Optional
+from typing import List
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from pydantic import BaseModel, Field
 
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
 from lifecycle.deployer.redeploy import redeploy_job, reprovision_job, move_job
+from lifecycle.job.ansi import strip_ansi_colors
 from lifecycle.job.graph import build_job_dependencies_graph
+from lifecycle.job.models_registry import update_job_manifest
+from lifecycle.job.portfolio import enrich_jobs_purge_info
 from lifecycle.job.registry import (
     delete_job,
     list_job_families,
@@ -16,6 +19,7 @@ from lifecycle.job.registry import (
 from lifecycle.job.public_endpoints import read_active_job_public_endpoints
 from lifecycle.job.logs import read_build_logs, read_runtime_logs
 from lifecycle.auth.authenticate import get_username_from_token
+from racetrack_client.utils.time import days_ago
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
@@ -25,6 +29,9 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
 
     class MoveJobPayload(BaseModel):
         infrastructure_target: str = Field(description='text content of configuration file')
+
+    class UpdateManifestPayload(BaseModel):
+        manifest_yaml: str = Field(description='Job manifest in YAML format')
 
     @api.get('/job')
     def _list_all_jobs(request: Request) -> List[JobDto]:
@@ -38,11 +45,22 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
         return list_job_families(auth_subject)
 
-    @api.get('/job_graph')
+    @api.get('/job/graph')
     def _get_job_graph(request: Request):
         """Get Job dependencies graph"""
         auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
         return build_job_dependencies_graph(config, auth_subject)
+
+    @api.get('/job/portfolio')
+    def _get_job_portfolio(request: Request) -> list[dict]:
+        """Get Job list with extra portfolio data"""
+        auth_subject = check_auth(request, scope=AuthScope.READ_JOB)
+        jobs: list[JobDto] = list_job_registry(config, auth_subject)
+        job_dicts: list[dict] = enrich_jobs_purge_info(jobs)
+        for job_dict in job_dicts:
+            job_dict['update_time_days_ago'] = days_ago(job_dict['update_time'])
+            job_dict['last_call_time_days_ago'] = days_ago(job_dict['last_call_time'])
+        return job_dicts
 
     @api.get('/job/{job_name}/{job_version}', response_model=JobDto)
     def _get_job(job_name: str, job_version: str, request: Request) -> JobDto:
@@ -84,14 +102,36 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         return {'logs': read_runtime_logs(job_name, job_version, tail, config, plugin_engine)}
 
+    @api.get('/job/{job_name}/{job_version}/logs/plain')
+    def _get_plain_job_logs(request: Request, job_name: str, job_version: str, tail: int = 20):
+        """Get last logs of particular Job in a plain text response"""
+        check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
+        content = read_runtime_logs(job_name, job_version, tail, config, plugin_engine)
+        content = strip_ansi_colors(content)
+        return Response(content, media_type='text/plain; charset=utf-8')
+
     @api.get('/job/{job_name}/{job_version}/build-logs')
     def _get_job_build_logs(request: Request, job_name: str, job_version: str, tail: int = 0):
         """Get build logs of Job deployment attempt"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         return {'logs': read_build_logs(job_name, job_version, tail)}
 
+    @api.get('/job/{job_name}/{job_version}/build-logs/plain')
+    def _get_plain_job_build_logs(request: Request, job_name: str, job_version: str, tail: int = 0):
+        """Get build logs of Job deployment attempt in a plain text response"""
+        check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
+        content = read_build_logs(job_name, job_version, tail)
+        content = strip_ansi_colors(content)
+        return Response(content, media_type='text/plain; charset=utf-8')
+
     @api.get("/job/{job_name}/{job_version}/public-endpoints")
     def _get_job_public_endpoints(request: Request, job_name: str, job_version: str):
         """Get list of active public endpoints that can be accessed without authentication for a particular Job"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
         return read_active_job_public_endpoints(job_name, job_version)
+
+    @api.put("/job/{job_name}/{job_version}/manifest")
+    def _update_job_manifest(request: Request, job_name: str, job_version: str, payload: UpdateManifestPayload):
+        """Update job manifest"""
+        check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
+        return update_job_manifest(job_name, job_version, payload.manifest_yaml)

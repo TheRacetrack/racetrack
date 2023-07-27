@@ -59,15 +59,17 @@ def provision_job(
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
         runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
 
-        job_type: JobType = load_job_type(plugin_engine, manifest.lang)
+        job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
         containers_num = len(job_type.template_paths)
 
         job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine,
                                               tag, runtime_env_vars, family_dto, containers_num)
-        job.deployed_by = deployment.deployed_by
-        job.job_type_version = f'{job_type.lang_name}:{job_type.version}'
 
     with wrap_context('saving job in database'):
+        job.deployed_by = deployment.deployed_by
+        job.manifest = manifest
+        job.manifest_yaml = deployment.manifest_yaml
+        job.job_type_version = f'{job_type.lang_name}:{job_type.version}'
         save_job_model(job)
 
     with wrap_context('verifying deployed job'):
@@ -81,7 +83,7 @@ def provision_job(
     with wrap_context('invoking post-deploy actions'):
         save_deployment_phase(deployment.id, 'post-deploy hooks')
         post_job_deploy(manifest, job, image_name, deployment,
-                           auth_subject, previous_job, plugin_engine)
+                        auth_subject, previous_job, plugin_engine)
 
     job.status = JobStatus.RUNNING.value
     save_job_model(job)

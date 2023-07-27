@@ -11,6 +11,7 @@ from lifecycle.endpoints.audit import setup_audit_endpoints
 from lifecycle.endpoints.auth import setup_auth_endpoints
 from lifecycle.endpoints.info import setup_info_endpoints
 from lifecycle.endpoints.plugin import setup_plugin_endpoints
+from lifecycle.event_stream.server import EventStreamServer
 from lifecycle.monitor.monitors import list_log_streamers
 from lifecycle.endpoints.health import setup_health_endpoint
 from lifecycle.endpoints.deploy import setup_deploy_endpoints
@@ -36,16 +37,16 @@ logger = get_logger(__name__)
 def run_api_server(config: Config, plugin_engine: PluginEngine, service_name: str = 'lifecycle'):
     """Create app from config and run ASGI HTTP server"""
     app = create_fastapi_app(config, plugin_engine, service_name)
-    serve_asgi_app(app, config.http_addr, config.http_port)
+    serve_asgi_app(app, http_addr=config.http_addr, http_port=config.http_port)
 
 
-def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str) -> ASGIApp:
+def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str, event_stream_server: EventStreamServer | None = None) -> ASGIApp:
     """Create FastAPI app and register all endpoints without running a server"""
-    BASE_URL = f'/{service_name}'
+    base_url = f'/{service_name}'
     fastapi_app = create_fastapi(
         title='Lifecycle API Server',
         description='Management of deployed Job Workloads',
-        base_url=BASE_URL,
+        base_url=base_url,
         authorizations=get_racetrack_authorizations_methods(),
         request_access_log=True,
         response_access_log=True,
@@ -73,16 +74,20 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
 
     proxy = mount_at_base_path(
         fastapi_app,
-        BASE_URL,
+        base_url,
     )
+
+    if event_stream_server is None:
+        event_stream_server = EventStreamServer(config)
 
     dispatcher = AsgiDispatcher({
         '/admin': django_app,
-        BASE_URL + '/admin': django_app,
+        base_url + '/admin': django_app,
         '/static': django_app,
-        BASE_URL + '/static': django_app,
+        base_url + '/static': django_app,
         '/socket.io': WSGIMiddleware(sio_wsgi_app),
-        BASE_URL + '/socket.io': WSGIMiddleware(sio_wsgi_app),
+        base_url + '/socket.io': WSGIMiddleware(sio_wsgi_app),
+        '/lifecycle/socketio/events': event_stream_server.asgi_app,
     }, default=proxy)
 
     return dispatcher
@@ -94,11 +99,11 @@ def setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
 
     setup_deploy_endpoints(api, config, plugin_engine)
     setup_job_endpoints(api, config, plugin_engine)
-    setup_esc_endpoints(api, config)
-    setup_user_endpoints(api, config)
-    setup_info_endpoints(api, config, plugin_engine)
+    setup_esc_endpoints(api)
+    setup_user_endpoints(api)
+    setup_info_endpoints(api, config)
     setup_plugin_endpoints(api, config, plugin_engine)
-    setup_audit_endpoints(api, config)
+    setup_audit_endpoints(api)
     setup_auth_endpoints(api, config)
 
 

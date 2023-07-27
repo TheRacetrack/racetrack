@@ -1,7 +1,6 @@
 import logging
 import threading
 from typing import Optional
-from lifecycle.deployer.infra_target import determine_infrastructure_name
 
 from racetrack_client.client.env import SecretVars
 from racetrack_client.client_config.client_config import Credentials
@@ -15,6 +14,7 @@ from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus, JobD
 from lifecycle.config import Config
 from lifecycle.deployer.builder import build_job, wait_for_image_builder_ready
 from lifecycle.deployer.deployers import get_job_deployer
+from lifecycle.deployer.infra_target import determine_infrastructure_name
 from lifecycle.deployer.permissions import check_deploy_permissions
 from lifecycle.deployer.provision import provision_job
 from lifecycle.deployer.secrets import JobSecrets
@@ -37,7 +37,8 @@ def deploy_new_job(
     plugin_engine: PluginEngine,
 ):
     """Deploy (build and provision) new Job instance, providing secrets"""
-    _protect_job_overwriting(manifest, force)
+    if not config.allow_job_overwrite:
+        _protect_job_overwriting(manifest, force)
     check_deploy_permissions(auth_subject, manifest)
 
     with wrap_context('saving job secrets'):

@@ -18,6 +18,10 @@ from racetrack_client.plugin.install import install_plugin
 INTERNAL_AUTH_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMzIyZTA4MDQtMzQyYi00MjQ5LWIzZTktNmY1MGVjZTZhYTRhIiwic3ViamVjdCI6ImUyZV90ZXN0Iiwic3ViamVjdF90eXBlIjoiaW50ZXJuYWwiLCJzY29wZXMiOlsiZnVsbF9hY2Nlc3MiXX0.Tt_o4z22cRNfqBQ3EX0mA2gNKSvv4m5beganNRhheos'
 ADMIN_AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI'
 
+PYTHON_PLUGIN_VERSION = '2.9.0'
+DOCKER_PLUGIN_VERSION = '1.3.0'
+K8S_PLUGIN_VERSION = '1.2.2'
+
 
 def _configure_env() -> str:
     environment = os.environ.get('TEST_ENV', 'kind')
@@ -82,6 +86,7 @@ def _create_esc() -> EscDto:
     except ResponseError as e:
         if e.status_code not in {200, 409}:  # created or already exists
             raise ContextError('creating ESC') from e
+
 
 def _deploy_and_verify(sample_path: str, job_name: str, esc: EscDto):
     _deploy(sample_path)

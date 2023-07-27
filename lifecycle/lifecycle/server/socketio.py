@@ -16,7 +16,7 @@ class SocketIOServer:
     def __init__(self, log_streamers: list[LogsStreamer]):
         """
         Socket.IO server for streaming data to clients
-        :param logs_streamer: Source of logs
+        :param log_streamers: Sources of logs
         """
         self.sio = socketio.Server(async_mode='threading')
         self.client_resources: Dict[str, Dict[str, str]] = {}  # Map Client ID to a resource

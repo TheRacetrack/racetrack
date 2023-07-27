@@ -150,9 +150,21 @@ def _load_plugin_class(plugin_dir: Path, config_path: Path, plugin_manifest: Plu
         plugin_modules = set(sys.modules.keys()) - core_modules
         if plugin_modules:
             for mod in plugin_modules:
-                del sys.modules[mod]
+                if _is_local_module(sys.modules[mod], plugin_dir_posix):
+                    del sys.modules[mod]
 
     return plugin
+
+
+def _is_local_module(module, plugin_dir_posix: str) -> bool:
+    if not hasattr(module, '__file__'):
+        return False
+    module_file = getattr(module, '__file__')
+    if not module_file or not isinstance(module_file, str):
+        return False
+    if not module_file.startswith(plugin_dir_posix):
+        return False
+    return not bool(getattr(module, '__package__'))  # exclude third-party packages
 
 
 def ensure_dir_exists(path: Path):

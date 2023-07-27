@@ -12,7 +12,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.10'
       - name: Set up Go
         uses: actions/setup-go@v3
 
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.10'
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -45,5 +45,5 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v2.2.0
         with:
-          images: 'racetrack/lifecycle,racetrack/image-builder,racetrack/dashboard,racetrack/pub,postgres,localhost:5000/racetrack/job-entrypoint/adder'
+          images: 'ghcr.io/theracetrack/racetrack/lifecycle,ghcr.io/theracetrack/racetrack/image-builder,ghcr.io/theracetrack/racetrack/dashboard,ghcr.io/theracetrack/racetrack/pub,postgres,localhost:5000/racetrack/job-entrypoint/adder'
           tail: '1000'

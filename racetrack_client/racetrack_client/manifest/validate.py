@@ -1,5 +1,7 @@
-import re
-from urllib.parse import urlsplit
+from pathlib import Path
+import json
+
+from jsonschema import validate
 
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.manifest import Manifest
@@ -30,16 +32,14 @@ def load_validated_manifest(path: str) -> Manifest:
 
 def validate_manifest(manifest: Manifest):
     """Check whether manifest is valid. Raise exception in case of error"""
-    assert re.match(r"[^@]+@[^@]+\.[^@]+", manifest.owner_email), '"owner_email" is not a valid email'
-
+    serialized_manifest = manifest.dict(exclude_none=True)
+    path = Path(__file__).with_name('schema.json')
+    with path.open('r') as f:
+        schema = json.load(f)
+        validate(serialized_manifest, schema=schema)
+        
     with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
-
-    assert ':' in manifest.lang, '"lang" should specify the version in a format "name:version"'
-
-    assert 1 <= manifest.replicas <= 15, 'replicas count out of allowed range'
-
-    assert urlsplit(manifest.git.remote).scheme == 'https', 'git remote URL should be HTTPS'
 
 
 def validate_and_show_manifest(path: str):

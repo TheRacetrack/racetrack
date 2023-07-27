@@ -1,5 +1,3 @@
-from typing import Dict
-
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.io import load_client_config, save_client_config
