@@ -34,7 +34,8 @@ spec:
             - name: image-builder-config
               mountPath: /etc/racetrack/image-builder/
             - name: docker-push-secret
-              mountPath: "/home/racetrack/.docker/"
+              mountPath: "/home/racetrack/.docker/config.json"
+              subPath: config.json
             - name: racetrack-plugins
               mountPath: /mnt/plugins
           env:
