@@ -88,7 +88,9 @@ function copyText(text: string | null) {
 
 function fetchPluginsData() {
     apiClient.get<PluginData>(`/api/v1/plugin/tree`).then(response => {
-        pluginDataRef.value = response.data
+        const pluginData: PluginData = response.data
+        pluginData.plugins.sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version))
+        pluginDataRef.value = pluginData
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch plugins data`, err)
     })
