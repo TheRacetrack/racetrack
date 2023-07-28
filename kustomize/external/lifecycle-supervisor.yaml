@@ -55,7 +55,7 @@ spec:
                 name: lifecycle-env
           env:
             - name: PUBLIC_IP
-              value: '1.1.1.1'
+              value: '$YOUR_IP'
             - name: CLUSTER_FQDN
               value: ''
             - name: DEBUG

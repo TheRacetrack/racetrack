@@ -3,7 +3,7 @@ http_port: 7002
 infrastructure_target: kubernetes
 image_builder_url: http://image-builder:7001
 internal_pub_url: http://pub:7005/pub
-external_pub_url: http://1.1.1.1/pub
+external_pub_url: http://$YOUR_IP/pub
 docker_registry:
 docker_registry_namespace:
 auth_required: true

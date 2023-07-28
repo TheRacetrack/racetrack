@@ -30,7 +30,7 @@ Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
 `racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
-Create a secret for the registry in **kustomize/external/docker-registry-secret.yaml**.
+Fill in your secrets for the registry in the **kustomize/external/docker-registry-secret.yaml** file.
 Remember to replace `READ_REGISTRY_TOKEN`, `WRITE_REGISTRY_TOKEN`, `REGISTRY_HOSTNAME` and `REGISTRY_USERNAME`.
 ```shell
 REGISTRY_HOSTNAME=ghcr.io
@@ -71,6 +71,12 @@ See [Production Deployment](#production-deployment) section before deploying Rac
 
 You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
 To do so, add the appropriate annotations to the `ingress-nginx-controller` service in a `kustomize/external/ingress-controller.yaml` file.
+
+Remember to replace all occurrences of `$YOUR_IP` with your IP address in all the places below:
+```
+YOUR_IP=1.1.1.1
+```
+
 In case of AKS, it could look like this:
 ```yaml
 apiVersion: v1
@@ -78,7 +84,7 @@ kind: Service
 metadata:
   name: ingress-nginx-controller
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-ipv4: 1.1.1.1
+    service.beta.kubernetes.io/azure-load-balancer-ipv4: $YOUR_IP
     service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_resource_group
 spec:
   type: LoadBalancer
@@ -89,7 +95,7 @@ Now, let's make Racetrack aware of this IP address.
 If you don't know the exact IP address of the LoadBalancer, you can skip this step for now.
 It will be assigned after the first deployment, then you can get back to this step, set the IP address and apply it again.
 
-Fill in the public IP in the following places:
+Fill in the public IP in the following places, replacing `$YOUR_IP` placeholder:
 
 - `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in **kustomize/external/dashboard.yaml**
 - `PUBLIC_IP` env variable in **kustomize/external/lifecycle.yaml**
@@ -110,14 +116,11 @@ After that, verify the status of your deployments using one of your favorite too
 - [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
 - [k9s](https://github.com/derailed/k9s)
 
-Assuming your Ingress Controller is now deployed at public IP:
-```sh
-RT_HOST=http://1.1.1.1
-```
+Assuming your Ingress Controller is now deployed at public IP `$YOUR_IP`,
 you can look up the following services:
-- **Racetrack Dashboard** at `$RT_HOST/dashboard`,
-- **Lifecycle** at `$RT_HOST/lifecycle`,
-- **PUB** at `$RT_HOST/pub`,
+- **Racetrack Dashboard** at `http://$YOUR_IP/dashboard`,
+- **Lifecycle** at `http://$YOUR_IP/lifecycle`,
+- **PUB** at `http://$YOUR_IP/pub`,
 
 ## Configure Racetrack
 
@@ -126,13 +129,13 @@ Install racetrack-client using pip:
 python3 -m pip install --upgrade racetrack-client
 ```
 
-Log in to the *Racetrack Dashboard* at `$RT_HOST/dashboard` with default login `admin` and password `admin`.
+Log in to the *Racetrack Dashboard* at `http://$YOUR_IP/dashboard` with default login `admin` and password `admin`.
 Then, go to the *Profile* tab and copy your auth token.
 
 Go back to the command line and configure a few things with the racetrack client:
 ```sh
 # Set the current Racetrack's remote address
-racetrack set remote $RT_HOST/lifecycle
+racetrack set remote http://$YOUR_IP/lifecycle
 # Login to Racetrack (use your Auth Token)
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack - we're gonna deploy Python jobs
@@ -185,10 +188,10 @@ racetrack deploy sample/python-class
 
 ## Call your Job
 
-Go to the Dashboard at `$RT_HOST/dashboard` to find your job there.
+Go to the Dashboard at `http://$YOUR_IP/dashboard` to find your job there.
 
 Also, you should get the link to your job from the `racetrack` client's output.
-Check it out at `$RT_HOST/pub/job/adder/latest`.
+Check it out at `http://$YOUR_IP/pub/job/adder/latest`.
 This opens a SwaggerUI page, from which you can call your function
 (try `/perform` endpoint with `{"numbers": [40, 2]}` body).
 
@@ -196,7 +199,7 @@ This opens a SwaggerUI page, from which you can call your function
 
 You can do it from CLI with an HTTP client as well:
 ```shell
-curl -X POST "$RT_HOST/pub/job/adder/latest/api/v1/perform" \
+curl -X POST "http://$YOUR_IP/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
   -d '{"numbers": [40, 2]}'
