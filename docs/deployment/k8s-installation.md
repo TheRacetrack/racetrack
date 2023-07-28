@@ -18,7 +18,7 @@ Verify the connection to your cluster using the `kubectl get nodes` command.
 Next, set this cluster as the default one:
 ```sh
 kubectl config get-contexts
-kubectl config use-context aks-racetrack # k8s context is `aks-racetrack` in this tutorial
+kubectl config use-context cloud-racetrack # k8s context is `cloud-racetrack` in this tutorial
 kubectl config set-context --current --namespace=racetrack
 ```
 
@@ -30,7 +30,7 @@ Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
 `racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
-Create a secret for the registry in **kustomize/aks/docker-registry-secret.yaml**.
+Create a secret for the registry in **kustomize/external/docker-registry-secret.yaml**.
 Remember to replace `READ_REGISTRY_TOKEN`, `WRITE_REGISTRY_TOKEN`, `REGISTRY_HOSTNAME` and `REGISTRY_USERNAME`.
 ```shell
 REGISTRY_HOSTNAME=ghcr.io
@@ -43,20 +43,20 @@ kubectl create secret docker-registry docker-registry-read-secret \
     --docker-username="$REGISTRY_USERNAME" \
     --docker-password="$READ_REGISTRY_TOKEN" \
     --namespace=racetrack \
-    --dry-run=client -oyaml > kustomize/aks/docker-registry-secret.yaml
-echo "---" >> kustomize/aks/docker-registry-secret.yaml
+    --dry-run=client -oyaml > kustomize/external/docker-registry-secret.yaml
+echo "---" >> kustomize/external/docker-registry-secret.yaml
 kubectl create secret docker-registry docker-registry-write-secret \
     --docker-server="$REGISTRY_HOSTNAME" \
     --docker-username="$REGISTRY_USERNAME" \
     --docker-password="$WRITE_REGISTRY_TOKEN" \
     --namespace=racetrack \
-    --dry-run=client -oyaml >> kustomize/aks/docker-registry-secret.yaml
+    --dry-run=client -oyaml >> kustomize/external/docker-registry-secret.yaml
 ```
 
 Accordingly, set the registry address and namespace in these 2 configuration files:
 
-- **kustomize/aks/image-builder.config.yaml**
-- **kustomize/aks/lifecycle.config.yaml**
+- **kustomize/external/image-builder.config.yaml**
+- **kustomize/external/lifecycle.config.yaml**
 
 by changing the following lines:
 ```yaml
@@ -66,11 +66,11 @@ docker_registry_namespace: 'theracetrack/racetrack'
 
 ## Prepare Kubernetes resources
 
-If needed, make another adjustments in **kustomize/aks/** files.
+If needed, make another adjustments in **kustomize/external/** files.
 See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
 
 You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
-To do so, add the appropriate annotations to the `ingress-nginx-controller` service in a `kustomize/aks/ingress-controller.yaml` file.
+To do so, add the appropriate annotations to the `ingress-nginx-controller` service in a `kustomize/external/ingress-controller.yaml` file.
 In case of AKS, it could look like this:
 ```yaml
 apiVersion: v1
@@ -91,16 +91,16 @@ It will be assigned after the first deployment, then you can get back to this st
 
 Fill in the public IP in the following places:
 
-- `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in **kustomize/aks/dashboard.yaml**
-- `PUBLIC_IP` env variable in **kustomize/aks/lifecycle.yaml**
-- `PUBLIC_IP` env variable in **kustomize/aks/lifecycle-supervisor.yaml**
-- `external_pub_url` in **kustomize/aks/lifecycle.config.yaml**
+- `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in **kustomize/external/dashboard.yaml**
+- `PUBLIC_IP` env variable in **kustomize/external/lifecycle.yaml**
+- `PUBLIC_IP` env variable in **kustomize/external/lifecycle-supervisor.yaml**
+- `external_pub_url` in **kustomize/external/lifecycle.config.yaml**
 
 ## Deploy Racetrack
 
 Once you're ready, deploy Racetrack's resources to your cluster:
 ```sh
-kubectl apply -k kustomize/aks/
+kubectl apply -k kustomize/external/
 ```
 
 After that, verify the status of your deployments using one of your favorite tools:
@@ -214,7 +214,7 @@ Use one of these tools to inspect your cluster resources:
 - [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
 - [k9s](https://github.com/derailed/k9s)
 
-- Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/aks`
+- Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/external`
 
 ### Deploy Kubernetes Dashboard
 
@@ -268,13 +268,13 @@ Bunch of improvements to keep in mind before deploying Racetrack to production:
   will receive secret tokens, which otherwise would be sent plaintext.
 - Encrypt your secrets, for instance, using [SOPS](https://github.com/mozilla/sops) tool
   in order not to store them in your repository.
-- Use different database password by changing `POSTGRES_PASSWORD` in **kustomize/aks/postgres.env**.
-- Use different secrets `AUTH_KEY` and `SECRET_KEY` by modifying them in **kustomize/aks/lifecycle.env**.
+- Use different database password by changing `POSTGRES_PASSWORD` in **kustomize/external/postgres.env**.
+- Use different secrets `AUTH_KEY` and `SECRET_KEY` by modifying them in **kustomize/external/lifecycle.env**.
 - Generate new tokens `LIFECYCLE_AUTH_TOKEN` for internal communication between components.
 - After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
 
 ## Clean up
 Delete the resources when you're done:
 ```shell
-kubectl delete -k kustomize/aks/
+kubectl delete -k kustomize/external/
 ```
