@@ -1,10 +1,9 @@
-from __future__ import annotations
 from pathlib import Path
 import random
 import shutil
 import tempfile
 import threading
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 import time
 
 from watchdog.observers import Observer
@@ -115,6 +114,11 @@ class PluginEngine:
                 raise EntityNotFound(f'plugin named "{name}" was not found')
             return plugin_versions[-1]
 
+    def find_plugins(self, name: str, version: str | None = None) -> Iterable[PluginData]:
+        for plugin_data in self.plugins_data:
+            if plugin_data.plugin_manifest.name == name and (not version or plugin_data.plugin_manifest.version == version):
+                yield plugin_data
+
     def _watch_plugins_changes(self):
         """
         Watch for changes in plugins dir and reload plugins if change happens.
@@ -169,7 +173,14 @@ class PluginEngine:
 
         threading.Thread(target=_check_periodically, daemon=True).start()
 
-    def upload_plugin(self, filename: str, file_bytes: bytes) -> PluginManifest:
+    def upload_plugin(self, filename: str, file_bytes: bytes, replace: bool = False) -> PluginManifest:
+        """
+        Upload and load a plugin
+        :param filename: name of the file
+        :param file_bytes: bytes of the file
+        :param replace: whether to replace the older versions - delete the existing versions with the same name
+        :return: PluginManifest of the uploaded plugin
+        """
         tmp_dir = Path(tempfile.mkdtemp(prefix='racetrack-uploaded-plugin-'))
         try:
             assert Path(filename).suffix == '.zip', '.zip plugins are only supported'
@@ -188,7 +199,10 @@ class PluginEngine:
             plugin_name = plugin_data.plugin_manifest.name
             plugin_version = plugin_data.plugin_manifest.version
 
-            self._delete_older_plugin_version(plugin_name, plugin_version)
+            if replace:
+                self._delete_older_plugins(plugin_name)
+            else:
+                self._delete_older_plugin_version(plugin_name, plugin_version)
             shutil.move(tmp_zip, Path(self.plugins_dir) / filename)
             logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
 
@@ -225,6 +239,12 @@ class PluginEngine:
             logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
         except EntityNotFound:
             return
+
+    def _delete_older_plugins(self, plugin_name: str):
+        plugins_data = self.find_plugins(plugin_name)
+        for plugin_data in plugins_data:
+            self._delete_plugin(plugin_data)
+            logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
 
     def _delete_plugin(self, plugin_data: PluginData):
         if plugin_data.zip_path.is_file():
