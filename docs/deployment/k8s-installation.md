@@ -113,7 +113,7 @@ After that, verify the status of your deployments using one of your favorite too
 
 - `kubectl get pods`
 - Cloud Console
-- [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
+- [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
 - [k9s](https://github.com/derailed/k9s)
 
 Assuming your Ingress Controller is now deployed at public IP `$YOUR_IP`,
@@ -146,45 +146,17 @@ racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructur
 
 ## Deploy a first job
 
-Let's create a model which purpose is to add numbers.
-Let's keep it in a `adder` directory.
+Let's use the Racetrack's sample model which purpose is to add numbers.
 
-Create `adder/entrypoint.py` file with your application logic:
-```python
-class Entrypoint:
-    def perform(self, numbers) -> float:
-        """Add numbers"""
-        return sum(numbers)
-```
-
-And a `adder/job.yaml` file describing what's inside:
-```yaml
-name: adder
-owner_email: sample@example.com
-lang: python3:latest
-
-git:
-  remote: https://github.com/TheRacetrack/samples
-  directory: adder
-
-python:
-  entrypoint_path: 'entrypoint.py'
-  entrypoint_class: 'Entrypoint'
-```
-
-Remember to put your git remote URL in `git.remote` field and push your changes to it.
-
-Finally, submit your job to Racetrack:
+Clone the [Racetrack's repository](https://github.com/TheRacetrack/racetrack)
+and run `racetrack deploy` command:
 ```shell
-racetrack deploy adder
-```
-
-This will convert your source code to a REST microservice workload, called **Job**.
-
-Alternatively, you can deploy a sample from a root of the [Racetrack's repository](https://github.com/TheRacetrack/racetrack):
-```shell
+git clone https://github.com/TheRacetrack/racetrack
+cd racetrack
 racetrack deploy sample/python-class
 ```
+
+This will convert the source code to a REST microservice workload, called **Job**.
 
 ## Call your Job
 
@@ -214,54 +186,10 @@ Use one of these tools to inspect your cluster resources:
 
 - `kubectl`
 - Cloud Console
-- [Kubernetes Dashboard](#deploy-kubernetes-dashboard)
+- [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
 - [k9s](https://github.com/derailed/k9s)
 
 - Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/external`
-
-### Deploy Kubernetes Dashboard
-
-You can use Kubernetes Dashboard UI to troubleshoot your application, and manage the cluster resources.
-
-```shell
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-
-# Create an admin user account
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-
-cat <<EOF | kubectl apply -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-user
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-
-# Create a token for the admin user
-kubectl -n kubernetes-dashboard create token admin-user
-```
-
-The last command should print out the token that lets you log in to the Kubernetes Dashboard.
-
-Enable access to the Dashboard from your local computer, by running the following command:
-```shell
-kubectl proxy
-```
-
-It will make k8s Dashboard available at [http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/).
 
 ## Production Deployment
 
