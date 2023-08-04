@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.18.0] - 2023-08-04
 ### Added
 - Job types can read the manifest file from the job's directory.
   It might be useful to configure the home page of a job
