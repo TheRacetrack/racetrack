@@ -48,7 +48,7 @@ spec:
             - name: DEBUG
               value: 'true'
             - name: LIFECYCLE_AUTH_TOKEN
-              value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY'
+              value: '$IMAGE_BUILDER_LIFECYCLE_AUTH_TOKEN'
         - name: docker-engine
           image: docker:dind
           ports:

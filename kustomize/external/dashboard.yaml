@@ -48,7 +48,7 @@ spec:
             - name: DASHBOARD_PORT
               value: '7003'
             - name: LIFECYCLE_AUTH_TOKEN
-              value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiMjIzYThhM2ItNzBkOC00YzA4LWI4YmYtNzlkNDA3MDI3ZGE2Iiwic3ViamVjdCI6ImRhc2hib2FyZCIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.CAww41hboBPHNflJxKBNRnO-Eo9Y_EKsfU66mK3kdk4'
+              value: '$DASHBOARD_LIFECYCLE_AUTH_TOKEN'
             - name: SITE_NAME
               value: 'dev'
             - name: PUBLIC_IP

@@ -102,6 +102,62 @@ Fill in the public IP in the following places, replacing `$YOUR_IP` placeholder:
 - `PUBLIC_IP` env variable in **kustomize/external/lifecycle-supervisor.yaml**
 - `external_pub_url` in **kustomize/external/lifecycle.config.yaml**
 
+## Generate passwords & auth tokens
+
+Let's generate unique, secure passwords for the database, authentication encryption and tokens.
+
+### Database password
+```shell
+POSTGRES_PASSWORD="$(openssl rand -base64 24)"
+echo POSTGRES_PASSWORD = $POSTGRES_PASSWORD
+```
+
+Use the provided database password in the following places, replacing `$POSTGRES_PASSWORD` placeholder:
+
+- **kustomize/external/postgres.env**, in `POSTGRES_PASSWORD` env variable
+- **kustomize/external/pgbouncer.env**, in `DB_PASSWORD` and `DATA_SOURCE_NAME` variables
+- **kustomize/external/postgres.yaml**, in `db.sql`
+
+### Django secret
+```shell
+SECRET_KEY="django-secret-$(openssl rand -base64 24)"
+echo SECRET_KEY = $SECRET_KEY
+```
+
+Use the provided secret in the following places, replacing `$SECRET_KEY` placeholder:
+
+- **kustomize/external/lifecycle.env**, in `SECRET_KEY` env variable
+
+### Auth key
+```shell
+export AUTH_KEY="$(openssl rand -base64 24)"
+echo AUTH_KEY = $AUTH_KEY
+```
+
+Use the provided secret key in the following places, replacing `$AUTH_KEY` placeholder:
+
+- **kustomize/external/lifecycle.env**, in `AUTH_KEY` env variable
+
+### Internal tokens
+
+Now that you have `AUTH_KEY`, you can generate the tokens for components of Racetrack, 
+which will be used for their internal communication.
+
+```shell
+export AUTH_KEY
+python -m lifecycle generate-auth pub # PUB's token
+python -m lifecycle generate-auth dashboard # Dashboard's token
+python -m lifecycle generate-auth image-builder # Image-builder's token
+```
+Make sure you've run `make setup` and `. venv/bin/activate` in the root of
+[racetrack](https://github.com/TheRacetrack/racetrack)'s repository beforehand, to be able to run Lifecycle's script.
+
+Copy the tokens provided and paste them into the following files:
+
+- Replace `$PUB_LIFECYCLE_AUTH_TOKEN` in **kustomize/external/pub.yaml** with PUB's token.
+- Replace `$DASHBOARD_LIFECYCLE_AUTH_TOKEN` in **kustomize/external/dashboard.yaml** with Dashboard's token.
+- Replace `$IMAGE_BUILDER_LIFECYCLE_AUTH_TOKEN` in **kustomize/external/image-builder.yaml** with Image-builder's token.
+
 ## Deploy Racetrack
 
 Once you're ready, deploy Racetrack's resources to your cluster:
@@ -131,13 +187,17 @@ python3 -m pip install --upgrade racetrack-client
 
 Log in to the *Racetrack Dashboard* at `http://$YOUR_IP/dashboard` with default login `admin` and password `admin`.
 Then, go to the *Profile* tab and copy your auth token.
+Please replace the following occurrences of `$USER_TOKEN` with your token or set it as an environment variable:
+```shell
+USER_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+```
 
 Go back to the command line and configure a few things with the racetrack client:
 ```sh
 # Set the current Racetrack's remote address
 racetrack set remote http://$YOUR_IP/lifecycle
 # Login to Racetrack (use your Auth Token)
-racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
+racetrack login $USER_TOKEN
 # Activate python3 job type in the Racetrack - we're gonna deploy Python jobs
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 # Activate kubernetes infrastructure target in the Racetrack
@@ -173,7 +233,7 @@ You can do it from CLI with an HTTP client as well:
 ```shell
 curl -X POST "http://$YOUR_IP/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
-  -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
+  -H "X-Racetrack-Auth: $USER_TOKEN" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
 ```
@@ -195,14 +255,11 @@ Use one of these tools to inspect your cluster resources:
 
 Bunch of improvements to keep in mind before deploying Racetrack to production:
 
+- After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
 - Make sure to enable TLS traffic to your cluster, since **PUB** and **Lifecycle API**
   will receive secret tokens, which otherwise would be sent plaintext.
 - Encrypt your secrets, for instance, using [SOPS](https://github.com/mozilla/sops) tool
   in order not to store them in your repository.
-- Use different database password by changing `POSTGRES_PASSWORD` in **kustomize/external/postgres.env**.
-- Use different secrets `AUTH_KEY` and `SECRET_KEY` by modifying them in **kustomize/external/lifecycle.env**.
-- Generate new tokens `LIFECYCLE_AUTH_TOKEN` for internal communication between components.
-- After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
 
 ## Clean up
 Delete the resources when you're done:
