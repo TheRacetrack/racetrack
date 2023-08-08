@@ -25,6 +25,7 @@ interface PluginManifest {
     name: string
     version: string
     url?: string
+    category?: string
 }
 
 interface InfrastructureGroup {
@@ -89,7 +90,9 @@ function copyText(text: string | null) {
 
 function fetchPluginsData() {
     apiClient.get<PluginData>(`/api/v1/plugin/tree`).then(response => {
-        pluginDataRef.value = response.data
+        const pluginData: PluginData = response.data
+        pluginData.plugins.sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version))
+        pluginDataRef.value = pluginData
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch plugins data`, err)
     })
@@ -124,6 +127,22 @@ function onPluginUploadFailed(err: any) {
 function onPluginUploaded(info: any) {
     toastService.success(`Plugin uploaded`)
     fetchPluginsData()
+}
+
+const badgeColors = [
+    'pink', 'light-green', 'purple', 'deep-purple', 'green', 'indigo', 'red', 'light-blue', 'cyan', 'teal',
+    'blue', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey',
+]
+
+function stringToColour(str: string) {
+    let hash: number = 0;
+    for (let i = 0; i < str.length; i++) {
+        const chr = str.charCodeAt(i)
+        hash = ((hash << 5) - hash) + chr
+        hash |= 0
+    }
+    const colorIndex = (hash % badgeColors.length + badgeColors.length) % badgeColors.length
+    return badgeColors[colorIndex]
 }
 </script>
 
@@ -224,7 +243,12 @@ function onPluginUploaded(info: any) {
                 <q-item v-for="plugin in pluginDataRef.plugins">
                     <q-item-section>
                         <q-item-label>{{ plugin.name }}</q-item-label>
-                        <q-item-label caption>Version {{plugin.version}}</q-item-label>
+                        <q-item-label caption>
+                            Version {{plugin.version}}
+                            <span v-if="plugin.category">
+                                <q-badge :color="stringToColour(plugin.category)" rounded :label="plugin.category" class="q-ml-xs" />
+                            </span>
+                        </q-item-label>
                         <q-item-label caption v-if="plugin.url">
                             <a :href="plugin.url" target="_blank">{{ plugin.url }}</a>
                         </q-item-label>

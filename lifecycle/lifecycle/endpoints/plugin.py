@@ -1,7 +1,7 @@
 from __future__ import annotations
 import asyncio
 import collections
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, Request
@@ -69,6 +69,12 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _info_plugin_docs(plugin_name: str) -> Optional[str]:
         """Get documentation for this plugin in Markdown format"""
         return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.markdown_docs)
+
+    @api.post('/plugin/{plugin_name}/run')
+    def _run_plugin_action(plugin_name: str, request: Request) -> Any:
+        """Call a supplementary action of a plugin"""
+        params = dict(request.query_params)
+        return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.run_action, **params)
 
     @api.get('/plugin/job_type/versions')
     def _get_job_type_versions() -> list[str]:

@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Plugin's manifest can declare its category, which makes the label to be displayed on the plugins list.
+  Category is a kind of the plugin and can be either "job-type", "infrastructure" or "core".
+- If you don't want the plugin to be loaded by Racetrack's Lifecycle or Image-builder (due to missing imports),
+  you can enable it selectively for particular components.
+  Declare `components` field in a `plugin-manifest.yaml` and add 'lifecycle' or 'image-builder' to the list.
+  See [Developing plugins](./development/developing-plugins.md#create-a-plugin-manifest).
+  ([#291](https://github.com/TheRacetrack/racetrack/issues/291))
+- Plugins can implement `run_action` method for calling a supplementary action with an endpoint.
+  It can be used for debugging purposes or to extend plugin's functionality that is not covered by a plugin interface.
 
 ## [2.18.0] - 2023-08-04
 ### Added

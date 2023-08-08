@@ -40,6 +40,9 @@ It can have the following fields in YAML format:
 - `version` (**required**) - version of the plugin
 - `url` (optional) - a link to the plugin page
 - `priority` (optional) - order in plugins sequence, lowest priority gets executed first. Integer field, 0 by default.
+- `category` (optional) - kind of the plugin, either 'infrastructure', 'job-type' or 'core'
+- `components` (optional) - list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'.
+  If it's empty, plugins are loaded on all components.
 
 Example:
 ```yaml
@@ -47,6 +50,9 @@ name: skynet-watcher
 version: 1.2.3
 url: https://github.com/TheRacetrack/racetrack
 priority: -1
+category: core
+components:
+  - lifecycle
 ```
 
 ### Building a plugin
@@ -110,4 +116,10 @@ def post_job_delete(self, job: JobDto, username_executor: str = None):
     Supplementary actions invoked after job is deleted
     :param username_executor: username of the user who deleted the job
     """
+```
+
+- `run_action` - Call a supplementary action of a plugin
+```python
+def run_action(self, **kwargs) -> Any:
+    """Call a supplementary action of a plugin"""
 ```
