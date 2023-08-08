@@ -41,7 +41,8 @@ It can have the following fields in YAML format:
 - `url` (optional) - a link to the plugin page
 - `priority` (optional) - order in plugins sequence, lowest priority gets executed first. Integer field, 0 by default.
 - `category` (optional) - kind of the plugin, either 'infrastructure', 'job-type' or 'core'
-- `components` (optional) - list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'
+- `components` (optional) - list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'.
+  If it's empty, plugins are loaded on all components.
 
 Example:
 ```yaml
