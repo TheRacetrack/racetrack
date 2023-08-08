@@ -117,3 +117,9 @@ def post_job_delete(self, job: JobDto, username_executor: str = None):
     :param username_executor: username of the user who deleted the job
     """
 ```
+
+- `run_action` - Call a supplementary action of a plugin
+```python
+def run_action(self, **kwargs) -> Any:
+    """Call a supplementary action of a plugin"""
+```

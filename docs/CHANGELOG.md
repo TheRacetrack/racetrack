@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Declare `components` field in a `plugin-manifest.yaml` and add 'lifecycle' or 'image-builder' to the list.
   See [Developing plugins](./development/developing-plugins.md#create-a-plugin-manifest).
   ([#291](https://github.com/TheRacetrack/racetrack/issues/291))
+- Plugins can implement `run_action` method for calling a supplementary action with an endpoint.
+  It can be used for debugging purposes or to extend plugin's functionality that is not covered by a plugin interface.
 
 ## [2.18.0] - 2023-08-04
 ### Added
