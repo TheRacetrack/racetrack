@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: dashboard
+  labels:
+    app.kubernetes.io/name: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dashboard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dashboard
+    spec:
+      securityContext:
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
+      hostname: dashboard
+      subdomain: dashboard
+      priorityClassName: high-priority
+      containers:
+        - name: dashboard
+          image: ghcr.io/theracetrack/racetrack/dashboard:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7003
+          tty: true
+          envFrom:
+            - configMapRef:
+                name: postgres-env
+            - configMapRef:
+                name: lifecycle-env
+          env:
+            - name: LIFECYCLE_URL
+              value: 'http://lifecycle:7002/lifecycle'
+            - name: EXTERNAL_LIFECYCLE_URL
+              value: 'http://$YOUR_IP/lifecycle'
+            - name: EXTERNAL_PUB_URL
+              value: 'http://$YOUR_IP/pub'
+            - name: DJANGO_DEBUG
+              value: 'true'
+            - name: AUTH_REQUIRED
+              value: 'true'
+            - name: DASHBOARD_PORT
+              value: '7003'
+            - name: LIFECYCLE_AUTH_TOKEN
+              value: '$DASHBOARD_LIFECYCLE_AUTH_TOKEN'
+            - name: SITE_NAME
+              value: 'dev'
+            - name: PUBLIC_IP
+              value: ''
+            - name: CLUSTER_FQDN
+              value: ''
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 7003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 7003
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: dashboard
+  labels:
+    app.kubernetes.io/name: dashboard
+spec:
+  selector:
+    app.kubernetes.io/name: dashboard
+  type: ClusterIP
+  ports:
+    - name: dashboard
+      port: 7003
+      targetPort: 7003

@@ -15,13 +15,17 @@ spec:
       labels:
         app.kubernetes.io/name: lifecycle
     spec:
+      securityContext:
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
       hostname: lifecycle
       subdomain: lifecycle
       serviceAccountName: null
       priorityClassName: high-priority
       initContainers:
         - name: init-django-db
-          image: kind-registry:5000/racetrack/lifecycle:latest
+          image: ghcr.io/theracetrack/racetrack/lifecycle:latest
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -36,7 +40,7 @@ spec:
               /src/lifecycle/wait-for-migration.sh
       containers:
         - name: lifecycle
-          image: kind-registry:5000/racetrack/lifecycle:latest
+          image: ghcr.io/theracetrack/racetrack/lifecycle:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7002
@@ -53,11 +57,9 @@ spec:
                 name: lifecycle-env
           env:
             - name: PUBLIC_IP
-              value: ''
-              valueFrom: null
+              value: '$YOUR_IP'
             - name: CLUSTER_FQDN
               value: ''
-              valueFrom: null
             - name: DEBUG
               value: 'true'
             - name: DJANGO_DEBUG
@@ -93,9 +95,8 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: lifecycle
-  type: NodePort
+  type: ClusterIP
   ports:
     - name: lifecycle
-      nodePort: 30002
       port: 7002
       targetPort: 7002

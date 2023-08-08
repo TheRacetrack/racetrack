@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prometheus
+    spec:
+      priorityClassName: high-priority
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.42.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9090
+          tty: true
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus/
+            - name: racetrack-plugins
+              mountPath: /mnt/plugins
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yaml'
+            - '--storage.tsdb.retention.time=60d'
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+        - name: racetrack-plugins
+          persistentVolumeClaim:
+            claimName: racetrack-plugins-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+spec:
+  selector:
+    app.kubernetes.io/name: prometheus
+  type: ClusterIP
+  ports:
+    - name: prometheus
+      port: 9090
+      targetPort: 9090

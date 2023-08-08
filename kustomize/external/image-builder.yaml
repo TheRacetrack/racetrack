@@ -15,19 +15,27 @@ spec:
       labels:
         app.kubernetes.io/name: image-builder
     spec:
+      securityContext:
+        fsGroup: 200000
       hostname: image-builder
       subdomain: image-builder
       priorityClassName: high-priority
       containers:
         - name: image-builder
-          image: kind-registry:5000/racetrack/image-builder:latest
+          image: ghcr.io/theracetrack/racetrack/image-builder:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7001
           tty: true
+          securityContext:
+            runAsUser: 100000
+            runAsGroup: 100000
           volumeMounts:
             - name: image-builder-config
               mountPath: /etc/racetrack/image-builder/
+            - name: docker-push-secret
+              mountPath: "/home/racetrack/.docker/config.json"
+              subPath: config.json
             - name: racetrack-plugins
               mountPath: /mnt/plugins
           env:
@@ -40,13 +48,13 @@ spec:
             - name: DEBUG
               value: 'true'
             - name: LIFECYCLE_AUTH_TOKEN
-              value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY'
+              value: '$IMAGE_BUILDER_LIFECYCLE_AUTH_TOKEN'
         - name: docker-engine
           image: docker:dind
           ports:
             - containerPort: 2375
           tty: true
-          args: ["--insecure-registry=kind-registry:5000", "--insecure-registry=http://kind-registry:5000"]
+          args: []
           securityContext:
             privileged: true
           env:
@@ -56,6 +64,12 @@ spec:
         - name: image-builder-config
           configMap:
             name: image-builder-config
+        - name: docker-push-secret
+          secret:
+            secretName: docker-registry-write-secret
+            items:
+              - key: .dockerconfigjson
+                path: config.json
         - name: racetrack-plugins
           persistentVolumeClaim:
             claimName: racetrack-plugins-pvc
@@ -71,9 +85,8 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: image-builder
-  type: NodePort
+  type: ClusterIP
   ports:
     - name: image-builder
-      nodePort: 30001
       port: 7001
       targetPort: 7001

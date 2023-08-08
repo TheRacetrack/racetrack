@@ -55,11 +55,11 @@ cat << EOF > sample/job.yaml
 name: adder
 owner_email: sample@example.com
 lang: python3:latest
-
 git:
     remote: https://github.com/TheRacetrack/racetrack
-
-python:
+jobtype_extra:
     entrypoint_path: 'entrypoint.py'
     entrypoint_class: 'Entrypoint'
 EOF
+
+echo "Racetrack is ready to use!"

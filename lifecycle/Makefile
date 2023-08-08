@@ -40,3 +40,4 @@ init:
 generate-internal-tokens:
 		python -m lifecycle generate-auth pub
 		python -m lifecycle generate-auth dashboard
+		python -m lifecycle generate-auth image-builder

@@ -5,10 +5,12 @@ and how to deploy a sample job there.
 
 ## Prerequisites
 
-- Python 3.8 (or higher)
+- Python 3.8 (or higher) - verify with `python3 --version`
 - [Docker v20.10 (or higher)](https://docs.docker.com/engine/install/ubuntu/)
-  managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
-- [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
+  managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user) -
+  verify with `docker ps && docker --version`
+- [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository) -
+  verify with `docker compose version`
 
 ## 1. Set up a local environment (optional)
 For your convenience use virtual environment:
@@ -20,7 +22,7 @@ python3 -m venv venv
 
 ## 2. Set up local Racetrack
 
-Start Racetrack components with an utility script:
+Start Racetrack components with a utility script:
 ```shell
 curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash -s
 ```
@@ -52,10 +54,8 @@ And a `sample/job.yaml` file describing what's inside:
 name: adder
 owner_email: sample@example.com
 jobtype: python3:latest
-
 git:
   remote: https://github.com/TheRacetrack/racetrack
-
 jobtype_extra:
   entrypoint_path: 'entrypoint.py'
   entrypoint_class: 'Entrypoint'

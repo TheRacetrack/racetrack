@@ -1,5 +1,6 @@
 http_port: 7001
-docker_registry: kind-registry:5000
+docker_registry:
+docker_registry_namespace:
 build_logs_dir: /var/log/racetrack/image-builder/build-logs
 plugins_dir: /mnt/plugins
 lifecycle_url: http://lifecycle:7002
