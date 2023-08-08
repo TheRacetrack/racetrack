@@ -40,6 +40,8 @@ It can have the following fields in YAML format:
 - `version` (**required**) - version of the plugin
 - `url` (optional) - a link to the plugin page
 - `priority` (optional) - order in plugins sequence, lowest priority gets executed first. Integer field, 0 by default.
+- `category` (optional) - kind of the plugin, either 'infrastructure', 'job-type' or 'core'
+- `components` (optional) - list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'
 
 Example:
 ```yaml
@@ -47,6 +49,9 @@ name: skynet-watcher
 version: 1.2.3
 url: https://github.com/TheRacetrack/racetrack
 priority: -1
+category: core
+components:
+  - lifecycle
 ```
 
 ### Building a plugin
