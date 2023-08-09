@@ -52,7 +52,9 @@ def is_database_connected() -> bool:
                 return False
 
         close_old_connections()
-        connection.cursor().execute("select 1")
+        with connection.cursor() as cursor:
+            cursor.execute('select 1')
+            cursor.fetchone()
         return True
     except OperationalError:
         return False
