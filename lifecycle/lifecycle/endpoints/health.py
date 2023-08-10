@@ -61,6 +61,8 @@ def is_database_connected() -> bool:
         with connection.cursor() as cursor:
             cursor.execute('select 1')
             cursor.fetchone()
+            cursor.close()
+            cursor.connection.close()
         return True
     except CommandError:
         return False

@@ -45,5 +45,4 @@ def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
 
     return {
         'default': available_databases[django_db_type],
-        django_db_type: available_databases[django_db_type],
     }
