@@ -8,6 +8,8 @@
 Racetrack is an opinionated framework for deploying, managing, and serving
 application workloads.
 
+<video width="100%" controls="true" allowFullscreen="true" src="https://user-images.githubusercontent.com/124889668/259023408-d7b99acf-fcef-48f3-ac95-d4356c3acb0f.mp4"></video>
+
 ## Features
 
 Racetrack uses the notion of conventions to allow domain experts to produce
