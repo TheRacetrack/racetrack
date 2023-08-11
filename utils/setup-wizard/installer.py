@@ -9,7 +9,7 @@ import string
 import yaml
 from jinja2 import Template, StrictUndefined
 
-from racetrack_client.utils.shell import shell_output
+from racetrack_client.utils.shell import shell_output, shell
 from racetrack_client.log.logs import init_logs, configure_logs, get_logger
 
 logger = get_logger(__name__)
@@ -30,6 +30,12 @@ def main():
     script_path = Path(os.path.realpath(__file__))
     config_yaml = script_path.with_name('config.yaml').read_text()
     context_vars: Dict = yaml.load(config_yaml, Loader=yaml.FullLoader)
+
+    assert context_vars['registry_hostname'], "registry_hostname configuration has to be filled"
+    assert context_vars['registry_username'], "registry_username configuration has to be filled"
+    assert context_vars['read_registry_token'], "read_registry_token configuration has to be filled"
+    assert context_vars['write_registry_token'], "write_registry_token configuration has to be filled"
+    assert context_vars['your_ip'], "your_ip configuration has to be filled"
 
     if not context_vars.get('POSTGRES_PASSWORD'):
         context_vars['POSTGRES_PASSWORD'] = (password := generate_password())
@@ -54,7 +60,25 @@ def main():
     logger.info(f"Image-builder's token generated: {token}")
     context_vars['IMAGE_BUILDER_TOKEN'] = token
 
-    assert context_vars['your_ip'], "your_ip configuration has to be filled"
+    registry_hostname = context_vars['registry_hostname']
+    registry_username = context_vars['registry_username']
+    read_registry_token = context_vars['read_registry_token']
+    write_registry_token = context_vars['write_registry_token']
+    shell(f'''kubectl create secret docker-registry docker-registry-read-secret \\
+    --docker-server="{registry_hostname}" \\
+    --docker-username="{registry_username}" \\
+    --docker-password="{read_registry_token}" \\
+    --namespace=racetrack \\
+    --dry-run=client -oyaml > kustomize/generated/docker-registry-secret.yaml
+    '''.strip())
+    shell('''echo "---" >> kustomize/generated/docker-registry-secret.yaml''')
+    shell(f'''kubectl create secret docker-registry docker-registry-write-secret \\
+    --docker-server="{registry_hostname}" \\
+    --docker-username="{registry_username}" \\
+    --docker-password="{write_registry_token}" \\
+    --namespace=racetrack \\
+    --dry-run=client -oyaml >> kustomize/generated/docker-registry-secret.yaml
+    '''.strip())
 
     template_dir(templates_path, generated_path, context_vars)
     logger.info(f'resources are generated in "{generated_path}", ready to be deployed.')

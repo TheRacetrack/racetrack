@@ -6,7 +6,7 @@ read_registry_token: ''
 write_registry_token: ''
 
 # IP Address for all public services exposed by Ingress, e.g. 1.1.1.1
-your_ip: '1.1.1.1'
+your_ip: ''
 
 # Secret key for authentication tokens encryption. Leave it empty to make it auto-generated.
 # AUTH_KEY = ''

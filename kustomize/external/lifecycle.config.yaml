@@ -4,8 +4,8 @@ infrastructure_target: kubernetes
 image_builder_url: http://image-builder:7001
 internal_pub_url: http://pub:7005/pub
 external_pub_url: http://{{ your_ip }}/pub
-docker_registry:
-docker_registry_namespace:
+docker_registry: '{{ registry_hostname }}'
+docker_registry_namespace: '{{ registry_namespace }}'
 auth_required: true
 auth_debug: true
 plugins_dir: /mnt/plugins
