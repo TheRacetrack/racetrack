@@ -48,7 +48,7 @@ spec:
             - name: DEBUG
               value: 'true'
             - name: LIFECYCLE_AUTH_TOKEN
-              value: '$IMAGE_BUILDER_LIFECYCLE_AUTH_TOKEN'
+              value: '{{ IMAGE_BUILDER_TOKEN }}'
         - name: docker-engine
           image: docker:dind
           ports:
