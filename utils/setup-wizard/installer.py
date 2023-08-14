@@ -23,7 +23,7 @@ def main():
     assert templates_path.is_dir(), f"can't find directory: {templates_path}. Make sure you're in the root of the repository"
     generated_path = Path('kustomize/generated')
     if generated_path.exists():
-        logger.info('cleaning up "generated" directory')
+        logger.info('cleaning up directory "kustomize/generated"')
         shutil.rmtree(generated_path)
     generated_path.mkdir()
 
