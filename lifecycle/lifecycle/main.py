@@ -24,6 +24,7 @@ def main():
     subparser = subparsers.add_parser(
         'generate-auth', help='generate authentication token for internal components communication based on AUTH_KEY')
     subparser.add_argument('subject', help='subject (service) name')
+    subparser.add_argument('--short', action='store_true', help='print token only')
     subparser.set_defaults(func=_generate_auth_token)
 
     args: argparse.Namespace = parser.parse_args()
@@ -39,4 +40,4 @@ def _run_supervisor(_: argparse.Namespace):
 
 
 def _generate_auth_token(args: argparse.Namespace):
-    generate_service_token(args.subject)
+    generate_service_token(args.subject, args.short)
