@@ -59,7 +59,7 @@ It will be assigned after the first deployment, then you can get back to this st
 
 ## Prepare Kubernetes resources
 
-You can make adjustments in `utils/setup-wizard/config.yaml`.
+You may make adjustments in `utils/setup-wizard/config.yaml`.
 Once you're ready, let's run the installer's script `utils/setup-wizard/installer.py`
 
 This will generate the kubernetes resources, based on your configuration,
