@@ -31,11 +31,11 @@ def main():
     config_yaml = script_path.with_name('config.yaml').read_text()
     context_vars: Dict = yaml.load(config_yaml, Loader=yaml.FullLoader)
 
-    ensure_configuration(context_vars, 'registry_hostname', 'Enter Docker Registry hostname')
-    ensure_configuration(context_vars, 'registry_username', 'Enter Docker Registry username')
-    ensure_configuration(context_vars, 'read_registry_token', 'Enter token for reading Docker Registry')
-    ensure_configuration(context_vars, 'write_registry_token', 'Enter token for writing Docker Registry')
-    ensure_configuration(context_vars, 'your_ip', 'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
+    ensure_has_config_var(context_vars, 'registry_hostname', 'Enter Docker Registry hostname')
+    ensure_has_config_var(context_vars, 'registry_username', 'Enter Docker Registry username')
+    ensure_has_config_var(context_vars, 'read_registry_token', 'Enter token for reading Docker Registry')
+    ensure_has_config_var(context_vars, 'write_registry_token', 'Enter token for writing Docker Registry')
+    ensure_has_config_var(context_vars, 'your_ip', 'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
 
     if not context_vars.get('POSTGRES_PASSWORD'):
         context_vars['POSTGRES_PASSWORD'] = (password := generate_password())
@@ -51,34 +51,35 @@ def main():
 
     os.environ['AUTH_KEY'] = context_vars['AUTH_KEY']
     token = shell_output('python -m lifecycle generate-auth pub --short').strip()
-    logger.info(f"PUB's token generated: {token}")
+    logger.debug(f"PUB's token generated: {token}")
     context_vars['PUB_TOKEN'] = token
     token = shell_output('python -m lifecycle generate-auth dashboard --short').strip()
-    logger.info(f"Dashboard's token generated: {token}")
+    logger.debug(f"Dashboard's token generated: {token}")
     context_vars['DASHBOARD_TOKEN'] = token
     token = shell_output('python -m lifecycle generate-auth image-builder --short').strip()
-    logger.info(f"Image-builder's token generated: {token}")
+    logger.debug(f"Image-builder's token generated: {token}")
     context_vars['IMAGE_BUILDER_TOKEN'] = token
 
     registry_hostname = context_vars['registry_hostname']
     registry_username = context_vars['registry_username']
     read_registry_token = context_vars['read_registry_token']
     write_registry_token = context_vars['write_registry_token']
-    shell(f'''kubectl create secret docker-registry docker-registry-read-secret \\
+    registry_secrets_content = shell_output(f'''kubectl create secret docker-registry docker-registry-read-secret \\
     --docker-server="{registry_hostname}" \\
     --docker-username="{registry_username}" \\
     --docker-password="{read_registry_token}" \\
     --namespace=racetrack \\
-    --dry-run=client -oyaml > kustomize/generated/docker-registry-secret.yaml
-    '''.strip())
-    shell('''echo "---" >> kustomize/generated/docker-registry-secret.yaml''')
-    shell(f'''kubectl create secret docker-registry docker-registry-write-secret \\
+    --dry-run=client -oyaml''').strip()
+    registry_secrets_content += '\n---\n'
+    registry_secrets_content += shell_output(f'''kubectl create secret docker-registry docker-registry-write-secret \\
     --docker-server="{registry_hostname}" \\
     --docker-username="{registry_username}" \\
     --docker-password="{write_registry_token}" \\
     --namespace=racetrack \\
-    --dry-run=client -oyaml >> kustomize/generated/docker-registry-secret.yaml
-    '''.strip())
+    --dry-run=client -oyaml''').strip()
+    registry_secrets_file = generated_path / 'docker-registry-secret.yaml'
+    registry_secrets_file.write_text(registry_secrets_content)
+    logger.debug(f"encoded Docker registry secrets: {registry_secrets_file}")
 
     template_dir(templates_path, generated_path, context_vars)
     logger.info(f'resources are generated in "{generated_path}", ready to be deployed.')
@@ -107,7 +108,7 @@ def generate_password(length: int = 32) -> str:
     return ''.join(secrets.choice(alphabet) for i in range(length))
 
 
-def ensure_configuration(context_vars: Dict, config_name: str, missing_prompt: str):
+def ensure_has_config_var(context_vars: Dict, config_name: str, missing_prompt: str):
     config_value = context_vars.get(config_name)
     while not config_value:
         config_value = input(missing_prompt + ': ').strip()
