@@ -31,11 +31,11 @@ def main():
     config_yaml = script_path.with_name('config.yaml').read_text()
     context_vars: Dict = yaml.load(config_yaml, Loader=yaml.FullLoader)
 
-    assert context_vars['registry_hostname'], "registry_hostname configuration has to be filled"
-    assert context_vars['registry_username'], "registry_username configuration has to be filled"
-    assert context_vars['read_registry_token'], "read_registry_token configuration has to be filled"
-    assert context_vars['write_registry_token'], "write_registry_token configuration has to be filled"
-    assert context_vars['your_ip'], "your_ip configuration has to be filled"
+    ensure_configuration(context_vars, 'registry_hostname', 'Enter Docker Registry hostname')
+    ensure_configuration(context_vars, 'registry_username', 'Enter Docker Registry username')
+    ensure_configuration(context_vars, 'read_registry_token', 'Enter token for reading Docker Registry')
+    ensure_configuration(context_vars, 'write_registry_token', 'Enter token for writing Docker Registry')
+    ensure_configuration(context_vars, 'your_ip', 'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
 
     if not context_vars.get('POSTGRES_PASSWORD'):
         context_vars['POSTGRES_PASSWORD'] = (password := generate_password())
@@ -105,6 +105,13 @@ def template_file(src_file: Path, dst_file: Path, context_vars: Dict):
 def generate_password(length: int = 32) -> str:
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for i in range(length))
+
+
+def ensure_configuration(context_vars: Dict, config_name: str, missing_prompt: str):
+    config_value = context_vars.get(config_name)
+    while not config_value:
+        config_value = input(missing_prompt + ': ').strip()
+    context_vars[config_name] = config_value
 
 
 if __name__ == '__main__':

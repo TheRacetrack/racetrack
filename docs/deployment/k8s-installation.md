@@ -6,6 +6,13 @@ such as AKS, GKE, EKS or a self-hosted Kubernetes.
 ## Prerequisites
 
 1. Install [kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
+2. Clone this repository and activate virtual environment:
+  ```shell
+  git clone https://github.com/TheRacetrack/racetrack
+  cd racetrack
+  make setup
+  . venv/bin/activate
+  ```
 
 ## Create a Kubernetes cluster
 
@@ -30,139 +37,45 @@ Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
 `racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
-Fill in your secrets for the registry in the **kustomize/external/docker-registry-secret.yaml** file.
-Remember to replace `READ_REGISTRY_TOKEN`, `WRITE_REGISTRY_TOKEN`, `REGISTRY_HOSTNAME` and `REGISTRY_USERNAME`.
-```shell
-REGISTRY_HOSTNAME=ghcr.io
-REGISTRY_USERNAME=racetrack-registry
-READ_REGISTRY_TOKEN=blahblah
-WRITE_REGISTRY_TOKEN=blahblah
-
-kubectl create secret docker-registry docker-registry-read-secret \
-    --docker-server="$REGISTRY_HOSTNAME" \
-    --docker-username="$REGISTRY_USERNAME" \
-    --docker-password="$READ_REGISTRY_TOKEN" \
-    --namespace=racetrack \
-    --dry-run=client -oyaml > kustomize/external/docker-registry-secret.yaml
-echo "---" >> kustomize/external/docker-registry-secret.yaml
-kubectl create secret docker-registry docker-registry-write-secret \
-    --docker-server="$REGISTRY_HOSTNAME" \
-    --docker-username="$REGISTRY_USERNAME" \
-    --docker-password="$WRITE_REGISTRY_TOKEN" \
-    --namespace=racetrack \
-    --dry-run=client -oyaml >> kustomize/external/docker-registry-secret.yaml
-```
-
-Accordingly, set the registry address and namespace in these 2 configuration files:
-
-- **kustomize/external/image-builder.config.yaml**
-- **kustomize/external/lifecycle.config.yaml**
-
-by changing the following lines:
+Fill in your configuration in the installer's config `utils/setup-wizard/config.yaml`:
 ```yaml
-docker_registry: ghcr.io
-docker_registry_namespace: 'theracetrack/racetrack'
+registry_hostname: 'ghcr.io'
+registry_namespace: 'theracetrack/racetrack'
+registry_username: 'racetrack-registry'
+read_registry_token: 'READ_REGISTRY_TOKEN'
+write_registry_token: 'WRITE_REGISTRY_TOKEN'
 ```
 
-## Prepare Kubernetes resources
-
-If needed, make another adjustments in **kustomize/external/** files.
-See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
+## Static IP
 
 You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
-To do so, add the appropriate annotations to the `ingress-nginx-controller` service in a `kustomize/external/ingress-controller.yaml` file.
-
-Remember to replace all occurrences of `$YOUR_IP` with your IP address in all the places below:
-```
-YOUR_IP=1.1.1.1
-```
-
-In case of AKS, it could look like this:
+To do so, fill it in the installer's config `utils/setup-wizard/config.yaml`:
 ```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: ingress-nginx-controller
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-ipv4: $YOUR_IP
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_resource_group
-spec:
-  type: LoadBalancer
-...
+your_ip: '1.1.1.1'
 ```
 
-Now, let's make Racetrack aware of this IP address.
 If you don't know the exact IP address of the LoadBalancer, you can skip this step for now.
 It will be assigned after the first deployment, then you can get back to this step, set the IP address and apply it again.
 
-Fill in the public IP in the following places, replacing `$YOUR_IP` placeholder:
+## Prepare Kubernetes resources
 
-- `EXTERNAL_LIFECYCLE_URL` and `EXTERNAL_PUB_URL` env variables in **kustomize/external/dashboard.yaml**
-- `PUBLIC_IP` env variable in **kustomize/external/lifecycle.yaml**
-- `PUBLIC_IP` env variable in **kustomize/external/lifecycle-supervisor.yaml**
-- `external_pub_url` in **kustomize/external/lifecycle.config.yaml**
+You can make adjustments in `utils/setup-wizard/config.yaml`.
+Once you're ready, let's run the installer's script `utils/setup-wizard/installer.py`
 
-## Generate passwords & auth tokens
-
-Let's generate unique, secure passwords for the database, authentication encryption and tokens.
-
-### Database password
-```shell
-POSTGRES_PASSWORD="$(openssl rand -base64 24)"
-echo POSTGRES_PASSWORD = $POSTGRES_PASSWORD
+This will generate the kubernetes resources, based on your configuration,
+and will generate unique, secure database password, authentication secrets and tokens:
+```sh
+./utils/setup-wizard/installer.py
 ```
 
-Use the provided database password in the following places, replacing `$POSTGRES_PASSWORD` placeholder:
-
-- **kustomize/external/postgres.env**, in `POSTGRES_PASSWORD` env variable
-- **kustomize/external/pgbouncer.env**, in `DB_PASSWORD` and `DATA_SOURCE_NAME` variables
-- **kustomize/external/postgres.yaml**, in `db.sql`
-
-### Django secret
-```shell
-SECRET_KEY="django-secret-$(openssl rand -base64 24)"
-echo SECRET_KEY = $SECRET_KEY
-```
-
-Use the provided secret in the following places, replacing `$SECRET_KEY` placeholder:
-
-- **kustomize/external/lifecycle.env**, in `SECRET_KEY` env variable
-
-### Auth key
-```shell
-export AUTH_KEY="$(openssl rand -base64 24)"
-echo AUTH_KEY = $AUTH_KEY
-```
-
-Use the provided secret key in the following places, replacing `$AUTH_KEY` placeholder:
-
-- **kustomize/external/lifecycle.env**, in `AUTH_KEY` env variable
-
-### Internal tokens
-
-Now that you have `AUTH_KEY`, you can generate the tokens for components of Racetrack, 
-which will be used for their internal communication.
-
-```shell
-export AUTH_KEY
-python -m lifecycle generate-auth pub # PUB's token
-python -m lifecycle generate-auth dashboard # Dashboard's token
-python -m lifecycle generate-auth image-builder # Image-builder's token
-```
-Make sure you've run `make setup` and `. venv/bin/activate` in the root of
-[racetrack](https://github.com/TheRacetrack/racetrack)'s repository beforehand, to be able to run Lifecycle's script.
-
-Copy the tokens provided and paste them into the following files:
-
-- Replace `$PUB_LIFECYCLE_AUTH_TOKEN` in **kustomize/external/pub.yaml** with PUB's token.
-- Replace `$DASHBOARD_LIFECYCLE_AUTH_TOKEN` in **kustomize/external/dashboard.yaml** with Dashboard's token.
-- Replace `$IMAGE_BUILDER_LIFECYCLE_AUTH_TOKEN` in **kustomize/external/image-builder.yaml** with Image-builder's token.
+If needed, review and make adjustments in **kustomize/generated/** files.
+See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
 
 ## Deploy Racetrack
 
 Once you're ready, deploy Racetrack's resources to your cluster:
 ```sh
-kubectl apply -k kustomize/external/
+kubectl apply -k kustomize/generated/
 ```
 
 After that, verify the status of your deployments using one of your favorite tools:
@@ -249,7 +162,7 @@ Use one of these tools to inspect your cluster resources:
 - [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
 - [k9s](https://github.com/derailed/k9s)
 
-- Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/external`
+- Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/generated`
 
 ## Production Deployment
 
@@ -264,5 +177,5 @@ Bunch of improvements to keep in mind before deploying Racetrack to production:
 ## Clean up
 Delete the resources when you're done:
 ```shell
-kubectl delete -k kustomize/external/
+kubectl delete -k kustomize/generated/
 ```
