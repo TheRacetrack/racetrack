@@ -12,14 +12,18 @@ Kubernetes workloads.
 You write your code - say for a ML model or micro-service - in a specific style,
 you hand it over to Racetrack, and a minute later it is in production.
 
-Out of the box, Racetrack allows you to use several languages and frameworks:
+Racetrack allows you to use several languages and frameworks (provided by [installed plugins](./development/using-plugins.md)):
 
-* Standard Python 3
-* A specialized Scikit Learn format
-* Golang services
-* And for exotic edge cases, any Dockerfile-wrapped code
+* [Standard Python 3](https://github.com/TheRacetrack/plugin-python-job-type)
+* [Golang services](https://github.com/TheRacetrack/plugin-go-job-type)
+* [Rust](https://github.com/TheRacetrack/plugin-rust-job-type)
+* And for exotic edge cases, [any Dockerfile-wrapped code](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
+* [HUGO framework](https://github.com/TheRacetrack/plugin-hugo-job-type)
+* [Drupal](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/drupal)
+* [Sphinx](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/sphinx)
+* [Quake III](https://github.com/iszulcdeepsense/racetrack-quake)
 
-Racetrack can be extended to introduce new languages and frameworks.
+Racetrack can be extended to [introduce new languages and frameworks](./development/plugins-job-types.md).
 
 <video width="100%" controls="true" allowFullscreen="true" src="https://user-images.githubusercontent.com/124889668/259082064-43648168-897c-435f-b2e1-e4f8e0313d7a.mp4">
 </video>
@@ -70,11 +74,11 @@ described.
 Conventions for any Job Type are simple, easy to follow, and very few. Some
 examples are:
 
-* For the Python 3 Job Type, you must have a `Class JobEntrypoint` with a
+* For the Python 3 Job Type, you must have a `class JobEntrypoint` with a
   method `perform()` for the Python 3 function which receives input and gives
   output (e.g. receiving a vector, and returning it normalized). Racetrack will
   then know to wrap this in a HTTP server and expose it.
-* For the golang Job Type, your main function must have the following signature:
+* For the Go Job Type, your main function must have the following signature:
   `func Perform(args []interface{}, kwargs map[string]interface{}) (interface{},
   error)`.
 
@@ -84,7 +88,7 @@ this:
 
 ```python
 # file: model.py
-def AddEmUp(x, y):
+def add_em_up(x, y):
     z = x + y
 	return z
 ```
@@ -95,9 +99,9 @@ And refactored to meet the Racetrack Python 3 Job Type Convention:
 # file: job_entrypoint.py
 class JobEntrypoint:
 	def perform(self, x, y):
-		return AddEmUp(x, y)
+		return add_em_up(x, y)
 
-def AddEmUp(x, y):
+def add_em_up(x, y):
     z = x + y
 	return z
 ```
@@ -230,7 +234,7 @@ The source code ships with a range of sample Jobs; you can find them in the path
 Job.
 
 ```shell
-# Set the current Racetrack's remote address
+# Set the current Racetrack's remote address - localhost inside KinD, listening on port 7002
 racetrack set remote http://localhost:7002
 # Login to Racetrack prior to deploying a job
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
@@ -240,8 +244,7 @@ racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
 # go to the sample directory
 cd sample/python-class/
-# deploy from the current directory (.) to the Racetrack service which is
-# sitting on localhost inside KinD, listening on port 7002
+# deploy from the current directory (.) to the Racetrack service
 racetrack deploy
 ```
 
@@ -270,7 +273,7 @@ There are several ways you can interact with Racetrack and this Job:
 #### Using the Job
 
 The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
-ReST service. You can use `curl` to test this (as described in the [Job Type documentation](../sample/python-class/README.md):
+ReST service. You can use `curl` to test this:
 
 ```shell
 curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
@@ -304,13 +307,15 @@ curl "http://localhost:7005/pub/job/adder/latest/health"
 
 To see recent logs from your Job output, run `racetrack logs` command:
 ```shell
-racetrack logs . http://localhost:7002
+racetrack logs adder
 ```
 
-`racetrack logs [WORKDIR] [RACETRACK_URL]` has 2 arguments:
+`racetrack logs [NAME]` has 1 argument `NAME` (name of the job) and a couple of options:
 
-- `WORKDIR` - a place where the `job.yaml` is, by default it's current directory
-- `RACETRACK_URL` - URL address to Racetrack server, where the Job is deployed.
+- `--version VERSION` - version of the job, default is the latest one
+- `--remote REMOTE` - Racetrack server's URL or alias name.
+- `--tail LINES` - number of recent lines to show, default is 20.
+- `--follow` or `-f` - follow logs output stream
 
 #### Inspecting the Job in the Racetrack Dashboard
 
@@ -322,12 +327,12 @@ access to this, but you're testing locally so you can see it
 
 Invoke k9s on your command line and navigate to the pods view using `:pods`. Hit
 `0` to display all Kubernetes namespaces. Under the `racetrack` namespace, you
-should see `job-adder-blabla-bla`.
+should see `job-adder-v-0-0-2`.
 
 ### Authentication
 
 Racetrack requires you to authenticate with a token.
-To manage users and tokens, visit Racetrack dashboard page: http://localhost:7003/dashboard/.
+To manage users and tokens, visit [Racetrack dashboard page](http://localhost:7003/dashboard/).
 Default super user is `admin` with password `admin`.
 Once the Racetrack is started, it is recommended to create other users, and deactivate default `admin` user for security purposes.
 
@@ -409,7 +414,7 @@ Before you can deploy a job to production Racetrack server or even view the list
 of Job on RT Dashboard, you need to create user there.
 
 Visit your `https://racetrack.platform.example.com/dashboard/`
-(or local http://localhost:7003/dashboard), click link to **Register**.
+(or local [http://localhost:7003/dashboard](http://localhost:7003/dashboard)), click link to **Register**.
 Type username (an email) and password. Password will be needed to login, 
 so manage it carefully. Then notify your admin that he should activate your user.
 
@@ -418,7 +423,7 @@ There will be your user token for racetrack client CLI, along with ready command
 to login. It will look like `racetrack login <token> [--remote <remote>]`. When you
 run this, then you can finally deploy your Job.
 
-If you need, you can log out with `racetrack logout <racetrack_url>`. To check your
+If you need, you can log out with `racetrack logout [--remote <remote>]`. To check your
 logged servers, there's `racetrack get config` command.
 
 You can view the Job swagger page if you're logged to Racetrack Dashboard, on
@@ -427,7 +432,7 @@ which Job is displayed. Session is maintained through cookie.
 When viewing Job swagger page, you can run there the `/perform` method without specifying
 additional credentials, because auth data in cookie from Racetrack Dashboard is 
 used as credential. However, if you copy the code to curl in CLI like this:
-```
+```shell
 curl -X 'POST' \
   'https://racetrack.platform.example.com/pub/job/adder/0.0.1/api/v1/perform' \
   -H 'accept: application/json' \
@@ -489,7 +494,7 @@ racetrack set alias kind http://localhost:7002
 racetrack set alias docker http://localhost:7102
 ```
 
-and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy . --remote dev`.
+and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy --remote dev`.
 
 You can set the current remote with
 ```shell
@@ -499,7 +504,7 @@ and then you can omit `--remote` parameter in the next commands.
 
 ### The Job Manifest File Schema
 
-See [manifest-schema.md](manifest-schema.md)
+See [Job Manifest File Schema](manifest-schema.md)
 
 ### The Job Types
 
@@ -536,8 +541,8 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 ### Must
 
-1. You must use one of the pre-defined job types. Racetrack will error out if
-   you do not.
+1. You must use one of the pre-defined (currently installed) job types.
+   Racetrack will error out if you do not.
 
 ### Should
 
@@ -565,7 +570,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 ### May
 
 1. If you have a need which isn't covered by the currently implemented job
-   types, you may raise the need with the Racetrack developers in the GitLab
+   types, you may raise the need with the Racetrack developers in the GitHub
    issue tracker.
 
 ## FAQ
@@ -652,7 +657,7 @@ If it doesn't work, diagnostic commands:
 - `kubectl get pods` - do everything has "Running" status? If not, view logs of 
   that pod (ie. `kubectl logs <failing_pod_name>`)
 - look into `kubectl logs service/lifecycle`
-- Can you access the server at http://localhost:7002/ (in browser)?
+- Can you access the server at [http://localhost:7002](http://localhost:7002/) (in browser)?
 - `netstat -tuanpl | grep 7002` - is the port blocked by something?
 
 If you can't debug the problem yourself, please send the results of above commands
