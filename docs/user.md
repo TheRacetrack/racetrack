@@ -1,41 +1,10 @@
-# Table of Contents
+# User Guide
 
-1. [Introduction](#intro)
-    1. [What is Racetrack?](#whatisrt)
-    1. [Architecture and Terminology](#archterm)
-    1. [Conventions](#conventions)
-    1. [The Manifest](#manifest)
-    1. [Submitting a Job](#submitting)
-1. [The Racetrack Workflow](#workflow)
-1. [Tutorial](#tut)
-    1. [Prerequisites](#tut-prereq)
-    1. [Installing Racetrack Locally](#tut-install)
-    1. [Submitting a Python Class](#tut-submit)
-    1. [Testing the Resulting Job](#tut-test)
-        1. [Using the Job](#tut-test-foo)
-        1. [Checking the Job Swagger](#tut-test-swagger)
-        1. [Checking the Job Health](#tut-test-health)
-        1. [Checking Job logs](#tut-logs)
-        1. [Inspecting the Job in the Racetrack Dashboard](#tut-test-dashb)
-        1. [(optional) Inspecting the Job inside KinD Using k9s](#tut-test-k9s)
-    1. [Authentication](#tut-auth)
-    1. [Tearing it down](#tut-teardown)
-1. [Developing Your Own Jobs](#developing)
-    1. [Using a Production Racetrack](#in-prod)
-        1. [Authentication](#racetrack-authentication)
-    1. [Jobs in Private or Protected git Repositories](#repo-tokens)
-    1. [Setting aliases for Racetrack servers](#config-aliases)
-    1. [The Job Manifest File](#manifest-deep)
-    1. [The Job Types](#job-types)
-1. [Guidelines](#guide)
-1. [FAQ](#faq)
-
-
-## Introduction<a name="intro"></a>
+## Introduction
 
 ![Racetrack architecture for civilians](assets/arch-00.png)
 
-### What is Racetrack?<a name="whatisrt"></a>
+### What is Racetrack?
 
 Racetrack is a system which transforms your code to in-operation workloads, e.g.
 Kubernetes workloads.
@@ -55,7 +24,7 @@ Racetrack can be extended to introduce new languages and frameworks.
 <video width="100%" controls="true" allowFullscreen="true" src="https://user-images.githubusercontent.com/124889668/259082064-43648168-897c-435f-b2e1-e4f8e0313d7a.mp4">
 </video>
 
-### Architecture and Terminology<a name="archterm"></a>
+### Architecture and Terminology
 
 The following terms recur through this document and describe the elements and
 actions involved in using Racetrack:
@@ -80,7 +49,7 @@ To tie all of these terms together:
 > tweaked a few specific parameters for this Job Type. I **submitted** the job
 > to Racetrack, after which it was deployed as a **Job**.
 
-### Conventions<a name="conventions"></a>
+### Conventions
 
 For Racetrack to convert your Job to a Job, you have to follow a specific
 style for your Job Type: a Convention. Broadly speaking, the purpose of this
@@ -133,7 +102,7 @@ def AddEmUp(x, y):
 	return z
 ```
 
-### The Manifest<a name="manifest"></a>
+### The Manifest
 
 Having picked our Job Type and followed its Convention, the only thing we're
 missing is to inform Racetrack what Job Type we're submitting, and apply any
@@ -176,7 +145,7 @@ resources:
 Please refer to the more comprehensive section
 [The Job Manifest File](manifest-schema.md) for more detail.
 
-### Submitting a Job<a name="submitting"></a>
+### Submitting a Job
 
 Racetrack Jobs are deployed to operation; that means, they are sent off from
 your development computer to run on a server somewhere. This sending is in
@@ -188,7 +157,7 @@ command line client you can install, and which handles this Submission for you.
 When operating with Racetrack (either local instance or production server), the
 Racetrack command line client will need authentication.
 
-## The Racetrack Workflow<a name="workflow"></a>
+## The Racetrack Workflow
 
 As a Racetrack user, your workflow will typically look similar to this:
 
@@ -204,14 +173,14 @@ As a Racetrack user, your workflow will typically look similar to this:
 1. Check it by either `curl`'ing to it, looking at it in the Racetrack
    dashboard, or asking your friendly Racetrack admin.
 
-## Tutorial<a name="tut"></a>
+## Tutorial
 
 This tutorial deploys Racetrack locally on your computer in a
 [KinD](https://kind.sigs.k8s.io/) (a baby Kubernetes for testing) cluster. It is
 intended to give you the muscle memory for using a production instance of
 Racetrack, and to help you get used to the core Racetrack concepts.
 
-### Prerequisites<a name="tut-prereq"></a>
+### Prerequisites
 
 1. A workstation with a sane operating system (currently, Debian and -
    grudgingly - Ubuntu are considered sane)
@@ -221,24 +190,24 @@ Racetrack, and to help you get used to the core Racetrack concepts.
 1. bash
 1. python3 and python3-venv (Python 3.8+)
 1. [racetrack-client](https://pypi.org/project/racetrack-client/) (see section
-   [Installing Racetrack Locally](#tut-install) for installation instructions if
+   [Installing Racetrack Locally](#installing-racetrack-locally) for installation instructions if
    unsure)
 1. curl
 1. [kind](https://kind.sigs.k8s.io/)
 1. [Kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
 1. (optional) [k9s](https://github.com/derailed/k9s)
 
-### Installing Racetrack Locally<a name="tut-install"></a>
+### Installing Racetrack Locally
 
 Fetch the Racetrack sources:
 
-```bash
+```shell
 git clone https://github.com/TheRacetrack/racetrack.git
 ```
 
 Execute the following:
 
-```bash
+```shell
 # Enter the source root
 cd racetrack
 # install the command line client
@@ -254,13 +223,13 @@ Racetrack will be deployed inside it.
 
 You are ready to deploy a sample application to it.
 
-### Submitting a Python Class<a name="tut-submit"></a>
+### Submitting a Python Class
 
 The source code ships with a range of sample Jobs; you can find them in the path
 `sample/`. In this tutorial, we will be Submitting the `sample/python-class`
 Job.
 
-```bash
+```shell
 # Set the current Racetrack's remote address
 racetrack set remote http://localhost:7002
 # Login to Racetrack prior to deploying a job
@@ -288,7 +257,7 @@ fully functional and well-formed Kubernetes micro-service; our Job. Please
 examine this file [sample/python-class/adder.py](../sample/python-class/adder.py) 
 in order to understand what to expect.
 
-### Testing the Resulting Job<a name="tut-test"></a>
+### Testing the Resulting Job
 
 You now have the following running on your developer workstation:
 
@@ -298,12 +267,12 @@ You now have the following running on your developer workstation:
 
 There are several ways you can interact with Racetrack and this Job:
 
-#### Using the Job<a name="tut-test-foo"></a>
+#### Using the Job
 
 The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this (as described in the [Job Type documentation](../sample/python-class/README.md):
 
-```bash
+```shell
 curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
@@ -311,7 +280,7 @@ curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
 # Expect: 42
 ```
 
-#### Checking the Job Swagger<a name="tut-test-swagger"></a>
+#### Checking the Job Swagger
 
 Racetrack generates free [Swagger API documentation](https://swagger.io/). You
 can access it in your web browser
@@ -320,21 +289,21 @@ but first you need to authenticate in order to make requests through your browse
 Open [Dashboard page](http://localhost:7003/dashboard/) and log in with default `admin` username and `admin` password.
 That will set up a session allowing you to call Jobs.
 
-#### Checking the Job Health<a name="tut-test-health"></a>
+#### Checking the Job Health
 
 You also get a free [service health
 endpoint](https://kubernetes.io/docs/reference/using-api/health-checks/):
 
-```bash
+```shell
 curl "http://localhost:7005/pub/job/adder/latest/health"
 # Expect:
 # {"service": "job", "job_name": "adder", "status": "pass"}
 ```
 
-#### Checking Job logs<a name="tut-logs"></a>
+#### Checking Job logs
 
 To see recent logs from your Job output, run `racetrack logs` command:
-```bash
+```shell
 racetrack logs . http://localhost:7002
 ```
 
@@ -343,19 +312,19 @@ racetrack logs . http://localhost:7002
 - `WORKDIR` - a place where the `job.yaml` is, by default it's current directory
 - `RACETRACK_URL` - URL address to Racetrack server, where the Job is deployed.
 
-#### Inspecting the Job in the Racetrack Dashboard<a name="tut-test-dashb"></a>
+#### Inspecting the Job in the Racetrack Dashboard
 
 Racetrack ships with a dashboard. In production, it will be the admin who has
 access to this, but you're testing locally so you can see it
 [here](http://localhost:7003/dashboard) and you can see your adder job.
 
-#### (optional) Inspecting the Job inside KinD Using k9s<a name="tut-test-k9s"></a>
+#### (optional) Inspecting the Job inside KinD Using k9s
 
 Invoke k9s on your command line and navigate to the pods view using `:pods`. Hit
 `0` to display all Kubernetes namespaces. Under the `racetrack` namespace, you
 should see `job-adder-blabla-bla`.
 
-### Authentication<a name="tut-auth"></a>
+### Authentication
 
 Racetrack requires you to authenticate with a token.
 To manage users and tokens, visit Racetrack dashboard page: http://localhost:7003/dashboard/.
@@ -367,22 +336,22 @@ Then visit your Profile page to see your auth token.
 Authentication applies to both deploying a Job and calling it:
 
 - In order to deploy a Job (or use other management commands), run `racetrack login` command with your token in first place. For instance:
-  ```bash
+  ```shell
   racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI --remote http://localhost:7002
   ```
 - In order to call a Job (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
-  ```bash
+  ```shell
   curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
     -H "Content-Type: application/json" \
     -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
     -d '{"numbers": [40, 2]}'
   ```
 
-### Tearing it Down<a name="tut-teardown"></a>
+### Tearing it Down
 
 Assuming you are standing in the root directory of the Racetrack source code:
 
-```bash
+```shell
 # kill KinD and what it contains
 make kind-down
 # stop and remove the local testing docker registry
@@ -393,22 +362,22 @@ deactivate
 git clean -fxd
 ```
 
-## Developing Your Own Jobs<a name="developing"></a>
+## Developing Your Own Jobs
 
 These instructions will work against the local test version described in the
 [Tutorial](#tutorial) section, but are also explained such that they make sense
 against a production instance of Racetrack on a real Kubernetes cluster.
 
-You will follow the workflow described in the section [The Racetrack
-Workflow](#workflow) in both cases.
+You will follow the workflow described in the section [The Racetrack Workflow](#the-racetrack-workflow)
+in both cases.
 
-### Using a Production Racetrack<a name="in-prod"></a>
+### Using a Production Racetrack
 
 As was the case in the tutorial, you need the
 [racetrack-client](https://pypi.org/project/racetrack-client/) CLI tool
 installed. Something like this ought to work:
 
-```bash
+```shell
 python3 -m venv venv
 . venv/bin/activate
 python3 -m pip install --upgrade racetrack-client
@@ -419,13 +388,13 @@ In the case of a production cluster, the only real change will be to the `racetr
 deploy` invocations. You will need to obtain the Racetrack address instead of
 `localhost:7002`, so that:
 
-```bash
+```shell
 racetrack deploy my/awesome/job --remote http://localhost:7002
 ```
 
 becomes
 
-```bash
+```shell
 racetrack deploy my/awesome/job --remote http://racetrack.platform.example.com:12345/lifecycle
 ```
 
@@ -434,7 +403,7 @@ Other endpoints described in the tutorial will also change away from
 `https://racetrack-lifecycle.platform.example.com/`. You will need to check with
 your local Racetrack admin to get these endpoints.
 
-#### Authentication<a name="racetrack-authentication"></a>
+#### Authentication
 
 Before you can deploy a job to production Racetrack server or even view the list
 of Job on RT Dashboard, you need to create user there.
@@ -476,7 +445,7 @@ Then it won't work, because there's no auth data specified:
 You will need to include it in curl using `-H 'X-Racetrack-Auth: <token>`.
 
 
-### Jobs in Private or Protected git Repositories<a name="repo-tokens"></a>
+### Jobs in Private or Protected git Repositories
 
 As you noticed earlier, Racetrack requires in the `job.yaml` a git URL from
 which to fetch the Job source code. If this repo is private or protected, you
@@ -493,7 +462,7 @@ In both cases it has to have `read_repository` privilege.
 
 Once you have this token, you need to register it with the `racetrack` CLI tool:
 
-```bash
+```shell
 racetrack set credentials repo_url username token
 ```
 where:
@@ -504,15 +473,15 @@ where:
 - `username`: it's your gitlab account name, usually in the form of email
 - `token`: as above. Keep it secret.
 
-### Setting aliases for Racetrack servers<a name="config-aliases"></a>
+### Setting aliases for Racetrack servers
 
 You can set up aliases for Racetrack server URL addresses by issuing command:
-```bash
+```shell
 racetrack set alias ALIAS RACETRACK_URL
 ```
 
 If you operate with many environments, setting short names may come in handy. For instance:
-```bash
+```shell
 racetrack set alias dev https://racetrack.dev.platform.example.com/lifecycle
 racetrack set alias test https://racetrack.test.platform.example.com/lifecycle
 racetrack set alias prod https://racetrack.prod.platform.example.com/lifecycle
@@ -528,11 +497,11 @@ racetrack set remote RACETRACK_URL_OR_ALIAS
 ```
 and then you can omit `--remote` parameter in the next commands.
 
-### The Job Manifest File Schema<a name="manifest-deep"></a>
+### The Job Manifest File Schema
 
 See [manifest-schema.md](manifest-schema.md)
 
-### The Job Types<a name="job-types"></a>
+### The Job Types
 
 These links show how to use particular job types installed by the [plugins](./development/using-plugins.md):
 
@@ -548,18 +517,19 @@ See the [sample/](../sample) directory for more examples.
 ### Local Client Configuration
 
 The `racetrack` CLI tool maintains a configuration on your developer workstation. 
-As you saw earlier in the section on [Jobs in Private or Protected git
-Repositories](#repo-tokens) it can store Project/Personal Access Tokens.
+As you saw earlier in the section on 
+[Jobs in Private or Protected git Repositories](#jobs-in-private-or-protected-git-repositories)
+it can store Project/Personal Access Tokens.
 
 It is also possible to store the address of the Racetrack server:
 
-```bash
+```shell
 racetrack set remote http://localhost:7002
 ```
 
 Local client configuration is stored at `~/.racetrack/config.yaml`
 
-## Guidelines<a name="guide"></a>
+## Guidelines
 
 This document uses the terms may, must, should, should not, and must not in
 accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
@@ -598,7 +568,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
    types, you may raise the need with the Racetrack developers in the GitLab
    issue tracker.
 
-## FAQ<a name="faq"></a>
+## FAQ
 
 ### I've submitted a job, where can I see if it's ready?
 
@@ -662,7 +632,7 @@ but only the result from the active Job should be returned.
 ### I have other problem running Racetrack locally, please help debug.
 
 Do the following:
-```
+```shell
 make clean
 rm -rf venv
 make setup
@@ -708,7 +678,9 @@ little tweaking you should be still able to run on them.
 To build on an ARM system, you need to add the docker arm64 repositories to the 
 image_builder and lifecycle Dockerfiles so apt-get can find the docker tools for amd64. 
 You can do so by applying the following diff (save it in repo root and `git apply arm64_enable.diff`):
-```
+<details>
+  <summary>File `arm64_enable.diff`</summary>
+```diff
 diff --git a/image_builder/Dockerfile b/image_builder/Dockerfile
 index 4dddd57..110564e 100644
 --- a/image_builder/Dockerfile
@@ -737,3 +709,4 @@ index 2063911..a2e196d 100644
    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
      apt-get update -y && apt-get install -y docker-ce-cli
 ```
+</details>
