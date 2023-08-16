@@ -68,11 +68,15 @@ def decode_jwt(token: str) -> AuthTokenPayload:
 
 def generate_service_token(
     subject_name: str,
+    short: bool = False,
 ):
     auth_secret_key = os.environ.get('AUTH_KEY')
     assert auth_secret_key, 'fill AUTH_KEY var with your secret key'
     token = generate_internal_token(subject_name, auth_secret_key, scopes=[AuthScope.FULL_ACCESS])
-    print(f'Service: {subject_name}\nLIFECYCLE_AUTH_TOKEN:\n{token}\n')
+    if short:
+        print(token)
+    else:
+        print(f'Service: {subject_name}\nLIFECYCLE_AUTH_TOKEN:\n{token}\n')
 
 
 def generate_internal_token(

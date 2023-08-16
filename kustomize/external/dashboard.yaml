@@ -38,9 +38,9 @@ spec:
             - name: LIFECYCLE_URL
               value: 'http://lifecycle:7002/lifecycle'
             - name: EXTERNAL_LIFECYCLE_URL
-              value: 'http://$YOUR_IP/lifecycle'
+              value: 'http://{{ your_ip }}/lifecycle'
             - name: EXTERNAL_PUB_URL
-              value: 'http://$YOUR_IP/pub'
+              value: 'http://{{ your_ip }}/pub'
             - name: DJANGO_DEBUG
               value: 'true'
             - name: AUTH_REQUIRED
@@ -48,7 +48,7 @@ spec:
             - name: DASHBOARD_PORT
               value: '7003'
             - name: LIFECYCLE_AUTH_TOKEN
-              value: '$DASHBOARD_LIFECYCLE_AUTH_TOKEN'
+              value: '{{ DASHBOARD_TOKEN }}'
             - name: SITE_NAME
               value: 'dev'
             - name: PUBLIC_IP
