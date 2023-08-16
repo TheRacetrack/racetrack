@@ -3,15 +3,12 @@ import subprocess
 import time
 from pathlib import Path
 
-command_delay_before: float = 0.6
-command_delay_after: float = 0.3
 ESCAPE = '\x1B'
 
 
 def type_text(txt: str, key_delay: float = 0.2):
     for character in txt:
-        character = character.replace('\\', '\\\\')
-        character = character.replace('"', '\\"')
+        character = character.replace('\\', '\\\\').replace('"', '\\"')
         if character == '\n':
             shell('xdotool key Return')
         elif character == ESCAPE:
@@ -27,9 +24,9 @@ def type_file(filepath: str):
 
 def type_command(line: str, key_delay: float = 0.2):
     type_text(line, key_delay)
-    time.sleep(command_delay_before)
+    time.sleep(0.6)
     type_text('\n', key_delay)
-    time.sleep(command_delay_after)
+    time.sleep(0.3)
 
 
 def countdown():
@@ -41,5 +38,3 @@ def countdown():
 
 def shell(cmd: str):
     subprocess.Popen(cmd, shell=True).wait()
-
-
