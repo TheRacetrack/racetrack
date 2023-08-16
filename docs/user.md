@@ -52,6 +52,9 @@ Out of the box, Racetrack allows you to use several languages and frameworks:
 
 Racetrack can be extended to introduce new languages and frameworks.
 
+<video width="100%" controls="true" allowFullscreen="true" src="https://user-images.githubusercontent.com/124889668/259082064-43648168-897c-435f-b2e1-e4f8e0313d7a.mp4">
+</video>
+
 ### Architecture and Terminology<a name="archterm"></a>
 
 The following terms recur through this document and describe the elements and
