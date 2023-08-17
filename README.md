@@ -31,18 +31,18 @@ What distinguishes Racetrack is:
 - **Server-side building**. Code is transformed into a microservice without your computer being involved.
 - You only supply your **function's logic**. No need to write repetitive API code, setting up 
   webservers, creating dockerfiles, kubernetes YAMLs, and more. Racetrack takes care of that for you.
-- Support for **multiple job versions**
 - **Language agnostic**. Deploy code written in Python 3, Go, Rust,
-  or anything else encapsulated in a Dockerfile
+  or anything else encapsulated in a Dockerfile.
 - **Infrastructure independent**. Deploy to either a Kubernetes cluster
   or a Docker environment in a single transparent step.
-- **Customizable through plugins**
-- **Immutable jobs**, ensuring reproducibility
-- **Ready-to-use tools** right from the start: web endpoints, API documentation,
+- **Multiple job versions, immutable by design**. Immutable things tend to be more reliable.
+- **Customizable through plugins**,
+- **Reproducible jobs**. Racetrack ensures that anyone else can deploy the same job effortlessly.
+- **Out-of-the-box tools**: web endpoints, API documentation,
   metrics, monitoring, tracing, and more.
-- **Production readiness** - authentication tokens, permissions management
-- Released under a **permissive open-source license**
-- Suitable for both **on-premises and cloud** environments
+- **Production readiness**: authentication tokens, permissions management, scalability,
+- Released under a **permissive open-source license**,
+- Suitable for both **on-premises and cloud** environments.
 
 ## Example usage
 

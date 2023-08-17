@@ -90,7 +90,7 @@ curl -X POST "http://localhost:7105/pub/job/adder/latest/api/v1/perform" \
 
 ## 6. Clean up
 
-Tear down all the components:
+Tear down all the components with a [quickstart-down.sh script](https://github.com/TheRacetrack/racetrack/blob/master/utils/quickstart-down.sh):
 ```shell
 curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-down.sh | bash -s
 ```
