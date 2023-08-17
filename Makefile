@@ -217,6 +217,9 @@ docker-clean-job:
 registry:
 	./utils/setup-registry.sh
 
+registry-down:
+	docker rm -f kind-registry || true
+
 kind-cluster-up: registry
 	kind create cluster --name racetrack --config utils/kind-config.yaml || true
 	kind get clusters | grep -q 'racetrack' # make sure cluster exists
