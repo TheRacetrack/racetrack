@@ -39,11 +39,11 @@ func ListenAndServe(cfg *Config) error {
 			proxyEndpoint(c, cfg)
 		})
 
-		router.Any(baseUrl+"/peer/forward/:job/:version/*path", func(c *gin.Context) {
-			peerForwardEndpoint(c, cfg)
+		router.Any(baseUrl+"/gateway/forward/:job/:version/*path", func(c *gin.Context) {
+			remoteGatewayEndpoint(c, cfg)
 		})
-		router.Any(baseUrl+"/peer/forward/:job/:version", func(c *gin.Context) {
-			peerForwardEndpoint(c, cfg)
+		router.Any(baseUrl+"/gateway/forward/:job/:version", func(c *gin.Context) {
+			remoteGatewayEndpoint(c, cfg)
 		})
 
 		router.GET(baseUrl+"/live", liveEndpoint)

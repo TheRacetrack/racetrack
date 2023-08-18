@@ -17,8 +17,8 @@ type Config struct {
 	RequestTracingHeader  string `env:"REQUEST_TRACING_HEADER" envDefault:"X-Request-Tracing-Id"`
 	CallerNameHeader      string `env:"CALLER_NAME_HEADER" envDefault:"X-Caller-Name"`
 	OpenTelemetryEndpoint string `env:"OPENTELEMETRY_ENDPOINT" envDefault:""`
-	PeerMode              bool   `env:"PEER_MODE" envDefault:"false"`
-	PeerAuthKey           string `env:"PEER_AUTH_KEY" envDefault:""`
+	RemoteGatewayMode     bool   `env:"REMOTE_GATEWAY_MODE" envDefault:"false"`
+	RemoteGatewayToken    string `env:"REMOTE_GATEWAY_TOKEN" envDefault:""`
 }
 
 func LoadConfig() (*Config, error) {

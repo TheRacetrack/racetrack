@@ -9,17 +9,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-const RemoteInfraTokenHeader = "X-Racetrack-Peer-Token"
+const RemoteGatewayTokenHeader = "X-Racetrack-Gateway-Token"
 const JobInternalNameHeader = "X-Racetrack-Job-Internal-Name"
 
-func peerForwardEndpoint(c *gin.Context, cfg *Config) {
+func remoteGatewayEndpoint(c *gin.Context, cfg *Config) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
 
 	logger.Info("Incoming forwarding request from master PUB", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handlePeerForwardRequest(c, cfg, logger, requestId)
+	statusCode, err := handleRemoteGatewayRequest(c, cfg, logger, requestId)
 	if err != nil {
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
@@ -35,14 +35,14 @@ func peerForwardEndpoint(c *gin.Context, cfg *Config) {
 	}
 }
 
-func handlePeerForwardRequest(
+func handleRemoteGatewayRequest(
 	c *gin.Context,
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
 ) (int, error) {
 
-	if !cfg.PeerMode {
+	if !cfg.RemoteGatewayMode {
 		return http.StatusUnauthorized, errors.New("Forwarding endpoint is only available in peer mode")
 	}
 
@@ -60,11 +60,11 @@ func handlePeerForwardRequest(
 		return http.StatusBadRequest, errors.New("Couldn't extract job version")
 	}
 
-	pubAuthToken := c.Request.Header.Get(RemoteInfraTokenHeader)
+	pubAuthToken := c.Request.Header.Get(RemoteGatewayTokenHeader)
 	if pubAuthToken == "" {
-		return http.StatusUnauthorized, errors.Errorf("Peer PUB expects %s header", RemoteInfraTokenHeader)
+		return http.StatusUnauthorized, errors.Errorf("Peer PUB expects %s header", RemoteGatewayTokenHeader)
 	}
-	if pubAuthToken != cfg.PeerAuthKey {
+	if pubAuthToken != cfg.RemoteGatewayToken {
 		return http.StatusUnauthorized, errors.New("Peer PUB token is invalid")
 	}
 

@@ -100,12 +100,12 @@ func handleProxyRequest(
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
-	if jobCall.RemoteInfrastructure != nil {
-		// Forward call to Peer PUB on the remote infrastructure
-		urlStr := JoinURL(*jobCall.RemoteInfrastructure, "/pub/peer/forward/", job.Name, job.Version, jobPath)
+	if jobCall.RemoteGatewayUrl != nil {
+		// Forward call to remote infrastructure through PUB gateway
+		urlStr := JoinURL(*jobCall.RemoteGatewayUrl, "/pub/gateway/forward/", job.Name, job.Version, jobPath)
 
-		if jobCall.RemoteInfraToken != nil {
-			c.Request.Header.Set(RemoteInfraTokenHeader, *jobCall.RemoteInfraToken)
+		if jobCall.RemoteGatewayToken != nil {
+			c.Request.Header.Set(RemoteGatewayTokenHeader, *jobCall.RemoteGatewayToken)
 		}
 		c.Request.Header.Set(JobInternalNameHeader, job.InternalName)
 
@@ -115,9 +115,9 @@ func handleProxyRequest(
 		}
 
 		logger.Info("Forwarding call to remote infrastructure", log.Ctx{
-			"infrastructureTarget": jobCall.RemoteInfrastructure,
-			"targetUrl":            urlStr,
-			"jobInternalName":      job.InternalName,
+			"infrastructureTargetUrl": jobCall.RemoteGatewayUrl,
+			"targetUrl":               urlStr,
+			"jobInternalName":         job.InternalName,
 		})
 
 		ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName)

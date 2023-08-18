@@ -9,10 +9,10 @@ import (
 )
 
 type JobCallAuthData struct {
-	Job                  *JobDetails `json:"job"`
-	Caller               *string     `json:"caller"`
-	RemoteInfrastructure *string     `json:"remote_infrastructure"`
-	RemoteInfraToken     *string     `json:"remote_infra_token"`
+	Job                *JobDetails `json:"job"`
+	Caller             *string     `json:"caller"`
+	RemoteGatewayUrl   *string     `json:"remote_gateway_url"`
+	RemoteGatewayToken *string     `json:"remote_gateway_token"`
 }
 
 type JobDetails struct {

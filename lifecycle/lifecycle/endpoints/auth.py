@@ -8,12 +8,14 @@ from lifecycle.auth.cookie import set_auth_token_cookie
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, get_description_from_auth_subject, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
+from lifecycle.deployer.infra_target import InfrastructureTarget
 from lifecycle.django.registry import models
 from lifecycle.job import models_registry
 from lifecycle.job.dto_converter import job_model_to_dto
 from lifecycle.job.esc import read_esc_model
 from lifecycle.job.models_registry import read_job_family_model
 from lifecycle.job.public_endpoints import read_job_model_public_endpoints
+from lifecycle.server.cache import LifecycleCache
 from racetrack_client.log.exception import log_exception
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_client.log.logs import get_logger
@@ -69,8 +71,8 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
     class JobCallAuthData(BaseModel):
         job: JobDto
         caller: str | None
-        remote_infrastructure: str | None  # URL to remote PUB gateway
-        remote_infra_token: str | None
+        remote_gateway_url: str | None  # URL to remote PUB gateway
+        remote_gateway_token: str | None
 
     @api.get('/auth/can-call-job/{job_name}/{job_version}/{endpoint:path}', response_model=JobCallAuthData)
     def _auth_can_call_job_endpoint(
@@ -90,7 +92,14 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             auth_subject = _authorize_job_caller(job_model, endpoint, request)
             caller = get_description_from_auth_subject(auth_subject) if auth_subject else None
             job = job_model_to_dto(job_model, config)
-            return JobCallAuthData(job=job, caller=caller)
+            auth_data = JobCallAuthData(job=job, caller=caller)
+
+            infrastructure: InfrastructureTarget = LifecycleCache.infrastructure_targets.get(job.infrastructure_target)
+            if infrastructure is not None:
+                auth_data.remote_gateway_url = infrastructure.remote_gateway_url
+                auth_data.remote_gateway_token = infrastructure.remote_gateway_token
+
+            return auth_data
 
         except UnauthorizedError as e:
             msg = e.describe(debug=config.auth_debug)

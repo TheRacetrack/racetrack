@@ -12,9 +12,12 @@ from racetrack_client.manifest.manifest import Manifest
 
 
 class InfrastructureTarget(BaseModel, arbitrary_types_allowed=True):
+    name: str
     job_deployer: JobDeployer
     job_monitor: JobMonitor
     logs_streamer: LogsStreamer
+    remote_gateway_url: str | None = None
+    remote_gateway_token: str | None = None
 
 
 def determine_infrastructure_name(

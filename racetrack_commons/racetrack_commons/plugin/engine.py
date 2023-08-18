@@ -23,9 +23,10 @@ LAST_CHANGE_FILE = 'last-change.txt'
 
 
 class PluginEngine:
-    def __init__(self, plugins_dir: str | None = None):
+    def __init__(self, plugins_dir: str | None = None, on_reload: Callable[['PluginEngine'], None] | None = None):
         self.plugins_data: list[PluginData] = []
         self.last_change_timestamp: int = 0
+        self.on_reload: Callable[['PluginEngine'], None] | None = on_reload
         if plugins_dir:
             self.plugins_dir: str = plugins_dir
             try:
@@ -45,6 +46,8 @@ class PluginEngine:
                 logger.info(f'{len(self.plugins_data)} {plugin_plural} have been loaded in {duration:.2f}s: {plugins_list_str}')
             else:
                 logger.info(f'No plugins to load')
+        if self.on_reload is not None:
+            self.on_reload(self)
 
     def invoke_plugin_hook(self, function: Callable, *args, **kwargs) -> list[Any]:
         """
