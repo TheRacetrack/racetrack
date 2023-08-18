@@ -69,6 +69,8 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
     class JobCallAuthData(BaseModel):
         job: JobDto
         caller: str | None
+        remote_infrastructure: str | None  # URL to remote PUB gateway
+        remote_infra_token: str | None
 
     @api.get('/auth/can-call-job/{job_name}/{job_version}/{endpoint:path}', response_model=JobCallAuthData)
     def _auth_can_call_job_endpoint(

@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const PeerAuthHeader = "X-Racetrack-PUB-Auth"
+const RemoteInfraTokenHeader = "X-Racetrack-Peer-Token"
 const JobInternalNameHeader = "X-Racetrack-Job-Internal-Name"
 
 func peerForwardEndpoint(c *gin.Context, cfg *Config) {
@@ -60,9 +60,9 @@ func handlePeerForwardRequest(
 		return http.StatusBadRequest, errors.New("Couldn't extract job version")
 	}
 
-	pubAuthToken := c.Request.Header.Get(PeerAuthHeader)
+	pubAuthToken := c.Request.Header.Get(RemoteInfraTokenHeader)
 	if pubAuthToken == "" {
-		return http.StatusUnauthorized, errors.Errorf("Peer PUB expects %s header", PeerAuthHeader)
+		return http.StatusUnauthorized, errors.Errorf("Peer PUB expects %s header", RemoteInfraTokenHeader)
 	}
 	if pubAuthToken != cfg.PeerAuthKey {
 		return http.StatusUnauthorized, errors.New("Peer PUB token is invalid")

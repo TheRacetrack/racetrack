@@ -9,8 +9,10 @@ import (
 )
 
 type JobCallAuthData struct {
-	Job    *JobDetails `json:"job"`
-	Caller *string     `json:"caller"`
+	Job                  *JobDetails `json:"job"`
+	Caller               *string     `json:"caller"`
+	RemoteInfrastructure *string     `json:"remote_infrastructure"`
+	RemoteInfraToken     *string     `json:"remote_infra_token"`
 }
 
 type JobDetails struct {

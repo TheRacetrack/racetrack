@@ -77,39 +77,52 @@ func handleProxyRequest(
 	var callerName string
 	var err error
 
-	if cfg.AuthRequired {
-		jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
-		if err == nil {
-			job = jobCall.Job
-			if jobCall.Caller != nil {
-				callerName = *jobCall.Caller
-			}
-			metricAuthSuccessful.Inc()
-		} else {
-			metricAuthFailed.Inc()
-			if errors.As(err, &AuthenticationFailure{}) {
-				if cfg.AuthDebug {
-					return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
-				} else {
-					return http.StatusUnauthorized, errors.New("Unauthenticated")
-				}
-			} else if errors.As(err, &NotFoundError{}) {
-				return http.StatusNotFound, errors.Wrap(err, "Job was not found")
-			}
-			return http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
+	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
+	if err == nil {
+		job = jobCall.Job
+		if jobCall.Caller != nil {
+			callerName = *jobCall.Caller
 		}
-
+		metricAuthSuccessful.Inc()
 	} else {
-		job, err = lifecycleClient.GetJobDetails(jobName, jobVersion)
-		if err != nil {
-			if errors.As(err, &NotFoundError{}) {
-				return http.StatusNotFound, errors.Wrap(err, "Not found")
+		metricAuthFailed.Inc()
+		if errors.As(err, &AuthenticationFailure{}) {
+			if cfg.AuthDebug {
+				return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+			} else {
+				return http.StatusUnauthorized, errors.New("Unauthenticated")
 			}
-			return http.StatusInternalServerError, errors.Wrap(err, "failed to get Job details")
+		} else if errors.As(err, &NotFoundError{}) {
+			return http.StatusNotFound, errors.Wrap(err, "Job was not found")
 		}
+		return http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
 	}
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
+
+	if jobCall.RemoteInfrastructure != nil {
+		// Forward call to Peer PUB on the remote infrastructure
+		urlStr := JoinURL(*jobCall.RemoteInfrastructure, "/pub/peer/forward/", job.Name, job.Version, jobPath)
+
+		if jobCall.RemoteInfraToken != nil {
+			c.Request.Header.Set(RemoteInfraTokenHeader, *jobCall.RemoteInfraToken)
+		}
+		c.Request.Header.Set(JobInternalNameHeader, job.InternalName)
+
+		targetUrl, err := url.Parse(urlStr)
+		if err != nil {
+			return http.StatusInternalServerError, errors.Wrap(err, "Parsing remote infrastructure address")
+		}
+
+		logger.Info("Forwarding call to remote infrastructure", log.Ctx{
+			"infrastructureTarget": jobCall.RemoteInfrastructure,
+			"targetUrl":            urlStr,
+			"jobInternalName":      job.InternalName,
+		})
+
+		ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName)
+		return 200, nil
+	}
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
