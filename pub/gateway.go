@@ -43,7 +43,7 @@ func handleRemoteGatewayRequest(
 ) (int, error) {
 
 	if !cfg.RemoteGatewayMode {
-		return http.StatusUnauthorized, errors.New("Forwarding endpoint is only available in peer mode")
+		return http.StatusUnauthorized, errors.New("Forwarding endpoint is only available in remote gateway mode")
 	}
 
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
@@ -60,12 +60,12 @@ func handleRemoteGatewayRequest(
 		return http.StatusBadRequest, errors.New("Couldn't extract job version")
 	}
 
-	pubAuthToken := c.Request.Header.Get(RemoteGatewayTokenHeader)
-	if pubAuthToken == "" {
-		return http.StatusUnauthorized, errors.Errorf("Peer PUB expects %s header", RemoteGatewayTokenHeader)
+	gatewayToken := c.Request.Header.Get(RemoteGatewayTokenHeader)
+	if gatewayToken == "" {
+		return http.StatusUnauthorized, errors.Errorf("PUB gateway expects %s header", RemoteGatewayTokenHeader)
 	}
-	if pubAuthToken != cfg.RemoteGatewayToken {
-		return http.StatusUnauthorized, errors.New("Peer PUB token is invalid")
+	if gatewayToken != cfg.RemoteGatewayToken {
+		return http.StatusUnauthorized, errors.New("PUB gateway token is invalid")
 	}
 
 	jobInternalName := c.Request.Header.Get(JobInternalNameHeader)
