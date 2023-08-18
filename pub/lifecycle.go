@@ -14,14 +14,15 @@ type JobCallAuthData struct {
 }
 
 type JobDetails struct {
-	Id           string      `json:"id"`
-	Name         string      `json:"name"`
-	Version      string      `json:"version"`
-	Status       string      `json:"status"`
-	CreateTime   int         `json:"create_time"`
-	UpdateTime   int         `json:"update_time"`
-	Manifest     interface{} `json:"manifest"`
-	InternalName string      `json:"internal_name"`
+	Id                   string      `json:"id"`
+	Name                 string      `json:"name"`
+	Version              string      `json:"version"`
+	Status               string      `json:"status"`
+	CreateTime           int         `json:"create_time"`
+	UpdateTime           int         `json:"update_time"`
+	Manifest             interface{} `json:"manifest"`
+	InternalName         string      `json:"internal_name"`
+	InfrastructureTarget string      `json:"infrastructure_target"`
 }
 
 type lifecycleErrorResponse struct {
