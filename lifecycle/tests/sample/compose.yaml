@@ -7,5 +7,4 @@ docker_registry: localhost:5000
 auth_debug: true
 auth_required: true
 plugins_dir: /mnt/plugins
-infrastructure_target: docker
 allow_job_overwrite: true
