@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.db import connection, close_old_connections
 from django.db.utils import OperationalError
+from django.db.backends.postgresql.base import DatabaseWrapper
 from prometheus_client import Counter, Gauge
 from prometheus_client.core import REGISTRY
 from prometheus_client.registry import Collector
@@ -52,7 +53,11 @@ def is_database_connected() -> bool:
                 return False
 
         close_old_connections()
-        connection.cursor().execute("select 1")
+        with connection.cursor() as cursor:
+            cursor.execute('select 1')
+            cursor.fetchone()
+            cursor.close()
+        connection.close()
         return True
     except OperationalError:
         return False

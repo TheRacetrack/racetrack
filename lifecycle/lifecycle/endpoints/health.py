@@ -58,7 +58,11 @@ def is_database_connected() -> bool:
             shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False)
 
         close_old_connections()
-        connection.cursor().execute("select 1")
+        with connection.cursor() as cursor:
+            cursor.execute('select 1')
+            cursor.fetchone()
+            cursor.close()
+        connection.close()
         return True
     except CommandError:
         return False
