@@ -88,3 +88,8 @@ func TestJoinURL(t *testing.T) {
 	url := JoinURL(base, "/api/v1/escs/", "1")
 	assert.Equal(t, "http://localhost:7002/lifecycle/api/v1/escs/1", url)
 }
+
+func TestJoinURLWithTrailingSlash(t *testing.T) {
+	url := JoinURL("http://localhost/", "/pub/job/adder/latest/")
+	assert.Equal(t, "http://localhost/pub/job/adder/latest/", url)
+}

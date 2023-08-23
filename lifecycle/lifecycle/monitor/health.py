@@ -9,6 +9,7 @@ def check_until_job_is_operational(
     base_url: str,
     deployment_timestamp: int = 0,
     on_job_alive: Callable = None,
+    headers: dict[str, str] | None = None,
 ):
     """
     Check liveness and readiness of a Job in a multi-stage manner:
@@ -20,22 +21,23 @@ def check_until_job_is_operational(
     If set to zero, checking version is skipped.
     :param on_job_alive: handler called when Job is live, but not ready yet
     (server running already, but still initializing)
+    :param headers: headers to include when making a request
     :raise RuntimeError in case of failure
     """
-    response = wait_until_job_is_alive(base_url, deployment_timestamp)
+    response = wait_until_job_is_alive(base_url, deployment_timestamp, headers)
     _validate_live_response(response)
     if on_job_alive:
         on_job_alive()
-    wait_until_job_is_ready(base_url)
+    wait_until_job_is_ready(base_url, headers)
 
 
 # this can have long timeout since any potential malfunction in here is not related to a model/entrypoint
 # but the cluster errors that shouldn't happen usually
 @backoff.on_exception(backoff.fibo, RuntimeError, max_value=3, max_time=360, jitter=None, logger=None)
-def wait_until_job_is_alive(base_url: str, expected_deployment_timestamp: int) -> Response:
+def wait_until_job_is_alive(base_url: str, expected_deployment_timestamp: int, headers: dict[str, str] | None = None) -> Response:
     """Wait until Job resource (pod or container) is up. This catches internal cluster errors"""
     try:
-        response = Requests.get(f'{base_url}/live', timeout=3)
+        response = Requests.get(f'{base_url}/live', headers=headers, timeout=3)
     except RequestError as e:
         raise RuntimeError(f"Cluster error: can't reach Job: {e}")
 
@@ -50,14 +52,14 @@ def wait_until_job_is_alive(base_url: str, expected_deployment_timestamp: int) -
 
 
 @backoff.on_exception(backoff.fibo, TimeoutError, max_value=3, max_time=10 * 60, jitter=None, logger=None)
-def wait_until_job_is_ready(base_url: str):
-    response = Requests.get(f'{base_url}/ready', timeout=3)
+def wait_until_job_is_ready(base_url: str, headers: dict[str, str] | None = None):
+    response = Requests.get(f'{base_url}/ready', headers=headers, timeout=3)
     if response.status_code == 200:
         return
     if response.status_code == 404:
         raise RuntimeError('Job health error: readiness endpoint not found')
 
-    response = Requests.get(f'{base_url}/live', timeout=3)
+    response = Requests.get(f'{base_url}/live', headers=headers, timeout=3)
     _validate_live_response(response)
 
     raise TimeoutError('Job initialization timed out')
@@ -78,20 +80,21 @@ def _validate_live_response(response: Response):
     raise RuntimeError(f'Job liveness error: {response.status_code} {response.status_reason}')
 
 
-def quick_check_job_condition(base_url: str):
+def quick_check_job_condition(base_url: str, headers: dict[str, str] | None = None):
     """
     Quick check (1 attempt) if Job is live and ready.
     :param base_url: url of Job home page
+    :param headers: headers to include when making a request
     :raise RuntimeError in case of failure
     """
     try:
-        response = Requests.get(f'{base_url}/live', timeout=3)
+        response = Requests.get(f'{base_url}/live', headers=headers, timeout=3)
     except RequestError as e:
         raise RuntimeError(f"Cluster error: can't reach Job: {e}")
     _validate_live_response(response)
 
     try:
-        response = Requests.get(f'{base_url}/ready', timeout=3)
+        response = Requests.get(f'{base_url}/ready', headers=headers, timeout=3)
     except RequestError as e:
         raise RuntimeError(f"Cluster error: can't reach Job: {e}")
     if response.status_code == 200:

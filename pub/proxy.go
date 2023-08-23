@@ -14,7 +14,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func proxyEndpoint(c *gin.Context, cfg *Config) {
+func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	startTime := time.Now()
 
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
@@ -23,7 +23,7 @@ func proxyEndpoint(c *gin.Context, cfg *Config) {
 	})
 
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleProxyRequest(c, cfg, logger, requestId)
+	statusCode, err := handleProxyRequest(c, cfg, logger, requestId, jobPath)
 	if err != nil {
 		metricJobProxyRequestErros.Inc()
 		errorStr := err.Error()
@@ -46,6 +46,7 @@ func handleProxyRequest(
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
+	jobPath string,
 ) (int, error) {
 
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
@@ -67,8 +68,6 @@ func handleProxyRequest(
 		return http.StatusBadRequest, errors.New("Missing 'Accept' header. " +
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
-
-	jobPath := c.Param("path")
 
 	authToken := getAuthFromHeaderOrCookie(c.Request)
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
@@ -115,7 +114,8 @@ func handleProxyRequest(
 		}
 
 		logger.Info("Forwarding call to remote infrastructure", log.Ctx{
-			"infrastructureTargetUrl": jobCall.RemoteGatewayUrl,
+			"infrastructureTarget":    job.InfrastructureTarget,
+			"infrastructureTargetUrl": *jobCall.RemoteGatewayUrl,
 			"targetUrl":               urlStr,
 			"jobInternalName":         job.InternalName,
 		})

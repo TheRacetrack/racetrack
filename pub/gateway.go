@@ -12,14 +12,14 @@ import (
 const RemoteGatewayTokenHeader = "X-Racetrack-Gateway-Token"
 const JobInternalNameHeader = "X-Racetrack-Job-Internal-Name"
 
-func remoteGatewayEndpoint(c *gin.Context, cfg *Config) {
+func remoteGatewayEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
 
 	logger.Info("Incoming forwarding request from master PUB", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleRemoteGatewayRequest(c, cfg, logger, requestId)
+	statusCode, err := handleRemoteGatewayRequest(c, cfg, logger, requestId, jobPath)
 	if err != nil {
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
@@ -40,6 +40,7 @@ func handleRemoteGatewayRequest(
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
+	jobPath string,
 ) (int, error) {
 
 	if !cfg.RemoteGatewayMode {
@@ -77,7 +78,16 @@ func handleRemoteGatewayRequest(
 	}
 	callerName := c.Request.Header.Get(cfg.CallerNameHeader)
 
-	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
+	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
+	targetUrl := TargetURL(cfg, job, urlPath)
+
+	logger.Debug("Forwarding request to job", log.Ctx{
+		"jobName":         jobName,
+		"jobVersion":      jobVersion,
+		"jobInternalName": jobInternalName,
+		"targetUrl":       targetUrl.String(),
+	})
+
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
 	return 200, nil
 }

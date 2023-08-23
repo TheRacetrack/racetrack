@@ -26,24 +26,24 @@ func ListenAndServe(cfg *Config) error {
 	for _, baseUrl := range baseUrls {
 		// Backwards compatability endpoints
 		router.Any(baseUrl+"/fatman/:job/:version/*path", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "/"+c.Param("path"))
 		})
 		router.Any(baseUrl+"/fatman/:job/:version", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "")
 		})
 
 		router.Any(baseUrl+"/job/:job/:version/*path", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "/"+c.Param("path"))
 		})
 		router.Any(baseUrl+"/job/:job/:version", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "")
 		})
 
 		router.Any(baseUrl+"/gateway/forward/:job/:version/*path", func(c *gin.Context) {
-			remoteGatewayEndpoint(c, cfg)
+			remoteGatewayEndpoint(c, cfg, "/"+c.Param("path"))
 		})
 		router.Any(baseUrl+"/gateway/forward/:job/:version", func(c *gin.Context) {
-			remoteGatewayEndpoint(c, cfg)
+			remoteGatewayEndpoint(c, cfg, "")
 		})
 
 		router.GET(baseUrl+"/live", liveEndpoint)
