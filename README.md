@@ -30,7 +30,7 @@ What distinguishes Racetrack is:
 
 - **Server-side building**. Code is transformed into a microservice without your computer being involved.
 - You only supply your **function's logic**. No need to write repetitive API code, setting up 
-  webservers, creating dockerfiles, kubernetes YAMLs, and more. Racetrack takes care of that for you.
+  webservers, creating dockerfiles, kubernetes YAMLs, and so on. Racetrack takes care of that for you.
 - **Language agnostic**. Deploy code written in Python 3, Go, Rust,
   or anything else encapsulated in a Dockerfile.
 - **Infrastructure independent**. Deploy to either a Kubernetes cluster
