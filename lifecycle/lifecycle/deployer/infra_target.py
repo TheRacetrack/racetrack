@@ -12,7 +12,7 @@ from racetrack_client.manifest.manifest import Manifest
 
 
 class InfrastructureTarget(BaseModel, arbitrary_types_allowed=True):
-    name: str
+    name: str | None = None
     job_deployer: JobDeployer
     job_monitor: JobMonitor
     logs_streamer: LogsStreamer
