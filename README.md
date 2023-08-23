@@ -40,7 +40,7 @@ What distinguishes Racetrack is:
 - **Reproducible jobs**. Racetrack ensures that anyone else can deploy the same job effortlessly.
 - **Out-of-the-box tools**: web endpoints, API documentation,
   metrics, monitoring, tracing, and more.
-- **Production readiness**: authentication tokens, permissions management, scalability,
+- **Production readiness**: authentication tokens, permissions management, scalability
 - Released under a **permissive open-source license**,
 - Suitable for both **on-premises and cloud** environments.
 
