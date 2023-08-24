@@ -35,12 +35,11 @@ What distinguishes Racetrack is:
   or anything else encapsulated in a Dockerfile.
 - **Infrastructure independent**. Deploy to either a Kubernetes cluster
   or a Docker environment in a single transparent step.
-- **Multiple job versions, immutable by design**. Immutable things tend to be more reliable.
 - **Customizable through plugins**,
+- **Immutable jobs**
 - **Reproducible jobs**. Racetrack ensures that anyone else can deploy the same job effortlessly.
 - **Out-of-the-box tools**: web endpoints, API documentation,
   metrics, monitoring, tracing, and more.
-- **Production readiness**: authentication tokens, permissions management, scalability
 - Released under a **permissive open-source license**,
 - Suitable for both **on-premises and cloud** environments.
 
