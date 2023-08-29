@@ -262,7 +262,7 @@ kind-deploy-sample:
 	LIFECYCLE_URL=http://localhost:7002 ./utils/wait-for-lifecycle.sh
 	racetrack deploy sample/python-class/ --remote http://localhost:7002 --force
 
-clean: compose-down kind-down
+clean: compose-down kind-down registry-down
 
 MR ?= 0
 version-bump:
