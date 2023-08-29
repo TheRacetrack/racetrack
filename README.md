@@ -28,20 +28,12 @@ Code deployed via Racetrack gets free Swagger pages and Prometheus metrics endpo
 
 What distinguishes Racetrack is:
 
-- **Server-side building**. Code is transformed into a microservice without your computer being involved.
 - You only supply your **function's logic**. No need to write repetitive API code, setting up 
   webservers, creating dockerfiles, kubernetes YAMLs, and so on. Racetrack takes care of that for you.
 - **Language agnostic**. Deploy code written in Python 3, Go, Rust,
   or anything else encapsulated in a Dockerfile.
 - **Infrastructure independent**. Deploy to either a Kubernetes cluster
   or a Docker environment in a single transparent step.
-- **Customizable through plugins**,
-- **Immutable jobs**
-- **Reproducible jobs**. Racetrack ensures that anyone else can deploy the same job effortlessly.
-- **Out-of-the-box tools**: web endpoints, API documentation,
-  metrics, monitoring, tracing, and more.
-- Released under a **permissive open-source license**,
-- Suitable for both **on-premises and cloud** environments.
 
 ## Example usage
 

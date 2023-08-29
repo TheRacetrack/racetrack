@@ -2,8 +2,6 @@
 
 ## Introduction
 
-![Racetrack architecture for civilians](assets/arch-00.png)
-
 ### What is Racetrack?
 
 Racetrack is a system which transforms your code to in-operation workloads, e.g.
@@ -28,7 +26,26 @@ Racetrack can be extended to [introduce new languages and frameworks](./developm
 <video width="100%" controls="true" allowFullscreen="true" src="https://user-images.githubusercontent.com/124889668/259082064-43648168-897c-435f-b2e1-e4f8e0313d7a.mp4">
 </video>
 
+### What distinguishes Racetrack?
+
+- You only supply your **function's logic**. No need to write repetitive API code, setting up 
+  webservers, creating dockerfiles, kubernetes YAMLs, and so on. Racetrack takes care of that for you.
+- **Language agnostic**. Deploy code written in Python 3, Go, Rust,
+  or anything else encapsulated in a Dockerfile.
+- **Infrastructure independent**. Deploy to either a Kubernetes cluster
+  or a Docker environment in a single transparent step.
+- **Server-side building**. Code is transformed into a microservice without your computer being involved.
+- **Customizable through plugins**,
+- **Immutable jobs**
+- **Reproducible jobs**. Racetrack ensures that anyone else can deploy the same job effortlessly.
+- **Out-of-the-box tools**: web endpoints, API documentation,
+  metrics, monitoring, tracing, and more.
+- Released under a **permissive open-source license**,
+- Suitable for both **on-premises and cloud** environments.
+
 ### Architecture and Terminology
+
+![Racetrack architecture for civilians](assets/arch-00.png)
 
 The following terms recur through this document and describe the elements and
 actions involved in using Racetrack:
