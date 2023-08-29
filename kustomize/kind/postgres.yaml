@@ -47,7 +47,7 @@ spec:
             periodSeconds: 10
 
         - name: pgbouncer
-          image: kind-registry:5000/racetrack/pgbouncer:latest
+          image: racetrack-registry:5000/racetrack/pgbouncer:latest
           envFrom:
             - configMapRef:
                 name: postgres-env

@@ -10,6 +10,6 @@ bash cleanup-jobs-docker.sh
 DOCKER_BUILDKIT=1 DOCKER_GID=0 \
     docker compose down
 
-docker rm -f kind-registry || true
+docker rm -f racetrack-registry || true
 
 echo "Racetrack components are shut down."

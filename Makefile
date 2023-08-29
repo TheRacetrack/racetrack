@@ -218,7 +218,7 @@ registry:
 	./utils/setup-registry.sh
 
 registry-down:
-	docker rm -f kind-registry || true
+	docker rm -f racetrack-registry || true
 
 kind-cluster-up: registry
 	kind create cluster --name racetrack --config utils/kind-config.yaml || true

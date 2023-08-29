@@ -360,7 +360,7 @@ Assuming you are standing in the root directory of the Racetrack source code:
 # kill KinD and what it contains
 make kind-down
 # stop and remove the local testing docker registry
-docker stop kind-registry && docker rm -v kind-registry
+docker stop racetrack-registry && docker rm -v racetrack-registry
 # exit the Python venv
 deactivate
 # optionally, clean up

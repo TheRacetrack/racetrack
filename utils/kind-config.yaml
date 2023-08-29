@@ -30,5 +30,5 @@ nodes:
         listenAddress: "127.0.0.1"
 containerdConfigPatches:
 - |-
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."kind-registry:5000"]
-    endpoint = ["http://kind-registry:5000"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."racetrack-registry:5000"]
+    endpoint = ["http://racetrack-registry:5000"]
