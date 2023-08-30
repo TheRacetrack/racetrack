@@ -49,6 +49,10 @@ func handleProxyRequest(
 	jobPath string,
 ) (int, error) {
 
+	if cfg.RemoteGatewayMode {
+		return handleSlaveProxyRequest(c, cfg, logger, requestId, jobPath)
+	}
+
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
 		c.Writer.Header().Set("Allow", "GET, POST")
 		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
@@ -100,28 +104,7 @@ func handleProxyRequest(
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
 	if jobCall.RemoteGatewayUrl != nil {
-		// Forward call to remote infrastructure through PUB gateway
-		urlStr := JoinURL(*jobCall.RemoteGatewayUrl, "/pub/gateway/forward/", job.Name, job.Version, jobPath)
-
-		if jobCall.RemoteGatewayToken != nil {
-			c.Request.Header.Set(RemoteGatewayTokenHeader, *jobCall.RemoteGatewayToken)
-		}
-		c.Request.Header.Set(JobInternalNameHeader, job.InternalName)
-
-		targetUrl, err := url.Parse(urlStr)
-		if err != nil {
-			return http.StatusInternalServerError, errors.Wrap(err, "Parsing remote infrastructure address")
-		}
-
-		logger.Info("Forwarding call to remote infrastructure", log.Ctx{
-			"infrastructureTarget":    job.InfrastructureTarget,
-			"infrastructureTargetUrl": *jobCall.RemoteGatewayUrl,
-			"targetUrl":               urlStr,
-			"jobInternalName":         job.InternalName,
-		})
-
-		ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName)
-		return 200, nil
+		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName)
 	}
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)

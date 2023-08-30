@@ -39,18 +39,15 @@ func ListenAndServe(cfg *Config) error {
 			proxyEndpoint(c, cfg, "")
 		})
 
-		router.Any(baseUrl+"/gateway/forward/:job/:version/*path", func(c *gin.Context) {
-			remoteGatewayEndpoint(c, cfg, "/"+c.Param("path"))
-		})
-		router.Any(baseUrl+"/gateway/forward/:job/:version", func(c *gin.Context) {
-			remoteGatewayEndpoint(c, cfg, "")
-		})
-
 		router.GET(baseUrl+"/live", liveEndpoint)
 		router.GET(baseUrl+"/ready", readyEndpoint)
 		router.GET(baseUrl+"/health", handlerWithConfig(healthEndpoint, cfg))
 
 		router.GET(baseUrl+"/metrics", wrapHandler(promhttp.Handler()))
+	}
+
+	if cfg.RemoteGatewayMode {
+		setupRemoteGateway(router, cfg)
 	}
 
 	if cfg.OpenTelemetryEndpoint != "" {
