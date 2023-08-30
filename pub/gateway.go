@@ -182,9 +182,18 @@ func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn, gatewayHost s
 	}
 
 	jobCallAuthData, err := makeMasterLifecycleAuthCall(cfg, &request)
+	errorCode := http.StatusOK
+	if err != nil {
+		if errors.As(err, &AuthenticationFailure{}) {
+			errorCode = http.StatusUnauthorized
+		} else if errors.As(err, &NotFoundError{}) {
+			errorCode = http.StatusNotFound
+		}
+	}
 	response := SlaveAuthorizeResponse{
 		JobCallAuthData: jobCallAuthData,
-		Err:             err,
+		ErrorDetails:    err.Error(),
+		ErrorCode:       errorCode,
 	}
 
 	var buff bytes.Buffer
@@ -225,7 +234,8 @@ type SlaveAuthorizeRequest struct {
 
 type SlaveAuthorizeResponse struct {
 	JobCallAuthData *JobCallAuthData
-	Err             error
+	ErrorDetails    string
+	ErrorCode       int
 }
 
 type slaveLifecycleClient struct {
@@ -282,7 +292,19 @@ func (l *slaveLifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint str
 		return nil, errors.Wrap(err, "failed to decode SlaveAuthorizeResponse from bytes")
 	}
 
-	return response.JobCallAuthData, response.Err
+	if response.ErrorDetails != "" {
+		var err error
+		if response.ErrorCode == http.StatusUnauthorized {
+			err = AuthenticationFailure{errors.New(response.ErrorDetails)}
+		} else if response.ErrorCode == http.StatusNotFound {
+			err = NotFoundError{errors.New(response.ErrorDetails)}
+		} else {
+			err = errors.New(response.ErrorDetails)
+		}
+		return response.JobCallAuthData, err
+	}
+
+	return response.JobCallAuthData, nil
 }
 
 func remoteGatewayEndpoint(c *gin.Context, cfg *Config, jobPath string) {
