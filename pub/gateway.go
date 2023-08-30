@@ -229,25 +229,22 @@ type SlaveAuthorizeResponse struct {
 }
 
 type slaveLifecycleClient struct {
-	wsConn        *websocket.Conn
-	authToken     string
-	internalToken string
-	requestId     string
+	wsConn    *websocket.Conn
+	authToken string
+	requestId string
 }
 
 func NewSlaveLifecycleClient(
 	authToken string,
-	internalToken string,
 	requestId string,
 ) (LifecycleClient, error) {
 	if masterWsConnection == nil {
 		return nil, errors.New("Master Pub is not subscribed to slave's websocket")
 	}
 	return &slaveLifecycleClient{
-		wsConn:        masterWsConnection,
-		authToken:     authToken,
-		internalToken: internalToken,
-		requestId:     requestId,
+		wsConn:    masterWsConnection,
+		authToken: authToken,
+		requestId: requestId,
 	}, nil
 }
 

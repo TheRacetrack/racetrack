@@ -132,28 +132,6 @@ services:
       AUTH_DEBUG: 'true'
       LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
 
-  pub-slave:
-    container_name: pub-slave
-    build:
-      context: pub/
-      dockerfile: Dockerfile
-    image: ghcr.io/theracetrack/racetrack/pub:latest
-    ports:
-      - "7107:7105"
-    networks:
-      - racetrack_default
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
-    user: '100000:100000'
-    environment:
-      PUB_PORT: '7105'
-      AUTH_REQUIRED: 'true'
-      AUTH_DEBUG: 'true'
-      LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
-      REMOTE_GATEWAY_MODE: 'true'
-      REMOTE_GATEWAY_TOKEN: '29Mu!tvf37Qg7r%CvB'
-
   postgres:
     image: postgres:13.1
     container_name: postgres
