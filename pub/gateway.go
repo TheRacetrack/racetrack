@@ -182,18 +182,18 @@ func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn, gatewayHost s
 	}
 
 	jobCallAuthData, err := makeMasterLifecycleAuthCall(cfg, &request)
-	errorCode := http.StatusOK
+	response := SlaveAuthorizeResponse{
+		JobCallAuthData: jobCallAuthData,
+	}
 	if err != nil {
+		errorCode := http.StatusOK
 		if errors.As(err, &AuthenticationFailure{}) {
 			errorCode = http.StatusUnauthorized
 		} else if errors.As(err, &NotFoundError{}) {
 			errorCode = http.StatusNotFound
 		}
-	}
-	response := SlaveAuthorizeResponse{
-		JobCallAuthData: jobCallAuthData,
-		ErrorDetails:    err.Error(),
-		ErrorCode:       errorCode,
+		response.ErrorDetails = err.Error()
+		response.ErrorCode = errorCode
 	}
 
 	var buff bytes.Buffer
