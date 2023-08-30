@@ -58,10 +58,10 @@ func openSlaveWebsocket(cfg *Config, writer http.ResponseWriter, request *http.R
 	}
 	conn, err := upgrader.Upgrade(writer, request, nil)
 	if err != nil {
-		return http.StatusInternalServerError, errors.Wrap(err, "Websocket upgrade failed")
+		return http.StatusInternalServerError, errors.Wrap(err, "websocket upgrade failed")
 	}
 	masterWsConnection = conn
-	log.Debug("Master Pub connected to Slave Websocket server")
+	log.Debug("Master Pub connected to slave websocket server")
 	return http.StatusOK, nil
 }
 
@@ -89,7 +89,7 @@ func handleMasterProxyRequest(
 
 	slaveConn, found := slaveConnections[gatewayHost]
 	if !found || slaveConn == nil {
-		connectToSlaveWebsocket(cfg, gatewayHost, gatewayUrlTxt, jobCall)
+		connectToSlaveWebsocket(cfg, gatewayHost, jobCall)
 	}
 
 	urlStr := JoinURL(gatewayUrlTxt, "/pub/job/", job.Name, job.Version, jobPath)
@@ -107,11 +107,10 @@ func handleMasterProxyRequest(
 	return http.StatusOK, nil
 }
 
-// Setup Websocket connection so that Slave can make calls to Master's Lifecycle
+// Setup Websocket connection so that slave can make calls to master's Lifecycle
 func connectToSlaveWebsocket(
 	cfg *Config,
 	gatewayHost string,
-	gatewayUrlTxt string,
 	jobCall *JobCallAuthData,
 ) {
 	wsUrl := url.URL{Scheme: "ws", Host: gatewayHost, Path: "/pub/slave/ws"}
@@ -124,11 +123,11 @@ func connectToSlaveWebsocket(
 	}
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl.String(), requestHeader)
 	if err != nil {
-		log.Error("Failed to connect to Slave's websocket", log.Ctx{
+		log.Error("Failed to connect to slave's websocket", log.Ctx{
 			"error": err,
 		})
 	} else {
-		slaveConnections[gatewayUrlTxt] = conn
+		slaveConnections[gatewayHost] = conn
 		log.Info("Connected to slave's websocket", log.Ctx{
 			"url": wsUrl.String(),
 		})
@@ -138,31 +137,31 @@ func connectToSlaveWebsocket(
 
 func serveGatewayWebsocketCalls(cfg *Config, conn *websocket.Conn, gatewayHost string) {
 	for {
-		err, fatalError := handleGatewayWebsocketCall(cfg, conn)
+		err, fatalError := handleGatewayWebsocketCall(cfg, conn, gatewayHost)
 		if fatalError != nil {
 			if websocket.IsCloseError(fatalError, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				break
 			}
-			log.Error("Gateway Websocket error, closing connection", log.Ctx{
+			log.Error("Gateway websocket error, closing connection", log.Ctx{
 				"error": fatalError,
 			})
 			break
 		}
 		if err != nil {
-			log.Error("Gateway Websocket error", log.Ctx{
+			log.Error("Gateway websocket error", log.Ctx{
 				"error": err,
 			})
 		}
 	}
 	conn.Close()
 	slaveConnections[gatewayHost] = nil
-	log.Debug("Slave websocket connection closed", log.Ctx{
+	log.Debug("Connection closed to slave websocket", log.Ctx{
 		"gatewayHost": gatewayHost,
 	})
 }
 
-// Decode Slave's websocket request and make call to local Lifecycle on his behalf
-func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn) (err error, fatalError error) {
+// Decode slave's websocket request and make call to local Lifecycle on his behalf
+func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn, gatewayHost string) (err error, fatalError error) {
 	_, message, err := conn.ReadMessage()
 	if err != nil {
 		if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -173,7 +172,6 @@ func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn) (err error, f
 		}
 		return nil, errors.Wrap(err, "Websocket read failed")
 	}
-	log.Debug("Websocket message received")
 
 	reader := bytes.NewReader(message)
 	decoder := gob.NewDecoder(reader)
@@ -202,11 +200,13 @@ func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn) (err error, f
 		return errors.Wrap(err, "Websocket write failed"), nil
 	}
 
-	log.Debug("Master auth call has been made")
+	log.Debug("Lifecycle call made on behalf of slave Pub", log.Ctx{
+		"remoteGateway": gatewayHost,
+	})
 	return nil, nil
 }
 
-// Make call to local Lifecycle by Master Pub, commissioned by Slave Pub
+// Make call to local Lifecycle by master Pub, commissioned by slave Pub
 func makeMasterLifecycleAuthCall(
 	cfg *Config, request *SlaveAuthorizeRequest,
 ) (jobCallAuthData *JobCallAuthData, err error) {
@@ -235,14 +235,13 @@ type slaveLifecycleClient struct {
 	requestId     string
 }
 
-// Lifecycle client that makes calls through Master websocket connection
 func NewSlaveLifecycleClient(
 	authToken string,
 	internalToken string,
 	requestId string,
 ) (LifecycleClient, error) {
 	if masterWsConnection == nil {
-		return nil, errors.New("Master Pub is not subscribed to Slave's Websocket")
+		return nil, errors.New("Master Pub is not subscribed to slave's websocket")
 	}
 	return &slaveLifecycleClient{
 		wsConn:        masterWsConnection,
@@ -252,8 +251,8 @@ func NewSlaveLifecycleClient(
 	}, nil
 }
 
+// Make call to Lifecycle through master websocket connection
 func (l *slaveLifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobCallAuthData, error) {
-	// Encode request to websocket bytes
 	var buff bytes.Buffer
 	encoder := gob.NewEncoder(&buff)
 	err := encoder.Encode(SlaveAuthorizeRequest{
@@ -264,29 +263,26 @@ func (l *slaveLifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint str
 		RequestId:  l.requestId,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to encode SlaveAuthorizeRequest")
+		return nil, errors.Wrap(err, "failed to encode SlaveAuthorizeRequest to bytes")
 	}
 
-	// Send request through websocket
+	log.Debug("Making Lifecycle call through master websocket connection")
 	err = l.wsConn.WriteMessage(websocket.BinaryMessage, buff.Bytes())
 	if err != nil {
-		return nil, errors.Wrap(err, "Websocket write failed")
+		return nil, errors.Wrap(err, "failed to send request through master websocket")
 	}
-	log.Debug("Slave auth call has been sent through Websocket")
-	// Read response
+
 	_, message, err := l.wsConn.ReadMessage()
 	if err != nil {
-		return nil, errors.Wrap(err, "Websocket read failed")
+		return nil, errors.Wrap(err, "failed to read response from master websocket")
 	}
-	log.Debug("Websocket message received")
 
-	// Decode response
 	reader := bytes.NewReader(message)
 	decoder := gob.NewDecoder(reader)
 	var response SlaveAuthorizeResponse
 	err = decoder.Decode(&response)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode SlaveAuthorizeResponse")
+		return nil, errors.Wrap(err, "failed to decode SlaveAuthorizeResponse from bytes")
 	}
 
 	return response.JobCallAuthData, response.Err
