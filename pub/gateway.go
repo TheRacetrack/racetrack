@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -19,8 +19,6 @@ func init() {
 
 const RemoteGatewayTokenHeader = "X-Racetrack-Gateway-Token"
 
-// const JobInternalNameHeader = "X-Racetrack-Job-Internal-Name"
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -29,30 +27,44 @@ var upgrader = websocket.Upgrader{
 var masterConn *websocket.Conn = nil
 var slaveConnections map[string]*websocket.Conn = make(map[string]*websocket.Conn)
 
-func setupRemoteGateway(router *gin.Engine, cfg *Config) {
+func initRemoteGateway(router *gin.Engine, cfg *Config) {
 	router.GET("/pub/slave/ws", func(c *gin.Context) {
-		openSlaveWebsocketServer(c.Writer, c.Request)
+		statusCode, err := openSlaveWebsocket(cfg, c.Writer, c.Request)
+		if err != nil {
+			log.Error("Failed to open websocket server", log.Ctx{
+				"status": statusCode,
+				"error":  err.Error(),
+			})
+			c.JSON(statusCode, gin.H{
+				"error":  fmt.Sprintf("Failed to open websocket server: %s", err.Error()),
+				"status": http.StatusText(statusCode),
+			})
+		}
 	})
-	log.Info("Remote gateway mode initialized")
+	log.Info("Initialized Remote gateway mode")
 }
 
-func openSlaveWebsocketServer(writer http.ResponseWriter, request *http.Request) {
+func openSlaveWebsocket(cfg *Config, writer http.ResponseWriter, request *http.Request) (int, error) {
 	if masterConn != nil {
 		masterConn.Close()
 	}
-	// TODO check token header beforehand
+	gatewayToken := request.Header.Get(RemoteGatewayTokenHeader)
+	if gatewayToken == "" {
+		return http.StatusUnauthorized, errors.Errorf("Pub gateway expects %s header", RemoteGatewayTokenHeader)
+	}
+	if gatewayToken != cfg.RemoteGatewayToken {
+		return http.StatusUnauthorized, errors.New("Pub gateway token is invalid")
+	}
 	conn, err := upgrader.Upgrade(writer, request, nil)
 	if err != nil {
-		log.Error("Websocket upgrade failed", log.Ctx{
-			"error": err,
-		})
-		return
+		return http.StatusInternalServerError, errors.Wrap(err, "Websocket upgrade failed")
 	}
 	masterConn = conn
-	log.Debug("Master Pub has connected to Websocket server")
+	log.Debug("Master Pub connected to Slave Websocket server")
+	return http.StatusOK, nil
 }
 
-// Forward call to remote infrastructure through PUB gateway
+// Forward call to remote infrastructure through Pub gateway
 func handleMasterProxyRequest(
 	c *gin.Context,
 	cfg *Config,
@@ -70,89 +82,89 @@ func handleMasterProxyRequest(
 	}
 	var gatewayHost string = gatewayUrl.Host
 
+	if jobCall.RemoteGatewayToken != nil {
+		c.Request.Header.Set(RemoteGatewayTokenHeader, *jobCall.RemoteGatewayToken)
+	}
+
+	slaveConn, found := slaveConnections[gatewayHost]
+	if !found || slaveConn == nil {
+		connectToSlaveWebsocket(cfg, gatewayHost, gatewayUrlTxt, jobCall)
+	}
+
 	urlStr := JoinURL(gatewayUrlTxt, "/pub/job/", job.Name, job.Version, jobPath)
-
-	// if jobCall.RemoteGatewayToken != nil {
-	// 	c.Request.Header.Set(RemoteGatewayTokenHeader, *jobCall.RemoteGatewayToken)
-	// }
-	// c.Request.Header.Set(JobInternalNameHeader, job.InternalName)
-
 	targetUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "Parsing remote infrastructure address")
 	}
-
 	logger.Info("Forwarding call to remote infrastructure", log.Ctx{
-		"infrastructureTarget":    job.InfrastructureTarget,
-		"infrastructureTargetUrl": gatewayUrlTxt,
-		"targetUrl":               urlStr,
-		"jobInternalName":         job.InternalName,
+		"infrastructureTarget": job.InfrastructureTarget,
+		"targetUrl":            urlStr,
+		"jobInternalName":      job.InternalName,
 	})
 
-	// Ensure Master is connected to this slave
-	slaveConn, found := slaveConnections[gatewayHost]
-	if !found || slaveConn == nil {
-
-		// Setup Websocket connection so that Slave can ask Master for more details (in case of chain calls)
-		wsUrl := url.URL{Scheme: "ws", Host: gatewayHost, Path: "/pub/slave/ws"}
-		log.Debug("Connecting to slave's websocket", log.Ctx{
-			"url": wsUrl.String(),
-		})
-		conn, _, err := websocket.DefaultDialer.Dial(wsUrl.String(), nil) // TODO secure with header
-		if err != nil {
-			log.Error("Failed to connect to Slave's websocket", log.Ctx{
-				"error": err,
-			})
-		} else {
-			log.Info("Connected to slave's websocket", log.Ctx{
-				"gatewayHost": gatewayHost,
-				"url":         wsUrl.String(),
-			})
-			go func() {
-				defer func() {
-					conn.Close()
-					slaveConnections[gatewayHost] = nil
-					log.Debug("Closing slave websocket connection", log.Ctx{
-						"gatewayHost": gatewayHost,
-					})
-				}()
-				for {
-					err, fatalError := handleWebsocketLifecycleCall(cfg, conn)
-					if fatalError != nil {
-						log.Error("Websocket error - closing connection", log.Ctx{
-							"error": fatalError,
-						})
-						return
-					}
-					if err != nil {
-						log.Error("Websocket error", log.Ctx{
-							"error": err,
-						})
-					}
-				}
-
-			}()
-		}
-		slaveConnections[gatewayUrlTxt] = conn
-
-	}
-
-	// Forward to remote PUB
 	ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName)
-	return 200, nil
+	return http.StatusOK, nil
 }
 
-func handleWebsocketLifecycleCall(
+// Setup Websocket connection so that Slave can make calls to Master's Lifecycle
+func connectToSlaveWebsocket(
 	cfg *Config,
-	conn *websocket.Conn,
-) (err error, fatalError error) {
+	gatewayHost string,
+	gatewayUrlTxt string,
+	jobCall *JobCallAuthData,
+) {
+	wsUrl := url.URL{Scheme: "ws", Host: gatewayHost, Path: "/pub/slave/ws"}
+	log.Debug("Connecting to slave's websocket", log.Ctx{
+		"url": wsUrl.String(),
+	})
+	requestHeader := http.Header{}
+	if jobCall.RemoteGatewayToken != nil {
+		requestHeader[RemoteGatewayTokenHeader] = []string{*jobCall.RemoteGatewayToken}
+	}
+	conn, _, err := websocket.DefaultDialer.Dial(wsUrl.String(), requestHeader)
+	if err != nil {
+		log.Error("Failed to connect to Slave's websocket", log.Ctx{
+			"error": err,
+		})
+	} else {
+		slaveConnections[gatewayUrlTxt] = conn
+		log.Info("Connected to slave's websocket", log.Ctx{
+			"url": wsUrl.String(),
+		})
+		go serveGatewayWebsocketCalls(cfg, conn, gatewayHost)
+	}
+}
+
+func serveGatewayWebsocketCalls(cfg *Config, conn *websocket.Conn, gatewayHost string) {
+	for {
+		err, fatalError := handleGatewayWebsocketCall(cfg, conn)
+		if fatalError != nil {
+			log.Error("Gateway Websocket error, closing connection", log.Ctx{
+				"error": fatalError,
+			})
+			break
+		}
+		if err != nil {
+			log.Error("Gateway Websocket error", log.Ctx{
+				"error": err,
+			})
+		}
+	}
+	conn.Close()
+	slaveConnections[gatewayHost] = nil
+	log.Debug("Slave websocket connection closed", log.Ctx{
+		"gatewayHost": gatewayHost,
+	})
+}
+
+// Decode Slave's websocket request and make call to local Lifecycle on his behalf
+func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn) (err error, fatalError error) {
 	_, message, err := conn.ReadMessage()
 	if err != nil {
 		return nil, errors.Wrap(err, "Websocket read failed")
 	}
 	log.Debug("Websocket message received")
 
-	// Decode request
 	reader := bytes.NewReader(message)
 	decoder := gob.NewDecoder(reader)
 	var request SlaveAuthorizeRequest
@@ -161,14 +173,12 @@ func handleWebsocketLifecycleCall(
 		return errors.Wrap(err, "failed to decode SlaveAuthorizeRequest"), nil
 	}
 
-	// Process request - response
 	jobCallAuthData, err := makeMasterLifecycleAuthCall(cfg, &request)
 	response := SlaveAuthorizeResponse{
 		JobCallAuthData: jobCallAuthData,
 		Err:             err,
 	}
 
-	// Encode response to websocket bytes
 	var buff bytes.Buffer
 	encoder := gob.NewEncoder(&buff)
 	err = encoder.Encode(response)
@@ -187,105 +197,29 @@ func handleWebsocketLifecycleCall(
 }
 
 func makeMasterLifecycleAuthCall(
-	cfg *Config,
-	request *SlaveAuthorizeRequest,
+	cfg *Config, request *SlaveAuthorizeRequest,
 ) (jobCallAuthData *JobCallAuthData, err error) {
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, request.AuthToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, request.RequestId)
 	return lifecycleClient.AuthorizeCaller(request.JobName, request.JobVersion, request.Endpoint)
 }
 
-// Respond to a call forwarded by master
-// func handleSlaveGatewayRequest(
-// 	c *gin.Context,
-// 	cfg *Config,
-// 	logger log.Logger,
-// 	requestId string,
-// 	jobPath string,
-// ) (int, error) {
-
-// 	if !cfg.RemoteGatewayMode {
-// 		return http.StatusUnauthorized, errors.New("Forwarding endpoint is only available in remote gateway mode")
-// 	}
-
-// 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
-// 		c.Writer.Header().Set("Allow", "GET, POST")
-// 		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
-// 	}
-
-// 	jobName := c.Param("job")
-// 	if jobName == "" {
-// 		return http.StatusBadRequest, errors.New("Couldn't extract job name")
-// 	}
-// 	jobVersion := c.Param("version")
-// 	if jobVersion == "" {
-// 		return http.StatusBadRequest, errors.New("Couldn't extract job version")
-// 	}
-
-// 	gatewayToken := c.Request.Header.Get(RemoteGatewayTokenHeader)
-// 	if gatewayToken == "" {
-// 		return http.StatusUnauthorized, errors.Errorf("PUB gateway expects %s header", RemoteGatewayTokenHeader)
-// 	}
-// 	if gatewayToken != cfg.RemoteGatewayToken {
-// 		return http.StatusUnauthorized, errors.New("PUB gateway token is invalid")
-// 	}
-
-// 	jobInternalName := c.Request.Header.Get(JobInternalNameHeader)
-
-// 	job := &JobDetails{
-// 		Name:         jobName,
-// 		Version:      jobVersion,
-// 		InternalName: jobInternalName,
-// 	}
-// 	callerName := c.Request.Header.Get(cfg.CallerNameHeader)
-
-// 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
-// 	targetUrl := TargetURL(cfg, job, urlPath)
-
-// 	logger.Debug("Forwarding request to job", log.Ctx{
-// 		"jobName":         jobName,
-// 		"jobVersion":      jobVersion,
-// 		"jobInternalName": jobInternalName,
-// 		"targetUrl":       targetUrl.String(),
-// 	})
-
-// 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
-// 	return 200, nil
-// }
-
+// Forward call to local job by Slave Pub
+// If needed, makes calls to Lifecycle through Master websocket connection
 func handleSlaveProxyRequest(
 	c *gin.Context,
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
+	jobName string,
+	jobVersion string,
 	jobPath string,
+	authToken string,
 ) (int, error) {
+
 	if masterConn == nil {
-		return http.StatusInternalServerError, errors.New("Master PUB has not subscribed")
+		return http.StatusInternalServerError, errors.New("Master Pub has not subscribed")
 	}
-
-	if c.Request.Method != "POST" && c.Request.Method != "GET" {
-		c.Writer.Header().Set("Allow", "GET, POST")
-		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
-	}
-
-	jobName := c.Param("job")
-	if jobName == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job name")
-	}
-
-	jobVersion := c.Param("version")
-	if jobVersion == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job version")
-	}
-
-	if c.Request.Header.Get("Accept") == "" {
-		return http.StatusBadRequest, errors.New("Missing 'Accept' header. " +
-			"You might wanted to include 'Accept: application/json, */*' request header.")
-	}
-
-	// Get data from Master Lifecycle
-	authToken := getAuthFromHeaderOrCookie(c.Request)
 	lifecycleClient := NewSlaveLifecycleClient(masterConn, authToken, cfg.LifecycleToken, requestId)
 
 	var job *JobDetails
@@ -317,12 +251,7 @@ func handleSlaveProxyRequest(
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
-	return 200, nil
-}
-
-type slaveLifecycleClient struct {
-	*lifecycleClient
-	wsConn *websocket.Conn
+	return http.StatusOK, nil
 }
 
 type SlaveAuthorizeRequest struct {
@@ -338,6 +267,13 @@ type SlaveAuthorizeResponse struct {
 	Err             error
 }
 
+type slaveLifecycleClient struct {
+	wsConn        *websocket.Conn
+	authToken     string
+	internalToken string
+	requestId     string
+}
+
 func NewSlaveLifecycleClient(
 	wsConn *websocket.Conn,
 	authToken string,
@@ -345,15 +281,10 @@ func NewSlaveLifecycleClient(
 	requestId string,
 ) LifecycleClient {
 	return &slaveLifecycleClient{
-		lifecycleClient: &lifecycleClient{
-			authToken:     authToken,
-			internalToken: internalToken,
-			httpClient: &http.Client{
-				Timeout: 10 * time.Second,
-			},
-			requestId: requestId,
-		},
-		wsConn: wsConn,
+		wsConn:        wsConn,
+		authToken:     authToken,
+		internalToken: internalToken,
+		requestId:     requestId,
 	}
 }
 
@@ -373,13 +304,13 @@ func (l *slaveLifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint str
 	}
 
 	// Send request through websocket
-	err = masterConn.WriteMessage(websocket.BinaryMessage, buff.Bytes())
+	err = l.wsConn.WriteMessage(websocket.BinaryMessage, buff.Bytes())
 	if err != nil {
 		return nil, errors.Wrap(err, "Websocket write failed")
 	}
 	log.Debug("Slave auth call has been sent through Websocket")
 	// Read response
-	_, message, err := masterConn.ReadMessage()
+	_, message, err := l.wsConn.ReadMessage()
 	if err != nil {
 		return nil, errors.Wrap(err, "Websocket read failed")
 	}

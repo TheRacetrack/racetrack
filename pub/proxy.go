@@ -49,10 +49,6 @@ func handleProxyRequest(
 	jobPath string,
 ) (int, error) {
 
-	if cfg.RemoteGatewayMode {
-		return handleSlaveProxyRequest(c, cfg, logger, requestId, jobPath)
-	}
-
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
 		c.Writer.Header().Set("Allow", "GET, POST")
 		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
@@ -74,6 +70,11 @@ func handleProxyRequest(
 	}
 
 	authToken := getAuthFromHeaderOrCookie(c.Request)
+
+	if cfg.RemoteGatewayMode {
+		return handleSlaveProxyRequest(c, cfg, logger, requestId, jobName, jobVersion, jobPath, authToken)
+	}
+
 	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
 		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 	var job *JobDetails
@@ -109,7 +110,7 @@ func handleProxyRequest(
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
-	return 200, nil
+	return http.StatusOK, nil
 }
 
 func ServeReverseProxy(

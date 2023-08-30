@@ -47,7 +47,7 @@ func ListenAndServe(cfg *Config) error {
 	}
 
 	if cfg.RemoteGatewayMode {
-		setupRemoteGateway(router, cfg)
+		initRemoteGateway(router, cfg)
 	}
 
 	if cfg.OpenTelemetryEndpoint != "" {
