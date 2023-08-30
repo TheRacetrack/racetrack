@@ -71,16 +71,13 @@ func handleProxyRequest(
 
 	authToken := getAuthFromHeaderOrCookie(c.Request)
 
-	if cfg.RemoteGatewayMode {
-		return handleSlaveProxyRequest(c, cfg, logger, requestId, jobName, jobVersion, jobPath, authToken)
+	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
+	if err != nil {
+		return http.StatusInternalServerError, err
 	}
 
-	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
-		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
 	var job *JobDetails
 	var callerName string
-	var err error
-
 	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
 	if err == nil {
 		job = jobCall.Job
@@ -104,13 +101,26 @@ func handleProxyRequest(
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
-	if jobCall.RemoteGatewayUrl != nil {
+	if !cfg.RemoteGatewayMode && jobCall.RemoteGatewayUrl != nil {
 		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName)
 	}
 
 	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
 	return http.StatusOK, nil
+}
+
+func NewProxyLifecycleClient(
+	cfg *Config,
+	authToken string,
+	requestId string,
+) (LifecycleClient, error) {
+	if cfg.RemoteGatewayMode {
+		return NewSlaveLifecycleClient(authToken, cfg.LifecycleToken, requestId)
+	} else {
+		return NewMasterLifecycleClient(cfg.LifecycleUrl, authToken,
+			cfg.LifecycleToken, cfg.RequestTracingHeader, requestId), nil
+	}
 }
 
 func ServeReverseProxy(

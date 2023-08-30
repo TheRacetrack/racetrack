@@ -29,7 +29,7 @@ func TestAuthorizeCaller(t *testing.T) {
 		httpmock.NewStringResponder(401,
 			`{"error": "You have no power here"}`))
 
-	lifecycleClient := NewLifecycleClient("http://localhost:7202/lifecycle", "", "secret", "traceparent", "1")
+	lifecycleClient := NewMasterLifecycleClient("http://localhost:7202/lifecycle", "", "secret", "traceparent", "1")
 
 	{
 		jobCall, err := lifecycleClient.AuthorizeCaller("skynet", "latest", "")

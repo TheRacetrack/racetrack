@@ -60,7 +60,8 @@ type lifecycleClient struct {
 	requestId            string
 }
 
-func NewLifecycleClient(
+// Master Lifecycle Client makes calls to locally-available Lifecycle
+func NewMasterLifecycleClient(
 	lifecycleUrl string,
 	authToken string,
 	internalToken string,
