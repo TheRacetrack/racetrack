@@ -39,10 +39,10 @@ func ListenAndServe(cfg *Config) error {
 			proxyEndpoint(c, cfg, "")
 		})
 
-		router.Any(baseUrl+"/slave/forward/:job/:version/*path", func(c *gin.Context) {
+		router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
 			remoteGatewayEndpoint(c, cfg, "/"+c.Param("path"))
 		})
-		router.Any(baseUrl+"/slave/forward/:job/:version", func(c *gin.Context) {
+		router.Any(baseUrl+"/remote/forward/:job/:version", func(c *gin.Context) {
 			remoteGatewayEndpoint(c, cfg, "")
 		})
 

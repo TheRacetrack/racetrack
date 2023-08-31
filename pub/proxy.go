@@ -116,7 +116,7 @@ func NewProxyLifecycleClient(
 	requestId string,
 ) (LifecycleClient, error) {
 	if cfg.RemoteGatewayMode {
-		return NewSlaveLifecycleClient(authToken, requestId)
+		return NewRemoteLifecycleClient(authToken, requestId)
 	} else {
 		return NewMasterLifecycleClient(cfg.LifecycleUrl, authToken,
 			cfg.LifecycleToken, cfg.RequestTracingHeader, requestId), nil
