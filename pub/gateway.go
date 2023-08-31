@@ -61,7 +61,7 @@ func openRemoteWebsocket(cfg *Config, writer http.ResponseWriter, request *http.
 		return http.StatusInternalServerError, errors.Wrap(err, "websocket upgrade failed")
 	}
 	masterWsConnection = conn
-	log.Debug("Master Pub connected to remote websocket server")
+	log.Debug("Main Pub connected to remote websocket server")
 	return http.StatusOK, nil
 }
 
@@ -107,7 +107,7 @@ func handleMasterProxyRequest(
 	return http.StatusOK, nil
 }
 
-// Setup Websocket connection so that remote can make calls to master's Lifecycle
+// Setup Websocket connection so that remote can make calls to main Lifecycle
 func connectToRemoteWebsocket(
 	cfg *Config,
 	gatewayHost string,
@@ -215,7 +215,7 @@ func handleGatewayWebsocketCall(cfg *Config, conn *websocket.Conn, gatewayHost s
 	return nil, nil
 }
 
-// Make call to local Lifecycle by master Pub, commissioned by remote Pub
+// Make call to local Lifecycle by main Pub, commissioned by remote Pub
 func makeMasterLifecycleAuthCall(
 	cfg *Config, request *RemoteAuthorizeRequest,
 ) (jobCallAuthData *JobCallAuthData, err error) {
@@ -249,7 +249,7 @@ func NewRemoteLifecycleClient(
 	requestId string,
 ) (LifecycleClient, error) {
 	if masterWsConnection == nil {
-		return nil, errors.New("Master Pub is not subscribed to remote websocket")
+		return nil, errors.New("Main Pub is not subscribed to remote websocket")
 	}
 	return &remoteLifecycleClient{
 		wsConn:    masterWsConnection,
@@ -273,15 +273,15 @@ func (l *remoteLifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint st
 		return nil, errors.Wrap(err, "failed to encode RemoteuthorizeRequest to bytes")
 	}
 
-	log.Debug("Making Lifecycle call through master websocket connection")
+	log.Debug("Making Lifecycle call through main websocket connection")
 	err = l.wsConn.WriteMessage(websocket.BinaryMessage, buff.Bytes())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to send request through master websocket")
+		return nil, errors.Wrap(err, "failed to send request through main websocket")
 	}
 
 	_, message, err := l.wsConn.ReadMessage()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read response from master websocket")
+		return nil, errors.Wrap(err, "failed to read response from main websocket")
 	}
 
 	reader := bytes.NewReader(message)
@@ -313,7 +313,7 @@ func remoteGatewayEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 		"requestId": requestId,
 	})
 
-	logger.Info("Incoming forwarding request from master Pub", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+	logger.Info("Incoming forwarding request from main Pub", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	statusCode, err := handleRemoteGatewayRequest(c, cfg, logger, requestId, jobPath)
 	if err != nil {
 		errorStr := err.Error()
