@@ -45,6 +45,9 @@ func ListenAndServe(cfg *Config) error {
 		router.Any(baseUrl+"/remote/forward/:job/:version", func(c *gin.Context) {
 			remoteGatewayEndpoint(c, cfg, "")
 		})
+		router.POST(baseUrl+"/remote/command", func(c *gin.Context) {
+			remoteCommandEndpoint(c, cfg)
+		})
 
 		router.GET(baseUrl+"/live", liveEndpoint)
 		router.GET(baseUrl+"/ready", readyEndpoint)
