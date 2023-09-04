@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plugins can implement `run_action` method for calling a supplementary action with an endpoint.
   It can be used for debugging purposes or to extend plugin's functionality that is not covered by a plugin interface.
 
+### Fixed
+- Fixed `racetrack run-local` command.
+  ([#312](https://github.com/TheRacetrack/racetrack/issues/312))
+
 ## [2.18.0] - 2023-08-04
 ### Added
 - Job types can read the manifest file from the job's directory.
