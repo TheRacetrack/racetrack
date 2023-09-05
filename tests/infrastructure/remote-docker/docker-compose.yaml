@@ -1,0 +1,29 @@
+version: '3.7'
+services:
+
+  pub-remote:
+    container_name: pub-remote
+    image: ghcr.io/theracetrack/racetrack/pub:latest
+    ports:
+      - "7107:7105"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    user: '100000:${DOCKER_GID}'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './docker:/opt/docker'
+    environment:
+      PUB_PORT: '7105'
+      AUTH_REQUIRED: 'true'
+      AUTH_DEBUG: 'true'
+      REMOTE_GATEWAY_MODE: 'true'
+      REMOTE_GATEWAY_TOKEN: '5tr0nG_PA55VoRD'
+      LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
+
+networks:
+  racetrack_default:
+    external: true
+    name: racetrack_default
