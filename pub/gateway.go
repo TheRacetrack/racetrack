@@ -416,6 +416,7 @@ func remoteCommandEndpoint(c *gin.Context, cfg *Config) {
 
 type remoteCommandRequest struct {
 	Command string `json:"command"`
+	Workdir string `json:"workdir"`
 }
 
 func handleRemoteCommandRequest(
@@ -445,6 +446,9 @@ func handleRemoteCommandRequest(
 		"command": request.Command,
 	})
 	cmd := exec.Command("sh", "-c", request.Command)
+	if request.Workdir != "" {
+		cmd.Dir = request.Workdir
+	}
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Error("Command failed", log.Ctx{
