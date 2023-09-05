@@ -1,6 +1,7 @@
 import os
 
 import django
+import socketio
 from fastapi import APIRouter
 from a2wsgi import WSGIMiddleware
 from starlette.types import ASGIApp
@@ -18,6 +19,7 @@ from lifecycle.endpoints.deploy import setup_deploy_endpoints
 from lifecycle.endpoints.esc import setup_esc_endpoints
 from lifecycle.endpoints.job import setup_job_endpoints
 from lifecycle.endpoints.user import setup_user_endpoints
+from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import setup_lifecycle_metrics
 from lifecycle.server.socketio import SocketIOServer
 from racetrack_client.log.logs import get_logger
@@ -107,7 +109,10 @@ def setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     setup_auth_endpoints(api, config)
 
 
-def setup_socket_io_server(plugin_engine: PluginEngine):
+def setup_socket_io_server(plugin_engine: PluginEngine) -> socketio.WSGIApp:
     """Configure Socket.IO server for streaming data to clients"""
     log_streamers = list_log_streamers(plugin_engine)
-    return SocketIOServer(log_streamers).wsgi_app
+    socketio_server = SocketIOServer(log_streamers)
+    LifecycleCache.socketio_server = socketio_server
+    return socketio_server.wsgi_app
+

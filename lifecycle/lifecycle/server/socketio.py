@@ -1,7 +1,5 @@
-from __future__ import annotations
 import contextlib
 import threading
-from typing import Dict
 
 import socketio
 from werkzeug.serving import make_server
@@ -19,16 +17,15 @@ class SocketIOServer:
         :param log_streamers: Sources of logs
         """
         self.sio = socketio.Server(async_mode='threading')
-        self.client_resources: Dict[str, Dict[str, str]] = {}  # Map Client ID to a resource
-        for log_streamer in log_streamers:
-            log_streamer.broadcaster = self.broadcast_logs_nextline
+        self.client_resources: dict[str, dict[str, str]] = {}  # Map Client ID to a resource
+        self.log_streamers: list[LogsStreamer] = log_streamers
 
         @self.sio.event
         def connect(client_id: str, environ):
             logger.debug(f'Client {client_id} connected to Socket.IO')
 
         @self.sio.event
-        def subscribe_for_logs(client_id: str, data: Dict) -> str:
+        def subscribe_for_logs(client_id: str, data: dict) -> str:
             """Request new logs session from a server and listen on the events from it"""
             resource_properties = data.get('resource_properties', {})
             if client_id in self.client_resources:
@@ -38,8 +35,8 @@ class SocketIOServer:
                 self.client_resources[client_id] = resource_properties
                 session_id = self.get_session_id(client_id, resource_properties)
                 logger.info(f'Creating consumer session: {session_id}')
-                for log_streamer in log_streamers:
-                    log_streamer.create_session(session_id, resource_properties)
+                for log_streamer in self.log_streamers:
+                    log_streamer.create_session(session_id, resource_properties, on_next_line=self.broadcast_logs_nextline)
                 return session_id
 
         @self.sio.event
@@ -50,13 +47,13 @@ class SocketIOServer:
                 del self.client_resources[client_id]
                 session_id = self.get_session_id(client_id, resource_properties)
                 logger.info(f'Consumer session closed: {session_id}')
-                for log_streamer in log_streamers:
+                for log_streamer in self.log_streamers:
                     log_streamer.close_session(session_id)
 
         self.wsgi_app = socketio.WSGIApp(self.sio, socketio_path='lifecycle/socket.io')
 
     @staticmethod
-    def get_session_id(client_id: str, resource_properties: Dict[str, str]) -> str:
+    def get_session_id(client_id: str, resource_properties: dict[str, str]) -> str:
         job_name = resource_properties.get('job_name')
         job_version = resource_properties.get('job_version')
         return f'{client_id}_{job_name}_{job_version}'

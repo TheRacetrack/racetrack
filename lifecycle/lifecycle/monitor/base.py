@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Callable, Dict
+from typing import Iterable, Callable
 
 from lifecycle.config import Config
 from racetrack_commons.entities.dto import JobDto
@@ -45,24 +45,17 @@ class JobMonitor(ABC):
 class LogsStreamer(ABC):
     """Producer of logs, setting up & tearing down sessions providing log lines stream"""
 
-    def __init__(self):
-        # callback for sending messages to connected clients
-        self.broadcaster: Callable[[str, str], None] = lambda session_id, message: None
-
     @abstractmethod
-    def create_session(self, session_id: str, resource_properties: Dict[str, str]):
+    def create_session(self, session_id: str, resource_properties: dict[str, str], on_next_line: Callable[[str, str], None]):
         """
         Start a session transmitting messages to client.
         Session should call `broadcast` method when next message arrives.
         :param session_id: ID of a client session to be referred when closing
         :param resource_properties: properties describing a resource to be monitored (job name, version, etc)
+        :param on_next_line: callback for sending log messages to connected clients. Parameters: session_id: str, message: str
         """
         pass
 
     def close_session(self, session_id: str):
         """Close session when a client disconnects"""
         pass
-
-    def broadcast(self, session_id: str, message: str):
-        """Send message to subscribed clients"""
-        self.broadcaster(session_id, message)

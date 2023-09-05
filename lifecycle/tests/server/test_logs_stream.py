@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Callable
 
 import backoff
 
@@ -24,7 +24,7 @@ def test_streaming_logs():
         with consumer.connect_async():
             _wait_until_equal(fetched_logs, ['hello adder'], 'fetching past logs failed')
 
-            logs_streamer.broadcast(logs_streamer.last_session_id, message='more logs')
+            logs_streamer.on_next_line(logs_streamer.last_session_id, message='more logs')
             _wait_until_equal(fetched_logs, ['hello adder', 'more logs'], 'fetching next logs failed')
 
 
@@ -32,11 +32,13 @@ class SayHelloLogsStreamer(LogsStreamer):
     def __init__(self):
         super().__init__()
         self.last_session_id = None
+        self.on_next_line = None
 
-    def create_session(self, session_id: str, resource_properties: Dict[str, str]):
+    def create_session(self, session_id: str, resource_properties: Dict[str, str], on_next_line: Callable[[str, str], None]):
         self.last_session_id = session_id
+        self.on_next_line = on_next_line
         job_name = resource_properties.get('job_name')
-        self.broadcast(session_id, f'hello {job_name}')
+        on_next_line(session_id, f'hello {job_name}')
 
 
 @backoff.on_exception(backoff.expo, AssertionError, factor=0.1, max_time=10, jitter=None)
