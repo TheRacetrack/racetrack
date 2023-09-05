@@ -447,7 +447,11 @@ func handleRemoteCommandRequest(
 	cmd := exec.Command("sh", "-c", request.Command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return http.StatusInternalServerError, errors.Wrapf(err, "command failed: %s: %s", request.Command, output)
+		logger.Error("Command failed", log.Ctx{
+			"command":   request.Command,
+			"exit_code": cmd.ProcessState.ExitCode(),
+			"err":       err,
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
