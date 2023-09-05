@@ -150,6 +150,13 @@ compose-up-service: compose-volumes
 		$(service)
 	$(docker-compose) up -d $(service)
 
+up-pub:
+	$(docker-compose) build \
+		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
+		--build-arg DOCKER_TAG="$(TAG)" \
+		pub
+	$(docker-compose) up -d pub
+
 # Start containers from pulled images (without building)
 compose-up-pull: registry compose-volumes
 	$(docker-compose) up -d --no-build --pull=always
