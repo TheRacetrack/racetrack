@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed `racetrack run-local` command.
   ([#312](https://github.com/TheRacetrack/racetrack/issues/312))
-- Queries to 
+- Improved finalizing database connections. 
   ([#295](https://github.com/TheRacetrack/racetrack/issues/295))
 
 ## [2.18.0] - 2023-08-04
