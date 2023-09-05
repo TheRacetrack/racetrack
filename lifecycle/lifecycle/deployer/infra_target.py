@@ -6,6 +6,9 @@ from lifecycle.config import Config
 from lifecycle.deployer.base import JobDeployer
 from lifecycle.monitor.base import JobMonitor, LogsStreamer
 from racetrack_client.plugin.plugin_manifest import PluginManifest
+from racetrack_client.utils.request import Requests, parse_response_object
+from racetrack_client.utils.shell import CommandError
+from racetrack_client.utils.url import join_paths
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.manifest.manifest import Manifest
@@ -85,3 +88,33 @@ def list_infrastructure_names_with_origins(plugin_engine: PluginEngine) -> dict[
             for infra_name in result.keys():
                 infra_names_with_origins[infra_name] = plugin_manifest
     return infra_names_with_origins
+
+
+class RemoteCommandError(CommandError):
+    def __init__(self, cmd: str, stdout: str, returncode: int):
+        super().__init__(cmd, stdout, returncode)
+
+    def __str__(self):
+        return f'remote command failed: {self.cmd}: {self.stdout}'
+
+
+def remote_shell(
+    cmd: str,
+    remote_gateway_url: str,
+    remote_gateway_token: str | None = None,
+    workdir: str | None = None,
+) -> str:
+    """Run command on remote infrastructure, return output of a command"""
+    url = join_paths(remote_gateway_url, "/pub/remote/command")
+    response = Requests.post(url, headers={
+        'X-Racetrack-Gateway-Token': remote_gateway_token,
+    }, json={
+        'command': cmd,
+        'workdir': workdir,
+    })
+    response_data = parse_response_object(response, 'Pub response')
+    output = response_data['output']
+    exit_code = int(response_data['exit_code'])
+    if exit_code != 0:
+        raise RemoteCommandError(cmd, output, exit_code)
+    return output
