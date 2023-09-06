@@ -36,14 +36,14 @@ def determine_infrastructure_name(
             f'Selected infrastructure target "{manifest.infrastructure_target}" is unavailable. Available are {", ".join(available_targets)}.'
         return manifest.infrastructure_target
 
+    if len(available_targets) == 1:
+        return available_targets[0]
+
     if config.infrastructure_target:
         assert config.infrastructure_target in available_targets, \
             f'Selected infrastructure target "{config.infrastructure_target}" is unavailable. Available are {", ".join(available_targets)}.'
         return config.infrastructure_target
-    
-    if len(available_targets) == 1:
-        return available_targets[0]
-    
+
     raise RuntimeError(f'Multiple infrastructure targets available: {available_targets}. Please pick one.')
 
 
