@@ -8,7 +8,7 @@ from lifecycle.auth.cookie import set_auth_token_cookie
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, get_description_from_auth_subject, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
-from lifecycle.deployer.infra_target import InfrastructureTarget
+from lifecycle.infrastructure.model import InfrastructureTarget
 from lifecycle.django.registry import models
 from lifecycle.job import models_registry
 from lifecycle.job.dto_converter import job_model_to_dto

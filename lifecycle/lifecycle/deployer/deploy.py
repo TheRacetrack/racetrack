@@ -14,7 +14,7 @@ from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus, JobD
 from lifecycle.config import Config
 from lifecycle.deployer.builder import build_job, wait_for_image_builder_ready
 from lifecycle.deployer.deployers import get_job_deployer
-from lifecycle.deployer.infra_target import determine_infrastructure_name
+from lifecycle.infrastructure.infra_target import determine_infrastructure_name
 from lifecycle.deployer.permissions import check_deploy_permissions
 from lifecycle.deployer.provision import provision_job
 from lifecycle.deployer.secrets import JobSecrets

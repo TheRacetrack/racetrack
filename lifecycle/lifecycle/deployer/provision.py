@@ -78,7 +78,7 @@ def provision_job(
         def on_job_alive():
             save_deployment_phase(deployment.id, 'initializing Job entrypoint')
 
-        check_job_condition(job, on_job_alive, plugin_engine)
+        check_job_condition(job, on_job_alive)
 
     with wrap_context('invoking post-deploy actions'):
         save_deployment_phase(deployment.id, 'post-deploy hooks')
