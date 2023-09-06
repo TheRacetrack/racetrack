@@ -11,4 +11,3 @@ class InfrastructureTarget(BaseModel, arbitrary_types_allowed=True):
     logs_streamer: LogsStreamer | None = None
     remote_gateway_url: str | None = None
     remote_gateway_token: str | None = None
-
