@@ -47,7 +47,7 @@ def deploy_new_job(
             secret_build_env=secret_vars.build_env,
             secret_runtime_env=secret_vars.runtime_env,
         )
-        job_deployer = get_job_deployer(plugin_engine, deployment.infrastructure_target)
+        job_deployer = get_job_deployer(deployment.infrastructure_target)
         try:
             job_deployer.save_job_secrets(manifest.name, manifest.version, job_secrets)
         except NotImplementedError:

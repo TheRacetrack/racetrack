@@ -50,7 +50,7 @@ def provision_job(
         image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
 
         logger.info(f'provisioning job {manifest.name} from image {image_name}')
-        job_deployer = get_job_deployer(plugin_engine, deployment.infrastructure_target)
+        job_deployer = get_job_deployer(deployment.infrastructure_target)
 
         family = create_job_family_if_not_exist(manifest.name)
         family_dto = job_family_model_to_dto(family)
