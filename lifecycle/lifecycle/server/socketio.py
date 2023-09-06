@@ -23,6 +23,7 @@ class LogSessionDetails(BaseModel, arbitrary_types_allowed=True):
     job_version: str
     session_id: str
     logs_streamer: LogsStreamer
+    tail: str | None
 
 
 class JobRetriever(ABC):
@@ -76,6 +77,7 @@ class SocketIOServer:
         logger.info(f'Creating log session for client: {client_id}')
         job_name = resource_properties['job_name']
         job_version = resource_properties['job_version']
+        tail = resource_properties.get('tail')
         job = self.job_retriever.get_job(job_name, job_version)
         job_version = job.version  # resolve version alias
         session_id = f'{client_id}_{job_name}_{job_version}'
@@ -95,6 +97,7 @@ class SocketIOServer:
         infrastructure.logs_streamer.create_session(session_id, resource_properties={
             'job_name': job_name,
             'job_version': job_version,
+            'tail': tail,
         }, on_next_line=self.broadcast_logs_nextline)
         return session_id
 
