@@ -37,10 +37,10 @@ These are the known, public Racetrack plugins that are commonly available to be 
       ```
 
 - Infrastructure Targets:
-    - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
+    - [github.com/TheRacetrack/plugin-remote-docker](https://github.com/TheRacetrack/plugin-remote-docker) -
       deploys to remote Docker Daemon
       ```
-      racetrack plugin install github.com/TheRacetrack/plugin-docker-daemon-deployer
+      racetrack plugin install github.com/TheRacetrack/plugin-remote-docker
       ```
 
     - [github.com/TheRacetrack/plugin-docker-infrastructure](https://github.com/TheRacetrack/plugin-docker-infrastructure) -
