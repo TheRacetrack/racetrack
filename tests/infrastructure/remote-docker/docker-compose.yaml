@@ -15,6 +15,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - './docker:/opt/docker'
+      - './.docker:/.docker'
     environment:
       PUB_PORT: '7105'
       AUTH_REQUIRED: 'true'

@@ -7,6 +7,8 @@ download-docker-cli:
 	rm docker.tgz
 
 up:
+	mkdir -p .docker
+	chmod 777 .docker
 	$(docker-compose) up -d
 
 down:
