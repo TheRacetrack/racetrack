@@ -102,9 +102,10 @@ See the [Documentation](https://theracetrack.github.io/racetrack/) for more deta
 
 ### Where can we deploy to?
 
-* [Kubernetes](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure)
+* [local Kubernetes](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure)
 * [local Docker](https://github.com/TheRacetrack/plugin-docker-infrastructure)
 * [remote Docker Daemon](https://github.com/TheRacetrack/plugin-remote-docker)
+* [remote Kubernetes](https://github.com/TheRacetrack/plugin-remote-kubernetes)
 
 ## About
 
