@@ -1,5 +1,6 @@
 import socket
 import os
+import threading
 
 from django.conf import settings
 from django.db import connection, close_old_connections
@@ -22,6 +23,7 @@ metric_jobs_count_by_status = Gauge(
 
 def setup_lifecycle_metrics():
     REGISTRY.register(DatabaseConnectionCollector())
+    REGISTRY.register(ServerResourcesCollector())
 
 
 def unregister_metrics():
@@ -39,6 +41,15 @@ class DatabaseConnectionCollector(Collector):
         metric_name = 'lifecycle_database_connected'
         metric_value = 1 if is_database_connected() else 0
         prometheus_metric = GaugeMetricFamily(metric_name, 'Status of database connection')
+        prometheus_metric.add_sample(metric_name, {}, metric_value)
+        yield prometheus_metric
+
+
+class ServerResourcesCollector(Collector):
+    def collect(self):
+        metric_name = 'lifecycle_threads_number'
+        metric_value = threading.active_count()
+        prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
         prometheus_metric.add_sample(metric_name, {}, metric_value)
         yield prometheus_metric
 
