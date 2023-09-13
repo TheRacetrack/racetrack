@@ -1,11 +1,12 @@
 import socket
 import os
 import threading
+import collections
 
+import psutil
 from django.conf import settings
 from django.db import connection, close_old_connections
 from django.db.utils import OperationalError
-from django.db.backends.postgresql.base import DatabaseWrapper
 from prometheus_client import Counter, Gauge
 from prometheus_client.core import REGISTRY
 from prometheus_client.registry import Collector
@@ -52,6 +53,15 @@ class ServerResourcesCollector(Collector):
         prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
         prometheus_metric.add_sample(metric_name, {}, metric_value)
         yield prometheus_metric
+
+        metric_name = 'lifecycle_tcp_connections_count'
+        tcp_connections = collections.Counter(p.status for p in psutil.net_connections(kind='tcp'))
+        for status, count in tcp_connections.items():
+            prometheus_metric = GaugeMetricFamily(metric_name, 'Number of open TCP connections by status')
+            prometheus_metric.add_sample(metric_name, {
+                'status': status,
+            }, count)
+            yield prometheus_metric
 
 
 def is_database_connected() -> bool:
