@@ -71,10 +71,6 @@ def _setup_uvicorn_logs(access_log: bool):
         },
     }
 
-    LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
-    LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'INFO'
-    LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
-
     if not access_log:
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = 'CRITICAL'
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["handlers"] = []
