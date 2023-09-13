@@ -47,7 +47,7 @@ class DatabaseConnectionCollector(Collector):
 
 class ServerResourcesCollector(Collector):
     def collect(self):
-        metric_name = 'lifecycle_threads_number'
+        metric_name = 'lifecycle_active_threads_count'
         metric_value = threading.active_count()
         prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
         prometheus_metric.add_sample(metric_name, {}, metric_value)
