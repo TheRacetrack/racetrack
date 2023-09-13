@@ -20,6 +20,14 @@ metric_jobs_count_by_status = Gauge(
     "Number of jobs with a particular status",
     labelnames=['status'],
 )
+metric_event_stream_client_connected = Gauge(
+    "lifecycle_event_stream_client_connected",
+    "Total number of successful connections to the event stream",
+)
+metric_event_stream_client_disconnected = Gauge(
+    "lifecycle_event_stream_client_disconnected",
+    "Total number of disconnections from the event stream",
+)
 
 
 def setup_lifecycle_metrics():

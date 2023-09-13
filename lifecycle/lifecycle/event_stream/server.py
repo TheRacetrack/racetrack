@@ -6,6 +6,7 @@ import time
 
 from lifecycle.config import Config
 from lifecycle.job.registry import list_job_registry
+from lifecycle.server.metrics import metric_event_stream_client_connected, metric_event_stream_client_disconnected
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.dto import JobDto
 
@@ -24,6 +25,7 @@ class EventStreamServer:
         async def connect(client_id: str, environ):
             logger.debug(f'Client {client_id} connected to Event Streamer')
             self.clients.append(client_id)
+            metric_event_stream_client_connected.inc()
             await self.sio.emit('connected', {}, to=client_id)
             if len(self.clients) > 0 and (self.watcher_thread is None or not self.watcher_thread.is_alive()):
                 self.watcher_thread = threading.Thread(target=self.watch_database_events, args=(), daemon=True)
@@ -33,6 +35,7 @@ class EventStreamServer:
         async def disconnect(client_id: str):
             logger.debug(f'Client {client_id} disconnected from Event Streamer')
             if client_id in self.clients:
+                metric_event_stream_client_disconnected.inc()
                 self.clients.remove(client_id)
 
         @self.sio.on('*')
@@ -42,6 +45,7 @@ class EventStreamServer:
         self.asgi_app = socketio.ASGIApp(self.sio, socketio_path=socketio_path)
 
     async def notify_clients_async(self, event: dict):
+        logger.debug(f'Notifying all Event Stream clients: {len(self.clients)}')
         for client_id in self.clients.copy():
             # emit doesn't wait for the response
             await self.sio.emit('broadcast_event', event, to=client_id)
