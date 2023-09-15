@@ -1,3 +1,4 @@
+import json
 import os
 import urllib3
 
@@ -58,6 +59,9 @@ class JobStressUser(HttpUser):
         self.headers["Content-Type"] = "application/json"
         self.headers["accept"] = "application/json"
 
+        payload_str = os.environ.get('payload')
+        self.payload = json.loads(payload_str)
+
     @tag('live')
     @task(5)  # number in task indicates weight, higher means more calls
     def test_live(self):
@@ -71,11 +75,9 @@ class JobStressUser(HttpUser):
     @tag('perform')
     @task(5)
     def test_perform(self):
-        self.client.post(url=f"{self.url}/api/v1/perform", headers=self.headers, json={
-            "mode": "cpu",
-            "t": 3,
-        })
+        self.client.post(url=f"{self.url}/api/v1/perform", headers=self.headers, json=self.payload)
 
+    @tag('auth_fail')
     @task(1)
     def test_perform_auth_fail(self):
         headers = urllib3.make_headers()
