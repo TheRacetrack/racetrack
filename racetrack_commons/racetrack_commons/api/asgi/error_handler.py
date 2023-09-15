@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-
 from exceptiongroup import ExceptionGroup
 
 from racetrack_client.log.errors import EntityNotFound, AlreadyExists, ValidationError
@@ -68,17 +67,11 @@ def register_error_handlers(api: FastAPI):
         try:
             return await call_next(request)
         except ExceptionGroup as e:
-            for suberror in e.exceptions:
-                log_request_exception_with_tracing(request, suberror)
-            if len(e.exceptions) == 1:
-                suberror = e.exceptions[0]
-                return JSONResponse(
-                    status_code=500,
-                    content={'error': f'{e}: {suberror}', "type": f'{type(e).__name__}: {type(suberror).__name__}'},
-                )
+            log_request_exception_with_tracing(request, e)
+            error_message, error_type = _upack_error_message(e)
             return JSONResponse(
                 status_code=500,
-                content={'error': str(e), "type": type(e).__name__},
+                content={'error': error_message, "type": error_type},
             )
         except BaseException as error:
             log_request_exception_with_tracing(request, error)
@@ -86,3 +79,16 @@ def register_error_handlers(api: FastAPI):
                 status_code=500,
                 content={'error': str(error), "type": type(error).__name__},
             )
+
+
+def _upack_error_message(e: BaseException) -> tuple[str, str]:
+    if isinstance(e, ExceptionGroup):
+        e_message = f'{e}: '
+        e_type = f'{type(e).__name__}: '
+        for suberror in e.exceptions:
+            sub_message, sub_type = _upack_error_message(suberror)
+            e_message += sub_message
+            e_type += sub_type
+        return e_message, e_type
+
+    return str(e), type(e).__name__
