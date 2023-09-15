@@ -5,14 +5,18 @@ from lifecycle.config import Config
 from lifecycle.deployer.infra_target import get_infrastructure_target, list_infrastructure_targets
 from lifecycle.monitor.base import LogsStreamer
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.dto import JobDto
 from racetrack_commons.plugin.engine import PluginEngine
+
+logger = get_logger(__name__)
 
 
 def list_cluster_jobs(config: Config, plugin_engine: PluginEngine) -> Iterable[JobDto]:
     """List jobs deployed in a cluster"""
     infrastructures = list_infrastructure_targets(plugin_engine)
     for infrastructure in infrastructures:
+        logger.debug(f"listing cluster jobs from infrastructure /{len(infrastructures)}")
         yield from infrastructure.job_monitor.list_jobs(config)
 
 

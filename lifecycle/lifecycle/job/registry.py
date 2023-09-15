@@ -130,6 +130,7 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
     logger.debug("synchronizing jobs...")
     with wrap_context('synchronizing job'):
         available_job_types: set[str] = set(list_available_job_types(plugin_engine))
+        logger.debug(f"available job types: {len(available_job_types)}")
         cluster_jobs_map: dict[str, JobDto] = _generate_job_map(list_cluster_jobs(config, plugin_engine))
         logger.debug(f"discovered jobs in a cluster: {len(cluster_jobs_map)}")
         registry_jobs_map: dict[str, JobDto] = _generate_job_map(list_job_registry(config))
