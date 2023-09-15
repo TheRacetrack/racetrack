@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from exceptiongroup import ExceptionGroup
+
 from racetrack_client.log.errors import EntityNotFound, AlreadyExists, ValidationError
 from racetrack_commons.api.tracing import log_request_exception_with_tracing
 from racetrack_commons.auth.auth import UnauthorizedError
