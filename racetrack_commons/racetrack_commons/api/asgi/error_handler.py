@@ -66,8 +66,14 @@ def register_error_handlers(api: FastAPI):
         try:
             return await call_next(request)
         except ExceptionGroup as e:
-            for error in e.exceptions:
-                log_request_exception_with_tracing(request, error)
+            for suberror in e.exceptions:
+                log_request_exception_with_tracing(request, suberror)
+            if len(e.exceptions) == 1:
+                suberror = e.exceptions[0]
+                return JSONResponse(
+                    status_code=500,
+                    content={'error': f'{e}: {suberror}', "type": f'{type(e).__name__}: {type(suberror).__name__}'},
+                )
             return JSONResponse(
                 status_code=500,
                 content={'error': str(e), "type": type(e).__name__},
