@@ -30,7 +30,15 @@ class TrailingSlashForwarder:
         if path in self.forwarded_paths and not path.endswith('/'):
             scope['path'] = f"{path}/"
             scope['raw_path'] = scope['path'].encode()
-        await self.app(scope, receive, send)
+        try:
+            await self.app(scope, receive, send)
+        except ExceptionGroup as e:
+            for ex in e.exceptions:
+                print(ex)
+            raise e
+        except BaseException as e:
+            print(e)
+            raise e
 
     @classmethod
     def mount_path(cls, path: str):

@@ -65,6 +65,13 @@ def register_error_handlers(api: FastAPI):
     async def catch_all_exceptions_middleware(request: Request, call_next):
         try:
             return await call_next(request)
+        except ExceptionGroup as e:
+            for error in e.exceptions:
+                log_request_exception_with_tracing(request, error)
+            return JSONResponse(
+                status_code=500,
+                content={'error': str(e), "type": type(e).__name__},
+            )
         except BaseException as error:
             log_request_exception_with_tracing(request, error)
             return JSONResponse(
