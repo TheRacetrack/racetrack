@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from exceptiongroup import ExceptionGroup
+
 
 def mount_at_base_path(api_app: ASGIApp, *base_path_patterns: str) -> FastAPI:
     wrapper_app = FastAPI()
