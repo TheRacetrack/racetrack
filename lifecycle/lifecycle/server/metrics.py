@@ -64,12 +64,12 @@ class ServerResourcesCollector(Collector):
 
         metric_name = 'lifecycle_tcp_connections_count'
         tcp_connections = collections.Counter(p.status for p in psutil.net_connections(kind='tcp'))
+        prometheus_metric = GaugeMetricFamily(metric_name, 'Number of open TCP connections by status')
         for status, count in tcp_connections.items():
-            prometheus_metric = GaugeMetricFamily(metric_name, 'Number of open TCP connections by status')
             prometheus_metric.add_sample(metric_name, {
                 'status': status,
             }, count)
-            yield prometheus_metric
+        yield prometheus_metric
 
 
 def is_database_connected() -> bool:
