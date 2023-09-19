@@ -3,20 +3,12 @@ from fastapi.responses import JSONResponse
 from exceptiongroup import ExceptionGroup
 
 from racetrack_client.log.errors import EntityNotFound, AlreadyExists, ValidationError
+from racetrack_commons.api.metrics import metric_internal_server_errors
 from racetrack_commons.api.tracing import log_request_exception_with_tracing
 from racetrack_commons.auth.auth import UnauthorizedError
 
 
 def register_error_handlers(api: FastAPI):
-
-    @api.exception_handler(Exception)
-    async def default_error_handler(request: Request, error: Exception):
-        """Internal Server error"""
-        log_request_exception_with_tracing(request, error)
-        return JSONResponse(
-            content={"error": str(error), "type": type(error).__name__},
-            status_code=500,
-        )
 
     @api.exception_handler(ValueError)
     async def value_error_handler(request: Request, error: ValueError):
@@ -62,11 +54,23 @@ def register_error_handlers(api: FastAPI):
             status_code=400,  # Bad Request
         )
 
+    @api.exception_handler(Exception)
+    async def default_error_handler(request: Request, error: Exception):
+        """Internal Server error"""
+        metric_internal_server_errors.inc()
+        log_request_exception_with_tracing(request, error)
+        error_message, error_type = _upack_error_message(error)
+        return JSONResponse(
+            status_code=500,
+            content={'error': error_message, "type": error_type},
+        )
+
     @api.middleware('http')
     async def catch_all_exceptions_middleware(request: Request, call_next):
         try:
             return await call_next(request)
         except ExceptionGroup as e:
+            metric_internal_server_errors.inc()
             log_request_exception_with_tracing(request, e)
             error_message, error_type = _upack_error_message(e)
             return JSONResponse(
@@ -74,6 +78,7 @@ def register_error_handlers(api: FastAPI):
                 content={'error': error_message, "type": error_type},
             )
         except BaseException as error:
+            metric_internal_server_errors.inc()
             log_request_exception_with_tracing(request, error)
             return JSONResponse(
                 status_code=500,
