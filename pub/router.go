@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,8 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
-
-const baseIngressPath = "/pub"
 
 func ListenAndServe(cfg *Config) error {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
@@ -21,7 +20,7 @@ func ListenAndServe(cfg *Config) error {
 	// and at prefixed path (when accessed through ingress proxy)
 	baseUrls := []string{
 		"",
-		baseIngressPath,
+		fmt.Sprintf("/%s", cfg.ServiceName),
 	}
 	for _, baseUrl := range baseUrls {
 		// Backwards compatability endpoints
@@ -40,10 +39,10 @@ func ListenAndServe(cfg *Config) error {
 		})
 
 		router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
-			remoteGatewayEndpoint(c, cfg, "/"+c.Param("path"))
+			remoteForwardEndpoint(c, cfg, "/"+c.Param("path"))
 		})
 		router.Any(baseUrl+"/remote/forward/:job/:version", func(c *gin.Context) {
-			remoteGatewayEndpoint(c, cfg, "")
+			remoteForwardEndpoint(c, cfg, "")
 		})
 		router.POST(baseUrl+"/remote/command", func(c *gin.Context) {
 			remoteCommandEndpoint(c, cfg)

@@ -19,6 +19,7 @@ type Config struct {
 	OpenTelemetryEndpoint string `env:"OPENTELEMETRY_ENDPOINT" envDefault:""`
 	RemoteGatewayMode     bool   `env:"REMOTE_GATEWAY_MODE" envDefault:"false"`
 	RemoteGatewayToken    string `env:"REMOTE_GATEWAY_TOKEN" envDefault:""`
+	ServiceName           string `env:"SERVICE_NAME" envDefault:"pub"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -105,7 +105,9 @@ func handleProxyRequest(
 		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName)
 	}
 
-	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
+	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
+	targetUrl := TargetURL(cfg, job, urlPath)
+
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
 	return http.StatusOK, nil
 }

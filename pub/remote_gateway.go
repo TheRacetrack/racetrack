@@ -29,7 +29,8 @@ var masterWsConnection *websocket.Conn = nil
 var remoteConnections map[string]*websocket.Conn = make(map[string]*websocket.Conn)
 
 func initRemoteGateway(router *gin.Engine, cfg *Config) {
-	router.GET("/pub/remote/ws", func(c *gin.Context) {
+	relativePath := fmt.Sprintf("/%s/remote/ws", cfg.ServiceName)
+	router.GET(relativePath, func(c *gin.Context) {
 		statusCode, err := openRemoteWebsocket(cfg, c.Writer, c.Request)
 		if err != nil {
 			log.Error("Failed to open websocket server", log.Ctx{
@@ -89,10 +90,10 @@ func handleMasterProxyRequest(
 
 	remoteConn, found := remoteConnections[gatewayHost]
 	if !found || remoteConn == nil {
-		connectToRemoteWebsocket(cfg, gatewayHost, jobCall)
+		connectToRemoteWebsocket(cfg, gatewayUrl, jobCall)
 	}
 
-	urlStr := JoinURL(gatewayUrlTxt, "/pub/job/", job.Name, job.Version, jobPath)
+	urlStr := JoinURL(gatewayUrlTxt, "/job/", job.Name, job.Version, jobPath)
 	targetUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "Parsing remote infrastructure address")
@@ -107,13 +108,15 @@ func handleMasterProxyRequest(
 	return http.StatusOK, nil
 }
 
-// Setup Websocket connection so that remote can make calls to main Lifecycle
+// Setup Websocket connection so that remote can make calls back to main Lifecycle
 func connectToRemoteWebsocket(
 	cfg *Config,
-	gatewayHost string,
+	gatewayUrl *url.URL,
 	jobCall *JobCallAuthData,
 ) {
-	wsUrl := url.URL{Scheme: "ws", Host: gatewayHost, Path: "/pub/remote/ws"}
+	var gatewayHost string = gatewayUrl.Host
+	wsPath := JoinURL(gatewayUrl.Path, "/remote/ws")
+	wsUrl := url.URL{Scheme: "ws", Host: gatewayHost, Path: wsPath}
 	log.Debug("Connecting to remote websocket", log.Ctx{
 		"url": wsUrl.String(),
 	})
@@ -131,11 +134,11 @@ func connectToRemoteWebsocket(
 		log.Info("Connected to remote websocket", log.Ctx{
 			"url": wsUrl.String(),
 		})
-		go serveGatewayWebsocketCalls(cfg, conn, gatewayHost)
+		go handleGatewayWebsocketCalls(cfg, conn, gatewayHost)
 	}
 }
 
-func serveGatewayWebsocketCalls(cfg *Config, conn *websocket.Conn, gatewayHost string) {
+func handleGatewayWebsocketCalls(cfg *Config, conn *websocket.Conn, gatewayHost string) {
 	for {
 		err, fatalError := handleGatewayWebsocketCall(cfg, conn, gatewayHost)
 		if fatalError != nil {

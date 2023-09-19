@@ -89,7 +89,7 @@ def remote_shell(
     workdir: str | None = None,
 ) -> str:
     """Run command on remote infrastructure, return output of a command"""
-    url = join_paths(remote_gateway_url, "/pub/remote/command")
+    url = join_paths(remote_gateway_url, "/remote/command")
     response = Requests.post(url, headers={
         'X-Racetrack-Gateway-Token': remote_gateway_token,
     }, json={

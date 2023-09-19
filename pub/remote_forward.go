@@ -9,14 +9,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func remoteGatewayEndpoint(c *gin.Context, cfg *Config, jobPath string) {
+func remoteForwardEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
 
 	logger.Info("Incoming forwarding request from main Pub", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleRemoteGatewayRequest(c, cfg, logger, requestId, jobPath)
+	statusCode, err := handleRemoteForwardRequest(c, cfg, logger, requestId, jobPath)
 	if err != nil {
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
@@ -32,7 +32,7 @@ func remoteGatewayEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	}
 }
 
-func handleRemoteGatewayRequest(
+func handleRemoteForwardRequest(
 	c *gin.Context,
 	cfg *Config,
 	logger log.Logger,
