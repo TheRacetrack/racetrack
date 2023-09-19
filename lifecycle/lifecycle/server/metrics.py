@@ -1,7 +1,8 @@
-import socket
-import os
-import threading
+import asyncio
 import collections
+import os
+import socket
+import threading
 
 import psutil
 from django.conf import settings
@@ -61,6 +62,14 @@ class ServerResourcesCollector(Collector):
         prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
         prometheus_metric.add_sample(metric_name, {}, metric_value)
         yield prometheus_metric
+
+        metric_name = 'lifecycle_coroutines_count'
+        loop = asyncio.get_event_loop()
+        if loop is not None:
+            metric_value = len(asyncio.all_tasks(loop))
+            prometheus_metric = GaugeMetricFamily(metric_name, 'Number of async Task objects run by the current loop')
+            prometheus_metric.add_sample(metric_name, {}, metric_value)
+            yield prometheus_metric
 
         metric_name = 'lifecycle_tcp_connections_count'
         tcp_connections = collections.Counter(p.status for p in psutil.net_connections(kind='tcp'))
