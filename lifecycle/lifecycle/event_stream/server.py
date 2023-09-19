@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 class EventStreamServer:
     def __init__(self, config: Config, socketio_path: str = 'lifecycle/socketio/events'):
         """Socket.IO server for streaming events to clients"""
-        self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+        self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', logger=True)
         self.clients: list[str] = []  # List of Client IDs
         self.watcher_thread: threading.Thread | None = None
         self.config = config
