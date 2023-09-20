@@ -1,7 +1,8 @@
+# Stress tests with Locust
 
-## Testing production Racetrack:
+## Testing production Racetrack
 
-1. Copy .env.dist to .env
+1. Copy `.env.template` to `.env`
 1. Fillout missing values - test_env=kubernetes to desired cluster
 1. Deploy Job adder
 1. Create ESC, make adder allowed, and put its auth to esc_auth
@@ -9,14 +10,19 @@
 1. Open `http:0.0.0.0:8089`, set parameters, click `Start swarming`
 1. Watch results
 
-## Testing localhost on docker compose:
+## Testing localhost on docker compose
 
 1. Run `make compose-run-stress`
 1. Deploy Job adder
 1. Open `http:0.0.0.0:8089`, set parameters, click `Start swarming`
 1. Watch results
 
-## Testing localhost on kind:
+Alternatively, you can run locally:
+```sh
+ENV_FILE=.env locust --tags perform
+```
+
+## Testing localhost on kind
 
 1. Run `make kind-up`
 2. Deploy Job adder
