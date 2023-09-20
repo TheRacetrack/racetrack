@@ -42,6 +42,8 @@ def log_request_exception_with_tracing(request: Request, e: BaseException):
         if isinstance(e, ExceptionGroup):
             for suberror in e.exceptions:
                 log_request_exception_with_tracing(request, suberror)
+            if len(e.exceptions) == 1:
+                return
 
         ex_type, e, tb = (type(e), e, e.__traceback__)
         log_message = get_exc_info_details(ex_type, e, tb)

@@ -15,6 +15,7 @@ from prometheus_client.metrics_core import GaugeMetricFamily
 
 metric_requested_job_deployments = Counter('requested_job_deployments', 'Number of requests to deploy job')
 metric_deployed_job = Counter('deployed_job', 'Number of Jobs deployed successfully')
+metric_metrics_scrapes = Counter('metrics_scrapes', 'Number of Prometheus metrics scrapes')
 
 metric_jobs_count_by_status = Gauge(
     "jobs_count_by_status",
@@ -57,6 +58,8 @@ class DatabaseConnectionCollector(Collector):
 
 class ServerResourcesCollector(Collector):
     def collect(self):
+        metric_metrics_scrapes.inc()
+
         metric_name = 'lifecycle_active_threads_count'
         metric_value = threading.active_count()
         prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
