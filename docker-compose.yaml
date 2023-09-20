@@ -60,6 +60,8 @@ services:
       /src/lifecycle/wait-for-postgres.sh && 
       /src/lifecycle/lifecycle/django/migrate.sh && 
       python -u -m lifecycle supervisor"
+    stdin_open: true
+    tty: true
 
   image-builder:
     container_name: image-builder
