@@ -151,6 +151,7 @@ var autoReloadSocket: Socket | null = null
 
 function setupEventStreamClient() {
     autoReloadSocket?.disconnect()
+    autoReloadSocket?.removeAllListeners()
     autoReloadSocket = null
 
     if (!envInfo.lifecycle_url)
@@ -167,7 +168,7 @@ function setupEventStreamClient() {
     })
     autoReloadSocket = socket
 
-    socket.on("connect", () => {
+    socket.once("connect", () => {
         console.log(`connected to live events stream: ${socket.id}`)
         socket.on("broadcast_event", (data) => {
             console.log('Change detected, reloading jobs')
@@ -175,8 +176,16 @@ function setupEventStreamClient() {
         })
     })
 
+    socket.on("reconnect", () => {
+        console.log(`reconnected to live events stream: ${socket.id}`)
+    })
+
     socket.on("disconnect", () => {
         console.log('disconnected from live events stream')
+    })
+
+    socket.on("error", (err) => {
+        console.error(`events stream socket.io error: ${err}`)
     })
 }
 
