@@ -16,7 +16,6 @@ def populate_metrics_jobs(config: Config):
     Populate a configuration file for Prometheus to discover all the jobs
     using `file_sd_configs` feature
     """
-    logger.debug("popoulating metrics configuration...")
     metrics_dir = Path(config.plugins_dir) / 'metrics'
     ensure_dir_exists(metrics_dir)
     service_discovery_file: Path = metrics_dir / 'sd_config_jobs.yaml'

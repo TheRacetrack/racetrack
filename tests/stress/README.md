@@ -17,7 +17,7 @@
 1. Open `http:0.0.0.0:8089`, set parameters, click `Start swarming`
 1. Watch results
 
-Alternatively, you can run locally:
+Alternatively, run locally:
 ```sh
 ENV_FILE=.env locust --tags perform
 ```

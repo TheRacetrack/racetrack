@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
-from exceptiongroup import ExceptionGroup
 
 
 def mount_at_base_path(api_app: ASGIApp, *base_path_patterns: str) -> FastAPI:
@@ -31,15 +30,7 @@ class TrailingSlashForwarder:
         if path in self.forwarded_paths and not path.endswith('/'):
             scope['path'] = f"{path}/"
             scope['raw_path'] = scope['path'].encode()
-        try:
-            await self.app(scope, receive, send)
-        except ExceptionGroup as e:
-            for ex in e.exceptions:
-                print(ex)
-            raise e
-        except BaseException as e:
-            print(e)
-            raise e
+        await self.app(scope, receive, send)
 
     @classmethod
     def mount_path(cls, path: str):

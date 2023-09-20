@@ -26,6 +26,8 @@ HIDDEN_ACCESS_LOGS = {
     'GET /metrics/ 200',
 }
 
+UVICORN_DEBUG_LOGS = False
+
 
 def serve_asgi_app(
     app: Union[ASGIApp, str],
@@ -70,6 +72,11 @@ def _setup_uvicorn_logs(access_log: bool):
             "()": 'racetrack_commons.api.asgi.asgi_server.NeedlessRequestsFilter',
         },
     }
+
+    if not UVICORN_DEBUG_LOGS:
+        LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
+        LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'INFO'
+        LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
 
     if not access_log:
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = 'CRITICAL'

@@ -127,14 +127,10 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
     - if the job is expected to be present, but was not found in a cluster, it gets LOST status.
     - if there are extra jobs found in the cluster, called "orphans", they are ignored, but the log warning is written.
     """
-    logger.debug("synchronizing jobs...")
     with wrap_context('synchronizing job'):
         available_job_types: set[str] = set(list_available_job_types(plugin_engine))
-        logger.debug(f"available job types: {len(available_job_types)}")
         cluster_jobs_map: dict[str, JobDto] = _generate_job_map(list_cluster_jobs(config, plugin_engine))
-        logger.debug(f"discovered jobs in a cluster: {len(cluster_jobs_map)}")
         registry_jobs_map: dict[str, JobDto] = _generate_job_map(list_job_registry(config))
-        logger.debug(f"discovered jobs in a database: {len(registry_jobs_map)}")
         job_status_count: dict[str, int] = defaultdict(int)
 
         for job_id, registry_job in registry_jobs_map.items():
@@ -159,7 +155,8 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
                 logger.warning(f'orphaned job found: {cluster_job}, internal name: {cluster_job.internal_name}')
 
     all_jobs_count = sum(job_status_count.values())
-    logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')
+    if job_status_count[JobStatus.RUNNING.value] != all_jobs_count:
+        logger.debug(f'Jobs synchronized, count by status: {dict(job_status_count)}')
     for status in JobStatus:
         metric_jobs_count_by_status.labels(status=status.value).set(job_status_count[status.value])
 
@@ -196,7 +193,6 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
             changed = True
 
     if changed:
-        logger.debug(f"updating model of a job {registry_job}")
         models_registry.save_job_model(registry_job)
 
 

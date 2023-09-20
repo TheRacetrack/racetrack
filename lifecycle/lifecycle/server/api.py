@@ -37,7 +37,7 @@ logger = get_logger(__name__)
 def run_api_server(config: Config, plugin_engine: PluginEngine, service_name: str = 'lifecycle'):
     """Create app from config and run ASGI HTTP server"""
     app = create_fastapi_app(config, plugin_engine, service_name)
-    serve_asgi_app(app, http_addr=config.http_addr, http_port=config.http_port, access_log=True)
+    serve_asgi_app(app, http_addr=config.http_addr, http_port=config.http_port)
 
 
 def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str, event_stream_server: EventStreamServer | None = None) -> ASGIApp:

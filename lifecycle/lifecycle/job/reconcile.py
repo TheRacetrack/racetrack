@@ -12,7 +12,6 @@ logger = get_logger(__name__)
 
 def reconcile_jobs(config: Config, plugin_engine: PluginEngine):
     """Redeploy jobs missing in a cluster"""
-    logger.debug("reconciling jobs...")
     with wrap_context('reconciling jobs'):
         for job in list_job_registry(config):
             try:
