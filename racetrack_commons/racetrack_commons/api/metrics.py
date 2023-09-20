@@ -1,7 +1,9 @@
+from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI
 from prometheus_client import Counter, Histogram
-from prometheus_client.exposition import make_asgi_app
+from prometheus_client.exposition import make_wsgi_app
 from prometheus_client.registry import REGISTRY
+
 from racetrack_commons.api.asgi.proxy import TrailingSlashForwarder
 
 metric_internal_server_errors = Counter(
@@ -26,8 +28,8 @@ metric_requests_done = Counter(
 
 def setup_metrics_endpoint(api: FastAPI):
 
-    metrics_app = make_asgi_app(REGISTRY)
-    api.mount('/metrics', metrics_app)
+    metrics_app = make_wsgi_app(REGISTRY)
+    api.mount('/metrics', WSGIMiddleware(metrics_app))
     TrailingSlashForwarder.mount_path('/metrics')
 
     @api.get('/metrics', tags=['root'])
