@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 def setup_health_endpoint(api: FastAPI):
 
     @api.get("/live", tags=['root'])
-    async def _live():
+    def _live():
         """Report service liveness: whether it has started"""
         return {
             'service': 'dashboard',
@@ -15,7 +15,7 @@ def setup_health_endpoint(api: FastAPI):
         }
 
     @api.get("/ready", tags=['root'])
-    async def _ready():
+    def _ready():
         """Report service readiness: whether it's available for accepting traffic"""
         return {
             'service': 'dashboard',

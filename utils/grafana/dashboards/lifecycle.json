@@ -121,7 +121,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "jobs_count_by_status",
+          "expr": "jobs_count_by_status{job=\"lifecycle-supervisor\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "{{status}}",
@@ -343,7 +343,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by (job)((commons_requests_started_total - commons_requests_started_total offset $__interval) > 0)",
+          "expr": "sum by (job)((commons_requests_started_total{job=~\"lifecycle.*\"} - commons_requests_started_total{job=~\"lifecycle.*\"} offset $__interval) > 0)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}",
@@ -448,7 +448,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "commons_requests_started_total - commons_requests_done_total",
+          "expr": "commons_requests_started_total{job=~\"lifecycle.*\"} - commons_requests_done_total{job=~\"lifecycle.*\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}",
@@ -515,33 +515,7 @@
           },
           "unit": "short"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "growth: requested deployments",
-                  "growth: successful deployments"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -824,7 +798,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "commons_internal_server_errors_total",
+          "expr": "commons_internal_server_errors_total{job=~\"lifecycle.*\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}",
@@ -1099,7 +1073,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "metrics_scrapes_total",
+          "expr": "metrics_scrapes_total{job=~\"lifecycle.*\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}",
@@ -1537,6 +1511,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 12,
+  "version": 15,
   "weekStart": ""
 }
