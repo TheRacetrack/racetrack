@@ -1,10 +1,11 @@
-prometheus-client==0.16.0
+prometheus-client==0.17.1
 pydantic==1.10.5
 pyjwt[crypto]==2.6.0
-fastapi==0.92.0
-uvicorn[standard]==0.20.0
+fastapi==0.103.1
+uvicorn[standard]==0.23.2
 opentelemetry-exporter-otlp-proto-http==1.16.0
 protobuf==4.22.0  # needed by opentelemetry exporter
 python-multipart==0.0.6  # uploading files
 watchdog==2.3.1
 exceptiongroup==1.1.3  # Backport of exception groups from Python 3.10, used by fastapi/starlette/anyio
+a2wsgi==1.7.0
