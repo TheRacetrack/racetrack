@@ -163,8 +163,13 @@ function setupEventStreamClient() {
     const url = new URL(envInfo.lifecycle_url)
     url.pathname = ''
     const trimmedLifecycleUrl = url.toString()
+    // client options: https://socket.io/docs/v4/client-options/
     const socket = io(trimmedLifecycleUrl, {
         path: '/lifecycle/socketio/events',
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax : 5000,
+        reconnectionAttempts: 5,
     })
     autoReloadSocket = socket
 
