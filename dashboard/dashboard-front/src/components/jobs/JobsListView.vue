@@ -27,6 +27,8 @@ const loadingTree = ref(true)
 const autoUpdateEnabled = ref(true)
 const lastReloadTimestamp: Ref<number> = ref(0)
 
+const eventStreamFeatureEnabled = false
+
 function fetchJobs() {
     loadingTree.value = true
     apiClient.get<JobData[]>(`/api/v1/job`).then(response => {
@@ -150,6 +152,11 @@ watch(autoUpdateEnabled, () => {
 var autoReloadSocket: Socket | null = null
 
 function setupEventStreamClient() {
+    if (!eventStreamFeatureEnabled) {
+        console.log(`Event stream feature is disabled`)
+        return
+    }
+
     autoReloadSocket?.disconnect()
     autoReloadSocket?.removeAllListeners()
     autoReloadSocket = null
