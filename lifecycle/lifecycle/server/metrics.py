@@ -61,7 +61,6 @@ class ServerResourcesCollector(Collector):
     def collect(self):
         metric_metrics_scrapes.inc()
         yield from collect_active_threads_metric()
-        yield from collect_coroutines_count_metric()
         yield from collect_tcp_connections_metric()
 
 
@@ -71,19 +70,6 @@ def collect_active_threads_metric() -> Iterator[Metric]:
     prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
     prometheus_metric.add_sample(metric_name, {}, metric_value)
     yield prometheus_metric
-
-
-def collect_coroutines_count_metric() -> Iterator[Metric]:
-    metric_name = 'lifecycle_coroutines_count'
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = None
-    if loop is not None and not loop.is_closed():
-        metric_value = len(asyncio.all_tasks(loop))
-        prometheus_metric = GaugeMetricFamily(metric_name, 'Number of async Task objects run by the current loop')
-        prometheus_metric.add_sample(metric_name, {}, metric_value)
-        yield prometheus_metric
 
 
 def collect_tcp_connections_metric() -> Iterator[Metric]:
