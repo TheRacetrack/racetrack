@@ -1,7 +1,5 @@
-import asyncio
 import collections
 import os
-import socket
 import threading
 from typing import Iterator
 
@@ -13,6 +11,8 @@ from prometheus_client import Counter, Gauge
 from prometheus_client.core import REGISTRY
 from prometheus_client.registry import Collector
 from prometheus_client.metrics_core import GaugeMetricFamily, Metric
+
+from racetrack_client.utils.shell import CommandError, shell
 
 metric_requested_job_deployments = Counter('requested_job_deployments', 'Number of requests to deploy job')
 metric_deployed_job = Counter('deployed_job', 'Number of Jobs deployed successfully')
@@ -87,28 +87,17 @@ def is_database_connected() -> bool:
     try:
         django_db_type = os.environ.get('DJANGO_DB_TYPE', 'sqlite')
         if django_db_type == 'postgres':
+            db_name = settings.DATABASES['default']['NAME']
+            user = settings.DATABASES['default']['USER']
             host = settings.DATABASES['default']['HOST']
             port = settings.DATABASES['default']['PORT']
-            if not is_port_open(host, int(port)):
-                return False
-
-        close_old_connections()
-        with connection.cursor() as cursor:
-            cursor.execute('select 1')
-            cursor.fetchone()
-            cursor.close()
-        connection.close()
+            shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False)
+        else:
+            close_old_connections()
+            with connection.cursor() as cursor:
+                cursor.execute('select 1')
         return True
-    except OperationalError:
+    except CommandError:
         return False
-
-
-def is_port_open(ip: str, port: int) -> bool:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(3)
-    try:
-        s.connect((ip, port))
-        s.shutdown(socket.SHUT_RDWR)
-        return True
-    except:
+    except OperationalError:
         return False
