@@ -390,7 +390,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "normal"
@@ -437,7 +437,7 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -1410,6 +1410,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
