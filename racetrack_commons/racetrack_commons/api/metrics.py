@@ -12,7 +12,7 @@ metric_internal_server_errors = Counter(
 )
 metric_request_duration = Histogram(
     'commons_request_duration',
-    'Duration of API requests',
+    'Duration of API requests in seconds',
     buckets=(.001, .0025, .005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5,
              10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, float("inf")),
 )
