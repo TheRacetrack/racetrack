@@ -34,7 +34,6 @@ metric_event_stream_client_disconnected = Gauge(
 
 
 def setup_lifecycle_metrics():
-    REGISTRY.register(DatabaseConnectionCollector())
     REGISTRY.register(ServerResourcesCollector())
 
 
@@ -48,20 +47,12 @@ def unregister_metrics():
         REGISTRY.unregister(collector)
 
 
-class DatabaseConnectionCollector(Collector):
-    def collect(self):
-        metric_name = 'lifecycle_database_connected'
-        metric_value = 1 if is_database_connected() else 0
-        prometheus_metric = GaugeMetricFamily(metric_name, 'Status of database connection')
-        prometheus_metric.add_sample(metric_name, {}, metric_value)
-        yield prometheus_metric
-
-
 class ServerResourcesCollector(Collector):
     def collect(self):
         metric_metrics_scrapes.inc()
         yield from collect_active_threads_metric()
         yield from collect_tcp_connections_metric()
+        yield from collect_database_connection_metric()
 
 
 def collect_active_threads_metric() -> Iterator[Metric]:
@@ -80,6 +71,14 @@ def collect_tcp_connections_metric() -> Iterator[Metric]:
         prometheus_metric.add_sample(metric_name, {
             'status': status,
         }, count)
+    yield prometheus_metric
+
+
+def collect_database_connection_metric() -> Iterator[Metric]:
+    metric_name = 'lifecycle_database_connected'
+    metric_value = 1 if is_database_connected() else 0
+    prometheus_metric = GaugeMetricFamily(metric_name, 'Status of database connection')
+    prometheus_metric.add_sample(metric_name, {}, metric_value)
     yield prometheus_metric
 
 
