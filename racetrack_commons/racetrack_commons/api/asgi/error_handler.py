@@ -15,7 +15,7 @@ def register_error_handlers(api: FastAPI):
         """Bad Request error"""
         log_request_exception_with_tracing(request, error)
         return JSONResponse(
-            content={"error": str(error), "type": type(error).__name__},
+            content={'error': str(error), 'type': type(error).__name__},
             status_code=400,
         )
 
@@ -24,7 +24,7 @@ def register_error_handlers(api: FastAPI):
         """Unauthorized error"""
         log_request_exception_with_tracing(request, error)
         return JSONResponse(
-            content={"error": str(error), "type": type(error).__name__},
+            content={'error': str(error), 'type': type(error).__name__},
             status_code=401,
         )
 
@@ -33,7 +33,7 @@ def register_error_handlers(api: FastAPI):
         """Not Found error"""
         log_request_exception_with_tracing(request, error)
         return JSONResponse(
-            content={"error": str(error), "type": type(error).__name__},
+            content={'error': str(error), 'type': type(error).__name__},
             status_code=404,
         )
 
@@ -42,7 +42,7 @@ def register_error_handlers(api: FastAPI):
         """Already Exists - Conflict error"""
         log_request_exception_with_tracing(request, error)
         return JSONResponse(
-            content={"error": str(error), "type": type(error).__name__},
+            content={'error': str(error), 'type': type(error).__name__},
             status_code=409,
         )
 
@@ -50,7 +50,7 @@ def register_error_handlers(api: FastAPI):
     def validation_error_handler(request: Request, error: AlreadyExists):
         """Validation Error"""
         return JSONResponse(
-            content={"error": str(error), "type": type(error).__name__},
+            content={'error': str(error), 'type': type(error).__name__},
             status_code=400,  # Bad Request
         )
 
@@ -62,7 +62,7 @@ def register_error_handlers(api: FastAPI):
         error_message, error_type = _upack_error_message(error)
         return JSONResponse(
             status_code=500,
-            content={'error': error_message, "type": error_type},
+            content={'error': error_message, 'type': error_type},
         )
 
     @api.middleware('http')
@@ -75,14 +75,14 @@ def register_error_handlers(api: FastAPI):
             error_message, error_type = _upack_error_message(e)
             return JSONResponse(
                 status_code=500,
-                content={'error': error_message, "type": error_type},
+                content={'error': error_message, 'type': error_type},
             )
         except BaseException as error:
             metric_internal_server_errors.inc()
             log_request_exception_with_tracing(request, error)
             return JSONResponse(
                 status_code=500,
-                content={'error': str(error), "type": type(error).__name__},
+                content={'error': str(error), 'type': type(error).__name__},
             )
 
 
