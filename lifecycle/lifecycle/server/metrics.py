@@ -90,6 +90,7 @@ def is_database_connected() -> bool:
             user = settings.DATABASES['default']['USER']
             host = settings.DATABASES['default']['HOST']
             port = settings.DATABASES['default']['PORT']
+            # raise CommandError on non-zero exit code.
             shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False)
         else:
             close_old_connections()
