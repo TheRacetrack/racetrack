@@ -111,7 +111,7 @@ localhost-test-e2e-auth:
 	( cd tests/e2e && TEST_ENV=localhost TEST_SUITE=auth pytest -vv --tb=short -ra -s )
 
 compose-test-e2e:
-	( cd tests/e2e && TEST_ENV=docker pytest -vv --tb=short -ra -s )
+	( cd tests/e2e && TEST_ENV=docker pytest -vv --tb=short -ra -s $(test))
 
 compose-test-e2e-auth:
 	( cd tests/e2e && TEST_ENV=docker TEST_SUITE=auth pytest -vv --tb=short -ra -s  )

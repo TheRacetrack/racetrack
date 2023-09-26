@@ -27,6 +27,8 @@ const loadingTree = ref(true)
 const autoUpdateEnabled = ref(true)
 const lastReloadTimestamp: Ref<number> = ref(0)
 
+const eventStreamFeatureEnabled = false
+
 function fetchJobs() {
     loadingTree.value = true
     apiClient.get<JobData[]>(`/api/v1/job`).then(response => {
@@ -150,7 +152,13 @@ watch(autoUpdateEnabled, () => {
 var autoReloadSocket: Socket | null = null
 
 function setupEventStreamClient() {
+    if (!eventStreamFeatureEnabled) {
+        console.log(`Event stream feature is disabled`)
+        return
+    }
+
     autoReloadSocket?.disconnect()
+    autoReloadSocket?.removeAllListeners()
     autoReloadSocket = null
 
     if (!envInfo.lifecycle_url)
@@ -162,12 +170,17 @@ function setupEventStreamClient() {
     const url = new URL(envInfo.lifecycle_url)
     url.pathname = ''
     const trimmedLifecycleUrl = url.toString()
+    // client options: https://socket.io/docs/v4/client-options/
     const socket = io(trimmedLifecycleUrl, {
         path: '/lifecycle/socketio/events',
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax : 5000,
+        reconnectionAttempts: 5,
     })
     autoReloadSocket = socket
 
-    socket.on("connect", () => {
+    socket.once("connect", () => {
         console.log(`connected to live events stream: ${socket.id}`)
         socket.on("broadcast_event", (data) => {
             console.log('Change detected, reloading jobs')
@@ -175,8 +188,16 @@ function setupEventStreamClient() {
         })
     })
 
+    socket.on("reconnect", () => {
+        console.log(`reconnected to live events stream: ${socket.id}`)
+    })
+
     socket.on("disconnect", () => {
         console.log('disconnected from live events stream')
+    })
+
+    socket.on("error", (err) => {
+        console.error(`events stream socket.io error: ${err}`)
     })
 }
 
