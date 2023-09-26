@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Lifecycle has more metrics and Grafana panels for monitoring:
+  number of requests, websocket clients, server errors, open connections and active threads.
+- Improved error handling and logging in Lifecycle.
+
+### Fixed
+- Fixed metrics endpoint, which was making Lifecycle unresponsive to liveness probes
+  in case of database connection errors.
+  ([#314](https://github.com/TheRacetrack/racetrack/issues/314))
+
+### Removed
+- Auto-Update feature has been disabled temporarily due to generating too many requests on multiple replicas.
 
 ## [2.19.0] - 2023-09-04
 ### Added
