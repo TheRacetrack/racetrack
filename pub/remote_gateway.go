@@ -90,7 +90,10 @@ func handleMasterProxyRequest(
 
 	remoteConn, found := remoteConnections[gatewayHost]
 	if !found || remoteConn == nil {
-		connectToRemoteWebsocket(cfg, gatewayUrl, jobCall)
+		err = connectToRemoteWebsocket(cfg, gatewayUrl, jobCall)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
 	}
 
 	urlStr := JoinURL(gatewayUrlTxt, "/job/", job.Name, job.Version, jobPath)
@@ -113,10 +116,13 @@ func connectToRemoteWebsocket(
 	cfg *Config,
 	gatewayUrl *url.URL,
 	jobCall *JobCallAuthData,
-) {
+) error {
 	var gatewayHost string = gatewayUrl.Host
 	wsPath := JoinURL(gatewayUrl.Path, "/remote/ws")
 	wsUrl := url.URL{Scheme: "ws", Host: gatewayHost, Path: wsPath}
+	if gatewayUrl.Scheme == "https" {
+		wsUrl.Scheme = "wss"
+	}
 	log.Debug("Connecting to remote websocket", log.Ctx{
 		"url": wsUrl.String(),
 	})
@@ -129,13 +135,14 @@ func connectToRemoteWebsocket(
 		log.Error("Failed to connect to remote websocket", log.Ctx{
 			"error": err,
 		})
-	} else {
-		remoteConnections[gatewayHost] = conn
-		log.Info("Connected to remote websocket", log.Ctx{
-			"url": wsUrl.String(),
-		})
-		go handleGatewayWebsocketCalls(cfg, conn, gatewayHost)
+		return errors.Wrap(err, "Failed to connect to remote websocket")
 	}
+	remoteConnections[gatewayHost] = conn
+	log.Info("Connected to remote websocket", log.Ctx{
+		"url": wsUrl.String(),
+	})
+	go handleGatewayWebsocketCalls(cfg, conn, gatewayHost)
+	return nil
 }
 
 func handleGatewayWebsocketCalls(cfg *Config, conn *websocket.Conn, gatewayHost string) {
