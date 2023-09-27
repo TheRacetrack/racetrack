@@ -139,7 +139,7 @@ func ServeReverseProxy(
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.URL.Path = target.Path
-		req.Host = c.Request.Host
+		req.Host = target.Host
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Set(cfg.RequestTracingHeader, requestId)
 		if callerName != "" {
