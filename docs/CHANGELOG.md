@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.20.0] - 2023-09-27
 ### Added
 - Lifecycle has more metrics and Grafana panels for monitoring:
   number of requests, websocket clients, server errors, open connections and active threads.
@@ -14,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed metrics endpoint, which was making Lifecycle unresponsive to liveness probes
   in case of database connection errors.
   ([#314](https://github.com/TheRacetrack/racetrack/issues/314))
+- Fixed TypeError in racetrack client on Python 3.8
+  ([#320](https://github.com/TheRacetrack/racetrack/issues/320))
 
 ### Removed
 - Auto-Update feature has been disabled temporarily due to generating too many requests on multiple replicas.

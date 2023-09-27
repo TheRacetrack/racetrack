@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Extra
 
@@ -22,7 +22,7 @@ class PluginManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True
     category: Optional[str] = None
 
     # list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'
-    components: list[str] = []
+    components: List[str] = []
 
     def __hash__(self):
         return hash((type(self),) + tuple(self.__dict__.values()))

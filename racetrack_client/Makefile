@@ -19,4 +19,4 @@ release-test-pypi: release-clean build
 		python -m twine upload --repository testpypi dist/*
 
 release-pypi: release-clean build
-		python -m twine upload dist/*
+		python -m twine upload -u __token__ dist/*
