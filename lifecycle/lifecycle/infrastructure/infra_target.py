@@ -1,20 +1,10 @@
-from __future__ import annotations
-
-from pydantic import BaseModel
-
 from lifecycle.config import Config
-from lifecycle.deployer.base import JobDeployer
-from lifecycle.monitor.base import JobMonitor, LogsStreamer
+from lifecycle.infrastructure.model import InfrastructureTarget
+from lifecycle.server.cache import LifecycleCache
+from racetrack_client.manifest.manifest import Manifest
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
-from racetrack_client.manifest.manifest import Manifest
-
-
-class InfrastructureTarget(BaseModel, arbitrary_types_allowed=True):
-    job_deployer: JobDeployer
-    job_monitor: JobMonitor
-    logs_streamer: LogsStreamer
 
 
 def determine_infrastructure_name(
@@ -30,14 +20,14 @@ def determine_infrastructure_name(
             f'Selected infrastructure target "{manifest.infrastructure_target}" is unavailable. Available are {", ".join(available_targets)}.'
         return manifest.infrastructure_target
 
+    if len(available_targets) == 1:
+        return available_targets[0]
+
     if config.infrastructure_target:
         assert config.infrastructure_target in available_targets, \
             f'Selected infrastructure target "{config.infrastructure_target}" is unavailable. Available are {", ".join(available_targets)}.'
         return config.infrastructure_target
-    
-    if len(available_targets) == 1:
-        return available_targets[0]
-    
+
     raise RuntimeError(f'Multiple infrastructure targets available: {available_targets}. Please pick one.')
 
 
@@ -59,11 +49,8 @@ def _gather_infrastructure_targets(plugin_engine: PluginEngine) -> dict[str, Inf
     return all_infrastructures
 
 
-def get_infrastructure_target(
-    plugin_engine: PluginEngine, 
-    infrastructure_name: str | None,
-) -> InfrastructureTarget:
-    infrastructures = _gather_infrastructure_targets(plugin_engine)
+def get_infrastructure_target(infrastructure_name: str | None) -> InfrastructureTarget:
+    infrastructures: dict[str, InfrastructureTarget] = LifecycleCache.infrastructure_targets
 
     if infrastructure_name:
         assert infrastructure_name in infrastructures, f'Selected infrastructure target "{infrastructure_name}" is unavailable'

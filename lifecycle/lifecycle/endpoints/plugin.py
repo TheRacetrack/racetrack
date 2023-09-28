@@ -11,7 +11,7 @@ from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
-from lifecycle.deployer.infra_target import list_infrastructure_names_with_origins
+from lifecycle.infrastructure.infra_target import list_infrastructure_names_with_origins
 from lifecycle.auth.check import check_staff_user
 
 

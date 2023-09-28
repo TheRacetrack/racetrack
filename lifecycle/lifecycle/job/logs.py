@@ -4,13 +4,12 @@ from lifecycle.job.registry import read_versioned_job
 from lifecycle.job import models_registry
 from lifecycle.monitor.monitors import read_recent_logs
 from racetrack_client.log.errors import EntityNotFound
-from racetrack_commons.plugin.engine import PluginEngine
 
 
-def read_runtime_logs(job_name: str, job_version: str, tail: int, config: Config, plugin_engine: PluginEngine) -> str:
+def read_runtime_logs(job_name: str, job_version: str, tail: int, config: Config) -> str:
     """Read recent logs from running job by its name"""
     job = read_versioned_job(job_name, job_version, config)
-    return read_recent_logs(job, tail, plugin_engine)
+    return read_recent_logs(job, tail)
 
 
 def read_build_logs(job_name: str, job_version: str, tail: int) -> str:

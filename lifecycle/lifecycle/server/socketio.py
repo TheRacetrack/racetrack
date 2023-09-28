@@ -1,76 +1,124 @@
-from __future__ import annotations
 import contextlib
 import threading
-from typing import Dict
+from abc import ABC
 
 import socketio
 from werkzeug.serving import make_server
+from pydantic import BaseModel
 
-from lifecycle.monitor.base import LogsStreamer
+from lifecycle.config import Config
+from lifecycle.infrastructure.infra_target import get_infrastructure_target
+from lifecycle.job.registry import read_versioned_job
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
+from lifecycle.monitor.base import LogsStreamer
+from racetrack_commons.entities.dto import JobDto
 
 logger = get_logger(__name__)
 
 
+class LogSessionDetails(BaseModel, arbitrary_types_allowed=True):
+    client_id: str
+    job_name: str
+    job_version: str
+    session_id: str
+    logs_streamer: LogsStreamer
+    tail: str | None
+
+
+class JobRetriever(ABC):
+    def get_job(self, job_name: str, job_version: str) -> JobDto:
+        raise NotImplementedError()
+
+
+class RegistryJobRetriever(JobRetriever):
+    def __init__(self, config: Config):
+        self.config = config
+
+    def get_job(self, job_name: str, job_version: str) -> JobDto:
+        return read_versioned_job(job_name, job_version, self.config)
+
+
 class SocketIOServer:
-    def __init__(self, log_streamers: list[LogsStreamer]):
+    def __init__(self, job_retriever: JobRetriever):
         """
         Socket.IO server for streaming data to clients
-        :param log_streamers: Sources of logs
         """
         self.sio = socketio.Server(async_mode='threading')
-        self.client_resources: Dict[str, Dict[str, str]] = {}  # Map Client ID to a resource
-        for log_streamer in log_streamers:
-            log_streamer.broadcaster = self.broadcast_logs_nextline
+        self.log_sessions_by_client: dict[str, LogSessionDetails] = {}  # Map Client ID to session details
+        self.log_sessions_by_id: dict[str, LogSessionDetails] = {}  # Map Session ID to session details
+        self.job_retriever: JobRetriever = job_retriever
 
         @self.sio.event
         def connect(client_id: str, environ):
             logger.debug(f'Client {client_id} connected to Socket.IO')
 
         @self.sio.event
-        def subscribe_for_logs(client_id: str, data: Dict) -> str:
+        def subscribe_for_logs(client_id: str, data: dict) -> str:
             """Request new logs session from a server and listen on the events from it"""
-            resource_properties = data.get('resource_properties', {})
-            if client_id in self.client_resources:
-                resource_properties = self.client_resources[client_id]
-                return self.get_session_id(client_id, resource_properties)
-            else:
-                self.client_resources[client_id] = resource_properties
-                session_id = self.get_session_id(client_id, resource_properties)
-                logger.info(f'Creating consumer session: {session_id}')
-                for log_streamer in log_streamers:
-                    log_streamer.create_session(session_id, resource_properties)
-                return session_id
+            try:
+                if client_id in self.log_sessions_by_client:
+                    return self.log_sessions_by_client[client_id].session_id
+                else:
+                    resource_properties = data.get('resource_properties', {})
+                    return self.open_logs_session(client_id, resource_properties)
+            except BaseException as e:
+                log_exception(e)
 
         @self.sio.event
         def disconnect(client_id: str):
+            if client_id in self.log_sessions_by_client:
+                self.close_logs_session(self.log_sessions_by_client[client_id])
             logger.debug(f'Client {client_id} disconnected from Socket.IO')
-            if client_id in self.client_resources:
-                resource_properties = self.client_resources[client_id]
-                del self.client_resources[client_id]
-                session_id = self.get_session_id(client_id, resource_properties)
-                logger.info(f'Consumer session closed: {session_id}')
-                for log_streamer in log_streamers:
-                    log_streamer.close_session(session_id)
 
         self.wsgi_app = socketio.WSGIApp(self.sio, socketio_path='lifecycle/socket.io')
 
+    def open_logs_session(self, client_id: str, resource_properties: dict[str, str]) -> str:
+        logger.info(f'Creating log session for client: {client_id}')
+        job_name = resource_properties['job_name']
+        job_version = resource_properties['job_version']
+        tail = resource_properties.get('tail')
+        job = self.job_retriever.get_job(job_name, job_version)
+        job_version = job.version  # resolve version alias
+        session_id = f'{client_id}_{job_name}_{job_version}'
+
+        infrastructure = get_infrastructure_target(job.infrastructure_target)
+
+        session = LogSessionDetails(
+            client_id=client_id,
+            job_name=job_name,
+            job_version=job_version,
+            session_id=session_id,
+            logs_streamer=infrastructure.logs_streamer,
+        )
+        self.log_sessions_by_client[client_id] = session
+        self.log_sessions_by_id[session_id] = session
+
+        infrastructure.logs_streamer.create_session(session_id, resource_properties={
+            'job_name': job_name,
+            'job_version': job_version,
+            'tail': tail,
+        }, on_next_line=self.broadcast_logs_nextline)
+        return session_id
+
+    def close_logs_session(self, session: LogSessionDetails):
+        session.logs_streamer.close_session(session.session_id)
+        del self.log_sessions_by_client[session.client_id]
+        del self.log_sessions_by_id[session.session_id]
+        logger.info(f'Log session closed: {session.session_id}')
+
     @staticmethod
-    def get_session_id(client_id: str, resource_properties: Dict[str, str]) -> str:
-        job_name = resource_properties.get('job_name')
-        job_version = resource_properties.get('job_version')
+    def _get_session_id(client_id: str, job_name: str, job_version: str) -> str:
         return f'{client_id}_{job_name}_{job_version}'
 
     def broadcast_logs_nextline(self, session_id: str, message: str):
-        for client_id, resource_properties in self.client_resources.copy().items():
-            _session_id = self.get_session_id(client_id, resource_properties)
-            if _session_id == session_id:
-                self.sio.call('logs_nextline', {
-                    'line': message,
-                }, to=client_id)
+        session = self.log_sessions_by_id[session_id]
+        self.sio.call('logs_nextline', {
+            'line': message,
+        }, to=session.client_id)
 
     def disconnect_all(self):
-        for client_id in list(self.client_resources.keys()):
+        for client_id in list(self.log_sessions_by_client.keys()):
             self.sio.disconnect(client_id, ignore_queue=True)
 
     @contextlib.contextmanager
