@@ -298,6 +298,3 @@ mkdocs-local:
 
 mkdocs-push:
 	mkdocs gh-deploy --force --clean --verbose
-
-test-remote-docker:
-	cd tests/infrastructure/remote-docker && make up
