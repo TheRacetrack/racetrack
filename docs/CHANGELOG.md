@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Pub can now be turned into a remote gateway mode.
+  It allows to distribute services between clusters as 2 (or more) separate infrastructures:
+  - main hub - hosting core Racetrack services: Lifecycle, image-builder, Dashboard, main Pub
+  - remote jobs - infrastructure hosting jobs and remote Pub gateway that protects jobs from unauthorized access.
+
+  It can cooperate with the following infrastructure plugins:
+  - [remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes)
+  - [remote docker plugin](https://github.com/TheRacetrack/plugin-remote-docker)
+
+### Changed
+- Streaming live logs of a job can now work with multiple infrastructures.
+  Logs streamer interface had to be redesigned so infrastructure plugins has to be updated.
 
 ## [2.20.0] - 2023-09-27
 ### Added
