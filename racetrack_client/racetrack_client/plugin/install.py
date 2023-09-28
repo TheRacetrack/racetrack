@@ -142,9 +142,8 @@ class PluginRelease:
 
 def _get_latest_github_release(repo_name: str) -> Tuple[str, bytes]:
     releases = _list_github_releases(repo_name)
-    stable_releases = [r for r in releases if SemanticVersion(r.version).is_stable]
-    assert stable_releases, f'repository {repo_name} doesn\'t have any valid stable release'
-    latest_release = stable_releases[-1]
+    assert releases, f'repository {repo_name} doesn\'t have any valid release'
+    latest_release = releases[-1]
     logger.info(f'getting latest version {latest_release.version} from the {repo_name} repository')
     return download_file(latest_release.download_url)
 
@@ -181,9 +180,9 @@ def _list_github_releases(repo_name: str) -> List[PluginRelease]:
     json_releases = parse_response_list(r, 'GitHub API response')
     releases = []
     for json_release in json_releases:
-        version = json_release.get('name')
+        version = json_release.get('tag_name')
         if not version:
-            version = json_release.get('tag_name')
+            version = json_release.get('name')
         zip_assets = [asset['browser_download_url']
                       for asset in json_release['assets']
                       if asset['browser_download_url'].endswith('.zip')]
