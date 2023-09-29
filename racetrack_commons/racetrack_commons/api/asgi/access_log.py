@@ -1,7 +1,10 @@
+import time
+
 from fastapi import FastAPI, Request, Response
 
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import HIDDEN_ACCESS_LOGS
+from racetrack_commons.api.metrics import metric_request_duration, metric_requests_done, metric_requests_started
 from racetrack_commons.api.tracing import RequestTracingLogger, get_caller_header_name, get_tracing_header_name
 
 logger = get_logger(__name__)
@@ -45,6 +48,8 @@ def enable_response_access_log(fastapi_app: FastAPI):
 
     @fastapi_app.middleware('http')
     async def access_log(request: Request, call_next) -> Response:
+        metric_requests_started.inc()
+        start_time = time.time()
         try:
             response: Response = await call_next(request)
         except RuntimeError as exc:
@@ -59,6 +64,9 @@ def enable_response_access_log(fastapi_app: FastAPI):
                         logger.error(f"Request cancelled by the client: {method} {uri}")
                     return Response(status_code=204)  # No Content
             raise
+        finally:
+            metric_request_duration.observe(time.time() - start_time)
+            metric_requests_done.inc()
 
         method = request.method
         uri = request.url.replace(scheme='', netloc='')

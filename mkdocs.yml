@@ -8,7 +8,7 @@ theme:
   name: material
   icon:
     repo: fontawesome/brands/github
-    logo: material/car-sports
+  logo: docs/assets/logo/racetrack-logo-white.png
   palette:
     - scheme: default
       primary: indigo

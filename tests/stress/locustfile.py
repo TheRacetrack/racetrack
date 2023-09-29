@@ -1,3 +1,4 @@
+import json
 import os
 import urllib3
 
@@ -21,42 +22,39 @@ class JobStressUser(HttpUser):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        load_dotenv()
 
-        test_env = os.environ.get('test_env')
-        print(f"Using test_env: {test_env}")
+        env_file = os.environ.get('ENV_FILE', '.env')
+        print(f"Using configuration from env file: {env_file}")
+        load_dotenv(env_file)
 
-        is_localhost = True
-        if test_env == 'kind':
-            self.base_url = 'http://localhost:7005/pub'
-        elif test_env == 'compose':
-            self.base_url = 'http://localhost:7105/pub'
-        else:
-            self.base_url = os.environ['external_pub_url']
-            is_localhost = False
+        self.base_url = os.environ['base_url']
+        print(f"Using base URL: {self.base_url}")
 
         job_name = os.environ['job_name']
         job_version = os.environ['job_version']
-        self.url = f"{self.base_url}/job/{job_name}/{job_version}"
+        self.url = f"{self.base_url}/pub/job/{job_name}/{job_version}"
         print(f"url to hit: {self.url}")
 
+        is_localhost = '://localhost' in self.base_url
         esc_name = os.environ.get('create_esc')
         if is_localhost and esc_name:
             admin_auth_token = os.environ.get('admin_auth_token')
             auth_token = _create_esc(job_name, esc_name, admin_auth_token)
         else:
-            auth_token = os.environ['auth_token']
+            auth_token = os.environ.get('auth_token')
 
         self.headers = urllib3.make_headers()
         
         if auth_token:
             self.headers["X-Racetrack-Auth"] = auth_token
-            self.headers["X-Racetrack-User-Auth"] = auth_token
         else:
-            raise ValueError('use auth_token')
+            print('WARNING: no auth_token')
 
         self.headers["Content-Type"] = "application/json"
         self.headers["accept"] = "application/json"
+
+        payload_str = os.environ.get('payload')
+        self.payload = json.loads(payload_str) if payload_str else None
 
     @tag('live')
     @task(5)  # number in task indicates weight, higher means more calls
@@ -71,11 +69,9 @@ class JobStressUser(HttpUser):
     @tag('perform')
     @task(5)
     def test_perform(self):
-        self.client.post(url=f"{self.url}/api/v1/perform", headers=self.headers, json={
-            "mode": "cpu",
-            "t": 3,
-        })
+        self.client.post(url=f"{self.url}/api/v1/perform", headers=self.headers, json=self.payload)
 
+    @tag('auth_fail')
     @task(1)
     def test_perform_auth_fail(self):
         headers = urllib3.make_headers()
@@ -83,3 +79,8 @@ class JobStressUser(HttpUser):
         headers["X-Racetrack-Esc-Auth"] = "foo"
         with self.client.post(url=f"{self.url}/api/v1/perform", headers=headers, json={'numbers': [40, 2]}, catch_response=True) as resp:
             resp.success()
+
+    @tag('lifecycle_metrics')
+    @task(1)
+    def test_lifecycle_metrics(self):
+        self.client.get(url=self.base_url, headers=self.headers)

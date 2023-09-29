@@ -1,11 +1,13 @@
 from typing import Dict, Optional
 
 import backoff
+
 from racetrack_client.utils.shell import CommandError, shell
 from racetrack_client.utils.time import datetime_to_timestamp, now
-
 from racetrack_client.client.deploy import DEPLOYMENT_TIMEOUT_SECS, BuildContextMethod, DeploymentError, get_build_context, get_deploy_request_payload, get_git_credentials
 from racetrack_client.client_config.io import load_client_config
+from racetrack_client.manifest.load import get_manifest_path
+from racetrack_client.manifest.merge import load_merged_manifest_dict
 from racetrack_client.manifest.validate import load_validated_manifest
 from racetrack_client.log.logs import get_logger
 from racetrack_client.client.env import hide_env_vars, merge_env_vars, read_secret_vars
@@ -27,6 +29,7 @@ def run_job_locally(
 ):
     client_config = load_client_config()
     manifest = load_validated_manifest(workdir)
+    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir))
 
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
@@ -40,7 +43,7 @@ def run_job_locally(
     # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::BuildEndpoint` for server-side implementation
     r = Requests.post(
         f'{lifecycle_url}/api/v1/build',
-        json=get_deploy_request_payload(manifest, git_credentials, secret_vars, build_context, False),
+        json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, False),
         headers=get_auth_request_headers(user_auth),
     )
     response = parse_response_object(r, 'Lifecycle building error')

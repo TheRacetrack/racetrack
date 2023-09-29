@@ -24,6 +24,7 @@ def test_populate_database_settings():
             'HOST': 'localhost',
             'PORT': '5432',
             'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': False,
             'STATEMENT_TIMEOUT': 10,
             'OPTIONS': {
                 'connect_timeout': 10,

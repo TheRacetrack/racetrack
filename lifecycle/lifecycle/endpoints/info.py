@@ -8,7 +8,7 @@ from lifecycle.config import Config
 def setup_info_endpoints(api: APIRouter, config: Config):
 
     @api.get('/info')
-    async def _info():
+    def _info():
         """Report current configuration status"""
         return {
             'service': 'lifecycle',

@@ -23,11 +23,12 @@ LAST_CHANGE_FILE = 'last-change.txt'
 
 
 class PluginEngine:
-    def __init__(self, plugins_dir: str | None = None):
+    def __init__(self, plugins_dir: str | None = None, on_reload: Callable[['PluginEngine'], None] | None = None):
         self.plugins_data: list[PluginData] = []
         self.last_change_timestamp: int = 0
+        self.on_reload: Callable[['PluginEngine'], None] | None = on_reload
         if plugins_dir:
-            self.plugins_dir: str = plugins_dir
+            self.plugins_path: Path = Path(plugins_dir)
             try:
                 self._load_plugins()
             except BaseException as e:
@@ -37,7 +38,7 @@ class PluginEngine:
     def _load_plugins(self):
         start_time = time.time()
         with wrap_context('Loading plugins'):
-            self.plugins_data = load_plugins_from_dir(self.plugins_dir)
+            self.plugins_data = load_plugins_from_dir(self.plugins_path)
             if self.plugins_data:
                 duration = time.time() - start_time
                 plugin_plural = 'plugin' if len(self.plugins_data) == 1 else 'plugins'
@@ -45,6 +46,8 @@ class PluginEngine:
                 logger.info(f'{len(self.plugins_data)} {plugin_plural} have been loaded in {duration:.2f}s: {plugins_list_str}')
             else:
                 logger.info(f'No plugins to load')
+        if self.on_reload is not None:
+            self.on_reload(self)
 
     def invoke_plugin_hook(self, function: Callable, *args, **kwargs) -> list[Any]:
         """
@@ -162,7 +165,7 @@ class PluginEngine:
 
         event_handler = ChangesHandler()
         observer = Observer()
-        observer.schedule(event_handler, path=Path(self.plugins_dir).as_posix(), recursive=False)
+        observer.schedule(event_handler, path=self.plugins_path.as_posix(), recursive=False)
         observer.start()
 
         # inotify may not work on network filesystems
@@ -203,8 +206,9 @@ class PluginEngine:
                 self._delete_older_plugins(plugin_name)
             else:
                 self._delete_older_plugin_version(plugin_name, plugin_version)
-            shutil.move(tmp_zip, Path(self.plugins_dir) / filename)
-            logger.info(f'Plugin {plugin_name} has been uploaded from {filename}')
+            new_filename = f'{plugin_name}-{plugin_version}.zip'
+            shutil.move(tmp_zip, self.plugins_path / new_filename)
+            logger.info(f'Plugin {plugin_name} has been uploaded from {new_filename}')
 
         finally:
             shutil.rmtree(tmp_dir)
@@ -226,40 +230,53 @@ class PluginEngine:
         self._load_plugins()
         
     def delete_plugin_by_version(self, name: str, version: str):
-        plugin_data = self.find_plugin(name, version)
-        self._delete_plugin(plugin_data)
-        logger.info(f'Plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version} ({plugin_data.zip_path}) has been deleted')
+        try:
+            plugin_data = self.find_plugin(name, version)
+            if self._delete_plugin_files(plugin_data.zip_path.stem):
+                logger.info(f'Plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version} ({plugin_data.zip_path}) has been deleted')
+            else:
+                logger.warning(f'Plugin files were not found: {plugin_data.zip_path.stem}')
+        except EntityNotFound as e:
+            if self._delete_plugin_files(f'{name}-{version}'):
+                logger.info(f'Plugin files have been deleted: {name} {version}')
+            else:
+                raise e
         self._record_last_change()
         self._load_plugins()
 
     def _delete_older_plugin_version(self, plugin_name: str, plugin_version: str):
         try:
             plugin_data = self.find_plugin(plugin_name, plugin_version)
-            self._delete_plugin(plugin_data)
-            logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
+            if self._delete_plugin_files(plugin_data.zip_path.stem):
+                logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
+            else:
+                logger.warning(f'Plugin files were not found: {plugin_data.zip_path.stem}')
         except EntityNotFound:
-            return
+            if self._delete_plugin_files(f'{plugin_name}-{plugin_version}'):
+                logger.info(f'Older plugin files have been deleted: {plugin_name} {plugin_version}')
 
     def _delete_older_plugins(self, plugin_name: str):
         plugins_data = self.find_plugins(plugin_name)
         for plugin_data in plugins_data:
-            self._delete_plugin(plugin_data)
-            logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
+            if self._delete_plugin_files(plugin_data.zip_path.stem):
+                logger.info(f'Older plugin version has been deleted: {plugin_data.zip_path.name}')
+            else:
+                logger.warning(f'Plugin files were not found: {plugin_data.zip_path.stem}')
 
-    def _delete_plugin(self, plugin_data: PluginData):
-        if plugin_data.zip_path.is_file():
-            plugin_data.zip_path.unlink()
-        else:
-            logger.warning(f'ZIP plugin was not found: {plugin_data.zip_path}')
-
-        extracted_dir = Path(self.plugins_dir) / EXTRACTED_PLUGINS_DIR / plugin_data.zip_path.stem
+    def _delete_plugin_files(self, stem: str) -> bool:
+        extracted_dir = self.plugins_path / EXTRACTED_PLUGINS_DIR / stem
+        deleted = False
         if extracted_dir.is_dir():
             shutil.rmtree(extracted_dir)
-        else:
-            logger.warning(f'extracted plugin directory was not found: {extracted_dir}')
+            deleted = True
+        zip_path = self.plugins_path / f'{stem}.zip'
+        if zip_path.is_file():
+            zip_path.unlink()
+            deleted = True
+        return deleted
 
     def _read_last_change_timestamp(self) -> int:
-        change_file = Path(self.plugins_dir) / LAST_CHANGE_FILE
+        change_file = self.plugins_path / LAST_CHANGE_FILE
         if not change_file.is_file():
             return 0
         txt = change_file.read_text()
@@ -269,7 +286,7 @@ class PluginEngine:
     
     def _record_last_change(self):
         self.last_change_timestamp = datetime_to_timestamp(now())
-        change_file = Path(self.plugins_dir) / LAST_CHANGE_FILE
+        change_file = self.plugins_path / LAST_CHANGE_FILE
         if not change_file.is_file():
             change_file.touch()
             try:

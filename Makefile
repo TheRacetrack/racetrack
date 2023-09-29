@@ -1,7 +1,7 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.18.0
+TAG ?= 2.20.0
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 GHCR_PREFIX = ghcr.io/theracetrack/racetrack
@@ -111,7 +111,7 @@ localhost-test-e2e-auth:
 	( cd tests/e2e && TEST_ENV=localhost TEST_SUITE=auth pytest -vv --tb=short -ra -s )
 
 compose-test-e2e:
-	( cd tests/e2e && TEST_ENV=docker pytest -vv --tb=short -ra -s )
+	( cd tests/e2e && TEST_ENV=docker pytest -vv --tb=short -ra -s $(test))
 
 compose-test-e2e-auth:
 	( cd tests/e2e && TEST_ENV=docker TEST_SUITE=auth pytest -vv --tb=short -ra -s  )

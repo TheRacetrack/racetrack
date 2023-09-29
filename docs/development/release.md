@@ -32,7 +32,8 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
 
 ## Releasing new Racetrack version
 
-1. Make sure [CHANGELOG.md](../CHANGELOG.md) has all additions and changes
+1. Make sure [CHANGELOG.md](../CHANGELOG.md) has all
+   [additions and changes](https://github.com/TheRacetrack/racetrack/commits/master) since latest release.
 1. Determine new version number `x.y.z` according to [Semver](https://semver.org/) and latest changes:
    ```
    VERSION=x.y.z
