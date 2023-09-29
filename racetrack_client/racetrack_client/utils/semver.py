@@ -73,7 +73,7 @@ class SemanticVersion:
     @property
     def is_stable(self) -> bool:
         """Return true, if it's not a pre-release version - has no pre-release label."""
-        return not bool(self.label)
+        return not self.label
 
     def __str__(self):
         return f'{self.major}.{self.minor}.{self.patch}{self.label}'
