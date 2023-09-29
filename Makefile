@@ -217,6 +217,9 @@ docker-clean-job:
 registry:
 	./utils/setup-registry.sh
 
+registry-down:
+	docker rm -f racetrack-registry || true
+
 kind-cluster-up: registry
 	kind create cluster --name racetrack --config utils/kind-config.yaml || true
 	kind get clusters | grep -q 'racetrack' # make sure cluster exists
@@ -259,7 +262,7 @@ kind-deploy-sample:
 	LIFECYCLE_URL=http://localhost:7002 ./utils/wait-for-lifecycle.sh
 	racetrack deploy sample/python-class/ --remote http://localhost:7002 --force
 
-clean: compose-down kind-down
+clean: compose-down kind-down registry-down
 
 MR ?= 0
 version-bump:

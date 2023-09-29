@@ -63,6 +63,7 @@ nav:
     - Developer manual: docs/development/develop.md
     - Releasing a version: docs/development/release.md
     - Bill of Materials: docs/development/bom.md
+    - Copyright Notices: docs/license/copyright-notices.md
   - Deployment:
     - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
     - Administering: docs/admin.md

@@ -20,7 +20,7 @@ spec:
       priorityClassName: high-priority
       containers:
         - name: image-builder
-          image: kind-registry:5000/racetrack/image-builder:latest
+          image: racetrack-registry:5000/racetrack/image-builder:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7001
@@ -46,7 +46,7 @@ spec:
           ports:
             - containerPort: 2375
           tty: true
-          args: ["--insecure-registry=kind-registry:5000", "--insecure-registry=http://kind-registry:5000"]
+          args: ["--insecure-registry=racetrack-registry:5000", "--insecure-registry=http://racetrack-registry:5000"]
           securityContext:
             privileged: true
           env:
