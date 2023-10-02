@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Streaming live logs of a job can now work with multiple infrastructures.
-  Logs streamer interface had to be redesigned so infrastructure plugins has to be updated.
+  Logs streamer interface has been redesigned so infrastructure plugins has to be updated accordingly.
 
 ## [2.20.0] - 2023-09-27
 ### Added

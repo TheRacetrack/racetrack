@@ -26,12 +26,11 @@ PLUGINS_CONFIG_DIR = 'config'
 PLUGIN_CONFIG_FILENAME = 'config.yaml'
 
 
-def load_plugins_from_dir(plugins_dir: str) -> List[PluginData]:
+def load_plugins_from_dir(plugins_path: Path) -> List[PluginData]:
     """
     Loads Racetrack plugins from a directory containing the ZIP files.
     Loaded plugins will be sorted by priority, then by plugin version ascending.
     """
-    plugins_path = Path(plugins_dir)
     ensure_dir_exists(plugins_path)
 
     plugins_data: List[PluginData] = []

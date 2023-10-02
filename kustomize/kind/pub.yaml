@@ -20,7 +20,7 @@ spec:
       priorityClassName: high-priority
       containers:
         - name: pub
-          image: kind-registry:5000/racetrack/pub:latest
+          image: racetrack-registry:5000/racetrack/pub:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7005

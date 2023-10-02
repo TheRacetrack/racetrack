@@ -20,7 +20,7 @@ spec:
       priorityClassName: high-priority
       containers:
         - name: dashboard
-          image: kind-registry:5000/racetrack/dashboard:latest
+          image: racetrack-registry:5000/racetrack/dashboard:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7003

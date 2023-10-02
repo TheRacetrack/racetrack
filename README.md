@@ -5,8 +5,7 @@
 [![Github Pages](https://img.shields.io/badge/docs-github.io-blue)](https://theracetrack.github.io/racetrack)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/TheRacetrack/racetrack/test.yml?branch=master&label=tests)](https://github.com/TheRacetrack/racetrack/actions?query=workflow%3Atest)
 
-Racetrack is an opinionated framework for deploying, managing, and serving
-application workloads.
+Racetrack is a framework for deploying, managing, and serving application workloads.
 
 <video width="100%" controls="true" allowFullscreen="true" src="https://user-images.githubusercontent.com/124889668/259023408-d7b99acf-fcef-48f3-ac95-d4356c3acb0f.mp4">
 </video>
@@ -18,14 +17,23 @@ operationally sound and effective workloads without understanding the underlying
 infrastructure.
 
 It makes extensive use of plugins. Thus, the type of code which it can accept is
-broad and covers languages such as Python 3 or golang, frameworks such as
-django, and actual applications such as Sphinx, Drupal or even Quake 3.
+broad and covers languages such as Python 3 or Go, 
+and actual applications such as Sphinx, Drupal or even Quake 3.
 
-These "job types", in Racetrack lingo, can be deployed to different
+These "jobs", in Racetrack lingo, can be deployed to different
 "infrastructure targets". We currently support Kubernetes and Docker. This is
 also pluggable and can be extended.
 
 Code deployed via Racetrack gets free Swagger pages and Prometheus metrics endpoints.
+
+What distinguishes Racetrack is:
+
+- You only supply your **function's logic**. No need to write repetitive API code, setting up 
+  webservers, creating dockerfiles, kubernetes YAMLs, and so on. Racetrack takes care of that for you.
+- **Language agnostic**. Deploy code written in Python 3, Go, Rust,
+  or anything else encapsulated in a Dockerfile.
+- **Infrastructure independent**. Deploy to either a Kubernetes cluster
+  or a Docker environment in a single transparent step.
 
 ## Example usage
 
@@ -76,14 +84,18 @@ or called with a curl command:
 ## Getting started
 
 For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.io/) environment;
-please follow the [Tutorial](docs/user.md#tut).
+please follow the [Tutorial](docs/user.md#tutorial).
 
-* [Using Racetrack](docs/user.md)
-* [Deploying Racetrack](docs/development/develop.md)
-* [Administering Racetrack](docs/admin.md)
+* [User Guide](docs/user.md)
+* [Quickstart - local installation](docs/quickstart.md)
+* [Glossary](docs/glossary.md)
+* [Installation to Kubernetes](docs/deployment/k8s-installation.md)
 * [Using plugins](docs/development/using-plugins.md)
 * [Developing plugins](docs/development/developing-plugins.md)
 * [Developing a new job type](docs/development/plugins-job-types.md)
+* [CLI client](racetrack_client/README.md)
+* [Developing Racetrack](docs/development/develop.md)
+* [Administering Racetrack](docs/admin.md)
 
 See the [Documentation](https://theracetrack.github.io/racetrack/) for more details.
 

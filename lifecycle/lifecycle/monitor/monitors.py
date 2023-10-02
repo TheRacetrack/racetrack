@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Callable, Iterable
 
 from lifecycle.config import Config
