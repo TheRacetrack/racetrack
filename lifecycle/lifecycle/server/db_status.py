@@ -15,7 +15,7 @@ from lifecycle.config import Config
 
 @dataclass
 class DatabaseStatus:
-    connected = False
+    connected = True
 
 
 database_status = DatabaseStatus()
