@@ -23,7 +23,7 @@ class LogSessionDetails(BaseModel, arbitrary_types_allowed=True):
     job_version: str
     session_id: str
     logs_streamer: LogsStreamer
-    tail: str | None
+    tail: int | None  # number of recent lines to show
 
 
 class JobRetriever(ABC):
@@ -90,6 +90,7 @@ class SocketIOServer:
             job_version=job_version,
             session_id=session_id,
             logs_streamer=infrastructure.logs_streamer,
+            tail=int(tail) if tail else None,
         )
         self.log_sessions_by_client[client_id] = session
         self.log_sessions_by_id[session_id] = session
