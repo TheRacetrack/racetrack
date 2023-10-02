@@ -79,7 +79,7 @@ class SocketIOServer:
         job_version = resource_properties['job_version']
         tail = resource_properties.get('tail')
         job = self.job_retriever.get_job(job_name, job_version)
-        job_version = job.version  # resolve version alias
+        job_version = job.version  # contains resolved (non-aliased) version
         session_id = f'{client_id}_{job_name}_{job_version}'
 
         infrastructure = get_infrastructure_target(job.infrastructure_target)
