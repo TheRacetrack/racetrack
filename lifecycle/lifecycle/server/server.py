@@ -1,5 +1,6 @@
 from typing import Tuple
 
+from lifecycle.server.db_status import monitor_database_status
 from racetrack_client.log.logs import configure_logs, get_logger, init_logs
 from racetrack_client.utils.config import load_config
 from racetrack_commons.plugin.engine import PluginEngine
@@ -15,6 +16,7 @@ logger = get_logger(__name__)
 def run_lifecycle_server():
     """Serve API for deploying job from workspaces on demand"""
     config, plugin_engine = _init_lifecycle()
+    monitor_database_status(config)
     run_api_server(config, plugin_engine)
 
 
@@ -26,6 +28,7 @@ def run_lifecycle_supervisor():
     logger.info("Starting Lifecycle Supervisor")
     startup_check()
     schedule_tasks_async(config, plugin_engine)
+    monitor_database_status(config)
     run_api_server(config, plugin_engine, 'lifecycle-supervisor')
 
 
