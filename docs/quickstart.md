@@ -22,7 +22,7 @@ python3 -m venv venv
 
 ## 2. Set up local Racetrack
 
-Start Racetrack components with a utility script:
+Start Racetrack components with a [utility script](https://github.com/TheRacetrack/racetrack/blob/master/utils/quickstart-up.sh):
 ```shell
 curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash -s
 ```
@@ -90,7 +90,7 @@ curl -X POST "http://localhost:7105/pub/job/adder/latest/api/v1/perform" \
 
 ## 6. Clean up
 
-Tear down all the components:
+Tear down all the components with a [quickstart-down.sh script](https://github.com/TheRacetrack/racetrack/blob/master/utils/quickstart-down.sh):
 ```shell
 curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-down.sh | bash -s
 ```

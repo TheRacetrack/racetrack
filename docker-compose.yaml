@@ -187,7 +187,7 @@ services:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     privileged: true
-    command: ['--insecure-registry=kind-registry:5000', '--insecure-registry=http://kind-registry:5000']
+    command: ['--insecure-registry=racetrack-registry:5000', '--insecure-registry=http://racetrack-registry:5000']
     environment:
       DOCKER_TLS_CERTDIR: ''
     logging:

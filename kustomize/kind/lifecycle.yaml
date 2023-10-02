@@ -21,7 +21,7 @@ spec:
       priorityClassName: high-priority
       initContainers:
         - name: init-django-db
-          image: kind-registry:5000/racetrack/lifecycle:latest
+          image: racetrack-registry:5000/racetrack/lifecycle:latest
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -36,7 +36,7 @@ spec:
               /src/lifecycle/wait-for-migration.sh
       containers:
         - name: lifecycle
-          image: kind-registry:5000/racetrack/lifecycle:latest
+          image: racetrack-registry:5000/racetrack/lifecycle:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7002

@@ -8,47 +8,47 @@ repository. Some fields are required, while optional ones will be assigned a
 default value if not provided. The YAML manifest file can have the following
 fields:
 
-- `name` (**required**) - name of the current service to be deployed by means of
+- `name`, *string* (**required**) - name of the current service to be deployed by means of
   this mainfest file. It cannot contain underscores (but can contain dashes).
-- `jobtype` (**required**) - Jobtype wrapper used to embed model. This should be one
+- `jobtype`, *string* (**required**) - Jobtype wrapper used to embed model. This should be one
   of the supported wrapper names combined with the wrapper version:
   `python3:2.4.0`, `python3:latest`, `golang:latest` or `docker-http:latest`, etc.
-- `git` (**required**) - the object describes the place where the source code can be
+- `git`, *object* (**required**) - the object describes the place where the source code can be
   found using git VCS.
-    - `remote` (**required**) - **HTTPS** URL of git remote. This is also root of your
+    - `remote`, *string* (**required**) - **HTTPS** URL of git remote. This is also root of your
       git repo, which will become the "current working directory" at runtime of Job.
       SSH remote URLs are NOT supported.
-    - `branch` - name of the branch (if other than master)
-    - `directory` - subdirectory relative to git repo root where the project is
-- `owner_email` (**required**) - email address of the Job's owner to reach out
-- `extends` - relative path to base manifest file, which will be extended by this manifest
-- `version` - Version of the Job. It must adhere to Semantic Versioning standard.
-- `jobtype_extra` - Jobtype specific extra parameters
+    - `branch`, *string* - name of the branch (if other than master)
+    - `directory`, *string* - subdirectory relative to git repo root where the project is
+- `owner_email`, *string* (**required**) - email address of the Job's owner to reach out
+- `extends`, *string* - relative path to base manifest file, which will be extended by this manifest
+- `version`, *string* - Version of the Job. It must adhere to Semantic Versioning standard.
+- `jobtype_extra`, *object* - Jobtype specific extra parameters
     - Fields specified and validated by the jobtype.
-- `docker` - Manifest for Dockerfile job types
-    - `dockerfile_path` - relative path to Dockerfile recipe
-- `build_env` - dictionary of environment variables that should be set when building the image
-- `image_type` - type of deployed image. Only `docker` is currently available.
-- `infrastructure_target` - Back-end platform where to deploy the service.
-- `labels` - dictionary with metadata describing job for humans
-- `public_endpoints` - list of public job endpoints that can be accessed without authentication
-- `replicas` - number of running instances of the Job to deploy
-- `resources` - resources demands to allocate to the Job
-    - `memory_min` - minimum memory amount in bytes, eg. 256Mi
-    - `memory_max` - maximum memory amount in bytes, eg. 1Gi
-    - `cpu_min` - minimum CPU consumption in cores, eg. 10m
-    - `cpu_max` - maximum CPU consumption in cores, eg. 1000m
-- `runtime_env` - dictionary of environment variables that should be set when running Job
-- `secret_build_env_file` - path to a secret file (on a client machine) with build environment variables
-- `secret_runtime_env_file` - path to a secret file (on a client machine) with runtime environment variables
-- `system_dependencies` - list of system-wide packages that should be installed with package manager
+- `docker`, *object* - Manifest for Dockerfile job types
+    - `dockerfile_path`, *string* - relative path to Dockerfile recipe
+- `build_env`, *object: string to string* - dictionary of environment variables that should be set when building the image
+- `image_type`, *string* - type of deployed image. Only `docker` is currently available.
+- `infrastructure_target`, *string* - Back-end platform where to deploy the service.
+- `labels`, *object: string to string* - dictionary with metadata describing job for humans
+- `public_endpoints`, *array of strings* - list of public job endpoints that can be accessed without authentication
+- `replicas`, *integer* - number of running instances of the Job to deploy
+- `resources`, *object* - resources demands to allocate to the Job
+    - `memory_min`, *string* - minimum memory amount in bytes, eg. 256Mi
+    - `memory_max`, *string* - maximum memory amount in bytes, eg. 1Gi
+    - `cpu_min`, *string* - minimum CPU consumption in cores, eg. 10m
+    - `cpu_max`, *string* - maximum CPU consumption in cores, eg. 1000m
+- `runtime_env`, *object: string to string* - dictionary of environment variables that should be set when running Job
+- `secret_build_env_file`, *string* - path to a secret file (on a client machine) with build environment variables
+- `secret_runtime_env_file`, *string* - path to a secret file (on a client machine) with runtime environment variables
+- `system_dependencies`, *array of strings* - list of system-wide packages that should be installed with package manager
   (apt or apk depending on base image type)
 
 ## Example
 This example is not valid as a whole, but it contains all fields with exemplary values:
 ```yaml
 name: skynet
-lang: python3:latest
+jobtype: python3:latest
 git:
   remote: https://github.com/racetrack/supersmart-model
   branch: master
