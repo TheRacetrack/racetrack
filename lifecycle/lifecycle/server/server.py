@@ -5,6 +5,7 @@ from racetrack_client.utils.config import load_config
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
 from lifecycle.server.api import run_api_server
+from lifecycle.server.cache import LifecycleCache
 from lifecycle.supervisor.scheduler import schedule_tasks_async
 from lifecycle.supervisor.startup import startup_check
 
@@ -33,5 +34,5 @@ def _init_lifecycle() -> Tuple[Config, PluginEngine]:
     init_logs()
     config: Config = load_config(Config)
     configure_logs(log_level=config.log_level)
-    plugin_engine = PluginEngine(config.plugins_dir)
+    plugin_engine = PluginEngine(config.plugins_dir, on_reload=LifecycleCache.on_plugins_reload)
     return config, plugin_engine

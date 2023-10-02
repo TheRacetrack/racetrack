@@ -20,12 +20,20 @@ def show_runtime_logs(name: str, version: str, remote: Optional[str], tail: int,
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, remote)
     user_auth = get_user_auth(client_config, lifecycle_url)
-    logger.info(f'Retrieving runtime logs of job "{name}" v{version} from {lifecycle_url}...')
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/job/{name}/{version}',
+        headers=get_auth_request_headers(user_auth),
+    )
+    response = parse_response_object(r, 'Lifecycle response error')
+    exact_version = response.get('version')
+
+    logger.info(f'Retrieving runtime logs of job "{name}" {exact_version} from {lifecycle_url}...')
 
     if follow:
-        _show_runtime_logs_following(lifecycle_url, name, version, tail)
+        _show_runtime_logs_following(lifecycle_url, name, exact_version, tail)
     else:
-        _show_runtime_logs_once(lifecycle_url, name, version, tail, user_auth)
+        _show_runtime_logs_once(lifecycle_url, name, exact_version, tail, user_auth)
 
 
 def _show_runtime_logs_once(lifecycle_url: str, name: str, version: str, tail: int, user_auth: str):
@@ -37,7 +45,7 @@ def _show_runtime_logs_once(lifecycle_url: str, name: str, version: str, tail: i
     response = parse_response_object(r, 'Lifecycle response error')
     logs: str = response['logs']
     log_lines = len(logs.splitlines())
-    logger.info(f'Viewing the latest logs from job "{name}" v{version} below'
+    logger.info(f'Viewing the latest logs from job "{name}" {version} below'
                 f' ({log_lines} lines):\n---')
     print(logs)
 
@@ -52,7 +60,7 @@ def _show_runtime_logs_following(lifecycle_url: str, name: str, version: str, ta
         'tail': str(tail),
     }
     consumer = LogsConsumer(lifecycle_url, 'lifecycle/socket.io', resource_properties, on_next_line)
-    logger.info(f'Streaming live logs from job "{name}" v{version} below:\n---')
+    logger.info(f'Streaming live logs from job "{name}" {version} below:\n---')
     consumer.connect_and_wait()
 
 
@@ -64,7 +72,7 @@ def show_build_logs(name: str, version: str, remote: Optional[str], tail: int = 
     client_config = load_client_config()
     lifecycle_url = resolve_lifecycle_url(client_config, remote)
     user_auth = get_user_auth(client_config, lifecycle_url)
-    logger.info(f'Retrieving build logs of job "{name}" v{version} from {lifecycle_url}...')
+    logger.info(f'Retrieving build logs of job "{name}" {version} from {lifecycle_url}...')
 
     r = Requests.get(
         f'{lifecycle_url}/api/v1/job/{name}/{version}/build-logs',

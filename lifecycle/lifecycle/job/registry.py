@@ -76,7 +76,7 @@ def delete_job(
 ):
     job = read_job(job_name, job_version, config)  # raise 404 if not found
     if job.status != JobStatus.LOST.value:
-        deployer = get_job_deployer(plugin_engine, job.infrastructure_target)
+        deployer = get_job_deployer(job.infrastructure_target)
         deployer.delete_job(job_name, job_version)
 
     owner_username = job.deployed_by
@@ -104,7 +104,7 @@ def decommission_job_infrastructure(
 ):
     job = read_job(job_name, job_version, config)  # raise 404 if not found
     if job.status != JobStatus.LOST.value:
-        deployer = get_job_deployer(plugin_engine, infrastructure_target)
+        deployer = get_job_deployer(infrastructure_target)
         deployer.delete_job(job_name, job_version)
 
     owner_username = job.deployed_by
