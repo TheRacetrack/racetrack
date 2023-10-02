@@ -4,8 +4,7 @@ from threading import Thread
 from dataclasses import dataclass
 
 from django.conf import settings
-from django.db import connection
-from django.db import DatabaseError
+from django.db import connection, DatabaseError, close_old_connections
 from django.db.backends.utils import CursorWrapper
 
 from racetrack_client.utils.shell import shell, CommandError
@@ -43,6 +42,7 @@ def is_database_connected() -> bool:
             port = settings.DATABASES['default']['PORT']
             shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False)
 
+        close_old_connections()
         cursor: CursorWrapper
         with connection.cursor() as cursor:
             cursor.execute('SELECT 1')
