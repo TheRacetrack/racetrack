@@ -25,4 +25,3 @@ dashboard/dashboard/migrations/
 /.local.env
 generated
 *.ignored.*
-
