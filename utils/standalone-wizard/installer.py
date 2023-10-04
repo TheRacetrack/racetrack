@@ -18,12 +18,12 @@ LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 LOCAL_CONFIG_FILE = 'setup.json'
 
-NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '1') == '1'
+NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
 
 
 def main():
     init_logs()
-    logger.info('Welcome to Racetrack installer')
+    logger.info('Welcome to standalone Racetrack installer')
 
     if sys.version_info[:2] < (3, 8):
         logger.warning(f'This installer requires Python 3.8 or higher. Found: {sys.version_info}')
@@ -31,13 +31,13 @@ def main():
     config: InstallationConfig = load_local_config()
 
     if config.install_dir:
-        logger.debug(f'Installation directory configured: {config.install_dir}')
+        logger.debug(f'Installation directory set to: {config.install_dir}')
     else:
         config.install_dir = prompt_text('Choose installation directory', '~/racetrack')
         save_local_config(config)
 
     if config.infrastructure:
-        logger.debug(f'infrastructure target configured: {config.infrastructure}')
+        logger.debug(f'infrastructure target set to: {config.infrastructure}')
     else:
         config.infrastructure = prompt_text('Choose infrastructure target to install Racetrack', 'docker',
                                             'docker - Docker Engine on this local machine')
@@ -51,17 +51,53 @@ def main():
 class InstallationConfig:
     infrastructure: str = ''
     install_dir: str = ''
+    postgres_password: str = ''
+    django_secret_key: str = ''
+    auth_key: str = ''
 
 
 def install_to_docker(config: InstallationConfig):
-    install_path = Path(config.install_dir).expanduser()
-    if not install_path.is_dir():
-        install_path.mkdir(parents=True, exist_ok=True)
+    install_dir = Path(config.install_dir).expanduser()
+    if not install_dir.is_dir():
+        install_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f'Created installation directory: {install_dir.absolute()}')
 
-    prompt_bool('Docker not available. Would you like to install Docker Engine?')
+    _verify_docker()
+    _generate_secrets(config)
 
-    # generate secrets, keep in local reusable files
-    # install docker, non-root, docker compose
+
+def _verify_docker():
+    logger.info('Verifying Docker installation')
+    try:
+        shell('docker --version', print_stdout=False)
+    except CommandError as e:
+        logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
+        return logger.error(str(e))
+
+    try:
+        shell('docker ps', print_stdout=False)
+    except CommandError as e:
+        logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
+        return logger.error(str(e))
+
+    try:
+        shell('docker compose version', print_stdout=False)
+    except CommandError as e:
+        logger.error('Please install Docker Compose plugin: https://docs.docker.com/compose/install/linux/')
+        return logger.error(str(e))
+
+
+def _generate_secrets(config: InstallationConfig):
+    if not config.postgres_password:
+        config.postgres_password = generate_password()
+        logger.info(f'Generated PostgreSQL password: {config.postgres_password}')
+    if not config.django_secret_key:
+        config.django_secret_key = generate_password()
+        logger.info(f'Generated Django secret key: {config.django_secret_key}')
+    if not config.auth_key:
+        config.auth_key = generate_password()
+        logger.info(f'Generated Auth key: {config.auth_key}')
+    save_local_config(config)
 
 
 def load_local_config() -> InstallationConfig:
@@ -84,12 +120,10 @@ def save_local_config(config: InstallationConfig):
 
 
 def prompt_text(name: str, default: str, description: str = '') -> str:
+    description = '\n' + description if description else ''
+    logger.info(f'{name} [default: {default}]: {description}')
     if NON_INTERACTIVE:
         return default
-    if description:
-        logger.info(f'{name} [default: {default}]:\n{description}')
-    else:
-        logger.info(f'{name} [default: {default}]: ')
     value = input()
     if value == '':
         logger.debug(f'Chosen default: {default}')
@@ -97,14 +131,15 @@ def prompt_text(name: str, default: str, description: str = '') -> str:
     return value
 
 
-def prompt_bool(name: str, default: bool = True) -> bool:
-    if NON_INTERACTIVE:
-        return default
+def prompt_bool(name: str, default: bool = True, description: str = '') -> bool:
+    description = '\n' + description if description else ''
     while True:
         if default is True:
-            logger.info(f'{name} [Y/n]: ')
+            logger.info(f'{name} [Y/n]: {description}')
         else:
-            logger.info(f'{name} [y/N]: ')
+            logger.info(f'{name} [y/N]: {description}')
+        if NON_INTERACTIVE:
+            return default
         value = input()
         if value == '':
             return default
@@ -112,6 +147,13 @@ def prompt_bool(name: str, default: bool = True) -> bool:
             return True
         if value.lower() == 'n':
             return False
+
+
+def prompt_shell_command(snippet: str):
+    snippet = snippet.strip()
+    if prompt_bool('Do you want to execute the following command?', description=snippet):
+        for command in snippet.splitlines():
+            shell(command)
 
 
 def init_logs():
