@@ -9,16 +9,25 @@ import secrets
 import string
 import subprocess
 import sys
-from typing import Optional
+from typing import Optional, Dict
 
 logger = logging.getLogger('racetrack')
 
 LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-LOCAL_CONFIG_FILE = 'setup.json'
+LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
 
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
+
+# Requirements:
+# python3
+# python3-pip
+# python3-venv
+# curl
+# git ?
+# docker (non-root)
+# docker compose
 
 
 def main():
@@ -28,7 +37,7 @@ def main():
     if sys.version_info[:2] < (3, 8):
         logger.warning(f'This installer requires Python 3.8 or higher. Found: {sys.version_info}')
 
-    config: InstallationConfig = load_local_config()
+    config: SetupConfig = load_local_config()
 
     if config.install_dir:
         logger.debug(f'Installation directory set to: {config.install_dir}')
@@ -48,26 +57,57 @@ def main():
 
 
 @dataclass
-class InstallationConfig:
+class SetupConfig:
     infrastructure: str = ''
     install_dir: str = ''
     postgres_password: str = ''
     django_secret_key: str = ''
     auth_key: str = ''
+    docker_gid: str = ''
 
 
-def install_to_docker(config: InstallationConfig):
-    install_dir = Path(config.install_dir).expanduser()
+def install_to_docker(config: SetupConfig):
+    install_dir = Path(config.install_dir).expanduser().absolute()
     if not install_dir.is_dir():
         install_dir.mkdir(parents=True, exist_ok=True)
         logger.debug(f'Created installation directory: {install_dir.absolute()}')
+    os.chdir(install_dir.as_posix())
 
     _verify_docker()
+    if not config.docker_gid:
+        config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
+
     _generate_secrets(config)
+
+    if not Path('venv').is_dir():
+        logger.info('Creating virtual environment…')
+        shell('python3 -m venv venv')
+
+    if not (plugins_path := Path('.plugins')).is_dir():
+        logger.info('Creating plugins volume…')
+        plugins_path.mkdir(parents=True, exist_ok=True)
+        plugins_path.chmod(0o777)
+
+    # install lifecycle package
+    # generate tokens lifecycle generate-auth
+    # setup registry
+    # template config files
+    # configure optional external IP / FQDN
+    # run docker compose: start containers
+    # wait for lifecycle
+    # install racetrack client
+    # set current remote
+    # change super-admin password
+    # print admin auth token
+    # log in as admin to racetrack client
+    # install plugins: python3, docker
+    # print dashboard address
+
+    logger.info('Racetrack is ready to use')
 
 
 def _verify_docker():
-    logger.info('Verifying Docker installation')
+    logger.info('Verifying Docker installation…')
     try:
         shell('docker --version', print_stdout=False)
     except CommandError as e:
@@ -87,7 +127,7 @@ def _verify_docker():
         return logger.error(str(e))
 
 
-def _generate_secrets(config: InstallationConfig):
+def _generate_secrets(config: SetupConfig):
     if not config.postgres_password:
         config.postgres_password = generate_password()
         logger.info(f'Generated PostgreSQL password: {config.postgres_password}')
@@ -100,20 +140,20 @@ def _generate_secrets(config: InstallationConfig):
     save_local_config(config)
 
 
-def load_local_config() -> InstallationConfig:
+def load_local_config() -> SetupConfig:
     local_file = Path(LOCAL_CONFIG_FILE)
     if local_file.is_file():
         logger.info(f'Found local setup config at {local_file.absolute()}')
         config_dict = json.loads(local_file.read_text())
-        return InstallationConfig(**config_dict)
+        return SetupConfig(**config_dict)
     else:
         logger.info(f'Creating setup configuration at {local_file.absolute()}')
-        config = InstallationConfig()
+        config = SetupConfig()
         save_local_config(config)
         return config
 
 
-def save_local_config(config: InstallationConfig):
+def save_local_config(config: SetupConfig):
     config_json: str = json.dumps(asdict(config), indent=4)
     local_file = Path(LOCAL_CONFIG_FILE)
     local_file.write_text(config_json)
@@ -192,17 +232,6 @@ def shell(
     read_bytes: bool = False,
     output_filename: Optional[str] = None,
 ):
-    """
-    Run system shell command.
-    Print live stdout as it comes (line by line) and capture entire output in case of errors.
-    :param cmd: shell command to run
-    :param workdir: working directory for the command
-    :param print_stdout: whether to print stdout from a subprocess to the main process stdout
-    :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
-    :param output_filename: file to write the output in real time
-    :raises:
-        CommandError: in case of non-zero command exit code.
-    """
     _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
 
 
@@ -213,15 +242,6 @@ def shell_output(
     read_bytes: bool = False,
     output_filename: Optional[str] = None,
 ) -> str:
-    """
-    Run system shell command and return its output.
-    Print live stdout as it comes (line by line) and capture entire output in case of errors.
-    :param cmd: shell command to run
-    :param workdir: working directory for the command
-    :param print_stdout: whether to print stdout from a subprocess to the main process stdout
-    :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
-    :param output_filename: file to write the output in real time
-    """
     captured_stream = _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
     return captured_stream.getvalue()
 
@@ -295,6 +315,12 @@ def generate_password(length: int = 32) -> str:
     assert length >= 16, 'password should be at least 16 characters long'
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+def template_file(src_file: Path, dst_file: Path, context_vars: Dict[str, str]):
+    template = string.Template(src_file.read_text())
+    outcome: str = template.substitute(**context_vars)
+    dst_file.write_text(outcome)
 
 
 if __name__ == '__main__':
