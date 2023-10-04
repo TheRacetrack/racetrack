@@ -40,7 +40,7 @@ def is_database_connected() -> bool:
             user = settings.DATABASES['default']['USER']
             host = settings.DATABASES['default']['HOST']
             port = settings.DATABASES['default']['PORT']
-            shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False)
+            shell(f'pg_isready -h {host} -p {port} -U {user} -d {db_name}', print_stdout=False, print_log=False)
 
         close_old_connections()
         cursor: CursorWrapper
