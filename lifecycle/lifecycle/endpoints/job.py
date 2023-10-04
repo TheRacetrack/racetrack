@@ -100,13 +100,13 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     def _get_job_logs(request: Request, job_name: str, job_version: str, tail: int = 20):
         """Get last logs of particular Job"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
-        return {'logs': read_runtime_logs(job_name, job_version, tail, config, plugin_engine)}
+        return {'logs': read_runtime_logs(job_name, job_version, tail, config)}
 
     @api.get('/job/{job_name}/{job_version}/logs/plain')
     def _get_plain_job_logs(request: Request, job_name: str, job_version: str, tail: int = 20):
         """Get last logs of particular Job in a plain text response"""
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.READ_JOB)
-        content = read_runtime_logs(job_name, job_version, tail, config, plugin_engine)
+        content = read_runtime_logs(job_name, job_version, tail, config)
         content = strip_ansi_colors(content)
         return Response(content, media_type='text/plain; charset=utf-8')
 

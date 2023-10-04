@@ -4,7 +4,7 @@ from typing import Optional, Dict
 import backoff
 
 from lifecycle.config import Config
-from lifecycle.deployer.infra_target import determine_infrastructure_name
+from lifecycle.infrastructure.infra_target import determine_infrastructure_name
 from lifecycle.deployer.secrets import JobSecrets
 from lifecycle.django.registry.database import db_access
 from lifecycle.job.deployment import create_deployment, save_deployment_build_logs, save_deployment_image_name, save_deployment_result, save_deployment_phase

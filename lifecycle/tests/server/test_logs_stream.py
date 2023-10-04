@@ -1,44 +1,50 @@
-from typing import Dict
+from threading import Thread
+from typing import Dict, Callable
 
-import backoff
-
+from lifecycle.infrastructure.model import InfrastructureTarget
 from lifecycle.monitor.base import LogsStreamer
-from lifecycle.server.socketio import SocketIOServer
+from lifecycle.server.cache import LifecycleCache
+from lifecycle.server.socketio import SocketIOServer, JobRetriever
 from racetrack_client.client.socketio import LogsConsumer
 from racetrack_client.log.logs import get_logger
+from racetrack_commons.entities.dto import JobDto
 from racetrack_commons.socket import free_tcp_port
+
+from tests.utils import wait_until_equal
 
 logger = get_logger(__name__)
 
 
 def test_streaming_logs():
-    logs_streamer = SayHelloLogsStreamer()
-    server = SocketIOServer([logs_streamer])
+    LifecycleCache.infrastructure_targets = {
+        'dummy-infra': InfrastructureTarget(
+            logs_streamer=DummyLogsStreamer(),
+        ),
+    }
+
+    server = SocketIOServer(DummyJobRetriever())
     port = free_tcp_port()
     with server.run_async(port):
         fetched_logs = []
         consumer = LogsConsumer(f'http://localhost:{port}',
                                 socketio_path='lifecycle/socket.io',
-                                resource_properties={'job_name': 'adder'},
+                                resource_properties={'job_name': 'adder', 'job_version': 'latest'},
                                 on_next_line=lambda line: fetched_logs.append(line))
         with consumer.connect_async():
-            _wait_until_equal(fetched_logs, ['hello adder'], 'fetching past logs failed')
-
-            logs_streamer.broadcast(logs_streamer.last_session_id, message='more logs')
-            _wait_until_equal(fetched_logs, ['hello adder', 'more logs'], 'fetching next logs failed')
+            wait_until_equal(fetched_logs, ['hello adder', 'more logs'], 'fetching logs failed')
 
 
-class SayHelloLogsStreamer(LogsStreamer):
-    def __init__(self):
-        super().__init__()
-        self.last_session_id = None
-
-    def create_session(self, session_id: str, resource_properties: Dict[str, str]):
-        self.last_session_id = session_id
+class DummyLogsStreamer(LogsStreamer):
+    def create_session(self, session_id: str, resource_properties: Dict[str, str], on_next_line: Callable[[str, str], None]):
         job_name = resource_properties.get('job_name')
-        self.broadcast(session_id, f'hello {job_name}')
+        on_next_line(session_id, f'hello {job_name}')
+
+        def in_background():
+            on_next_line(session_id, f'more logs')
+
+        Thread(target=in_background, daemon=True).start()
 
 
-@backoff.on_exception(backoff.expo, AssertionError, factor=0.1, max_time=10, jitter=None)
-def _wait_until_equal(collection1, collection2, err_message: str):
-    assert collection1 == collection2, err_message
+class DummyJobRetriever(JobRetriever):
+    def get_job(self, job_name: str, job_version: str) -> JobDto:
+        return JobDto(name=job_name, version=job_version, status='ok', create_time=0, update_time=0, infrastructure_target='dummy-infra')
