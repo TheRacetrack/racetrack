@@ -9,7 +9,7 @@ import string
 import yaml
 from jinja2 import Template, StrictUndefined
 
-from racetrack_client.utils.shell import shell_output, shell
+from racetrack_client.utils.shell import shell_output
 from racetrack_client.log.logs import init_logs, configure_logs, get_logger
 
 logger = get_logger(__name__)
