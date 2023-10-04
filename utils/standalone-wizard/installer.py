@@ -10,6 +10,7 @@ import string
 import subprocess
 import sys
 from typing import Optional, Dict
+import urllib.request
 
 logger = logging.getLogger('racetrack')
 
@@ -21,13 +22,14 @@ LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
 
 # Requirements:
-# python3
-# python3-pip
-# python3-venv
-# curl
-# git ?
+# python3, python3-pip
+# python3 venv
 # docker (non-root)
 # docker compose
+# wget
+# git ?
+
+# wget -O - https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash
 
 
 def main():
@@ -64,6 +66,9 @@ class SetupConfig:
     django_secret_key: str = ''
     auth_key: str = ''
     docker_gid: str = ''
+    pub_auth_token: str = ''
+    dashboard_auth_token: str = ''
+    image_builder_auth_token: str = ''
 
 
 def install_to_docker(config: SetupConfig):
@@ -88,11 +93,12 @@ def install_to_docker(config: SetupConfig):
         plugins_path.mkdir(parents=True, exist_ok=True)
         plugins_path.chmod(0o777)
 
-    # install lifecycle package
-    # generate tokens lifecycle generate-auth
+    logger.info('Templating config files…')
+    context_vars = asdict(config)
+    template_repository_file('docker-compose.yaml', 'docker-compose.yaml', context_vars)
+
+    # configure optional external address: IP / FQDN, http://127.0.0.1
     # setup registry
-    # template config files
-    # configure optional external IP / FQDN
     # run docker compose: start containers
     # wait for lifecycle
     # install racetrack client
@@ -112,19 +118,19 @@ def _verify_docker():
         shell('docker --version', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
-        return logger.error(str(e))
+        raise e
 
     try:
         shell('docker ps', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
-        return logger.error(str(e))
+        raise e
 
     try:
         shell('docker compose version', print_stdout=False)
     except CommandError as e:
         logger.error('Please install Docker Compose plugin: https://docs.docker.com/compose/install/linux/')
-        return logger.error(str(e))
+        raise e
 
 
 def _generate_secrets(config: SetupConfig):
@@ -137,6 +143,16 @@ def _generate_secrets(config: SetupConfig):
     if not config.auth_key:
         config.auth_key = generate_password()
         logger.info(f'Generated Auth key: {config.auth_key}')
+
+    if not config.pub_auth_token:
+        config.pub_auth_token = generate_auth_token(config.auth_key, 'pub')
+        logger.info("Pub's token generated")
+    if not config.dashboard_auth_token:
+        config.dashboard_auth_token = generate_auth_token(config.auth_key, 'dashboard')
+        logger.info("Dashboard's token generated")
+    if not config.image_builder_auth_token:
+        config.image_builder_auth_token = generate_auth_token(config.auth_key, 'image-builder')
+        logger.info("Image builder's token generated")
     save_local_config(config)
 
 
@@ -321,6 +337,26 @@ def template_file(src_file: Path, dst_file: Path, context_vars: Dict[str, str]):
     template = string.Template(src_file.read_text())
     outcome: str = template.substitute(**context_vars)
     dst_file.write_text(outcome)
+
+
+def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
+    src_file_url = 'https://raw.githubusercontent.com/TheRacetrack/racetrack/master/' + src_relative_url
+    with urllib.request.urlopen(src_file_url) as response:
+        src_content: bytes = response.read()
+    template = string.Template(src_content.decode())
+    outcome: str = template.substitute(**context_vars)
+    dst_file = Path(dst_path)
+    dst_file.parent.mkdir(parents=True, exist_ok=True)
+    dst_file.write_text(outcome)
+
+
+def generate_auth_token(auth_key: str, service_name: str) -> str:
+    return shell_output(f'''
+    docker run --rm -it --name lifecycle-tmp \\
+     --env AUTH_KEY="{auth_key}" \\
+     ghcr.io/theracetrack/racetrack/lifecycle:latest \\
+     python -u -m lifecycle generate-auth "{service_name}" --short
+    '''.strip()).strip()
 
 
 if __name__ == '__main__':
