@@ -53,6 +53,12 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         check_staff_user(request)
         plugin_engine.delete_plugin_by_version(plugin_name, plugin_version)
 
+    @api.delete('/plugin/all')
+    def _delete_all_plugins(request: Request):
+        """Deactivate and remove all plugins"""
+        check_staff_user(request)
+        plugin_engine.delete_all_plugins()
+
     @api.get('/plugin/{plugin_name}/{plugin_version}/config')
     def _read_plugin_config(plugin_name: str, plugin_version: str, request: Request) -> str:
         """Read plugin's configuration"""

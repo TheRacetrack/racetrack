@@ -244,6 +244,17 @@ class PluginEngine:
         self._record_last_change()
         self._load_plugins()
 
+    def delete_all_plugins(self):
+        for plugin_zip_path in sorted(self.plugins_path.glob('*.zip')):
+            plugin_zip_path.unlink()
+
+        extracted_dir = self.plugins_path / EXTRACTED_PLUGINS_DIR
+        if extracted_dir.is_dir():
+            shutil.rmtree(extracted_dir)
+
+        self._record_last_change()
+        self._load_plugins()
+
     def _delete_older_plugin_version(self, plugin_name: str, plugin_version: str):
         try:
             plugin_data = self.find_plugin(plugin_name, plugin_version)
