@@ -51,8 +51,9 @@ def main():
     if config.infrastructure:
         logger.debug(f'infrastructure target set to: {config.infrastructure}')
     else:
-        config.infrastructure = prompt_text('Choose infrastructure target to install Racetrack', 'docker',
-                                            'docker - Docker Engine on this local machine')
+        config.infrastructure = prompt_text('''Choose infrastructure target to install Racetrack
+- docker - Docker Engine on this local machine
+''', 'docker')
         save_local_config(config)
 
     if config.infrastructure == 'docker':
@@ -96,6 +97,7 @@ def install_to_docker(config: SetupConfig):
 
     logger.info('Templating config files…')
     context_vars = asdict(config)
+    download_repository_file('utils/setup-registry.sh', 'setup-registry.sh')
     template_repository_file('docker-compose.yaml', 'docker-compose.yaml', context_vars)
 
     # configure optional external address: IP / FQDN, http://127.0.0.1
@@ -182,9 +184,8 @@ def save_local_config(config: SetupConfig):
     local_file.write_text(config_json)
 
 
-def prompt_text(name: str, default: str, description: str = '') -> str:
-    description = '\n' + description if description else ''
-    logger.info(f'{name} [default: {default}]: {description}')
+def prompt_text(question: str, default: str) -> str:
+    print(f'{question} [default: {default}]: ', end='')
     if NON_INTERACTIVE:
         return default
     value = input()
@@ -194,13 +195,13 @@ def prompt_text(name: str, default: str, description: str = '') -> str:
     return value
 
 
-def prompt_bool(name: str, default: bool = True, description: str = '') -> bool:
-    description = '\n' + description if description else ''
+def prompt_bool(question: str, default: bool = True) -> bool:
     while True:
         if default is True:
-            logger.info(f'{name} [Y/n]: {description}')
+            options = 'Y/n'
         else:
-            logger.info(f'{name} [y/N]: {description}')
+            options = 'y/N'
+        print(f'{question} {options}: ', end='')
         if NON_INTERACTIVE:
             return default
         value = input()
@@ -214,7 +215,7 @@ def prompt_bool(name: str, default: bool = True, description: str = '') -> bool:
 
 def prompt_shell_command(snippet: str) -> bool:
     snippet = snippet.strip()
-    if not prompt_bool('Do you want to execute the following command?', description=snippet):
+    if not prompt_bool(f'Do you want to execute the following command?\n{snippet}\n'):
         return False
     for command in snippet.splitlines():
         shell(command)
@@ -357,6 +358,15 @@ def template_repository_file(src_relative_url: str, dst_path: str, context_vars:
     dst_file = Path(dst_path)
     dst_file.parent.mkdir(parents=True, exist_ok=True)
     dst_file.write_text(outcome)
+
+
+def download_repository_file(src_relative_url: str, dst_path: str):
+    src_file_url = 'https://raw.githubusercontent.com/TheRacetrack/racetrack/master/' + src_relative_url
+    with urllib.request.urlopen(src_file_url) as response:
+        src_content: bytes = response.read()
+    dst_file = Path(dst_path)
+    dst_file.parent.mkdir(parents=True, exist_ok=True)
+    dst_file.write_bytes(src_content)
 
 
 def generate_auth_token(auth_key: str, service_name: str) -> str:
