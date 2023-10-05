@@ -22,19 +22,20 @@ LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
 
 # Requirements:
-# python3, python3-pip
+# + python3
+# python3-pip
 # python3 venv
-# docker (non-root)
+# + docker (non-root)
 # docker compose
-# wget
-# git ?
+# + wget
 
-# wget -O - https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash
+#  sudo apt install curl python3 python3-pip python3-venv
+# python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 
 
 def main():
     init_logs()
-    logger.info('Welcome to standalone Racetrack installer')
+    logger.info('Welcome to the standalone Racetrack installer')
 
     if sys.version_info[:2] < (3, 8):
         logger.warning(f'This installer requires Python 3.8 or higher. Found: {sys.version_info}')
@@ -118,12 +119,18 @@ def _verify_docker():
         shell('docker --version', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
-        raise e
+        if not prompt_shell_command('''
+curl -fsSL https://get.docker.com -o install-docker.sh
+sh install-docker.sh
+'''):
+            raise e
 
     try:
         shell('docker ps', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
+        # sudo usermod -aG docker $USER
+        # newgrp docker
         raise e
 
     try:
@@ -205,11 +212,13 @@ def prompt_bool(name: str, default: bool = True, description: str = '') -> bool:
             return False
 
 
-def prompt_shell_command(snippet: str):
+def prompt_shell_command(snippet: str) -> bool:
     snippet = snippet.strip()
-    if prompt_bool('Do you want to execute the following command?', description=snippet):
-        for command in snippet.splitlines():
-            shell(command)
+    if not prompt_bool('Do you want to execute the following command?', description=snippet):
+        return False
+    for command in snippet.splitlines():
+        shell(command)
+    return True
 
 
 def init_logs():
