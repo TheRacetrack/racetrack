@@ -77,9 +77,10 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.markdown_docs)
 
     @api.post('/plugin/{plugin_name}/run')
-    def _run_plugin_action(plugin_name: str, request: Request) -> Any:
+    def _run_plugin_action(plugin_name: str, payload_params: dict[str, Any], request: Request) -> Any:
         """Call a supplementary action of a plugin"""
         params = dict(request.query_params)
+        params.update(payload_params)
         return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.run_action, **params)
 
     @api.get('/plugin/job_type/versions')
