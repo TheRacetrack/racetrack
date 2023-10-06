@@ -143,7 +143,7 @@ def install_to_docker(config: SetupConfig):
         download_repository_file(f'utils/grafana/dashboards/{dashboard}.json', f'utils/grafana/dashboards/{dashboard}.json')
 
     logger.info('Starting up containers…')
-    shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always')
+    shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always', raw_output=True)
 
     logger.info('Waiting until Racetrack is operational…')
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
@@ -310,8 +310,21 @@ def shell(
     print_stdout: bool = True,
     read_bytes: bool = False,
     output_filename: Optional[str] = None,
+    raw_output: bool = False,
 ):
-    _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
+    if raw_output:
+        logger.debug(f'Command: {cmd}')
+        process = subprocess.Popen(cmd, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
+        try:
+            process.wait()
+            if process.returncode != 0:
+                raise CommandError(cmd, '', process.returncode)
+        except KeyboardInterrupt:
+            logger.warning('killing subprocess')
+            process.kill()
+            raise
+    else:
+        _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
 
 
 def shell_output(
