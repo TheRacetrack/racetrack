@@ -314,7 +314,7 @@ def shell(
 ):
     if raw_output:
         logger.debug(f'Command: {cmd}')
-        process = subprocess.Popen(cmd, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
+        process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
         try:
             process.wait()
             if process.returncode != 0:
@@ -353,7 +353,6 @@ def _run_shell_command(
     try:
         # fork command output to stdout, captured buffer and output file
         captured_stream = io.StringIO()
-
         if read_bytes:
             while True:
                 chunk: bytes = process.stdout.read(1)
