@@ -86,7 +86,7 @@ def install_to_docker(config: SetupConfig):
     os.chdir(install_dir.as_posix())
 
     if not config.external_address:
-        config.external_address = prompt_text('Enter external address that your Racetrack will be accessed at', 'http://127.0.0.1')
+        config.external_address = prompt_text('Enter external address that your Racetrack will be accessed at (IP or domain name)', 'http://127.0.0.1')
         save_local_config(config)
     else:
         logger.debug(f'External remote address set to: {config.external_address}')
@@ -110,19 +110,23 @@ def install_to_docker(config: SetupConfig):
         metrics_path.chmod(0o777)
 
     logger.info('Templating config files…')
-    template_repository_file('utils/standalone-wizard/docker-compose.template.yaml', 'docker-compose.yaml', {
+    template_repository_file('utils/standalone-wizard/templates/docker-compose.template.yaml', 'docker-compose.yaml', {
         'DOCKER_GID': config.docker_gid,
         'PUB_AUTH_TOKEN': config.pub_auth_token,
         'IMAGE_BUILDER_AUTH_TOKEN': config.image_builder_auth_token,
+        'POSTGRES_PASSWORD': config.postgres_password,
+        'EXTERNAL_ADDRESS': config.external_address,
     })
-    template_repository_file('utils/standalone-wizard/.env.template', '.env', {
+    template_repository_file('utils/standalone-wizard/templates/.env.template', '.env', {
         'POSTGRES_PASSWORD': config.postgres_password,
         'AUTH_KEY': config.auth_key,
         'SECRET_KEY': config.django_secret_key,
     })
-    download_repository_file('utils/wait-for-lifecycle.sh', 'wait-for-lifecycle.sh')
-    download_repository_file('lifecycle/tests/sample/compose.yaml', 'lifecycle/config.yaml')
+    template_repository_file('utils/standalone-wizard/templates/lifecycle.template.yaml', 'lifecycle/config.yaml', {
+        'EXTERNAL_ADDRESS': config.external_address,
+    })
     download_repository_file('image_builder/tests/sample/compose.yaml', 'image_builder/config.yaml')
+    download_repository_file('utils/wait-for-lifecycle.sh', 'wait-for-lifecycle.sh')
     download_repository_file('postgres/init.sql', 'postgres/init.sql')
     download_repository_file('utils/prometheus/prometheus.yaml', 'utils/prometheus/prometheus.yaml')
     download_repository_file('utils/grafana/datasource.yaml', 'utils/grafana/datasource.yaml')
@@ -130,8 +134,6 @@ def install_to_docker(config: SetupConfig):
     for dashboard in GRAFANA_DASHBOARDS:
         download_repository_file(f'utils/grafana/dashboards/{dashboard}.json', f'utils/grafana/dashboards/{dashboard}.json')
 
-    # configure optional external address: IP / FQDN, http://127.0.0.1
-    # setup registry
     # run docker compose: start containers
 
     logger.info('Starting up Racetrack containers…')

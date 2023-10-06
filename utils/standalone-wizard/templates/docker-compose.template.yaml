@@ -92,9 +92,9 @@ services:
       DJANGO_DEBUG: 'True'
       DASHBOARD_PORT: '7103'
       LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
-      EXTERNAL_LIFECYCLE_URL: 'http://127.0.0.1:7102/lifecycle'
-      EXTERNAL_PUB_URL: 'http://127.0.0.1:7105/pub'
-      EXTERNAL_GRAFANA_URL: 'http://127.0.0.1:3100'
+      EXTERNAL_LIFECYCLE_URL: '${EXTERNAL_ADDRESS}:7102/lifecycle'
+      EXTERNAL_PUB_URL: '${EXTERNAL_ADDRESS}:7105/pub'
+      EXTERNAL_GRAFANA_URL: '${EXTERNAL_ADDRESS}:3100'
       AUTH_REQUIRED: 'true'
       SITE_NAME: ''
 
@@ -142,7 +142,7 @@ services:
     environment:
       LISTEN_PORT: '5533'
       DB_USER: 'racetrack'
-      DB_PASSWORD: 'dev-25ZjbUDJH6MzmUR'
+      DB_PASSWORD: '${POSTGRES_PASSWORD}'
       DB_HOST: 'postgres'
       DB_NAME: 'racetrack'
       DB_PORT: '5532'
