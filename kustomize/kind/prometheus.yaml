@@ -18,7 +18,7 @@ spec:
       priorityClassName: high-priority
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.42.0
+          image: prom/prometheus:v2.47.1
           imagePullPolicy: Always
           ports:
             - containerPort: 9090

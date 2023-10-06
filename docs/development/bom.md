@@ -23,6 +23,7 @@ The columns are:
 | [Docker](https://docs.docker.com/engine/release-notes/)                                                    | 20.10.17    | 23.0.1         | distributing Racetrack, building job images     |
 | [FastAPI](https://github.com/tiangolo/fastapi)                                                             | 0.92.0      | 0.92.0         | serving API by Python components                |
 | [Gin](https://github.com/gin-gonic/gin)                                                                    | 1.9.0       | 1.9.0          | Web framework for Go                            |
+| [Grafana](https://github.com/grafana/grafana)                                                              | 10.1.4      | 10.1.4         | Metrics visualization                           |
 | [github-markdown-css](https://github.com/sindresorhus/github-markdown-css)                                 | 5.1.0       | 5.2.0          | rendering docs                                  |
 | [GitPython](https://pypi.org/project/GitPython/)                                                           | 3.1.31      | 3.1.31         | cloning job repositories                        |
 | [Go](https://go.dev/dl/)                                                                                   | 1.19        | 1.20.1         | PUB code                                        |
@@ -39,6 +40,7 @@ The columns are:
 | [pkg/errors](https://github.com/pkg/errors) (**archived repository**)                                      | 0.9.1       | 0.9.1          | wrapping errors context                         | 
 | [PostgreSQL](https://www.postgresql.org/docs/release/)                                                     | 13.1        | 15.2           | Racetrack's database                            |
 | [Prism](https://github.com/PrismJS/prism/)                                                                 | 1.28.0      | 1.29.0         | rendering code snippets in docs                 |
+| [Prometheus](https://github.com/prometheus/prometheus)                                                     | 2.47.1      | 2.47.1         | collecting metrics                              |
 | [Prometheus Go client library](https://github.com/prometheus/client_golang)                                | 1.14.0      | 1.14.0         | metrics exposure in Go                          |
 | [prometheus-client](https://pypi.org/project/prometheus-client/)                                           | 0.16.0      | 0.16.0         | metrics exposure                                |
 | [protobuf](https://pypi.org/project/protobuf/)                                                             | 4.22.0      | 4.22.0         | handling OTLP                                   |
