@@ -36,7 +36,14 @@ GRAFANA_DASHBOARDS = [
 # + docker compose
 # curl
 
-# sudo apt update && sudo apt install curl python3 python3-pip python3-venv
+"""
+sudo apt update && sudo apt install curl python3 python3-pip python3-venv
+curl -fsSL https://get.docker.com -o install-docker.sh
+sh install-docker.sh
+sudo usermod -aG docker $USER
+newgrp docker
+"""
+
 # sudo apt install make
 # python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 # python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
@@ -172,14 +179,9 @@ sh install-docker.sh
         shell('docker ps', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
-        if not prompt_shell_command('Would you like to fix it by executing the following command?', '''
-sudo usermod -aG docker $USER
-newgrp docker
-'''):
-            # sudo usermod -aG docker $USER
-            # newgrp docker
-            raise e
-        shell('docker ps', print_stdout=False)
+        # sudo usermod -aG docker $USER
+        # newgrp docker
+        raise e
 
     try:
         shell('docker compose version', print_stdout=False)
@@ -200,6 +202,8 @@ def _generate_secrets(config: SetupConfig):
         logger.info(f'Generated Auth key: {config.auth_key}')
 
     if not config.pub_auth_token:
+        logger.info("Pulling Lifecycle image…")
+        shell('docker pull ghcr.io/theracetrack/racetrack/lifecycle:latest')
         logger.info("Generating Pub's auth token…")
         config.pub_auth_token = generate_auth_token(config.auth_key, 'pub')
     if not config.image_builder_auth_token:
@@ -264,7 +268,7 @@ def prompt_bool(question: str, default: bool = True) -> bool:
 
 def prompt_shell_command(question: str, snippet: str) -> bool:
     snippet = snippet.strip()
-    if not prompt_bool(f'{question}\n{snippet}\n'):
+    if not prompt_bool(f'{question}\n{snippet}'):
         return False
     for command in snippet.splitlines():
         shell(command)
@@ -425,6 +429,7 @@ def generate_auth_token(auth_key: str, service_name: str) -> str:
         f' --env AUTH_KEY="{auth_key}"'
         f' ghcr.io/theracetrack/racetrack/lifecycle:latest'
         f' python -u -m lifecycle generate-auth "{service_name}" --short'
+        f' 2>/dev/null'
     ).strip()
 
 
