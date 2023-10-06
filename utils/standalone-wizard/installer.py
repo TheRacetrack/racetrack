@@ -36,7 +36,9 @@ GRAFANA_DASHBOARDS = [
 # + docker compose
 # curl
 
-#  sudo apt install curl python3 python3-pip python3-venv
+# sudo apt update && sudo apt install curl python3 python3-pip python3-venv
+# sudo apt install make
+# python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 # python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 
 
@@ -159,8 +161,8 @@ def _verify_docker():
     try:
         shell('docker --version', print_stdout=False)
     except CommandError as e:
-        logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
-        if not prompt_shell_command('''
+        logger.warning('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
+        if not prompt_shell_command('Would you like to install Docker by executing the following command?', '''
 curl -fsSL https://get.docker.com -o install-docker.sh
 sh install-docker.sh
 '''):
@@ -170,9 +172,14 @@ sh install-docker.sh
         shell('docker ps', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
-        # sudo usermod -aG docker $USER
-        # newgrp docker
-        raise e
+        if not prompt_shell_command('Would you like to fix it by executing the following command?', '''
+sudo usermod -aG docker $USER
+newgrp docker
+'''):
+            # sudo usermod -aG docker $USER
+            # newgrp docker
+            raise e
+        shell('docker ps', print_stdout=False)
 
     try:
         shell('docker compose version', print_stdout=False)
@@ -237,10 +244,13 @@ def prompt_text(question: str, default: str) -> str:
 def prompt_bool(question: str, default: bool = True) -> bool:
     while True:
         if default is True:
-            options = 'Y/n'
+            options = '[Y/n]'
         else:
-            options = 'y/N'
-        print(f'{question} {options}: ', end='')
+            options = '[y/N]'
+        if '\n' in question:
+            print(f'{question}\n{options}: ', end='')
+        else:
+            print(f'{question} {options}: ', end='')
         if NON_INTERACTIVE:
             return default
         value = input()
@@ -252,9 +262,9 @@ def prompt_bool(question: str, default: bool = True) -> bool:
             return False
 
 
-def prompt_shell_command(snippet: str) -> bool:
+def prompt_shell_command(question: str, snippet: str) -> bool:
     snippet = snippet.strip()
-    if not prompt_bool(f'Do you want to execute the following command?\n{snippet}\n'):
+    if not prompt_bool(f'{question}\n{snippet}\n'):
         return False
     for command in snippet.splitlines():
         shell(command)
