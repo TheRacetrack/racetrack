@@ -172,8 +172,7 @@ services:
       CLIENT_LOGIN_TIMEOUT: 10
       QUERY_WAIT_TIMEOUT: 10
       ADMIN_USERS: postgres,admin,racetrack
-    logging:
-      driver: none
+      AUTH_TYPE: scram-sha-256
 
   docker-engine:
     container_name: docker-engine

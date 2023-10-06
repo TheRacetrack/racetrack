@@ -40,7 +40,7 @@ The columns are:
 | [pkg/errors](https://github.com/pkg/errors) (**archived repository**)                                      | 0.9.1       | 0.9.1          | wrapping errors context                         | 
 | [PostgreSQL](https://www.postgresql.org/docs/release/)                                                     | 16.0        | 16.0           | Database for jobs and users                     |
 | [PostgreSQL Server Exporter](https://github.com/prometheus-community/postgres_exporter)                    | 0.14.0      | 0.14.0         | PostgreSQL metrics                              |
-| [PgBouncer](https://github.com/pgbouncer/pgbouncer)                                                        | 1.18.0      | 1.20.1         | Connection pooling for PostgreSQL               |
+| [PgBouncer](https://github.com/pgbouncer/pgbouncer)                                                        | 1.20.1      | 1.20.1         | Connection pooling for PostgreSQL               |
 | [Prism](https://github.com/PrismJS/prism/)                                                                 | 1.28.0      | 1.29.0         | rendering code snippets in docs                 |
 | [Prometheus](https://github.com/prometheus/prometheus)                                                     | 2.47.1      | 2.47.1         | collecting metrics                              |
 | [Prometheus Go client library](https://github.com/prometheus/client_golang)                                | 1.14.0      | 1.14.0         | metrics exposure in Go                          |
