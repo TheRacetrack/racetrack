@@ -18,6 +18,8 @@ LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
+GIT_BRANCH = '308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance'
+GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetrack/{GIT_BRANCH}/'
 GRAFANA_DASHBOARDS = [
     'image-builder',
     'jobs',
@@ -387,7 +389,7 @@ def template_file(src_file: Path, dst_file: Path, context_vars: Dict[str, str]):
 
 
 def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
-    src_file_url = 'https://raw.githubusercontent.com/TheRacetrack/racetrack/master/' + src_relative_url
+    src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
     logger.debug(f'Fetching URL {src_file_url}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
@@ -399,7 +401,7 @@ def template_repository_file(src_relative_url: str, dst_path: str, context_vars:
 
 
 def download_repository_file(src_relative_url: str, dst_path: str):
-    src_file_url = 'https://raw.githubusercontent.com/TheRacetrack/racetrack/master/' + src_relative_url
+    src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     dst_file = Path(dst_path)
