@@ -27,17 +27,17 @@ def _configure_env() -> str:
     environment = os.environ.get('TEST_ENV', 'kind')
     print(f'Running jobs test on {environment} environment...')
     if environment == 'kind':
-        os.environ['LIFECYCLE_URL'] = 'http://localhost:7002/lifecycle'
-        os.environ['IMAGE_BUILDER_URL'] = 'http://localhost:7001'
-        os.environ['PUB_URL'] = 'http://localhost:7005/pub'
+        os.environ['LIFECYCLE_URL'] = 'http://127.0.0.1:7002/lifecycle'
+        os.environ['IMAGE_BUILDER_URL'] = 'http://127.0.0.1:7001'
+        os.environ['PUB_URL'] = 'http://127.0.0.1:7005/pub'
     elif environment == 'docker':
-        os.environ['LIFECYCLE_URL'] = 'http://localhost:7102/lifecycle'
-        os.environ['IMAGE_BUILDER_URL'] = 'http://localhost:7101'
-        os.environ['PUB_URL'] = 'http://localhost:7105/pub'
+        os.environ['LIFECYCLE_URL'] = 'http://127.0.0.1:7102/lifecycle'
+        os.environ['IMAGE_BUILDER_URL'] = 'http://127.0.0.1:7101'
+        os.environ['PUB_URL'] = 'http://127.0.0.1:7105/pub'
     elif environment == 'localhost':
-        os.environ['LIFECYCLE_URL'] = 'http://localhost:7202/lifecycle'
-        os.environ['IMAGE_BUILDER_URL'] = 'http://localhost:7201'
-        os.environ['PUB_URL'] = 'http://localhost:7205/pub'
+        os.environ['LIFECYCLE_URL'] = 'http://127.0.0.1:7202/lifecycle'
+        os.environ['IMAGE_BUILDER_URL'] = 'http://127.0.0.1:7201'
+        os.environ['PUB_URL'] = 'http://127.0.0.1:7205/pub'
     elif environment == 'kubernetes':
         test_host = os.environ['TEST_HOST']
         os.environ['LIFECYCLE_URL'] = test_host + '/lifecycle'

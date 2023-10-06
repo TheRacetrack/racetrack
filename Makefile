@@ -169,8 +169,8 @@ compose-down: docker-clean-job
 	rm -rf .plugins
 
 compose-deploy-sample:
-	LIFECYCLE_URL=http://localhost:7102 ./utils/wait-for-lifecycle.sh
-	racetrack deploy sample/python-class/ --remote http://localhost:7102 --force
+	LIFECYCLE_URL=http://127.0.0.1:7102 ./utils/wait-for-lifecycle.sh
+	racetrack deploy sample/python-class/ --remote http://127.0.0.1:7102 --force
 
 compose-logs:
 	$(docker-compose) logs lifecycle lifecycle-supervisor image-builder dashboard pub -f
@@ -259,8 +259,8 @@ kind-logs:
 	kubectl logs -l 'app in (racetrack)' --all-containers --prefix=true --tail=200 -f --max-log-requests 10
 
 kind-deploy-sample:
-	LIFECYCLE_URL=http://localhost:7002 ./utils/wait-for-lifecycle.sh
-	racetrack deploy sample/python-class/ --remote http://localhost:7002 --force
+	LIFECYCLE_URL=http://127.0.0.1:7002 ./utils/wait-for-lifecycle.sh
+	racetrack deploy sample/python-class/ --remote http://127.0.0.1:7002 --force
 
 clean: compose-down kind-down registry-down
 

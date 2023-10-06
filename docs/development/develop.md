@@ -39,9 +39,9 @@ If you're new to Racetrack, you can just run the following command to launch a l
 make compose-up
 ```
 
-Then, you can visit http://localhost:7103 to see the Racetrack Dashboard (default user/password: admin/admin).
+Then, you can visit http://127.0.0.1:7103 to see the Racetrack Dashboard (default user/password: admin/admin).
 
-Lifecycle server runs on http://localhost:7102 (it's the URL you deploy your jobs there).
+Lifecycle server runs on http://127.0.0.1:7102 (it's the URL you deploy your jobs there).
 Let's create a "dev" alias for it and set it as a current remote:
 ```bash
 racetrack set alias dev http://localhost:7102

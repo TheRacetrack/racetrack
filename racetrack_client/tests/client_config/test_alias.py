@@ -12,7 +12,7 @@ def test_resolve_lifecycle_url():
     assert resolve_lifecycle_url(client_config, 'dev') == 'https://dev-cluster/lifecycle'
     assert resolve_lifecycle_url(client_config, 'kind') == 'http://localhost:7002/lifecycle'
     # default from ClientConfig
-    assert resolve_lifecycle_url(client_config, '') == 'http://localhost:7002/lifecycle'
+    assert resolve_lifecycle_url(client_config, '') == 'http://127.0.0.1:7002/lifecycle'
     # unchanged direct URL
     assert resolve_lifecycle_url(client_config, 'https://test-cluster/lifecycle') ==\
            'https://test-cluster/lifecycle'

@@ -79,12 +79,12 @@ services:
     restart: unless-stopped
     user: '100000:100000'
     volumes:
-      - ./image_builder/tests/sample/compose.yaml:/etc/racetrack/image-builder/compose.yaml
+      - ./image_builder/tests/sample/compose.yaml:/etc/racetrack/image-builder/config.yaml
       - ./.plugins:/mnt/plugins
     environment:
       DOCKER_TLS_CERTDIR: ''
       DOCKER_HOST: tcp://docker-engine:2375
-      CONFIG_FILE: /etc/racetrack/image-builder/compose.yaml
+      CONFIG_FILE: /etc/racetrack/image-builder/config.yaml
       LIFECYCLE_AUTH_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY
 
   dashboard:
@@ -104,10 +104,10 @@ services:
     environment:
       DJANGO_DEBUG: 'True'
       DASHBOARD_PORT: '7103'
-      LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
-      EXTERNAL_LIFECYCLE_URL: 'http://localhost:7102/lifecycle'
-      EXTERNAL_PUB_URL: 'http://localhost:7105/pub'
-      EXTERNAL_GRAFANA_URL: 'http://localhost:3100'
+      LIFECYCLE_URL: 'http://127.0.0.1:7102/lifecycle'
+      EXTERNAL_LIFECYCLE_URL: 'http://127.0.0.1:7102/lifecycle'
+      EXTERNAL_PUB_URL: 'http://127.0.0.1:7105/pub'
+      EXTERNAL_GRAFANA_URL: 'http://127.0.0.1:3100'
       AUTH_REQUIRED: 'true'
       SITE_NAME: ''
 
