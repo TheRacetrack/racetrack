@@ -150,7 +150,7 @@ def install_to_docker(config: SetupConfig):
 
     if not Path('venv').is_dir():
         logger.info('Creating virtual environment…')
-        shell('python3 -m venv venv')
+        shell('python3 -m venv venv', raw_output=True)
 
     # install racetrack client
     # set current remote
@@ -203,7 +203,7 @@ def _generate_secrets(config: SetupConfig):
 
     if not config.pub_auth_token:
         logger.info("Pulling Lifecycle image…")
-        shell('docker pull ghcr.io/theracetrack/racetrack/lifecycle:latest')
+        shell('docker pull ghcr.io/theracetrack/racetrack/lifecycle:latest', raw_output=True)
         logger.info("Generating Pub's auth token…")
         config.pub_auth_token = generate_auth_token(config.auth_key, 'pub')
     if not config.image_builder_auth_token:
