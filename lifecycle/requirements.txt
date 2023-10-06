@@ -1,8 +1,8 @@
 PyYAML==6.0
 kubernetes==26.1.0
-Django==4.1.10
+Django==4.2.5
 schedule==1.1.0
-psycopg2-binary==2.9.7
+psycopg[binary,pool]==3.1.12
 python-socketio==5.9.0
 python-socketio[client]==5.9.0
 Jinja2==3.1.2

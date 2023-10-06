@@ -52,6 +52,7 @@ nav:
   - Using Racetrack:
     - Quickstart: docs/quickstart.md
     - User Guide: docs/user.md
+    - Local Kubernetes Setup: docs/local-kubernetes-setup.md
     - Job Manifest File Schema: docs/manifest-schema.md
     - Permission model: docs/permissions.md
     - CLI client: racetrack_client/README.md
