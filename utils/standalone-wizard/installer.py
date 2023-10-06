@@ -34,10 +34,10 @@ GRAFANA_DASHBOARDS = [
 # python3 venv
 # + docker (non-root)
 # + docker compose
-# + wget / - curl
+# curl
 
 #  sudo apt install curl python3 python3-pip python3-venv
-# python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
+# python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 
 
 def main():
@@ -133,7 +133,7 @@ def install_to_docker(config: SetupConfig):
     for dashboard in GRAFANA_DASHBOARDS:
         download_repository_file(f'utils/grafana/dashboards/{dashboard}.json', f'utils/grafana/dashboards/{dashboard}.json')
 
-    logger.info('Starting up Racetrack containers…')
+    logger.info('Starting up containers…')
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always')
 
     logger.info('Waiting until Racetrack is operational…')
@@ -411,7 +411,7 @@ def download_repository_file(src_relative_url: str, dst_path: str):
 
 def generate_auth_token(auth_key: str, service_name: str) -> str:
     return shell_output(
-        f'docker run --rm -it --name lifecycle-tmp'
+        f'docker run --rm --name lifecycle-tmp'
         f' --env AUTH_KEY="{auth_key}"'
         f' ghcr.io/theracetrack/racetrack/lifecycle:latest'
         f' python -u -m lifecycle generate-auth "{service_name}" --short'
