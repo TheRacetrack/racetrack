@@ -58,7 +58,7 @@ spec:
               name: pgbouncer
 
         - name: postgres-exporter
-          image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+          image: prometheuscommunity/postgres-exporter:v0.14.0
           envFrom:
             - configMapRef:
                 name: pgbouncer-env

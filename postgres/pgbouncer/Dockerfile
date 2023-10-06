@@ -1,4 +1,4 @@
-FROM edoburu/pgbouncer:1.15.0
+FROM edoburu/pgbouncer:1.18.0
 
 # Don't copy pgbouncer.ini, as then it won't be auto-created by entrypoint.
 # Settings have to be configured through env vars.

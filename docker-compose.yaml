@@ -194,7 +194,7 @@ services:
       driver: none
   
   postgres-exporter:
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+    image: prometheuscommunity/postgres-exporter:v0.14.0
     container_name: postgres-exporter
     env_file:
       - ./.env
