@@ -88,7 +88,10 @@ def remote_shell(
     remote_gateway_token: str | None = None,
     workdir: str | None = None,
 ) -> str:
-    """Run command on remote infrastructure, return output of a command"""
+    """
+    Run command on remote infrastructure, return output of a command.
+    Output is combined standard output and standard error.
+    """
     url = join_paths(remote_gateway_url, "/remote/command")
     response = Requests.post(url, headers={
         'X-Racetrack-Gateway-Token': remote_gateway_token,
