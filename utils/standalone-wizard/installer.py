@@ -31,8 +31,8 @@ GRAFANA_DASHBOARDS = [
 # python3-pip
 # python3 venv
 # + docker (non-root)
-# docker compose
-# + wget
+# + docker compose
+# + wget / - curl
 
 #  sudo apt install curl python3 python3-pip python3-venv
 # python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
@@ -134,15 +134,12 @@ def install_to_docker(config: SetupConfig):
     for dashboard in GRAFANA_DASHBOARDS:
         download_repository_file(f'utils/grafana/dashboards/{dashboard}.json', f'utils/grafana/dashboards/{dashboard}.json')
 
-    # run docker compose: start containers
-
     logger.info('Starting up Racetrack containers…')
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always')
 
     logger.info('Waiting until Racetrack is operational…')
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
 
-    # wait for lifecycle
     # install racetrack client
     # set current remote
     # change super-admin password
@@ -151,7 +148,7 @@ def install_to_docker(config: SetupConfig):
     # install plugins: python3, docker
     # print dashboard address
 
-    logger.info('Racetrack is ready to use')
+    logger.info('Racetrack is ready to use.')
 
 
 def _verify_docker():
