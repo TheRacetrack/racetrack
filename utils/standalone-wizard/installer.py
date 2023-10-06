@@ -304,29 +304,6 @@ class ColoredFormatter(logging.Formatter):
         return self.plain_formatter.format(record)
 
 
-def shell(
-    cmd: str,
-    workdir: Optional[Path] = None,
-    print_stdout: bool = True,
-    read_bytes: bool = False,
-    output_filename: Optional[str] = None,
-    raw_output: bool = False,
-):
-    if raw_output:
-        logger.debug(f'Command: {cmd}')
-        process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
-        try:
-            process.wait()
-            if process.returncode != 0:
-                raise CommandError(cmd, '', process.returncode)
-        except KeyboardInterrupt:
-            logger.warning('killing subprocess')
-            process.kill()
-            raise
-    else:
-        _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
-
-
 def shell_output(
     cmd: str,
     workdir: Optional[Path] = None,
@@ -334,25 +311,37 @@ def shell_output(
     read_bytes: bool = False,
     output_filename: Optional[str] = None,
 ) -> str:
-    captured_stream = _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
+    captured_stream = shell(cmd, workdir, print_stdout, output_filename, read_bytes)
     return captured_stream.getvalue()
 
 
-def _run_shell_command(
+def shell(
     cmd: str,
     workdir: Optional[Path] = None,
     print_stdout: bool = True,
     output_filename: Optional[str] = None,
     read_bytes: bool = False,
+    raw_output: bool = False,
 ) -> io.StringIO:
     logger.debug(f'Command: {cmd}')
     if len(cmd) > 4096:  # see https://github.com/torvalds/linux/blob/v5.11/drivers/tty/n_tty.c#L1681
         raise RuntimeError('maximum tty line length has been exceeded')
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
+
+    if raw_output:
+        process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
+    else:
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
+
     output_file = open(output_filename, 'a') if output_filename else None
     try:
-        # fork command output to stdout, captured buffer and output file
         captured_stream = io.StringIO()
+        if raw_output:
+            process.wait()
+            if process.returncode != 0:
+                raise CommandError(cmd, '', process.returncode)
+            return captured_stream
+
+        # fork command output to stdout, captured buffer and output file
         if read_bytes:
             while True:
                 chunk: bytes = process.stdout.read(1)
