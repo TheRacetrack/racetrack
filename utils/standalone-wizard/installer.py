@@ -55,8 +55,7 @@ def main():
 
     if not config.infrastructure:
         config.infrastructure = prompt_text('''Choose infrastructure target to install Racetrack
-- docker - Docker Engine on this local machine
-''', 'docker')
+- docker - Docker Engine on this local machine''', 'docker')
         save_local_config(config)
     else:
         logger.debug(f'infrastructure target set to: {config.infrastructure}')
@@ -82,11 +81,12 @@ def install_to_docker(config: SetupConfig):
     install_dir = Path(config.install_dir).expanduser().absolute()
     if not install_dir.is_dir():
         install_dir.mkdir(parents=True, exist_ok=True)
-        logger.debug(f'Created installation directory: {install_dir.absolute()}')
+        logger.debug(f'Created installation directory at {install_dir.absolute()}')
     os.chdir(install_dir.as_posix())
 
     if not config.external_address:
-        config.external_address = prompt_text('Enter external address that your Racetrack will be accessed at (IP or domain name)', 'http://127.0.0.1')
+        config.external_address = prompt_text(
+            'Enter the external address that your Racetrack will be accessed at (IP or domain name)', 'http://127.0.0.1')
         save_local_config(config)
     else:
         logger.debug(f'External remote address set to: {config.external_address}')
@@ -94,12 +94,9 @@ def install_to_docker(config: SetupConfig):
     _verify_docker()
     if not config.docker_gid:
         config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
+        logger.debug(f'Docker group ID set to: {config.docker_gid}')
 
     _generate_secrets(config)
-
-    if not Path('venv').is_dir():
-        logger.info('Creating virtual environment…')
-        shell('python3 -m venv venv')
 
     if not (plugins_path := Path('.plugins')).is_dir():
         logger.info('Creating plugins volume…')
@@ -139,6 +136,10 @@ def install_to_docker(config: SetupConfig):
 
     logger.info('Waiting until Racetrack is operational…')
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
+
+    if not Path('venv').is_dir():
+        logger.info('Creating virtual environment…')
+        shell('python3 -m venv venv')
 
     # install racetrack client
     # set current remote
@@ -190,11 +191,11 @@ def _generate_secrets(config: SetupConfig):
         logger.info(f'Generated Auth key: {config.auth_key}')
 
     if not config.pub_auth_token:
+        logger.info("Generating Pub's auth token…")
         config.pub_auth_token = generate_auth_token(config.auth_key, 'pub')
-        logger.info("Pub's token generated")
     if not config.image_builder_auth_token:
+        logger.info("Generating Image builder's auth token…")
         config.image_builder_auth_token = generate_auth_token(config.auth_key, 'image-builder')
-        logger.info("Image builder's token generated")
     save_local_config(config)
 
 
@@ -205,9 +206,9 @@ def load_local_config() -> SetupConfig:
         config_dict = json.loads(local_file.read_text())
         return SetupConfig(**config_dict)
     else:
-        logger.info(f'Creating setup configuration at {local_file.absolute()}')
         config = SetupConfig()
         save_local_config(config)
+        logger.info(f'Setup configuration created at {local_file.absolute()}')
         return config
 
 
@@ -218,12 +219,15 @@ def save_local_config(config: SetupConfig):
 
 
 def prompt_text(question: str, default: str) -> str:
-    print(f'{question} [default: {default}]: ', end='')
+    if '\n' in question:
+        print(f'{question}\n[default: {default}]: ', end='')
+    else:
+        print(f'{question} [default: {default}]: ', end='')
     if NON_INTERACTIVE:
         return default
     value = input()
     if value == '':
-        logger.debug(f'Chosen default: {default}')
+        logger.debug(f'Default set: {default}')
         return default
     return value
 
@@ -384,6 +388,7 @@ def template_file(src_file: Path, dst_file: Path, context_vars: Dict[str, str]):
 
 def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
     src_file_url = 'https://raw.githubusercontent.com/TheRacetrack/racetrack/master/' + src_relative_url
+    logger.debug(f'Fetching URL {src_file_url}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     template = string.Template(src_content.decode())
@@ -403,12 +408,12 @@ def download_repository_file(src_relative_url: str, dst_path: str):
 
 
 def generate_auth_token(auth_key: str, service_name: str) -> str:
-    return shell_output(f'''
-    docker run --rm -it --name lifecycle-tmp \\
-     --env AUTH_KEY="{auth_key}" \\
-     ghcr.io/theracetrack/racetrack/lifecycle:latest \\
-     python -u -m lifecycle generate-auth "{service_name}" --short
-    '''.strip()).strip()
+    return shell_output(
+        f'docker run --rm -it --name lifecycle-tmp'
+        f' --env AUTH_KEY="{auth_key}"'
+        f' ghcr.io/theracetrack/racetrack/lifecycle:latest'
+        f' python -u -m lifecycle generate-auth "{service_name}" --short'
+    ).strip()
 
 
 if __name__ == '__main__':
