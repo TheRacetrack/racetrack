@@ -1,0 +1,242 @@
+version: '3.7'
+services:
+
+  lifecycle:
+    container_name: lifecycle
+    image: ghcr.io/theracetrack/racetrack/lifecycle:latest
+    ports:
+      - "7102:7102"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    user: '100000:${DOCKER_GID}'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './lifecycle/config.yaml:/etc/racetrack/lifecycle/config.yaml'
+      - './.plugins:/mnt/plugins'
+    env_file:
+      - ./.env
+    environment:
+      DJANGO_DEBUG: 'True'
+      CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
+    command: >
+      bash -c "
+      /src/lifecycle/wait-for-postgres.sh && 
+      /src/lifecycle/wait-for-migration.sh && 
+      python -u -m lifecycle serve"
+    stdin_open: true
+    tty: true
+
+  lifecycle-supervisor:
+    container_name: lifecycle-supervisor
+    image: ghcr.io/theracetrack/racetrack/lifecycle:latest
+    ports:
+      - "7106:7102"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    user: '100000:${DOCKER_GID}'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './lifecycle/config.yaml:/etc/racetrack/lifecycle/config.yaml'
+      - './.plugins:/mnt/plugins'
+    env_file:
+      - ./.env
+    environment:
+      DJANGO_DEBUG: 'True'
+      CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
+    command: >
+      bash -c "
+      /src/lifecycle/wait-for-postgres.sh && 
+      /src/lifecycle/lifecycle/django/migrate.sh && 
+      python -u -m lifecycle supervisor"
+    stdin_open: true
+    tty: true
+
+  image-builder:
+    container_name: image-builder
+    image: ghcr.io/theracetrack/racetrack/image-builder:latest
+    ports:
+      - "127.0.0.1:7101:7101"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    user: '100000:100000'
+    volumes:
+      - ./image_builder/config.yaml:/etc/racetrack/image-builder/config.yaml
+      - ./.plugins:/mnt/plugins
+    environment:
+      DOCKER_TLS_CERTDIR: ''
+      DOCKER_HOST: tcp://docker-engine:2375
+      CONFIG_FILE: /etc/racetrack/image-builder/config.yaml
+      LIFECYCLE_AUTH_TOKEN: '${IMAGE_BUILDER_AUTH_TOKEN}'
+
+  dashboard:
+    container_name: dashboard
+    image: ghcr.io/theracetrack/racetrack/dashboard:latest
+    ports:
+      - "7103:7103"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    user: '100000:100000'
+    env_file:
+      - ./.env
+    environment:
+      DJANGO_DEBUG: 'True'
+      DASHBOARD_PORT: '7103'
+      LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
+      EXTERNAL_LIFECYCLE_URL: 'http://127.0.0.1:7102/lifecycle'
+      EXTERNAL_PUB_URL: 'http://127.0.0.1:7105/pub'
+      EXTERNAL_GRAFANA_URL: 'http://127.0.0.1:3100'
+      AUTH_REQUIRED: 'true'
+      SITE_NAME: ''
+
+  pub:
+    container_name: pub
+    image: ghcr.io/theracetrack/racetrack/pub:latest
+    ports:
+      - "7105:7105"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    user: '100000:100000'
+    environment:
+      PUB_PORT: '7105'
+      LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
+      AUTH_REQUIRED: 'true'
+      AUTH_DEBUG: 'true'
+      LIFECYCLE_AUTH_TOKEN: '${PUB_AUTH_TOKEN}'
+
+  postgres:
+    image: postgres:13.1
+    container_name: postgres
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - ./.env
+    command: -p 5532
+    restart: always
+    ports:
+      - "127.0.0.1:5532:5532"
+    networks:
+      - racetrack_default
+
+  pgbouncer:
+    image: ghcr.io/theracetrack/racetrack/pgbouncer:latest
+    container_name: pgbouncer
+    ports:
+      - "127.0.0.1:5533:5533"
+    restart: always
+    user: '100000:100000'
+    networks:
+      - racetrack_default
+    environment:
+      LISTEN_PORT: '5533'
+      DB_USER: 'racetrack'
+      DB_PASSWORD: 'dev-25ZjbUDJH6MzmUR'
+      DB_HOST: 'postgres'
+      DB_NAME: 'racetrack'
+      DB_PORT: '5532'
+      POOL_MODE: session
+      MAX_CLIENT_CONN: 30000
+      CLIENT_IDLE_TIMEOUT: 90
+      SERVER_CONNECT_TIMEOUT: 10
+      CLIENT_LOGIN_TIMEOUT: 10
+      QUERY_WAIT_TIMEOUT: 10
+      ADMIN_USERS: postgres,admin,racetrack
+    logging:
+      driver: none
+
+  docker-engine:
+    container_name: docker-engine
+    image: docker:dind
+    ports:
+      - "127.0.0.1:2375:2375"
+    networks:
+      - racetrack_default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    privileged: true
+    command: ['--insecure-registry=racetrack-registry:5000', '--insecure-registry=http://racetrack-registry:5000']
+    environment:
+      DOCKER_TLS_CERTDIR: ''
+    logging:
+      driver: none
+  
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+    container_name: postgres-exporter
+    env_file:
+      - ./.env
+    ports:
+      - "127.0.0.1:9187:9187"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    logging:
+      driver: none
+
+  prometheus:
+    image: prom/prometheus:v2.42.0
+    container_name: prometheus
+    ports:
+      - "127.0.0.1:9192:9090"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    user: '65534:65534'
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.retention.time=60d'
+    volumes:
+      - ./utils/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./.plugins/metrics:/mnt/plugins/metrics
+    logging:
+      driver: none
+
+  grafana:
+    image: grafana/grafana:9.3.6
+    container_name: grafana
+    ports:
+      - "3100:3000"
+    networks:
+      - racetrack_default
+    restart: unless-stopped
+    user: '100000:100000'
+    volumes:
+      - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
+      - ./utils/grafana/dashboards/:/var/lib/grafana/dashboards
+    environment:
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    logging:
+      driver: none
+
+  racetrack-registry:
+    image: registry:2
+    container_name: racetrack-registry
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - racetrack_default
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+    restart: unless-stopped
+
+
+networks:
+  racetrack_default:
+    driver: bridge
+    name: racetrack_default

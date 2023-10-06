@@ -105,15 +105,41 @@ def install_to_docker(config: SetupConfig):
         logger.info('Creating plugins volume…')
         plugins_path.mkdir(parents=True, exist_ok=True)
         plugins_path.chmod(0o777)
+        metrics_path = plugins_path / 'metrics'
+        metrics_path.mkdir(parents=True, exist_ok=True)
+        metrics_path.chmod(0o777)
 
     logger.info('Templating config files…')
-    context_vars = asdict(config)
-    download_repository_file('utils/setup-registry.sh', 'setup-registry.sh')
-    template_repository_file('docker-compose.yaml', 'docker-compose.yaml', context_vars)
+    template_repository_file('utils/standalone-wizard/docker-compose.template.yaml', 'docker-compose.yaml', {
+        'DOCKER_GID': config.docker_gid,
+        'PUB_AUTH_TOKEN': config.pub_auth_token,
+        'IMAGE_BUILDER_AUTH_TOKEN': config.image_builder_auth_token,
+    })
+    template_repository_file('utils/standalone-wizard/.env.template', '.env', {
+        'POSTGRES_PASSWORD': config.postgres_password,
+        'AUTH_KEY': config.auth_key,
+        'SECRET_KEY': config.django_secret_key,
+    })
+    download_repository_file('utils/wait-for-lifecycle.sh', 'wait-for-lifecycle.sh')
+    download_repository_file('lifecycle/tests/sample/compose.yaml', 'lifecycle/config.yaml')
+    download_repository_file('image_builder/tests/sample/compose.yaml', 'image_builder/config.yaml')
+    download_repository_file('postgres/init.sql', 'postgres/init.sql')
+    download_repository_file('utils/prometheus/prometheus.yaml', 'utils/prometheus/prometheus.yaml')
+    download_repository_file('utils/grafana/datasource.yaml', 'utils/grafana/datasource.yaml')
+    download_repository_file('utils/grafana/dashboards-all.yaml', 'utils/grafana/dashboards-all.yaml')
+    for dashboard in GRAFANA_DASHBOARDS:
+        download_repository_file(f'utils/grafana/dashboards/{dashboard}.json', f'utils/grafana/dashboards/{dashboard}.json')
 
     # configure optional external address: IP / FQDN, http://127.0.0.1
     # setup registry
     # run docker compose: start containers
+
+    logger.info('Starting up Racetrack containers…')
+    shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always')
+
+    logger.info('Waiting until Racetrack is operational…')
+    shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
+
     # wait for lifecycle
     # install racetrack client
     # set current remote
