@@ -38,7 +38,7 @@ The columns are:
 | [nvm](https://github.com/nvm-sh/nvm)                                                                       | 0.39.3      | 0.39.3         | Management of Node versions                     |
 | [opentelemetry-exporter-otlp-proto-http](https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/) | 1.16.0      | 1.16.0         | sending traces to OpenTelemetry                 |
 | [pkg/errors](https://github.com/pkg/errors) (**archived repository**)                                      | 0.9.1       | 0.9.1          | wrapping errors context                         | 
-| [PostgreSQL](https://www.postgresql.org/docs/release/)                                                     | 13.1        | 15.2           | Racetrack's database                            |
+| [PostgreSQL](https://www.postgresql.org/docs/release/)                                                     | 16.0        | 16.0           | Database for jobs and users                     |
 | [Prism](https://github.com/PrismJS/prism/)                                                                 | 1.28.0      | 1.29.0         | rendering code snippets in docs                 |
 | [Prometheus](https://github.com/prometheus/prometheus)                                                     | 2.47.1      | 2.47.1         | collecting metrics                              |
 | [Prometheus Go client library](https://github.com/prometheus/client_golang)                                | 1.14.0      | 1.14.0         | metrics exposure in Go                          |

@@ -21,7 +21,7 @@ spec:
             name: postgres-init-script
       containers:
         - name: postgres
-          image: postgres:13.1
+          image: postgres:16.0
           envFrom:
             - configMapRef:
                 name: postgres-env

@@ -133,7 +133,7 @@ services:
       LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
 
   postgres:
-    image: postgres:13.1
+    image: postgres:16.0
     container_name: postgres
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
