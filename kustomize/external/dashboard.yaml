@@ -47,8 +47,6 @@ spec:
               value: 'true'
             - name: DASHBOARD_PORT
               value: '7003'
-            - name: LIFECYCLE_AUTH_TOKEN
-              value: '{{ DASHBOARD_TOKEN }}'
             - name: SITE_NAME
               value: 'dev'
             - name: PUBLIC_IP

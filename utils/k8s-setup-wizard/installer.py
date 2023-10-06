@@ -53,9 +53,6 @@ def main():
     token = shell_output('python -m lifecycle generate-auth pub --short').strip()
     logger.debug(f"PUB's token generated: {token}")
     context_vars['PUB_TOKEN'] = token
-    token = shell_output('python -m lifecycle generate-auth dashboard --short').strip()
-    logger.debug(f"Dashboard's token generated: {token}")
-    context_vars['DASHBOARD_TOKEN'] = token
     token = shell_output('python -m lifecycle generate-auth image-builder --short').strip()
     logger.debug(f"Image-builder's token generated: {token}")
     context_vars['IMAGE_BUILDER_TOKEN'] = token

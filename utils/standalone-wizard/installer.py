@@ -16,10 +16,15 @@ logger = logging.getLogger('racetrack')
 
 LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
-
 LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
-
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
+GRAFANA_DASHBOARDS = [
+    'image-builder',
+    'jobs',
+    'lifecycle',
+    'postgres',
+    'pub',
+]
 
 # Requirements:
 # + python3
@@ -42,19 +47,19 @@ def main():
 
     config: SetupConfig = load_local_config()
 
-    if config.install_dir:
-        logger.debug(f'Installation directory set to: {config.install_dir}')
-    else:
+    if not config.install_dir:
         config.install_dir = prompt_text('Choose installation directory', '~/racetrack')
         save_local_config(config)
-
-    if config.infrastructure:
-        logger.debug(f'infrastructure target set to: {config.infrastructure}')
     else:
+        logger.debug(f'Installation directory set to: {config.install_dir}')
+
+    if not config.infrastructure:
         config.infrastructure = prompt_text('''Choose infrastructure target to install Racetrack
 - docker - Docker Engine on this local machine
 ''', 'docker')
         save_local_config(config)
+    else:
+        logger.debug(f'infrastructure target set to: {config.infrastructure}')
 
     if config.infrastructure == 'docker':
         install_to_docker(config)
@@ -69,8 +74,8 @@ class SetupConfig:
     auth_key: str = ''
     docker_gid: str = ''
     pub_auth_token: str = ''
-    dashboard_auth_token: str = ''
     image_builder_auth_token: str = ''
+    external_address: str = ''
 
 
 def install_to_docker(config: SetupConfig):
@@ -79,6 +84,12 @@ def install_to_docker(config: SetupConfig):
         install_dir.mkdir(parents=True, exist_ok=True)
         logger.debug(f'Created installation directory: {install_dir.absolute()}')
     os.chdir(install_dir.as_posix())
+
+    if not config.external_address:
+        config.external_address = prompt_text('Enter external address that your Racetrack will be accessed at', 'http://127.0.0.1')
+        save_local_config(config)
+    else:
+        logger.debug(f'External remote address set to: {config.external_address}')
 
     _verify_docker()
     if not config.docker_gid:
@@ -156,9 +167,6 @@ def _generate_secrets(config: SetupConfig):
     if not config.pub_auth_token:
         config.pub_auth_token = generate_auth_token(config.auth_key, 'pub')
         logger.info("Pub's token generated")
-    if not config.dashboard_auth_token:
-        config.dashboard_auth_token = generate_auth_token(config.auth_key, 'dashboard')
-        logger.info("Dashboard's token generated")
     if not config.image_builder_auth_token:
         config.image_builder_auth_token = generate_auth_token(config.auth_key, 'image-builder')
         logger.info("Image builder's token generated")
