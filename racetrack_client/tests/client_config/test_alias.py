@@ -5,12 +5,12 @@ from racetrack_client.client_config.client_config import ClientConfig
 def test_resolve_lifecycle_url():
     client_config = ClientConfig(lifecycle_url_aliases={
         'dev': 'https://dev-cluster/lifecycle',
-        'kind': 'http://localhost:7002',
+        'kind': 'http://127.0.0.1:7002',
     })
 
     # resolve from alias
     assert resolve_lifecycle_url(client_config, 'dev') == 'https://dev-cluster/lifecycle'
-    assert resolve_lifecycle_url(client_config, 'kind') == 'http://localhost:7002/lifecycle'
+    assert resolve_lifecycle_url(client_config, 'kind') == 'http://127.0.0.1:7002/lifecycle'
     # default from ClientConfig
     assert resolve_lifecycle_url(client_config, '') == 'http://127.0.0.1:7002/lifecycle'
     # unchanged direct URL

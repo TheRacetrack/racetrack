@@ -205,11 +205,11 @@ docker-push-github: docker-build
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${GHCR_PREFIX}/pgbouncer:${TAG})
 
 local-registry-push: docker-build
-	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,localhost:5000/racetrack/lifecycle:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,localhost:5000/racetrack/image-builder:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,localhost:5000/racetrack/dashboard:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,localhost:5000/racetrack/pub:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,localhost:5000/racetrack/pgbouncer:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,127.0.0.1:5000/racetrack/lifecycle:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,127.0.0.1:5000/racetrack/image-builder:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,127.0.0.1:5000/racetrack/dashboard:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,127.0.0.1:5000/racetrack/pub:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,127.0.0.1:5000/racetrack/pgbouncer:latest)
 
 docker-clean-job:
 	./utils/cleanup-jobs-docker.sh

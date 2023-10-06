@@ -44,7 +44,7 @@ Then, you can visit http://127.0.0.1:7103 to see the Racetrack Dashboard (defaul
 Lifecycle server runs on http://127.0.0.1:7102 (it's the URL you deploy your jobs there).
 Let's create a "dev" alias for it and set it as a current remote:
 ```bash
-racetrack set alias dev http://localhost:7102
+racetrack set alias dev http://127.0.0.1:7102
 racetrack set remote dev
 ```
 
@@ -89,14 +89,14 @@ Notes:
 Submitting a job:
 
 ```bash
-racetrack deploy sample/python-class/ --remote http://localhost:7202
+racetrack deploy sample/python-class/ --remote http://127.0.0.1:7202
 ```
 
-New container should be created. It can be accessed at http://localhost:7000
+New container should be created. It can be accessed at http://127.0.0.1:7000
 You need to `docker rm` or `make docker-clean-job` to clean leftover job on your own.
 In case of errors, troubleshoot with `docker ps` and `docker logs -f <job_name>`.
 
-Job can be accessed through the PUB at http://localhost:7205/pub/job/adder/latest,
+Job can be accessed through the PUB at http://127.0.0.1:7205/pub/job/adder/latest,
 where "adder" is a name of a job from `job.yaml`.
 
 ## Docker compose
@@ -111,7 +111,7 @@ Jobs can also run as local docker containers.
 Submitting a job:
 
 ```bash
-racetrack deploy sample/python-class/ --remote http://localhost:7102
+racetrack deploy sample/python-class/ --remote http://127.0.0.1:7102
 # or: compose-deploy-sample
 ```
 
@@ -125,7 +125,7 @@ A Kubernetes cluster in a Docker container. `make kind-up` to set it up,
 Submitting a job:
 
 ```bash
-racetrack deploy sample/python-class/ --remote http://localhost:7002
+racetrack deploy sample/python-class/ --remote http://127.0.0.1:7002
 # or make kind-deploy-sample
 ```
 
@@ -133,9 +133,9 @@ Jobs are deployed as k8s pods, and should be managed as such.
 
 ## Dashboard
 
-- Racetrack admin panel is at: http://localhost:7002/lifecycle/admin/
+- Racetrack admin panel is at: http://127.0.0.1:7002/lifecycle/admin/
   (user/password: admin)
-- Racetrack dashboard (for public consumption) is at: http://localhost:7003/dashboard/
+- Racetrack dashboard (for public consumption) is at: http://127.0.0.1:7003/dashboard/
   
 (ports might need to be adjusted according to below table)
 
@@ -160,7 +160,7 @@ Jobs are deployed as k8s pods, and should be managed as such.
 On any of localhost setups:
 
 ```bash
-curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
+curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
