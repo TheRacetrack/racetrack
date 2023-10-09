@@ -42,7 +42,7 @@ spec:
             failureThreshold: 20
           readinessProbe:
             exec:
-              command: ["pg_isready", "-h", "localhost", "-p", "5432", "-U", "racetrack", "-d", "racetrack"]
+              command: ["pg_isready", "-h", "127.0.0.1", "-p", "5432", "-U", "racetrack", "-d", "racetrack"]
             initialDelaySeconds: 5
             periodSeconds: 10
 

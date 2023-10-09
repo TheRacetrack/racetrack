@@ -212,5 +212,5 @@ make test-unit
 
 In order to view Lifecycle Postgres db, in k8s dashboard exec into postgres pod and:
 ```
-psql -h localhost -d racetrack -U racetrack -p 5432
+psql -h 127.0.0.1 -d racetrack -U racetrack -p 5432
 ```

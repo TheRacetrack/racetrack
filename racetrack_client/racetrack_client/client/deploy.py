@@ -183,7 +183,7 @@ def _determine_default_build_context_method(lifecycle_url: str, manifest: Manife
 
 def _is_url_localhost(url: str) -> bool:
     split = urlsplit(url)
-    return split.hostname in {'localhost', '127.0.0.1'}
+    return split.hostname in {'localhost', '127.0.0.1', '::1'}
 
 
 def encode_build_context(workdir: str) -> str:
