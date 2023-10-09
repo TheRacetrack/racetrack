@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,8 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
-
-const baseIngressPath = "/pub"
 
 func ListenAndServe(cfg *Config) error {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
@@ -21,22 +20,32 @@ func ListenAndServe(cfg *Config) error {
 	// and at prefixed path (when accessed through ingress proxy)
 	baseUrls := []string{
 		"",
-		baseIngressPath,
+		fmt.Sprintf("/%s", cfg.ServiceName),
 	}
 	for _, baseUrl := range baseUrls {
 		// Backwards compatability endpoints
 		router.Any(baseUrl+"/fatman/:job/:version/*path", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "/"+c.Param("path"))
 		})
 		router.Any(baseUrl+"/fatman/:job/:version", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "")
 		})
 
 		router.Any(baseUrl+"/job/:job/:version/*path", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "/"+c.Param("path"))
 		})
 		router.Any(baseUrl+"/job/:job/:version", func(c *gin.Context) {
-			proxyEndpoint(c, cfg)
+			proxyEndpoint(c, cfg, "")
+		})
+
+		router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
+			remoteForwardEndpoint(c, cfg, "/"+c.Param("path"))
+		})
+		router.Any(baseUrl+"/remote/forward/:job/:version", func(c *gin.Context) {
+			remoteForwardEndpoint(c, cfg, "")
+		})
+		router.POST(baseUrl+"/remote/command", func(c *gin.Context) {
+			remoteCommandEndpoint(c, cfg)
 		})
 
 		router.GET(baseUrl+"/live", liveEndpoint)
@@ -44,6 +53,10 @@ func ListenAndServe(cfg *Config) error {
 		router.GET(baseUrl+"/health", handlerWithConfig(healthEndpoint, cfg))
 
 		router.GET(baseUrl+"/metrics", wrapHandler(promhttp.Handler()))
+	}
+
+	if cfg.RemoteGatewayMode {
+		initRemoteGateway(router, cfg)
 	}
 
 	if cfg.OpenTelemetryEndpoint != "" {

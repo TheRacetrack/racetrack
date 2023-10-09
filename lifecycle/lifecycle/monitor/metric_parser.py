@@ -9,8 +9,8 @@ from racetrack_client.utils.request import Requests
 METRIC_LAST_CALL_TIMESTAMP = 'last_call_timestamp'
 
 
-def scrape_metrics(metrics_url: str) -> Iterable[Metric]:
-    response = Requests.get(metrics_url)
+def scrape_metrics(metrics_url: str, headers: dict[str, str] | None = None) -> Iterable[Metric]:
+    response = Requests.get(metrics_url, headers=headers)
     if response.status_code == 404:
         return []
     response.raise_for_status()
