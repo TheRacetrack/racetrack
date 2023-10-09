@@ -58,6 +58,9 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # How often (in seconds) to check for changes made to jobs in a database and notify live clients
     job_watcher_interval: float = 3
 
+    # How often (in seconds) to check if there is vital connection to database. 0 value disables this check.
+    database_status_refresh_interval: float = 60
+
     # Whether to allow overwriting existing jobs by deploying the same version once again
     allow_job_overwrite: bool = False
 

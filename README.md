@@ -84,7 +84,7 @@ or called with a curl command:
 ## Getting started
 
 For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.io/) environment;
-please follow the [Tutorial](docs/user.md#tutorial).
+please follow the [Tutorial](docs/user.md#tutorials).
 
 * [User Guide](docs/user.md)
 * [Quickstart - local installation](docs/quickstart.md)

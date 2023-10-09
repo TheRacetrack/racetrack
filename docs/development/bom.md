@@ -43,7 +43,7 @@ The columns are:
 | [prometheus-client](https://pypi.org/project/prometheus-client/)                                           | 0.16.0      | 0.16.0         | metrics exposure                                |
 | [protobuf](https://pypi.org/project/protobuf/)                                                             | 4.22.0      | 4.22.0         | handling OTLP                                   |
 | [psutil](https://pypi.org/project/psutil/)                                                                 | 5.9.4       | 5.9.4          | monitoring running processes                    |
-| [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)                                               | 2.9.5       | 2.9.5          | connecting to PostgreSQL                        |
+| [psycopg](https://pypi.org/project/psycopg)                                                                | 3.1.12      | 3.1.12         | connecting to PostgreSQL                        |
 | [pydantic](https://pypi.org/project/pydantic/)                                                             | 1.10.5      | 1.10.5         | schema validation                               |
 | [pyjwt](https://pypi.org/project/PyJWT/)                                                                   | 2.6.0       | 2.6.0          | handling JWT tokens                             |
 | [pytest](https://pypi.org/project/pytest/)                                                                 | 7.2.1       | 7.2.1          | running tests                                   |

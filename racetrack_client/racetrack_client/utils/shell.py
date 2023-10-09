@@ -14,6 +14,7 @@ def shell(
     cmd: str, 
     workdir: Optional[Path] = None,
     print_stdout: bool = True,
+    print_log: bool = True,
     read_bytes: bool = False,
     output_filename: Optional[str] = None,
 ):
@@ -23,18 +24,20 @@ def shell(
     :param cmd: shell command to run
     :param workdir: working directory for the command
     :param print_stdout: whether to print stdout from a subprocess to the main process stdout
+    :param print_log: whether to print a log message about running the command
     :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
     :param output_filename: file to write the output in real time
     :raises:
         CommandError: in case of non-zero command exit code.
     """
-    _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
+    _run_shell_command(cmd, workdir, print_stdout, print_log, output_filename, read_bytes)
 
 
 def shell_output(
     cmd: str, 
     workdir: Optional[Path] = None, 
     print_stdout: bool = False,
+    print_log: bool = True,
     read_bytes: bool = False,
     output_filename: Optional[str] = None,
 ) -> str:
@@ -44,10 +47,11 @@ def shell_output(
     :param cmd: shell command to run
     :param workdir: working directory for the command
     :param print_stdout: whether to print stdout from a subprocess to the main process stdout
+    :param print_log: whether to print a log message about running the command
     :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
     :param output_filename: file to write the output in real time
     """
-    captured_stream = _run_shell_command(cmd, workdir, print_stdout, output_filename, read_bytes)
+    captured_stream = _run_shell_command(cmd, workdir, print_stdout, print_log, output_filename, read_bytes)
     return captured_stream.getvalue()
 
 
@@ -55,10 +59,12 @@ def _run_shell_command(
     cmd: str, 
     workdir: Optional[Path] = None, 
     print_stdout: bool = True,
+    print_log: bool = True,
     output_filename: Optional[str] = None,
     read_bytes: bool = False,
 ) -> io.StringIO:
-    logger.debug(f'Command: {cmd}')
+    if print_log:
+        logger.debug(f'Command: {cmd}')
     if len(cmd) > 4096:  # see https://github.com/torvalds/linux/blob/v5.11/drivers/tty/n_tty.c#L1681
         raise RuntimeError('maximum tty line length has been exceeded')
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)

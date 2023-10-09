@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Streaming live logs of a job can now work with multiple infrastructures.
   Logs streamer interface has been redesigned so infrastructure plugins has to be updated accordingly.
 
+### Fixed
+- Database connection is checked in background to avoid blocking metrics endpoint.
+  It reduced number of open database connections.
+  ([#318](https://github.com/TheRacetrack/racetrack/issues/318))
+
 ## [2.20.0] - 2023-09-27
 ### Added
 - Lifecycle has more metrics and Grafana panels for monitoring:

@@ -165,7 +165,7 @@ services:
       DB_HOST: 'postgres'
       DB_NAME: 'racetrack'
       DB_PORT: '5532'
-      POOL_MODE: transaction
+      POOL_MODE: session
       MAX_CLIENT_CONN: 30000
       CLIENT_IDLE_TIMEOUT: 90
       SERVER_CONNECT_TIMEOUT: 10

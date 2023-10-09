@@ -80,7 +80,7 @@ class JobStressUser(HttpUser):
         with self.client.post(url=f"{self.url}/api/v1/perform", headers=headers, json={'numbers': [40, 2]}, catch_response=True) as resp:
             resp.success()
 
-    @tag('lifecycle_metrics')
+    @tag('get_url')
     @task(1)
-    def test_lifecycle_metrics(self):
+    def test_get_url(self):
         self.client.get(url=self.base_url, headers=self.headers)
