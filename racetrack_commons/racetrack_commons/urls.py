@@ -31,4 +31,4 @@ def get_external_grafana_url() -> str:
     if cluster_domain:
         racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
         return f'https://{racetrack_subdomain}.{cluster_domain}/grafana'
-    return os.environ.get('EXTERNAL_GRAFANA_URL', 'http://localhost:3000')
+    return os.environ.get('EXTERNAL_GRAFANA_URL', 'http://127.0.0.1:3000')

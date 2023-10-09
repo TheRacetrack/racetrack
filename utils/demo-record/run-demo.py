@@ -49,11 +49,11 @@ jobtype_extra:
     '''.strip(), key_delay=0.01)
     type_command(ESCAPE + ':wq')
 
-    type_command('racetrack deploy --remote http://localhost:7102')
+    type_command('racetrack deploy --remote http://127.0.0.1:7102')
     time.sleep(6)
 
     type_command('''
-curl -X POST "http://localhost:7105/pub/job/primer/latest/api/v1/perform" \\
+curl -X POST "http://127.0.0.1:7105/pub/job/primer/latest/api/v1/perform" \\
   -H "Content-Type: application/json" \\
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \\
   -d '{"number": 7907}'
