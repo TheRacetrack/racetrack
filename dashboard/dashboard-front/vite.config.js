@@ -24,7 +24,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/dashboard/api': {
-        target: 'http://127.0.0.1:7103',
+        target: 'http://localhost:7103',
         changeOrigin: true,
         secure: false
       },

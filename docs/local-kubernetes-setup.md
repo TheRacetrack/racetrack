@@ -51,7 +51,7 @@ Job.
 
 ```shell
 # Set the current Racetrack's remote address - localhost inside KinD, listening on port 7002
-racetrack set remote http://127.0.0.1:7002
+racetrack set remote http://localhost:7002
 # Login to Racetrack prior to deploying a job
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
 # Activate python3 job type in the Racetrack
@@ -66,7 +66,7 @@ racetrack deploy
 
 After a pretty short time, the `racetrack` command will exit successfully and let you
 know the Job is deployed, giving you the URL.
-Before opening this URL, open [Dashboard page](http://127.0.0.1:7003/dashboard/)
+Before opening this URL, open [Dashboard page](http://localhost:7003/dashboard/)
 and log in with default `admin` username and `admin` password.
 That will set up a session allowing you to access Jobs through your browser.
 
@@ -92,7 +92,7 @@ The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this:
 
 ```shell
-curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
+curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
   -d '{"numbers": [40, 2]}'
@@ -103,9 +103,9 @@ curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
 
 Racetrack generates free [Swagger API documentation](https://swagger.io/). You
 can access it in your web browser
-[here](http://127.0.0.1:7005/pub/job/adder/latest), 
+[here](http://localhost:7005/pub/job/adder/latest), 
 but first you need to authenticate in order to make requests through your browser.
-Open [Dashboard page](http://127.0.0.1:7003/dashboard/) and log in with default `admin` username and `admin` password.
+Open [Dashboard page](http://localhost:7003/dashboard/) and log in with default `admin` username and `admin` password.
 That will set up a session allowing you to call Jobs.
 
 #### Checking the Job Health
@@ -114,7 +114,7 @@ You also get a free [service health
 endpoint](https://kubernetes.io/docs/reference/using-api/health-checks/):
 
 ```shell
-curl "http://127.0.0.1:7005/pub/job/adder/latest/health"
+curl "http://localhost:7005/pub/job/adder/latest/health"
 # Expect:
 # {"service": "job", "job_name": "adder", "status": "pass"}
 ```
@@ -137,7 +137,7 @@ racetrack logs adder
 
 Racetrack ships with a dashboard. In production, it will be the admin who has
 access to this, but you're testing locally so you can see it
-[here](http://127.0.0.1:7003/dashboard) and you can see your adder job.
+[here](http://localhost:7003/dashboard) and you can see your adder job.
 
 #### (optional) Inspecting the Job inside KinD Using k9s
 
@@ -148,7 +148,7 @@ should see `job-adder-v-0-0-2`.
 ### Authentication
 
 Racetrack requires you to authenticate with a token.
-To manage users and tokens, visit [Racetrack dashboard page](http://127.0.0.1:7003/dashboard/).
+To manage users and tokens, visit [Racetrack dashboard page](http://localhost:7003/dashboard/).
 Default super user is `admin` with password `admin`.
 Once the Racetrack is started, it is recommended to create other users, and deactivate default `admin` user for security purposes.
 
@@ -158,11 +158,11 @@ Authentication applies to both deploying a Job and calling it:
 
 - In order to deploy a Job (or use other management commands), run `racetrack login` command with your token in first place. For instance:
   ```shell
-  racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI --remote http://127.0.0.1:7002
+  racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI --remote http://localhost:7002
   ```
 - In order to call a Job (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
   ```shell
-  curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
+  curl -X POST "http://localhost:7005/pub/job/adder/latest/api/v1/perform" \
     -H "Content-Type: application/json" \
     -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
     -d '{"numbers": [40, 2]}'

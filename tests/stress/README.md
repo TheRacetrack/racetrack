@@ -28,6 +28,6 @@ ENV_FILE=.env locust --tags perform
 2. Deploy Job adder
 3. Copy .env.dist to .env
 4. Fillout missing values - test_env=kind
-5. Run `export LIFECYCLE_URL=http://127.0.0.1:7002 locust`
+5. Run `export LIFECYCLE_URL=http://localhost:7002 locust`
 6. Open `http:0.0.0.0:8089`, set parameters, click `Start swarming`
 7. Watch results

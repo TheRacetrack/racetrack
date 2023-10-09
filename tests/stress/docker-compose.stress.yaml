@@ -12,5 +12,5 @@ services:
       test_env: compose
       job_name: adder
       job_version: 0.0.1
-      LIFECYCLE_URL: http://127.0.0.1:7102/lifecycle
+      LIFECYCLE_URL: http://localhost:7102/lifecycle
     network_mode: "host"

@@ -26,7 +26,7 @@ def test_streaming_logs():
     port = free_tcp_port()
     with server.run_async(port):
         fetched_logs = []
-        consumer = LogsConsumer(f'http://127.0.0.1:{port}',
+        consumer = LogsConsumer(f'http://localhost:{port}',
                                 socketio_path='lifecycle/socket.io',
                                 resource_properties={'job_name': 'adder', 'job_version': 'latest'},
                                 on_next_line=lambda line: fetched_logs.append(line))

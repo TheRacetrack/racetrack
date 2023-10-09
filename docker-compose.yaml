@@ -104,10 +104,10 @@ services:
     environment:
       DJANGO_DEBUG: 'True'
       DASHBOARD_PORT: '7103'
-      LIFECYCLE_URL: 'http://127.0.0.1:7102/lifecycle'
-      EXTERNAL_LIFECYCLE_URL: 'http://127.0.0.1:7102/lifecycle'
-      EXTERNAL_PUB_URL: 'http://127.0.0.1:7105/pub'
-      EXTERNAL_GRAFANA_URL: 'http://127.0.0.1:3100'
+      LIFECYCLE_URL: 'http://lifecycle:7102/lifecycle'
+      EXTERNAL_LIFECYCLE_URL: 'http://localhost:7102/lifecycle'
+      EXTERNAL_PUB_URL: 'http://localhost:7105/pub'
+      EXTERNAL_GRAFANA_URL: 'http://localhost:3100'
       AUTH_REQUIRED: 'true'
       SITE_NAME: ''
 

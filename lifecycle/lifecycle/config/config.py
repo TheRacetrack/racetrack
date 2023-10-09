@@ -15,16 +15,16 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     http_port: int = 7202
 
     # Image builder address
-    image_builder_url: str = 'http://127.0.0.1:7201'
+    image_builder_url: str = 'http://localhost:7201'
 
     # Pub address seen internally, inside of a cluster
     internal_pub_url: str = 'http://pub:7205/pub'
 
     # Pub address seen externally, outside of a cluster
-    external_pub_url: str = 'http://127.0.0.1:7205/pub'
+    external_pub_url: str = 'http://localhost:7205/pub'
 
     # Docker Registry storing built images
-    docker_registry: str = '127.0.0.1:5000'
+    docker_registry: str = 'localhost:5000'
 
     # A namespace for docker images in a Docker Registry (prefix for image names)
     docker_registry_namespace: str = 'racetrack'

@@ -10,7 +10,7 @@ from racetrack_client.utils.url import trim_url
 class LifecycleClient:
 
     def __init__(self, auth_token: str = ''):
-        self.lifecycle_api_url = trim_url(os.environ.get('LIFECYCLE_URL', 'http://127.0.0.1:7202'))
+        self.lifecycle_api_url = trim_url(os.environ.get('LIFECYCLE_URL', 'http://localhost:7202'))
         self.auth_token = auth_token
 
     def request(self, method: str, path: str, **kwargs) -> Any:

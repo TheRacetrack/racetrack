@@ -14,10 +14,10 @@ class Config(BaseModel, extra=Extra.forbid):
     http_port: int = 7201
 
     # Docker Registry where to push built images
-    docker_registry: str = '127.0.0.1:5000'
+    docker_registry: str = 'localhost:5000'
 
     # Lifecycle address
-    lifecycle_url: str = 'http://127.0.0.1:7202'
+    lifecycle_url: str = 'http://localhost:7202'
 
     # A namespace for docker images in a Docker Registry (prefix for image names)
     docker_registry_namespace: str = 'racetrack'

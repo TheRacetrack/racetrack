@@ -176,8 +176,8 @@ compose-down: docker-clean-job
 	rm -rf .plugins
 
 compose-deploy-sample:
-	LIFECYCLE_URL=http://127.0.0.1:7102 ./utils/wait-for-lifecycle.sh
-	racetrack deploy sample/python-class/ --remote http://127.0.0.1:7102 --force
+	LIFECYCLE_URL=http://localhost:7102 ./utils/wait-for-lifecycle.sh
+	racetrack deploy sample/python-class/ --remote http://localhost:7102 --force
 
 compose-logs:
 	$(docker-compose) logs lifecycle lifecycle-supervisor image-builder dashboard pub -f
@@ -212,11 +212,11 @@ docker-push-github: docker-build
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${GHCR_PREFIX}/pgbouncer:${TAG})
 
 local-registry-push: docker-build
-	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,127.0.0.1:5000/racetrack/lifecycle:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,127.0.0.1:5000/racetrack/image-builder:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,127.0.0.1:5000/racetrack/dashboard:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,127.0.0.1:5000/racetrack/pub:latest)
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,127.0.0.1:5000/racetrack/pgbouncer:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,localhost:5000/racetrack/lifecycle:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,localhost:5000/racetrack/image-builder:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,localhost:5000/racetrack/dashboard:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,localhost:5000/racetrack/pub:latest)
+	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,localhost:5000/racetrack/pgbouncer:latest)
 
 docker-clean-job:
 	./utils/cleanup-jobs-docker.sh
@@ -266,8 +266,8 @@ kind-logs:
 	kubectl logs -l 'app in (racetrack)' --all-containers --prefix=true --tail=200 -f --max-log-requests 10
 
 kind-deploy-sample:
-	LIFECYCLE_URL=http://127.0.0.1:7002 ./utils/wait-for-lifecycle.sh
-	racetrack deploy sample/python-class/ --remote http://127.0.0.1:7002 --force
+	LIFECYCLE_URL=http://localhost:7002 ./utils/wait-for-lifecycle.sh
+	racetrack deploy sample/python-class/ --remote http://localhost:7002 --force
 
 clean: compose-down kind-down registry-down
 

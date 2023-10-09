@@ -36,7 +36,7 @@ def setup_api_endpoints(app: FastAPI):
 
 def setup_proxy_endpoints(app: FastAPI):
     """Forward all API endpoints to Lifecycle service"""
-    lifecycle_api_url = trim_url(os.environ.get('LIFECYCLE_URL', 'http://127.0.0.1:7202'))
+    lifecycle_api_url = trim_url(os.environ.get('LIFECYCLE_URL', 'http://localhost:7202'))
     logger.info(f'Forwarding API requests to "{lifecycle_api_url}"')
     client = httpx.AsyncClient(base_url=f"{lifecycle_api_url}/")
     

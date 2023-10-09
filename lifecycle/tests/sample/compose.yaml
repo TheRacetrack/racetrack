@@ -2,8 +2,8 @@ log_level: debug
 http_port: 7102
 image_builder_url: http://image-builder:7101
 internal_pub_url: http://pub:7105/pub
-external_pub_url: http://127.0.0.1:7105/pub
-docker_registry: 127.0.0.1:5000
+external_pub_url: http://localhost:7105/pub
+docker_registry: localhost:5000
 auth_debug: true
 auth_required: true
 plugins_dir: /mnt/plugins

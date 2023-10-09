@@ -45,5 +45,5 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v2.2.0
         with:
-          images: 'ghcr.io/theracetrack/racetrack/lifecycle,ghcr.io/theracetrack/racetrack/image-builder,ghcr.io/theracetrack/racetrack/dashboard,ghcr.io/theracetrack/racetrack/pub,postgres,127.0.0.1:5000/racetrack/job-entrypoint/adder'
+          images: 'ghcr.io/theracetrack/racetrack/lifecycle,ghcr.io/theracetrack/racetrack/image-builder,ghcr.io/theracetrack/racetrack/dashboard,ghcr.io/theracetrack/racetrack/pub,postgres,localhost:5000/racetrack/job-entrypoint/adder'
           tail: '1000'
