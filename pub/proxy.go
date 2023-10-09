@@ -14,7 +14,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func proxyEndpoint(c *gin.Context, cfg *Config) {
+func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	startTime := time.Now()
 
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
@@ -23,7 +23,7 @@ func proxyEndpoint(c *gin.Context, cfg *Config) {
 	})
 
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleProxyRequest(c, cfg, logger, requestId)
+	statusCode, err := handleProxyRequest(c, cfg, logger, requestId, jobPath)
 	if err != nil {
 		metricJobProxyRequestErros.Inc()
 		errorStr := err.Error()
@@ -46,6 +46,7 @@ func handleProxyRequest(
 	cfg *Config,
 	logger log.Logger,
 	requestId string,
+	jobPath string,
 ) (int, error) {
 
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
@@ -68,52 +69,60 @@ func handleProxyRequest(
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	jobPath := c.Param("path")
-
 	authToken := getAuthFromHeaderOrCookie(c.Request)
-	lifecycleClient := NewLifecycleClient(cfg.LifecycleUrl, authToken,
-		cfg.LifecycleToken, cfg.RequestTracingHeader, requestId)
+
+	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
 	var job *JobDetails
 	var callerName string
-	var err error
-
-	if cfg.AuthRequired {
-		jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
-		if err == nil {
-			job = jobCall.Job
-			if jobCall.Caller != nil {
-				callerName = *jobCall.Caller
-			}
-			metricAuthSuccessful.Inc()
-		} else {
-			metricAuthFailed.Inc()
-			if errors.As(err, &AuthenticationFailure{}) {
-				if cfg.AuthDebug {
-					return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
-				} else {
-					return http.StatusUnauthorized, errors.New("Unauthenticated")
-				}
-			} else if errors.As(err, &NotFoundError{}) {
-				return http.StatusNotFound, errors.Wrap(err, "Job was not found")
-			}
-			return http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
+	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
+	if err == nil {
+		job = jobCall.Job
+		if jobCall.Caller != nil {
+			callerName = *jobCall.Caller
 		}
-
+		metricAuthSuccessful.Inc()
 	} else {
-		job, err = lifecycleClient.GetJobDetails(jobName, jobVersion)
-		if err != nil {
-			if errors.As(err, &NotFoundError{}) {
-				return http.StatusNotFound, errors.Wrap(err, "Not found")
+		metricAuthFailed.Inc()
+		if errors.As(err, &AuthenticationFailure{}) {
+			if cfg.AuthDebug {
+				return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+			} else {
+				return http.StatusUnauthorized, errors.New("Unauthenticated")
 			}
-			return http.StatusInternalServerError, errors.Wrap(err, "failed to get Job details")
+		} else if errors.As(err, &NotFoundError{}) {
+			return http.StatusNotFound, errors.Wrap(err, "Job was not found")
 		}
+		return http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
 	}
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
-	targetUrl := TargetURL(cfg, job, c.Request.URL.Path)
+	if !cfg.RemoteGatewayMode && jobCall.RemoteGatewayUrl != nil {
+		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName)
+	}
+
+	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
+	targetUrl := TargetURL(cfg, job, urlPath)
+
 	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
-	return 200, nil
+	return http.StatusOK, nil
+}
+
+func NewProxyLifecycleClient(
+	cfg *Config,
+	authToken string,
+	requestId string,
+) (LifecycleClient, error) {
+	if cfg.RemoteGatewayMode {
+		return NewRemoteLifecycleClient(authToken, requestId)
+	} else {
+		return NewMasterLifecycleClient(cfg.LifecycleUrl, authToken,
+			cfg.LifecycleToken, cfg.RequestTracingHeader, requestId), nil
+	}
 }
 
 func ServeReverseProxy(
@@ -130,8 +139,8 @@ func ServeReverseProxy(
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.URL.Path = target.Path
-		req.Host = c.Request.Host
 		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Host = target.Host
 		req.Header.Set(cfg.RequestTracingHeader, requestId)
 		if callerName != "" {
 			req.Header.Set(cfg.CallerNameHeader, callerName)

@@ -16,7 +16,14 @@ func TargetURL(cfg *Config, job *JobDetails, urlPath string) url.URL {
 	}
 }
 
+// Builds URL by joining paths, leaving optional trailing slash as it is
 func JoinURL(base string, paths ...string) string {
 	p := path.Join(paths...)
-	return fmt.Sprintf("%s/%s", strings.TrimRight(base, "/"), strings.TrimLeft(p, "/"))
+	url := fmt.Sprintf("%s/%s", strings.TrimRight(base, "/"), strings.TrimLeft(p, "/"))
+	last := paths[len(paths)-1]
+	if strings.HasSuffix(last, "/") {
+		return url + "/"
+	} else {
+		return url
+	}
 }

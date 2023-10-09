@@ -9,19 +9,22 @@ import (
 )
 
 type JobCallAuthData struct {
-	Job    *JobDetails `json:"job"`
-	Caller *string     `json:"caller"`
+	Job                *JobDetails `json:"job"`
+	Caller             *string     `json:"caller"`
+	RemoteGatewayUrl   *string     `json:"remote_gateway_url"`
+	RemoteGatewayToken *string     `json:"remote_gateway_token"`
 }
 
 type JobDetails struct {
-	Id           string      `json:"id"`
-	Name         string      `json:"name"`
-	Version      string      `json:"version"`
-	Status       string      `json:"status"`
-	CreateTime   int         `json:"create_time"`
-	UpdateTime   int         `json:"update_time"`
-	Manifest     interface{} `json:"manifest"`
-	InternalName string      `json:"internal_name"`
+	Id                   string      `json:"id"`
+	Name                 string      `json:"name"`
+	Version              string      `json:"version"`
+	Status               string      `json:"status"`
+	CreateTime           int         `json:"create_time"`
+	UpdateTime           int         `json:"update_time"`
+	Manifest             interface{} `json:"manifest"`
+	InternalName         string      `json:"internal_name"`
+	InfrastructureTarget string      `json:"infrastructure_target"`
 }
 
 type lifecycleErrorResponse struct {
@@ -44,7 +47,11 @@ func (e NotFoundError) Error() string {
 	return e.error.Error()
 }
 
-type LifecycleClient struct {
+type LifecycleClient interface {
+	AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobCallAuthData, error)
+}
+
+type lifecycleClient struct {
 	lifecycleUrl         string
 	authToken            string
 	internalToken        string
@@ -53,14 +60,15 @@ type LifecycleClient struct {
 	requestId            string
 }
 
-func NewLifecycleClient(
+// Master Lifecycle Client makes calls to locally-available Lifecycle
+func NewMasterLifecycleClient(
 	lifecycleUrl string,
 	authToken string,
 	internalToken string,
 	requestTracingHeader string,
 	requestId string,
-) *LifecycleClient {
-	return &LifecycleClient{
+) LifecycleClient {
+	return &lifecycleClient{
 		lifecycleUrl:  lifecycleUrl,
 		authToken:     authToken,
 		internalToken: internalToken,
@@ -72,7 +80,7 @@ func NewLifecycleClient(
 	}
 }
 
-func (l *LifecycleClient) GetJobDetails(jobName string, jobVersion string) (*JobDetails, error) {
+func (l *lifecycleClient) GetJobDetails(jobName string, jobVersion string) (*JobDetails, error) {
 	url := JoinURL(l.lifecycleUrl, "/api/v1/job/", jobName, "/", jobVersion)
 	job := &JobDetails{}
 	err := l.getRequest(url, true, "getting Job details", true, job)
@@ -82,7 +90,7 @@ func (l *LifecycleClient) GetJobDetails(jobName string, jobVersion string) (*Job
 	return job, nil
 }
 
-func (l *LifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobCallAuthData, error) {
+func (l *lifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobCallAuthData, error) {
 	url := JoinURL(l.lifecycleUrl, "/api/v1/auth/can-call-job/", jobName, "/", jobVersion, "/", endpoint)
 	jobCall := &JobCallAuthData{}
 	err := l.getRequest(url, false, "Authorizing Job caller", true, jobCall)
@@ -92,7 +100,7 @@ func (l *LifecycleClient) AuthorizeCaller(jobName, jobVersion, endpoint string) 
 	return jobCall, nil
 }
 
-func (l *LifecycleClient) getRequest(
+func (l *lifecycleClient) getRequest(
 	url string,
 	internalAuth bool,
 	operationType string,

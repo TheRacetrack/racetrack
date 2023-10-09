@@ -11,7 +11,7 @@ import (
 
 func TestJobPathExtraction(t *testing.T) {
 	router := gin.Default()
-	router.GET(baseIngressPath+"/job/:job/:version/*path", func(c *gin.Context) {
+	router.GET("/pub/job/:job/:version/*path", func(c *gin.Context) {
 		job_name := c.Param("job")
 		job_version := c.Param("version")
 		job_path := c.Param("path")
@@ -21,7 +21,7 @@ func TestJobPathExtraction(t *testing.T) {
 			"version": job_version,
 		})
 	})
-	router.GET(baseIngressPath+"/job/:job/:version", func(c *gin.Context) {
+	router.GET("/pub/job/:job/:version", func(c *gin.Context) {
 		job_name := c.Param("job")
 		job_version := c.Param("version")
 		job_path := c.Param("path")
@@ -87,4 +87,14 @@ func TestJoinURL(t *testing.T) {
 	base := "http://localhost:7002/lifecycle"
 	url := JoinURL(base, "/api/v1/escs/", "1")
 	assert.Equal(t, "http://localhost:7002/lifecycle/api/v1/escs/1", url)
+}
+
+func TestJoinURLWithTrailingSlash(t *testing.T) {
+	url := JoinURL("http://localhost/", "/pub/job/adder/latest/")
+	assert.Equal(t, "http://localhost/pub/job/adder/latest/", url)
+}
+
+func TestJoinURLLastEmpty(t *testing.T) {
+	url := JoinURL("http://localhost/", "/pub/job", "adder", "latest", "")
+	assert.Equal(t, "http://localhost/pub/job/adder/latest", url)
 }
