@@ -37,12 +37,6 @@ These are the known, public Racetrack plugins that are commonly available to be 
       ```
 
 - Infrastructure Targets:
-    - [github.com/TheRacetrack/plugin-docker-daemon-deployer](https://github.com/TheRacetrack/plugin-docker-daemon-deployer) -
-      deploys to remote Docker Daemon
-      ```
-      racetrack plugin install github.com/TheRacetrack/plugin-docker-daemon-deployer
-      ```
-
     - [github.com/TheRacetrack/plugin-docker-infrastructure](https://github.com/TheRacetrack/plugin-docker-infrastructure) -
       deploys to a local Docker
       ```
@@ -50,9 +44,21 @@ These are the known, public Racetrack plugins that are commonly available to be 
       ```
 
     - [github.com/TheRacetrack/plugin-kubernetes-infrastructure](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure) -
-      deploys to Kubernetes
+      deploys to local Kubernetes
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
+      ```
+
+    - [github.com/TheRacetrack/plugin-remote-docker](https://github.com/TheRacetrack/plugin-remote-docker) -
+      deploys to remote Docker Daemon
+      ```
+      racetrack plugin install github.com/TheRacetrack/plugin-remote-docker
+      ```
+
+    - [github.com/TheRacetrack/plugin-remote-kubernetes](https://github.com/TheRacetrack/plugin-remote-kubernetes) -
+      deploys to remote Kubernetes
+      ```
+      racetrack plugin install github.com/TheRacetrack/plugin-remote-kubernetes
       ```
 
 - Others:

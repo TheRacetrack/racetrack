@@ -99,7 +99,7 @@ def infrastructure_targets(self) -> dict[str, Any]:
     """
     Infrastructure Targets (deployment targets for Jobs) provided by this plugin
     Infrastructure Target should contain Job Deployer, Job Monitor and Job Logs Streamer.
-    :return dict of infrastructure name -> an instance of lifecycle.deployer.infra_target.InfrastructureTarget
+    :return dict of infrastructure name -> an instance of InfrastructureTarget
     """
     return {}
 ```
