@@ -133,7 +133,7 @@ services:
       LIFECYCLE_AUTH_TOKEN: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
 
   postgres:
-    image: postgres:13.1
+    image: postgres:16.0
     container_name: postgres
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -172,8 +172,7 @@ services:
       CLIENT_LOGIN_TIMEOUT: 10
       QUERY_WAIT_TIMEOUT: 10
       ADMIN_USERS: postgres,admin,racetrack
-    logging:
-      driver: none
+      AUTH_TYPE: scram-sha-256
 
   docker-engine:
     container_name: docker-engine
@@ -194,7 +193,7 @@ services:
       driver: none
   
   postgres-exporter:
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+    image: prometheuscommunity/postgres-exporter:v0.14.0
     container_name: postgres-exporter
     env_file:
       - ./.env
@@ -207,7 +206,7 @@ services:
       driver: none
 
   prometheus:
-    image: prom/prometheus:v2.42.0
+    image: prom/prometheus:v2.47.1
     container_name: prometheus
     ports:
       - "9192:9090"
@@ -225,7 +224,7 @@ services:
       driver: none
 
   grafana:
-    image: grafana/grafana:9.3.6
+    image: grafana/grafana:10.1.4
     container_name: grafana
     ports:
       - "3100:3000"

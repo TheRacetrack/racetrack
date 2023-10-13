@@ -343,3 +343,39 @@ Copyright (C) 2011-2015 by Vitaly Puzrin
 These files are available under MIT License, which you can find at https://github.com/nodeca/js-yaml/blob/master/LICENSE
 
 ----------------------------------------------------------------------
+
+This project uses Prometheus (unmodified)
+
+https://github.com/prometheus/prometheus
+
+These files are available under Apache 2.0 License, which you can find at https://github.com/prometheus/prometheus/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses Grafana (unmodified)
+
+https://github.com/grafana/grafana
+
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+These files are available under GNU Affero General Public License v3.0, which you can find at https://github.com/grafana/grafana/blob/main/LICENSE
+
+----------------------------------------------------------------------
+
+This project uses PgBouncer (unmodified)
+
+https://github.com/pgbouncer/pgbouncer
+
+Copyright (c) 2007-2009  Marko Kreen, Skype Technologies OÜ
+
+These files are available under ISC License, which you can find at https://github.com/pgbouncer/pgbouncer/blob/master/COPYRIGHT
+
+----------------------------------------------------------------------
+
+This project uses PostgreSQL Server Exporter (unmodified)
+
+https://github.com/prometheus-community/postgres_exporter
+
+These files are available under Apache License 2.0, which you can find at https://github.com/prometheus-community/postgres_exporter/blob/master/LICENSE
+
+----------------------------------------------------------------------
