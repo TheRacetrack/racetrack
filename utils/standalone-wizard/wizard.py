@@ -149,11 +149,12 @@ def install_to_docker(config: 'SetupConfig'):
     config.admin_auth_token = get_admin_auth_token(config.admin_password)
 
     logger.info('Configuring racetrack client…')
-    shell('python3 -m racetrack set remote http://127.0.0.1:7102')
-    shell(f'python3 -m racetrack login {config.admin_auth_token}')
+    racetrack_cmd = 'python -m racetrack_client '
+    shell(racetrack_cmd + 'set remote http://127.0.0.1:7102')
+    shell(racetrack_cmd + f'login {config.admin_auth_token}')
     logger.info('Installing plugins…')
-    shell('python3 -m racetrack plugin install github.com/TheRacetrack/plugin-python-job-type')
-    shell('python3 -m racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
+    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-python-job-type')
+    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
 
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at {config.external_address}:7103/dashboard
