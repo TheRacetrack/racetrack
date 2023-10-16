@@ -133,6 +133,7 @@ def install_to_docker(config: SetupConfig):
     template_repository_file('utils/standalone-wizard/templates/lifecycle.template.yaml', 'lifecycle/config.yaml', {
         'EXTERNAL_ADDRESS': config.external_address,
     })
+    download_repository_file('utils/standalone-wizard/templates/Makefile', 'Makefile')
     download_repository_file('image_builder/tests/sample/compose.yaml', 'image_builder/config.yaml')
     download_repository_file('utils/wait-for-lifecycle.sh', 'wait-for-lifecycle.sh')
     download_repository_file('postgres/init.sql', 'postgres/init.sql')
