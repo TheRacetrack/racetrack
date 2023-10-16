@@ -21,7 +21,7 @@ spec:
             name: postgres-init-script
       containers:
         - name: postgres
-          image: postgres:13.1
+          image: postgres:16.0
           envFrom:
             - configMapRef:
                 name: postgres-env
@@ -58,7 +58,7 @@ spec:
               name: pgbouncer
 
         - name: postgres-exporter
-          image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+          image: prometheuscommunity/postgres-exporter:v0.14.0
           envFrom:
             - configMapRef:
                 name: pgbouncer-env

@@ -4,7 +4,7 @@ from datetime import date, datetime
 from pathlib import PosixPath
 
 from pydantic import BaseModel
-from pydantic.json import ENCODERS_BY_TYPE
+from fastapi.encoders import ENCODERS_BY_TYPE
 
 from racetrack_client.utils.datamodel import convert_to_json_serializable
 from racetrack_client.utils.quantity import Quantity
