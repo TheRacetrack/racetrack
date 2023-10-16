@@ -26,30 +26,6 @@ GIT_BRANCH = '308-provide-instructions-on-how-to-install-racetrack-to-a-vm-insta
 GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetrack/{GIT_BRANCH}/'
 GRAFANA_DASHBOARDS = ['image-builder', 'jobs', 'lifecycle', 'postgres', 'pub']
 
-# Requirements:
-# python3
-# python3-pip
-# python3 venv
-# docker (non-root)
-# docker compose
-# curl
-
-"""
-sudo apt update && sudo apt install curl python3 python3-pip python3-venv
-
-curl -fsSL https://get.docker.com -o install-docker.sh
-sh install-docker.sh
-sudo usermod -aG docker $USER
-newgrp docker
-
-mkdir -p ~/racetrack && cd ~/racetrack
-
-sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh)
-
-# wget https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh
-# sh runner.sh
-"""
-
 
 def main():
     configure_logs(log_level='debug')
@@ -154,6 +130,7 @@ def install_to_docker(config: 'SetupConfig'):
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at {config.external_address}:7103/dashboard
 Log in with username: admin, password: {config.admin_password}
+To deploy here, configure your racetrack client: racetrack set remote {config.external_address}:7102/lifecycle
 ''')
 
 
@@ -173,8 +150,6 @@ sh install-docker.sh
         shell('docker ps', print_stdout=False)
     except CommandError as e:
         logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
-        # sudo usermod -aG docker $USER
-        # newgrp docker
         raise e
 
     try:
