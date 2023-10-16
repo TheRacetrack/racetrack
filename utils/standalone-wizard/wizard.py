@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import io
+import subprocess
 from dataclasses import dataclass, asdict
 import json
 import logging
@@ -7,11 +9,11 @@ from pathlib import Path
 import secrets
 import string
 import sys
-from typing import Dict
+from typing import Dict, Optional
 import urllib.request
 
 from racetrack_client.log.logs import configure_logs
-from racetrack_client.utils.shell import shell, shell_output, CommandError
+from racetrack_client.utils.shell import shell_output, CommandError
 from racetrack_client.utils.request import Requests, ResponseError
 
 logger = logging.getLogger('racetrack')
@@ -38,12 +40,13 @@ curl -fsSL https://get.docker.com -o install-docker.sh
 sh install-docker.sh
 sudo usermod -aG docker $USER
 newgrp docker
+
+mkdir -p ~/racetrack && cd ~/racetrack
 """
 
-# sudo apt install make
-# wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh | bash
-# python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
-# python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
+# sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh)
+# python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/wizard.py)
+# python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/wizard.py)
 
 
 def main():
@@ -248,7 +251,7 @@ class SetupConfig:
 def load_local_config() -> SetupConfig:
     local_file = Path(LOCAL_CONFIG_FILE)
     if local_file.is_file():
-        logger.info(f'Found local setup config at {local_file.absolute()}')
+        logger.info(f'Using local setup config at {local_file.absolute()}')
         config_dict = json.loads(local_file.read_text())
         return SetupConfig(**config_dict)
     else:
@@ -349,6 +352,49 @@ def generate_auth_token(auth_key: str, service_name: str) -> str:
         f' python -u -m lifecycle generate-auth "{service_name}" --short'
         f' 2>/dev/null'
     ).strip()
+
+
+def shell(
+    cmd: str,
+    workdir: Optional[Path] = None,
+    print_stdout: bool = True,
+    raw_output: bool = False,
+) -> io.StringIO:
+    logger.debug(f'Command: {cmd}')
+    if len(cmd) > 4096:  # see https://github.com/torvalds/linux/blob/v5.11/drivers/tty/n_tty.c#L1681
+        raise RuntimeError('maximum tty line length has been exceeded')
+
+    if raw_output:
+        process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
+    else:
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
+
+    try:
+        captured_stream = io.StringIO()
+        if raw_output:
+            process.wait()
+            if process.returncode != 0:
+                raise CommandError(cmd, '', process.returncode)
+            return captured_stream
+
+        # fork command output to stdout, captured buffer and output file
+        for line in iter(process.stdout.readline, b''):
+            line_str = line.decode()
+
+            if print_stdout:
+                sys.stdout.write(line_str)
+                sys.stdout.flush()
+            captured_stream.write(line_str)
+
+        process.wait()
+        if process.returncode != 0:
+            stdout = captured_stream.getvalue()
+            raise CommandError(cmd, stdout, process.returncode)
+        return captured_stream
+    except KeyboardInterrupt:
+        logger.warning('killing subprocess')
+        process.kill()
+        raise
 
 
 if __name__ == '__main__':
