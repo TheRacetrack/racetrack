@@ -36,6 +36,7 @@ GRAFANA_DASHBOARDS = ['image-builder', 'jobs', 'lifecycle', 'postgres', 'pub']
 
 """
 sudo apt update && sudo apt install curl python3 python3-pip python3-venv
+
 curl -fsSL https://get.docker.com -o install-docker.sh
 sh install-docker.sh
 sudo usermod -aG docker $USER
@@ -46,7 +47,6 @@ mkdir -p ~/racetrack && cd ~/racetrack
 
 # sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh)
 # python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/wizard.py)
-# python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/wizard.py)
 
 
 def main():
@@ -251,7 +251,7 @@ class SetupConfig:
 def load_local_config() -> SetupConfig:
     local_file = Path(LOCAL_CONFIG_FILE)
     if local_file.is_file():
-        logger.info(f'Using local setup config at {local_file.absolute()}')
+        logger.info(f'Using local setup config found at {local_file.absolute()}')
         config_dict = json.loads(local_file.read_text())
         return SetupConfig(**config_dict)
     else:

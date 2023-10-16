@@ -8,8 +8,8 @@ wget -O wizard.py https://raw.githubusercontent.com/TheRacetrack/racetrack/${GIT
 if [ ! -d "venv" ]; then # if venv directory doesn't exist
   echo "Preparing virtual Python environment…"
   python3 -m venv venv
-  . venv/bin/activate
-  python -m pip install --upgrade racetrack-client
 fi
+. venv/bin/activate
+python -m pip install --upgrade racetrack-client
 
 python wizard.py

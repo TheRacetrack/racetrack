@@ -117,7 +117,7 @@ services:
       LIFECYCLE_AUTH_TOKEN: '${PUB_AUTH_TOKEN}'
 
   postgres:
-    image: postgres:13.1
+    image: postgres:16.0
     container_name: postgres
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -153,8 +153,7 @@ services:
       CLIENT_LOGIN_TIMEOUT: 10
       QUERY_WAIT_TIMEOUT: 10
       ADMIN_USERS: postgres,admin,racetrack
-    logging:
-      driver: none
+      AUTH_TYPE: scram-sha-256
 
   docker-engine:
     container_name: docker-engine
@@ -174,7 +173,7 @@ services:
       driver: none
   
   postgres-exporter:
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.0
+    image: prometheuscommunity/postgres-exporter:v0.14.0
     container_name: postgres-exporter
     env_file:
       - ./.env
@@ -187,7 +186,7 @@ services:
       driver: none
 
   prometheus:
-    image: prom/prometheus:v2.42.0
+    image: prom/prometheus:v2.47.1
     container_name: prometheus
     ports:
       - "127.0.0.1:9192:9090"
@@ -205,7 +204,7 @@ services:
       driver: none
 
   grafana:
-    image: grafana/grafana:9.3.6
+    image: grafana/grafana:10.1.4
     container_name: grafana
     ports:
       - "3100:3000"
