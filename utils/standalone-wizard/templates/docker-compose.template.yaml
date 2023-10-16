@@ -14,7 +14,7 @@ services:
     user: '100000:${DOCKER_GID}'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - './lifecycle/config.yaml:/etc/racetrack/lifecycle/config.yaml'
+      - './config/lifecycle.yaml:/etc/racetrack/lifecycle/config.yaml'
       - './.plugins:/mnt/plugins'
     env_file:
       - ./.env
@@ -42,7 +42,7 @@ services:
     user: '100000:${DOCKER_GID}'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - './lifecycle/config.yaml:/etc/racetrack/lifecycle/config.yaml'
+      - './config/lifecycle.yaml:/etc/racetrack/lifecycle/config.yaml'
       - './.plugins:/mnt/plugins'
     env_file:
       - ./.env
@@ -69,7 +69,7 @@ services:
     restart: unless-stopped
     user: '100000:100000'
     volumes:
-      - ./image_builder/config.yaml:/etc/racetrack/image-builder/config.yaml
+      - ./config/image_builder.yaml:/etc/racetrack/image-builder/config.yaml
       - ./.plugins:/mnt/plugins
     environment:
       DOCKER_TLS_CERTDIR: ''
@@ -120,7 +120,7 @@ services:
     image: postgres:16.0
     container_name: postgres
     volumes:
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - ./.env
     command: -p 5532

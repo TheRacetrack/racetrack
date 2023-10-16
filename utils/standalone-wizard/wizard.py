@@ -61,7 +61,7 @@ def main():
     config: SetupConfig = load_local_config()
 
     if not config.install_dir:
-        config.install_dir = prompt_text('Choose installation directory', '~/racetrack')
+        config.install_dir = prompt_text('Choose installation directory', Path().absolute().as_posix())
         save_local_config(config)
     else:
         logger.debug(f'Installation directory set to: {config.install_dir}')
@@ -112,13 +112,13 @@ def install_to_docker(config: 'SetupConfig'):
         'AUTH_KEY': config.auth_key,
         'SECRET_KEY': config.django_secret_key,
     })
-    template_repository_file('utils/standalone-wizard/templates/lifecycle.template.yaml', 'lifecycle/config.yaml', {
+    template_repository_file('utils/standalone-wizard/templates/lifecycle.template.yaml', 'config/lifecycle.yaml', {
         'EXTERNAL_ADDRESS': config.external_address,
     })
     download_repository_file('utils/standalone-wizard/templates/Makefile', 'Makefile')
-    download_repository_file('image_builder/tests/sample/compose.yaml', 'image_builder/config.yaml')
-    download_repository_file('utils/wait-for-lifecycle.sh', 'wait-for-lifecycle.sh')
-    download_repository_file('postgres/init.sql', 'postgres/init.sql')
+    download_repository_file('image_builder/tests/sample/compose.yaml', 'config/image_builder.yaml')
+    download_repository_file('utils/wait-for-lifecycle.sh', 'utils/wait-for-lifecycle.sh')
+    download_repository_file('postgres/init.sql', 'config/postgres/init.sql')
     download_repository_file('utils/prometheus/prometheus.yaml', 'utils/prometheus/prometheus.yaml')
     download_repository_file('utils/grafana/datasource.yaml', 'utils/grafana/datasource.yaml')
     download_repository_file('utils/grafana/dashboards-all.yaml', 'utils/grafana/dashboards-all.yaml')
@@ -131,7 +131,7 @@ def install_to_docker(config: 'SetupConfig'):
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always', raw_output=True)
 
     logger.info('Waiting until Racetrack is operational…')
-    shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
+    shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash utils/wait-for-lifecycle.sh')
 
     try:
         auth_token = get_admin_auth_token('admin')
@@ -321,7 +321,7 @@ def template_file(src_file: Path, dst_file: Path, context_vars: Dict[str, str]):
 
 def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
-    logger.debug(f'Fetching URL {src_file_url}')
+    logger.debug(f'Downloading {src_file_url}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     template = string.Template(src_content.decode())
@@ -333,6 +333,7 @@ def template_repository_file(src_relative_url: str, dst_path: str, context_vars:
 
 def download_repository_file(src_relative_url: str, dst_path: str):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
+    logger.debug(f'Downloading {src_file_url}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     dst_file = Path(dst_path)
