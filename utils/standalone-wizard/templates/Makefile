@@ -3,3 +3,9 @@ up:
 
 down:
 	DOCKER_BUILDKIT=1 docker compose down
+
+status:
+	docker compose ps
+
+logs:
+	docker compose logs

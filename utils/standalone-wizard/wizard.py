@@ -86,6 +86,8 @@ class SetupConfig:
     pub_auth_token: str = ''
     image_builder_auth_token: str = ''
     external_address: str = ''
+    admin_password: str = ''
+    admin_auth_token: str = ''
 
 
 def install_to_docker(config: SetupConfig):
@@ -142,6 +144,8 @@ def install_to_docker(config: SetupConfig):
     download_repository_file('utils/grafana/dashboards-all.yaml', 'utils/grafana/dashboards-all.yaml')
     for dashboard in GRAFANA_DASHBOARDS:
         download_repository_file(f'utils/grafana/dashboards/{dashboard}.json', f'utils/grafana/dashboards/{dashboard}.json')
+    download_repository_file('sample/python-class/adder.py', 'sample/python-class/adder.py')
+    download_repository_file('sample/python-class/job.yaml', 'sample/python-class/job.yaml')
 
     logger.info('Starting up containers…')
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always', raw_output=True)
@@ -150,18 +154,22 @@ def install_to_docker(config: SetupConfig):
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
 
     if not Path('venv').is_dir():
-        logger.info('Creating virtual environment…')
+        logger.info('Creating virtual Python environment…')
         shell('python3 -m venv venv', raw_output=True)
 
-    # install racetrack client
-    # set current remote
-    # change super-admin password
-    # print admin auth token
-    # log in as admin to racetrack client
-    # install plugins: python3, docker
-    # print dashboard address
+    activate_venv = '. venv/bin/activate && '
+    logger.info('Installing racetrack client…')
+    shell(activate_venv + 'python -m pip install --upgrade racetrack-client', raw_output=True)
+    shell(activate_venv + 'python -m racetrack set remote http://127.0.0.1:7102')
+    shell(activate_venv + f'python -m racetrack login {config.admin_auth_token}')
+    logger.info('Installing plugins…')
+    shell(activate_venv + 'python -m racetrack plugin install github.com/TheRacetrack/plugin-python-job-type')
+    shell(activate_venv + 'python -m racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
 
-    logger.info('Racetrack is ready to use.')
+    logger.info(f'''Racetrack is ready to use.
+Visit Racetrack Dashboard at {config.external_address}:7103/dashboard
+Log in with username: admin, password: {config.admin_password}
+''')
 
 
 def _verify_docker():
@@ -201,6 +209,9 @@ def _generate_secrets(config: SetupConfig):
     if not config.auth_key:
         config.auth_key = generate_password()
         logger.info(f'Generated Auth key: {config.auth_key}')
+    if not config.admin_password:
+        config.admin_password = generate_password()
+        logger.info(f'Generated Admin password: {config.admin_password}')
 
     if not config.pub_auth_token:
         logger.info("Pulling Lifecycle image…")
@@ -309,10 +320,8 @@ def shell_output(
     cmd: str,
     workdir: Optional[Path] = None,
     print_stdout: bool = False,
-    read_bytes: bool = False,
-    output_filename: Optional[str] = None,
 ) -> str:
-    captured_stream = shell(cmd, workdir, print_stdout, output_filename, read_bytes)
+    captured_stream = shell(cmd, workdir, print_stdout)
     return captured_stream.getvalue()
 
 
@@ -320,8 +329,6 @@ def shell(
     cmd: str,
     workdir: Optional[Path] = None,
     print_stdout: bool = True,
-    output_filename: Optional[str] = None,
-    read_bytes: bool = False,
     raw_output: bool = False,
 ) -> io.StringIO:
     logger.debug(f'Command: {cmd}')
@@ -333,7 +340,6 @@ def shell(
     else:
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
 
-    output_file = open(output_filename, 'a') if output_filename else None
     try:
         captured_stream = io.StringIO()
         if raw_output:
@@ -343,34 +349,15 @@ def shell(
             return captured_stream
 
         # fork command output to stdout, captured buffer and output file
-        if read_bytes:
-            while True:
-                chunk: bytes = process.stdout.read(1)
-                if chunk == b'':
-                    break
-                chunk_str = chunk.decode()
+        for line in iter(process.stdout.readline, b''):
+            line_str = line.decode()
 
-                if print_stdout:
-                    sys.stdout.write(chunk_str)
-                    sys.stdout.flush()
-                if output_file is not None:
-                    output_file.write(chunk_str)
-                captured_stream.write(chunk_str)
-
-        else:
-            for line in iter(process.stdout.readline, b''):
-                line_str = line.decode()
-
-                if print_stdout:
-                    sys.stdout.write(line_str)
-                    sys.stdout.flush()
-                if output_file is not None:
-                    output_file.write(line_str)
-                captured_stream.write(line_str)
+            if print_stdout:
+                sys.stdout.write(line_str)
+                sys.stdout.flush()
+            captured_stream.write(line_str)
 
         process.wait()
-        if output_file is not None:
-            output_file.close()
         if process.returncode != 0:
             stdout = captured_stream.getvalue()
             raise CommandError(cmd, stdout, process.returncode)
