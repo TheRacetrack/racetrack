@@ -27,11 +27,11 @@ GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetra
 GRAFANA_DASHBOARDS = ['image-builder', 'jobs', 'lifecycle', 'postgres', 'pub']
 
 # Requirements:
-# + python3
+# python3
 # python3-pip
 # python3 venv
-# + docker (non-root)
-# + docker compose
+# docker (non-root)
+# docker compose
 # curl
 
 """
@@ -43,10 +43,12 @@ sudo usermod -aG docker $USER
 newgrp docker
 
 mkdir -p ~/racetrack && cd ~/racetrack
-"""
 
-# sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh)
-# python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/wizard.py)
+sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh)
+
+# wget https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh
+# sh runner.sh
+"""
 
 
 def main():
