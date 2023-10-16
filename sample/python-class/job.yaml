@@ -8,6 +8,5 @@ git:
   directory: sample/python-class
 
 jobtype_extra:
-  requirements_path: 'requirements.txt'
   entrypoint_path: 'adder.py'
   entrypoint_class: 'AdderModel'
