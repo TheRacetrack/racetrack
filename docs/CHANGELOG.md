@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.21.0] - 2023-10-16
 ### Added
 - Pub can now be turned into a remote gateway mode.
   It allows to distribute services between clusters as 2 (or more) separate infrastructures:
@@ -15,14 +17,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes)
   - [remote docker plugin](https://github.com/TheRacetrack/plugin-remote-docker)
 
+- New administrative endpoint for cleaning up plugins mess.
+  ([#331](https://github.com/TheRacetrack/racetrack/issues/331))
+  
 ### Changed
 - Streaming live logs of a job can now work with multiple infrastructures.
   Logs streamer interface has been redesigned so infrastructure plugins has to be updated accordingly.
+- Prometheus, Grafana and PostgreSQL have been upgraded.
 
 ### Fixed
 - Database connection is checked in background to avoid blocking metrics endpoint.
   It reduced number of open database connections.
   ([#318](https://github.com/TheRacetrack/racetrack/issues/318))
+- Faulty plugins can be deleted.
 
 ## [2.20.0] - 2023-09-27
 ### Added
