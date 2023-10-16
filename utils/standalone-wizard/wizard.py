@@ -66,15 +66,8 @@ def main():
     else:
         logger.debug(f'Installation directory set to: {config.install_dir}')
 
-    if not config.infrastructure:
-        config.infrastructure = prompt_text('''Choose infrastructure target to install Racetrack
-- docker - Docker Engine on this local machine''', 'docker')
-        save_local_config(config)
-    else:
-        logger.debug(f'infrastructure target set to: {config.infrastructure}')
-
-    if config.infrastructure == 'docker':
-        install_to_docker(config)
+    logger.info('Installing Racetrack to local Docker Engine')
+    install_to_docker(config)
 
 
 def install_to_docker(config: 'SetupConfig'):
@@ -142,7 +135,7 @@ def install_to_docker(config: 'SetupConfig'):
 
     try:
         auth_token = get_admin_auth_token('admin')
-        logger.info('Changing defaultt admin password…')
+        logger.info('Changing default admin password…')
         change_admin_password(auth_token, 'admin', config.admin_password)
     except ResponseError as e:
         if not e.status_code == 401:  # Unauthorized
