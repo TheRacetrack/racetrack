@@ -41,6 +41,7 @@ newgrp docker
 """
 
 # sudo apt install make
+# wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/runner.sh | bash
 # python3 <(wget -qO- https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 # python3 <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance/utils/standalone-wizard/installer.py)
 
