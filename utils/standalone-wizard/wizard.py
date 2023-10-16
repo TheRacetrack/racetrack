@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass, asdict
-import io
 import json
 import logging
 import os
 from pathlib import Path
 import secrets
 import string
-import subprocess
 import sys
-from typing import Optional, Dict
+from typing import Dict
 import urllib.request
+
+from racetrack_client.log.logs import configure_logs
+from racetrack_client.utils.shell import shell, shell_output, CommandError
+from racetrack_client.utils.request import Requests, ResponseError
 
 logger = logging.getLogger('racetrack')
 
@@ -44,7 +46,7 @@ newgrp docker
 
 
 def main():
-    init_logs()
+    configure_logs(log_level='debug')
     logger.info('Welcome to the standalone Racetrack installer')
 
     if sys.version_info[:2] < (3, 8):
@@ -132,18 +134,22 @@ def install_to_docker(config: 'SetupConfig'):
     logger.info('Waiting until Racetrack is operational…')
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh')
 
-    if not Path('venv').is_dir():
-        logger.info('Creating virtual Python environment…')
-        shell('python3 -m venv venv', raw_output=True)
+    try:
+        auth_token = get_admin_auth_token('admin')
+        logger.info('Changing defaultt admin password…')
+        change_admin_password(auth_token, 'admin', config.admin_password)
+    except ResponseError as e:
+        if not e.status_code == 401:  # Unauthorized
+            raise e
 
-    activate_venv = '. venv/bin/activate && '
-    logger.info('Installing racetrack client…')
-    shell(activate_venv + 'python -m pip install --upgrade racetrack-client', raw_output=True)
-    shell(activate_venv + 'python -m racetrack set remote http://127.0.0.1:7102')
-    shell(activate_venv + f'python -m racetrack login {config.admin_auth_token}')
+    config.admin_auth_token = get_admin_auth_token(config.admin_password)
+
+    logger.info('Configuring racetrack client…')
+    shell('python3 -m racetrack set remote http://127.0.0.1:7102')
+    shell(f'python3 -m racetrack login {config.admin_auth_token}')
     logger.info('Installing plugins…')
-    shell(activate_venv + 'python -m racetrack plugin install github.com/TheRacetrack/plugin-python-job-type')
-    shell(activate_venv + 'python -m racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
+    shell('python3 -m racetrack plugin install github.com/TheRacetrack/plugin-python-job-type')
+    shell('python3 -m racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
 
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at {config.external_address}:7103/dashboard
@@ -201,6 +207,26 @@ def _generate_secrets(config: 'SetupConfig'):
         logger.info("Generating Image builder's auth token…")
         config.image_builder_auth_token = generate_auth_token(config.auth_key, 'image-builder')
     save_local_config(config)
+
+
+def get_admin_auth_token(password: str) -> str:
+    response = Requests.post('http://127.0.0.1:7103/dashboard/api/v1/users/login', json={
+        'username': 'admin',
+        'password': password,
+    })
+    response.raise_for_status()
+    return response.json()['token']
+
+
+def change_admin_password(auth_token: str, old_pass: str, new_pass: str):
+    response = Requests.put('http://127.0.0.1:7103/dashboard/api/v1/users/change_password', headers={
+        'X-Racetrack-Auth': auth_token,
+    }, json={
+        'old_password': old_pass,
+        'new_password': new_pass,
+    })
+    response.raise_for_status()
+    logger.info('admin password changed')
 
 
 @dataclass
@@ -279,98 +305,6 @@ def prompt_shell_command(question: str, snippet: str) -> bool:
     for command in snippet.splitlines():
         shell(command)
     return True
-
-
-def init_logs():
-    logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
-
-    for handler in logging.getLogger().handlers:
-        handler.setFormatter(ColoredFormatter(handler.formatter))
-
-    rt_logger = logging.getLogger('racetrack')
-    rt_logger.setLevel(logging.DEBUG)
-
-
-class ColoredFormatter(logging.Formatter):
-    def __init__(self, plain_formatter):
-        logging.Formatter.__init__(self)
-        self.plain_formatter = plain_formatter
-
-    log_level_templates = {
-        'CRITICAL': '\033[1;31mCRIT \033[0m',
-        'ERROR': '\033[1;31mERROR\033[0m',
-        'WARNING': '\033[0;33mWARN \033[0m',
-        'INFO': '\033[0;34mINFO \033[0m',
-        'DEBUG': '\033[0;32mDEBUG\033[0m',
-    }
-
-    def format(self, record: logging.LogRecord):
-        if record.levelname in self.log_level_templates:
-            record.levelname = self.log_level_templates[record.levelname].format(record.levelname)
-        return self.plain_formatter.format(record)
-
-
-def shell_output(
-    cmd: str,
-    workdir: Optional[Path] = None,
-    print_stdout: bool = False,
-) -> str:
-    captured_stream = shell(cmd, workdir, print_stdout)
-    return captured_stream.getvalue()
-
-
-def shell(
-    cmd: str,
-    workdir: Optional[Path] = None,
-    print_stdout: bool = True,
-    raw_output: bool = False,
-) -> io.StringIO:
-    logger.debug(f'Command: {cmd}')
-    if len(cmd) > 4096:  # see https://github.com/torvalds/linux/blob/v5.11/drivers/tty/n_tty.c#L1681
-        raise RuntimeError('maximum tty line length has been exceeded')
-
-    if raw_output:
-        process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
-    else:
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
-
-    try:
-        captured_stream = io.StringIO()
-        if raw_output:
-            process.wait()
-            if process.returncode != 0:
-                raise CommandError(cmd, '', process.returncode)
-            return captured_stream
-
-        # fork command output to stdout, captured buffer and output file
-        for line in iter(process.stdout.readline, b''):
-            line_str = line.decode()
-
-            if print_stdout:
-                sys.stdout.write(line_str)
-                sys.stdout.flush()
-            captured_stream.write(line_str)
-
-        process.wait()
-        if process.returncode != 0:
-            stdout = captured_stream.getvalue()
-            raise CommandError(cmd, stdout, process.returncode)
-        return captured_stream
-    except KeyboardInterrupt:
-        logger.warning('killing subprocess')
-        process.kill()
-        raise
-
-
-class CommandError(RuntimeError):
-    def __init__(self, cmd: str, stdout: str, returncode: int):
-        super().__init__()
-        self.cmd = cmd
-        self.stdout = stdout
-        self.returncode = returncode
-
-    def __str__(self):
-        return f'command failed: {self.cmd}: {self.stdout}'
 
 
 def generate_password(length: int = 32) -> str:
