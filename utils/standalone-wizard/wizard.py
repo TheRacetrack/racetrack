@@ -20,13 +20,7 @@ LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
 GIT_BRANCH = '308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance'
 GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetrack/{GIT_BRANCH}/'
-GRAFANA_DASHBOARDS = [
-    'image-builder',
-    'jobs',
-    'lifecycle',
-    'postgres',
-    'pub',
-]
+GRAFANA_DASHBOARDS = ['image-builder', 'jobs', 'lifecycle', 'postgres', 'pub']
 
 # Requirements:
 # + python3
@@ -54,7 +48,7 @@ def main():
     logger.info('Welcome to the standalone Racetrack installer')
 
     if sys.version_info[:2] < (3, 8):
-        logger.warning(f'This installer requires Python 3.8 or higher. Found: {sys.version_info}')
+        logger.warning(f'This installer requires Python 3.8 or higher, but found: {sys.version_info}')
 
     config: SetupConfig = load_local_config()
 
@@ -75,22 +69,7 @@ def main():
         install_to_docker(config)
 
 
-@dataclass
-class SetupConfig:
-    infrastructure: str = ''
-    install_dir: str = ''
-    postgres_password: str = ''
-    django_secret_key: str = ''
-    auth_key: str = ''
-    docker_gid: str = ''
-    pub_auth_token: str = ''
-    image_builder_auth_token: str = ''
-    external_address: str = ''
-    admin_password: str = ''
-    admin_auth_token: str = ''
-
-
-def install_to_docker(config: SetupConfig):
+def install_to_docker(config: 'SetupConfig'):
     install_dir = Path(config.install_dir).expanduser().absolute()
     if not install_dir.is_dir():
         install_dir.mkdir(parents=True, exist_ok=True)
@@ -199,7 +178,7 @@ sh install-docker.sh
         raise e
 
 
-def _generate_secrets(config: SetupConfig):
+def _generate_secrets(config: 'SetupConfig'):
     if not config.postgres_password:
         config.postgres_password = generate_password()
         logger.info(f'Generated PostgreSQL password: {config.postgres_password}')
@@ -222,6 +201,21 @@ def _generate_secrets(config: SetupConfig):
         logger.info("Generating Image builder's auth token…")
         config.image_builder_auth_token = generate_auth_token(config.auth_key, 'image-builder')
     save_local_config(config)
+
+
+@dataclass
+class SetupConfig:
+    infrastructure: str = ''
+    install_dir: str = ''
+    postgres_password: str = ''
+    django_secret_key: str = ''
+    auth_key: str = ''
+    docker_gid: str = ''
+    pub_auth_token: str = ''
+    image_builder_auth_token: str = ''
+    external_address: str = ''
+    admin_password: str = ''
+    admin_auth_token: str = ''
 
 
 def load_local_config() -> SetupConfig:
