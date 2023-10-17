@@ -19,7 +19,7 @@ function changePassword() {
     }
 
     loading.value = true
-    apiClient.post(`/api/v1/users/change_password`, {
+    apiClient.put(`/api/v1/users/change_password`, {
         'old_password': oldPassword.value, 
         'new_password': newPassword.value,
     }).then(response => {
