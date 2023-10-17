@@ -10,29 +10,6 @@ from racetrack_client.log.logs import get_logger
 logger = get_logger(__name__)
 
 
-def shell(
-    cmd: str, 
-    workdir: Optional[Path] = None,
-    print_stdout: bool = True,
-    print_log: bool = True,
-    read_bytes: bool = False,
-    output_filename: Optional[str] = None,
-):
-    """
-    Run system shell command.
-    Print live stdout as it comes (line by line) and capture entire output in case of errors.
-    :param cmd: shell command to run
-    :param workdir: working directory for the command
-    :param print_stdout: whether to print stdout from a subprocess to the main process stdout
-    :param print_log: whether to print a log message about running the command
-    :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
-    :param output_filename: file to write the output in real time
-    :raises:
-        CommandError: in case of non-zero command exit code.
-    """
-    _run_shell_command(cmd, workdir, print_stdout, print_log, output_filename, read_bytes)
-
-
 def shell_output(
     cmd: str, 
     workdir: Optional[Path] = None, 
@@ -51,27 +28,53 @@ def shell_output(
     :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
     :param output_filename: file to write the output in real time
     """
-    captured_stream = _run_shell_command(cmd, workdir, print_stdout, print_log, output_filename, read_bytes)
+    captured_stream = shell(cmd, workdir,
+                            print_stdout=print_stdout, print_log=print_log, output_filename=output_filename,
+                            read_bytes=read_bytes, raw_output=False)
     return captured_stream.getvalue()
 
 
-def _run_shell_command(
+def shell(
     cmd: str, 
     workdir: Optional[Path] = None, 
     print_stdout: bool = True,
     print_log: bool = True,
+    raw_output: bool = False,
     output_filename: Optional[str] = None,
     read_bytes: bool = False,
 ) -> io.StringIO:
+    """
+    Run system shell command.
+    Print live stdout as it comes (line by line) and capture entire output in case of errors.
+    :param cmd: shell command to run
+    :param workdir: working directory for the command
+    :param print_stdout: whether to print stdout from a subprocess to the main process stdout
+    :param print_log: whether to print a log message about running the command
+    :param raw_output: whether to let subprocess manage stdout/stderr on its own instead of capturing it
+    :param output_filename: file to write the output in real time
+    :param read_bytes: whether to read raw bytes from the subprocess stdout instead of whole lines
+    :raises:
+        CommandError: in case of non-zero command exit code.
+    """
     if print_log:
         logger.debug(f'Command: {cmd}')
     if len(cmd) > 4096:  # see https://github.com/torvalds/linux/blob/v5.11/drivers/tty/n_tty.c#L1681
         raise RuntimeError('maximum tty line length has been exceeded')
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
     output_file = open(output_filename, 'a') if output_filename else None
+
+    if raw_output:
+        process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
+    else:
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
+
     try:
         # fork command output to stdout, captured buffer and output file
         captured_stream = io.StringIO()
+        if raw_output:
+            process.wait()
+            if process.returncode != 0:
+                raise CommandError(cmd, '', process.returncode)
+            return captured_stream
 
         if read_bytes:
             while True:
