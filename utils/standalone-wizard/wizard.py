@@ -53,7 +53,7 @@ def install_to_docker(config: 'SetupConfig'):
 
     if not config.external_address:
         host_ips = shell_output('hostname --all-ip-addresses').strip().split(' ')
-        logger.info(f'IP addresses for the network interfaces: {", ".join(host_ips)}')
+        logger.info(f'IP addresses for network interfaces on this host: {", ".join(host_ips)}')
         default_address = f'http://{host_ips[-1]}' if host_ips else 'http://127.0.0.1'
         config.external_address = prompt_text(
             'Enter the external address that your Racetrack will be accessed at (IP or domain name)', default_address)
@@ -107,7 +107,7 @@ def install_to_docker(config: 'SetupConfig'):
     logger.info('Starting up containers…')
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always', raw_output=True)
 
-    logger.info('Waiting until Racetrack is operational…')
+    logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash utils/wait-for-lifecycle.sh')
 
     try:
@@ -244,7 +244,7 @@ def prompt_text(question: str, default: str) -> str:
         return default
     value = input()
     if value == '':
-        logger.debug(f'Default set: {default}')
+        logger.debug(f'Default value set: {default}')
         return default
     return value
 
@@ -314,7 +314,7 @@ def shell(
     print_stdout: bool = True,
     raw_output: bool = False,
 ) -> io.StringIO:
-    logger.debug(f'Command: {cmd}')
+    logger.debug(f'Executing command: {cmd}')
     if raw_output:
         process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
     else:

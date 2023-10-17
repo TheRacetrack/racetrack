@@ -1,11 +1,11 @@
 # Installation to standalone host
-Standalone Racetrack installer lets you install Racetrack to a standalone host (fresh VM instance, EC2 host, etc.)
-using Docker Engine infrastructure.
+You can install Racetrack to a standalone host (eg. fresh VM instance or EC2 host)
+using the installer script that runs it on the Docker Engine infrastructure.
 
 ## Requirements
 
 - Python 3.8+ with `pip` and `venv`
-- [Docker v20.10 (or higher)](https://docs.docker.com/engine/install/ubuntu/)
+- [Docker v20.10 (or higher)](https://docs.docker.com/engine/install/)
   managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 - [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
 - curl
@@ -31,11 +31,19 @@ sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/
 ```
 Follow the installation steps. Shortly after, your Racetrack instance will be ready.
 
-Pay attention to the output. The installer will generate unique passwords for your setup
-and you'll get the Dashboard address and superuser credentials.
+### Notes
+- Pay attention to the output. The installer will generate unique passwords for your setup,
+  you'll be provided with the Dashboard address and superuser credentials.
+- Set the environment variable `export RT_NON_INTERACTIVE=1`
+  to skip answering installer's questions and go with the defaults.
+- Edit or remove local setup configuration at `setup.json`
+  and run installer again to reconfigure installation steps.
+- You can use locally installed `racetrack` CLI client after activating venv: `. venv/bin/activate`.
+  It's already logged in and has remote address configured.
 
-## Administering
-Take a look at `Makefile` created by the installer. There's a few useful steps:
+## Manage
+`Makefile` (created by the installer) contains a few useful commands:
 
-`make clean` to shut down and clean up the Racetrack.
-`make up` to start it up again or upgrade to the latest version.
+- `make down` to stop the Racetrack.
+- `make up` to start it up again or upgrade to the latest version.
+- `make clean` to shut down and clean up the Racetrack.
