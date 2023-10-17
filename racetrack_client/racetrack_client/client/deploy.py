@@ -177,7 +177,7 @@ def _determine_default_build_context_method(lifecycle_url: str, manifest: Manife
     It avoids fetching from remote git when using samples from local project repository.
     """
     if _is_url_localhost(lifecycle_url) and manifest.owner_email == 'sample@example.com':
-        logger.warning('using local build context due to local development')
+        logger.info('using local build context due to deploying to localhost')
         return BuildContextMethod.local
     return BuildContextMethod.git
 
