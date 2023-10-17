@@ -35,7 +35,7 @@ class JobStressUser(HttpUser):
         self.url = f"{self.base_url}/pub/job/{job_name}/{job_version}"
         print(f"url to hit: {self.url}")
 
-        is_localhost = '://localhost' in self.base_url
+        is_localhost = '://127.0.0.1' in self.base_url
         esc_name = os.environ.get('create_esc')
         if is_localhost and esc_name:
             admin_auth_token = os.environ.get('admin_auth_token')
