@@ -38,7 +38,7 @@ Follow the installation steps. Shortly after, your Racetrack instance will be re
   to skip answering installer's questions and go with the defaults.
 - Edit or remove local setup configuration at `setup.json`
   and run installer again to reconfigure installation steps.
-- You can use locally installed `racetrack` CLI client after activating venv: `. venv/bin/activate`.
+- You can use locally installed `racetrack` CLI client after activating venv `. venv/bin/activate`.
   It's already logged in and has remote address configured.
 
 ## Manage
