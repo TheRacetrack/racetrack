@@ -25,13 +25,13 @@ DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false DOCKER_GID=${DOCKER_GID} \
     docker compose up -d --no-build --pull=always
 
 echo "Waiting until Racetrack is operational..."
-LIFECYCLE_URL=http://localhost:7102 bash wait-for-lifecycle.sh
+LIFECYCLE_URL=http://127.0.0.1:7102 bash wait-for-lifecycle.sh
 
 echo "Installing racetrack-client..."
 python3 -m pip install --upgrade racetrack-client
 
 echo "Setting current Racetrack remote..."
-racetrack set remote http://localhost:7102
+racetrack set remote http://127.0.0.1:7102
 
 echo "Logging in to Racetrack as admin user..."
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI

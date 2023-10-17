@@ -34,11 +34,11 @@ spec:
             - name: LIFECYCLE_URL
               value: 'http://lifecycle:7002/lifecycle'
             - name: EXTERNAL_LIFECYCLE_URL
-              value: 'http://localhost:7002/lifecycle'
+              value: 'http://127.0.0.1:7002/lifecycle'
             - name: EXTERNAL_PUB_URL
-              value: 'http://localhost:7005/pub'
+              value: 'http://127.0.0.1:7005/pub'
             - name: EXTERNAL_GRAFANA_URL
-              value: 'http://localhost:3000'
+              value: 'http://127.0.0.1:3000'
             - name: DJANGO_DEBUG
               value: 'true'
             - name: AUTH_REQUIRED

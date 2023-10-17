@@ -3,7 +3,7 @@ import httpretty
 
 from lifecycle.monitor.health import check_until_job_is_operational
 
-_base_url = 'http://localhost'
+_base_url = 'http://127.0.0.1'
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)

@@ -12,7 +12,7 @@ cp .env.dist .env
 The Job generates random number and prints env vars configured in job.yaml and loaded from secret .env file. 
 The following request performs its functionality:
 ```bash
-curl -X POST "http://localhost:7005/pub/job/python-env-secret/latest/api/v1/perform" \
+curl -X POST "http://127.0.0.1:7005/pub/job/python-env-secret/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -d '{}'
 # Expect:

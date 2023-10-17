@@ -225,10 +225,10 @@ racetrack -h
 
 In the case of a production cluster, the only real change will be to the `racetrack
 deploy` invocations. You will need to obtain the Racetrack address instead of
-`localhost:7002`, so that:
+`127.0.0.1:7002`, so that:
 
 ```shell
-racetrack deploy my/awesome/job --remote http://localhost:7002
+racetrack deploy my/awesome/job --remote http://127.0.0.1:7002
 ```
 
 becomes
@@ -238,7 +238,7 @@ racetrack deploy my/awesome/job --remote http://racetrack.platform.example.com:1
 ```
 
 Other endpoints described in the tutorial will also change away from
-`localhost`. for example `http://localhost:7003/` might become
+`localhost`. for example `http://127.0.0.1:7003/` might become
 `https://racetrack-lifecycle.platform.example.com/`. You will need to check with
 your local Racetrack admin to get these endpoints.
 
@@ -248,7 +248,7 @@ Before you can deploy a job to production Racetrack server or even view the list
 of Job on RT Dashboard, you need to create user there.
 
 Visit your `https://racetrack.platform.example.com/dashboard/`
-(or local [http://localhost:7003/dashboard](http://localhost:7003/dashboard)), click link to **Register**.
+(or local [http://127.0.0.1:7003/dashboard](http://127.0.0.1:7003/dashboard)), click link to **Register**.
 Type username (an email) and password. Password will be needed to login, 
 so manage it carefully. Then notify your admin that he should activate your user.
 
@@ -324,8 +324,8 @@ If you operate with many environments, setting short names may come in handy. Fo
 racetrack set alias dev https://racetrack.dev.platform.example.com/lifecycle
 racetrack set alias test https://racetrack.test.platform.example.com/lifecycle
 racetrack set alias prod https://racetrack.prod.platform.example.com/lifecycle
-racetrack set alias kind http://localhost:7002
-racetrack set alias docker http://localhost:7102
+racetrack set alias kind http://127.0.0.1:7002
+racetrack set alias docker http://127.0.0.1:7102
 ```
 
 and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy --remote dev`.
@@ -363,7 +363,7 @@ it can store Project/Personal Access Tokens.
 It is also possible to store the address of the Racetrack server:
 
 ```shell
-racetrack set remote http://localhost:7002
+racetrack set remote http://127.0.0.1:7002
 ```
 
 Local client configuration is stored at `~/.racetrack/config.yaml`
@@ -480,7 +480,7 @@ docker system prune -a
 make kind-up
 # Wait 10 minutes
 make kind-test
-racetrack set remote http://localhost:7002
+racetrack set remote http://127.0.0.1:7002
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
 racetrack deploy sample/python-class
@@ -491,7 +491,7 @@ If it doesn't work, diagnostic commands:
 - `kubectl get pods` - do everything has "Running" status? If not, view logs of 
   that pod (ie. `kubectl logs <failing_pod_name>`)
 - look into `kubectl logs service/lifecycle`
-- Can you access the server at [http://localhost:7002](http://localhost:7002/) (in browser)?
+- Can you access the server at [http://127.0.0.1:7002](http://127.0.0.1:7002/) (in browser)?
 - `netstat -tuanpl | grep 7002` - is the port blocked by something?
 
 If you can't debug the problem yourself, please send the results of above commands

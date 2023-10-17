@@ -12,7 +12,7 @@ RUN deluser postgres && \
 
 # The relationship between users:
 # 1. admin is for logging to pgbouncer admin. First shell to pgbouncer container, and:
-#    PGPASSWORD=pgb-NgbMrknv5rsp9E2b psql -h localhost -p $LISTEN_PORT -U admin -d pgbouncer
+#    PGPASSWORD=pgb-NgbMrknv5rsp9E2b psql -h 127.0.0.1 -p $LISTEN_PORT -U admin -d pgbouncer
 #    Then you can do "show stats;", "show clients;" and other commands.
 # 2. postgres is container user for pgbouncer to manage files and run process.
 
