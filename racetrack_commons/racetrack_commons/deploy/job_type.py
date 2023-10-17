@@ -36,7 +36,9 @@ def load_job_type(
     assert job_types, f'language {lang} is not supported here. No job type plugins are currently installed to Racetrack.'
     all_languages = sorted(job_types.keys())
     selected_version = match_job_type_version(lang, all_languages)
-    return job_types[selected_version]
+    job_type = job_types[selected_version]
+    _validate_job_type(job_type)
+    return job_type
 
 
 def match_job_type_version(lang: str, all_languages: list[str]) -> str:
@@ -93,22 +95,24 @@ def gather_job_types(
                 else:
                     raise RuntimeError(f'Invalid job type data. It should be list[tuple[Path, Path]], was {type(job_data)}')
 
-                _validate_dockerfile_paths(base_image_paths, template_paths, job_full_name)
-
                 name_parts = job_full_name.split(':')
                 assert len(name_parts) == 2, f'job type {job_full_name} should have the version defined (name:version)'
                 lang_name = name_parts[0]
                 lang_version = name_parts[1]
-                job_type_version = JobType(lang_name, lang_version, base_image_paths, template_paths)
+                job_type_version = JobType(
+                    lang_name=lang_name,
+                    version=lang_version,
+                    base_image_paths=base_image_paths,
+                    template_paths=template_paths,
+                )
                 job_types[job_full_name] = job_type_version
 
     return job_types
 
 
-def list_available_job_types(plugin_engine: PluginEngine) -> list[str]:
-    with wrap_context('gathering available job types'):
-        job_types = gather_job_types(plugin_engine)
-    return sorted(job_types.keys())
+def _validate_job_type(job_type: JobType):
+    job_full_name = f'{job_type.lang_name}:{job_type.version}'
+    _validate_dockerfile_paths(job_type.base_image_paths, job_type.template_paths, job_full_name)
 
 
 def _validate_dockerfile_paths(base_image_paths: list[Path], template_paths: list[Path], job_full_name: str):
