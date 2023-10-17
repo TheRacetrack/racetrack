@@ -1,5 +1,5 @@
 # Installation to standalone host
-You can install Racetrack to a standalone host (eg. fresh VM instance or EC2 host)
+You can install Racetrack to a standalone host (eg. EC2 host or fresh VM instance)
 using the installer script that runs it on the Docker Engine infrastructure.
 
 ## Requirements
@@ -32,6 +32,7 @@ sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/
 Follow the installation steps. Shortly after, your Racetrack instance will be ready.
 
 ### Notes
+
 - Pay attention to the output. The installer will generate unique passwords for your setup,
   you'll be provided with the Dashboard address and superuser credentials.
 - Set the environment variable `export RT_NON_INTERACTIVE=1`
@@ -40,9 +41,21 @@ Follow the installation steps. Shortly after, your Racetrack instance will be re
   and run installer again to reconfigure installation steps.
 - You can use locally installed `racetrack` CLI client after activating venv `. venv/bin/activate`.
   It's already logged in and has remote address configured.
+- The following services are hosted on address `0.0.0.0`, thus publicly available:
 
-## Manage
-`Makefile` (created by the installer) contains a few useful commands:
+  - Dashboard on port `7103`
+  - Lifecycle on port `7102`
+  - Pub on port `7105`
+  - Lifecycle Supervisor on port `7106`
+  - Grafana on port `3100`
+
+  Jobs and other services should be running only in the internal network.
+
+- This installer makes use of [Docker Infrastructure plugin](https://github.com/TheRacetrack/plugin-docker-infrastructure)
+  to deploy jobs to in-place Docker Engine infrastructure target.
+
+## Manage Racetrack
+Installer creates `Makefile`, which contains a few useful commands:
 
 - `make down` to stop the Racetrack.
 - `make up` to start it up again or upgrade to the latest version.
