@@ -18,12 +18,10 @@ from racetrack_client.utils.request import Requests, ResponseError
 
 logger = logging.getLogger('racetrack')
 
-LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
-LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
-GIT_BRANCH = '308-provide-instructions-on-how-to-install-racetrack-to-a-vm-instance'
-GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetrack/{GIT_BRANCH}/'
+RT_BRANCH = os.environ.get('RT_BRANCH', 'master')
+GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetrack/{RT_BRANCH}/'
 GRAFANA_DASHBOARDS = ['image-builder', 'jobs', 'lifecycle', 'postgres', 'pub']
 
 
@@ -54,13 +52,16 @@ def install_to_docker(config: 'SetupConfig'):
     os.chdir(install_dir.as_posix())
 
     if not config.external_address:
+        host_ips = shell_output('hostname --all-ip-addresses').strip().split(' ')
+        logger.info(f'IP addresses for the network interfaces: {", ".join(host_ips)}')
+        default_address = f'http://{host_ips[-1]}' if host_ips else 'http://127.0.0.1'
         config.external_address = prompt_text(
-            'Enter the external address that your Racetrack will be accessed at (IP or domain name)', 'http://127.0.0.1')
+            'Enter the external address that your Racetrack will be accessed at (IP or domain name)', default_address)
         save_local_config(config)
     else:
         logger.debug(f'External remote address set to: {config.external_address}')
 
-    _verify_docker()
+    verify_docker()
     if not config.docker_gid:
         config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
         logger.debug(f'Docker group ID set to: {config.docker_gid}')
@@ -134,17 +135,13 @@ To deploy here, configure your racetrack client: racetrack set remote {config.ex
 ''')
 
 
-def _verify_docker():
+def verify_docker():
     logger.info('Verifying Docker installation…')
     try:
         shell('docker --version', print_stdout=False)
     except CommandError as e:
-        logger.warning('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
-        if not prompt_shell_command('Would you like to install Docker by executing the following command?', '''
-curl -fsSL https://get.docker.com -o install-docker.sh
-sh install-docker.sh
-'''):
-            raise e
+        logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
+        raise e
 
     try:
         shell('docker ps', print_stdout=False)
@@ -273,25 +270,10 @@ def prompt_bool(question: str, default: bool = True) -> bool:
             return False
 
 
-def prompt_shell_command(question: str, snippet: str) -> bool:
-    snippet = snippet.strip()
-    if not prompt_bool(f'{question}\n{snippet}'):
-        return False
-    for command in snippet.splitlines():
-        shell(command)
-    return True
-
-
 def generate_password(length: int = 32) -> str:
     assert length >= 16, 'password should be at least 16 characters long'
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
-
-
-def template_file(src_file: Path, dst_file: Path, context_vars: Dict[str, str]):
-    template = string.Template(src_file.read_text())
-    outcome: str = template.substitute(**context_vars)
-    dst_file.write_text(outcome)
 
 
 def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
@@ -333,14 +315,10 @@ def shell(
     raw_output: bool = False,
 ) -> io.StringIO:
     logger.debug(f'Command: {cmd}')
-    if len(cmd) > 4096:  # see https://github.com/torvalds/linux/blob/v5.11/drivers/tty/n_tty.c#L1681
-        raise RuntimeError('maximum tty line length has been exceeded')
-
     if raw_output:
         process = subprocess.Popen(cmd, stdout=None, stderr=None, shell=True, cwd=workdir)
     else:
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd=workdir)
-
     try:
         captured_stream = io.StringIO()
         if raw_output:
