@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Manifest values can be overriden with key-value pairs coming from a command line.
   Racetrack client has `--extra-vars KEY=VALUE` parameter (or `-e` in short)
   that overwrites values found in YAML manifest.
-  `KEY` is the name of field and it can contain dots to refer to a nested field, for example `git.branch=master`.
-  `VALUE` can be any YAML or JSON object. 
-  Extra vars parameter can be used multiple times in one command.
-  Example: `racetrack deploy -e secret_runtime_env_file=.env.local`.
-  It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.
+
+  - `KEY` is the name of field and it can contain dots to refer to a nested field, for example `git.branch=master`.
+  - `VALUE` can be any YAML or JSON object.
+
+  Extra vars parameters can be used multiple times in one command.  
+  Example: `racetrack deploy -e secret_runtime_env_file=.env.local -e git.branch=$(git rev-parse --abbrev-ref HEAD)`  
+  It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.  
   Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
   ([#340](https://github.com/TheRacetrack/racetrack/issues/340))
 
