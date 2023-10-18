@@ -50,6 +50,7 @@ def send_deploy_request(
     lifecycle_url: Optional[str] = None,
     force: bool = False,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
+    extra_vars: Dict[str, str] = None,
 ):
     """
     Send request deploying a new Job to running Lifecycle instance
@@ -58,15 +59,16 @@ def send_deploy_request(
     :param lifecycle_url: Racetrack server's URL or alias name
     :param force: overwrite existing job without asking
     :param build_context_method: decides whether to build from local files or from git:
-        local - build an image from local build context, 
-        git - build from git repository, 
-        None - apply default strategy: 
+        local - build an image from local build context,
+        git - build from git repository,
+        None - apply default strategy:
             if working on local dev, local build context gets activated, otherwise git
+    :param extra_vars: key-value pairs overriding manifest values
     """
     if client_config is None:
         client_config = load_client_config()
-    manifest: Manifest = load_validated_manifest(workdir)
-    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir))
+    manifest: Manifest = load_validated_manifest(workdir, extra_vars)
+    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
     logger.debug(f'Manifest loaded: {manifest}')
 
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
