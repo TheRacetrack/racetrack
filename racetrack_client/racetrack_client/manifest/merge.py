@@ -34,16 +34,17 @@ def load_merged_manifest_dict(manifest_path: Path, extra_vars: Dict[str, str]) -
                 manifest_dict = merge_dicts(base_manifest_dict, manifest_dict)
                 manifest_dict['extends'] = None
 
-    with wrap_context('applying extra vars'):
-        for extra_key, extra_value in extra_vars.items():
-            assert extra_key, 'extra var key cannot be empty'
-            key_nodes: list[str] = extra_key.split('.')
-            last_name = key_nodes[-1]
-            target_node: Dict = manifest_dict
-            for key_node in key_nodes[:-1]:
-                target_node = target_node[key_node]
-            value_object = yaml.safe_load(extra_value)
-            target_node[last_name] = value_object
+    if extra_vars:
+        with wrap_context('applying extra vars'):
+            for extra_key, extra_value in extra_vars.items():
+                assert extra_key, 'extra var key cannot be empty'
+                key_nodes: list[str] = extra_key.split('.')
+                last_name = key_nodes[-1]
+                target_node: Dict = manifest_dict
+                for key_node in key_nodes[:-1]:
+                    target_node = target_node[key_node]
+                value_object = yaml.safe_load(extra_value)
+                target_node[last_name] = value_object
 
     return manifest_dict
 
