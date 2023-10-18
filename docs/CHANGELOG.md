@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Extra vars parameter can be used multiple times in one command.
   Example: `racetrack deploy -e secret_runtime_env_file=.env.local`.
   It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.
+  Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
   ([#340](https://github.com/TheRacetrack/racetrack/issues/340))
 
 ## [2.21.0] - 2023-10-16
