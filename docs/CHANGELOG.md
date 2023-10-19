@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Manifest values can be overriden with key-value pairs coming from a command line.
+  It doesn't modify actual file, but its one-time, in-memory version before submitting it.
   Racetrack client has `--extra-vars KEY=VALUE` parameter (or `-e` in short)
   that overwrites values found in YAML manifest.
 
