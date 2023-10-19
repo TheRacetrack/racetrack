@@ -21,6 +21,10 @@ class JobType:
     base_image_paths: list[Path]  # paths to base Dockerfiles (for each container)
     template_paths: list[Path]  # paths to job template Dockerfiles (for each container)
 
+    @property
+    def full_name(self):
+        return f'{self.lang_name}:{self.version}'
+
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
 def load_job_type(
@@ -111,8 +115,7 @@ def gather_job_types(
 
 
 def _validate_job_type(job_type: JobType):
-    job_full_name = f'{job_type.lang_name}:{job_type.version}'
-    _validate_dockerfile_paths(job_type.base_image_paths, job_type.template_paths, job_full_name)
+    _validate_dockerfile_paths(job_type.base_image_paths, job_type.template_paths, job_type.full_name)
 
 
 def _validate_dockerfile_paths(base_image_paths: list[Path], template_paths: list[Path], job_full_name: str):
