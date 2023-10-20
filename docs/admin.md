@@ -51,6 +51,7 @@ You can view the permissions-graph in Racetrack Dashboard, under Graph page.
 Click on the node to see the details and filter out the neighbours of the selected node.
 
 Permissions can be managed in Administration panel, under "Admin panel" tab in dashboard.
+See [how to manage permissions](./permissions.md).
 
 #### Allowing ESC to Job permissions
 
