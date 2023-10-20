@@ -46,8 +46,8 @@ class PluginEngine:
                 logger.info(f'{len(self.plugins_data)} {plugin_plural} have been loaded in {duration:.2f}s: {plugins_list_str}')
             else:
                 logger.info(f'No plugins to load')
-        if self.on_reload is not None:
-            self.on_reload(self)
+            if self.on_reload is not None:
+                self.on_reload(self)
 
     def invoke_plugin_hook(self, function: Callable, *args, **kwargs) -> list[Any]:
         """

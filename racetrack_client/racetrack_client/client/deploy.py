@@ -19,6 +19,7 @@ from racetrack_client.manifest.merge import load_merged_manifest_dict
 from racetrack_client.manifest.validate import load_validated_manifest
 from racetrack_client.plugin.bundler.filename_matcher import FilenameMatcher
 from racetrack_client.utils.auth import get_auth_request_headers
+from racetrack_client.utils.byte import format_bytes
 from racetrack_client.utils.request import parse_response_object, Requests
 from racetrack_client.log.logs import get_logger
 
@@ -49,6 +50,7 @@ def send_deploy_request(
     lifecycle_url: Optional[str] = None,
     force: bool = False,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
+    extra_vars: Dict[str, str] = None,
 ):
     """
     Send request deploying a new Job to running Lifecycle instance
@@ -57,15 +59,16 @@ def send_deploy_request(
     :param lifecycle_url: Racetrack server's URL or alias name
     :param force: overwrite existing job without asking
     :param build_context_method: decides whether to build from local files or from git:
-        local - build an image from local build context, 
-        git - build from git repository, 
-        None - apply default strategy: 
+        local - build an image from local build context,
+        git - build from git repository,
+        None - apply default strategy:
             if working on local dev, local build context gets activated, otherwise git
+    :param extra_vars: key-value pairs overriding manifest values
     """
     if client_config is None:
         client_config = load_client_config()
-    manifest: Manifest = load_validated_manifest(workdir)
-    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir))
+    manifest: Manifest = load_validated_manifest(workdir, extra_vars)
+    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
     logger.debug(f'Manifest loaded: {manifest}')
 
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
@@ -176,7 +179,7 @@ def _determine_default_build_context_method(lifecycle_url: str, manifest: Manife
     It avoids fetching from remote git when using samples from local project repository.
     """
     if _is_url_localhost(lifecycle_url) and manifest.owner_email == 'sample@example.com':
-        logger.warning('using local build context due to local development')
+        logger.info('using local build context due to deploying to localhost')
         return BuildContextMethod.local
     return BuildContextMethod.git
 
@@ -195,13 +198,17 @@ def encode_build_context(workdir: str) -> str:
 
     ignore_file = workdir_path / '.gitignore'
     if ignore_file.is_file():
-        logger.debug(f'ignoring file patterns found in {ignore_file}')
+        logger.debug(f'skipping file patterns found in {ignore_file}')
         inclusion_matcher = FilenameMatcher(ignore_file.read_text().splitlines())
     else:
         inclusion_matcher = FilenameMatcher()
 
+    files_count = 0
     with tarfile.open(fileobj=tar_fileobj, mode='w:gz') as tar:
         for relative_path in inclusion_matcher.list_files(workdir_path):
             absolute: Path = workdir_path / relative_path
             tar.add(str(absolute), arcname=str(relative_path))
-    return b64encode(tar_fileobj.getvalue()).decode()
+            files_count += 1
+    encoded = b64encode(tar_fileobj.getvalue()).decode()
+    logger.info(f"local build context encoded: {files_count} files, {format_bytes(len(encoded))}")
+    return encoded

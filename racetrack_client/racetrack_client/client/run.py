@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 import backoff
 
+from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import CommandError, shell
 from racetrack_client.utils.time import datetime_to_timestamp, now
 from racetrack_client.client.deploy import DEPLOYMENT_TIMEOUT_SECS, BuildContextMethod, DeploymentError, get_build_context, get_deploy_request_payload, get_git_credentials
@@ -26,10 +27,11 @@ def run_job_locally(
     lifecycle_url: str, 
     build_context_method: BuildContextMethod = BuildContextMethod.default,
     port: Optional[int] = None,
+    extra_vars: Dict[str, str] = None,
 ):
     client_config = load_client_config()
-    manifest = load_validated_manifest(workdir)
-    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir))
+    manifest: Manifest = load_validated_manifest(workdir, extra_vars)
+    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
 
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
