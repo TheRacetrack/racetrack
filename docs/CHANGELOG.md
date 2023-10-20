@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
   ([#340](https://github.com/TheRacetrack/racetrack/issues/340))
 
+- You can install Racetrack to a standalone host (e.g. EC2 host or fresh VM instance)
+  using the installer script that runs it on the Docker Engine infrastructure.
+  ([#308](https://github.com/TheRacetrack/racetrack/issues/308))
+
 ## [2.21.0] - 2023-10-16
 ### Added
 - Pub can now be turned into a remote gateway mode.

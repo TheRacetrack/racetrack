@@ -9,7 +9,7 @@ import string
 import yaml
 from jinja2 import Template, StrictUndefined
 
-from racetrack_client.utils.shell import shell_output, shell
+from racetrack_client.utils.shell import shell_output
 from racetrack_client.log.logs import init_logs, configure_logs, get_logger
 
 logger = get_logger(__name__)
@@ -53,9 +53,6 @@ def main():
     token = shell_output('python -m lifecycle generate-auth pub --short').strip()
     logger.debug(f"PUB's token generated: {token}")
     context_vars['PUB_TOKEN'] = token
-    token = shell_output('python -m lifecycle generate-auth dashboard --short').strip()
-    logger.debug(f"Dashboard's token generated: {token}")
-    context_vars['DASHBOARD_TOKEN'] = token
     token = shell_output('python -m lifecycle generate-auth image-builder --short').strip()
     logger.debug(f"Image-builder's token generated: {token}")
     context_vars['IMAGE_BUILDER_TOKEN'] = token

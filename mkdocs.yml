@@ -66,6 +66,7 @@ nav:
     - Bill of Materials: docs/development/bom.md
     - Copyright Notices: docs/license/copyright-notices.md
   - Deployment:
+    - Installation to standalone host: docs/deployment/standalone-host.md
     - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
     - Administering: docs/admin.md
   - Changelog: docs/CHANGELOG.md
