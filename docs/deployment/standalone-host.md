@@ -37,6 +37,10 @@ Follow the installation steps. Shortly after, your Racetrack instance will be re
   you'll be provided with the Dashboard address and superuser credentials.
 - Set the environment variable `export RT_NON_INTERACTIVE=1`
   to skip answering installer's questions and go with the defaults.
+  You can also set custom values for parameters by setting environment variables:
+
+  - `export RT_EXTERNAL_ADDRESS="http://127.0.0.1"` to set the external address that your Racetrack will be accessed at (IP or domain name).
+
 - Edit or remove local setup configuration at `setup.json`
   and run installer again to reconfigure installation steps.
 - You can use locally installed `racetrack` CLI client after activating venv `. venv/bin/activate`.

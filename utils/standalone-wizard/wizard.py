@@ -34,29 +34,19 @@ def main():
 
     config: SetupConfig = load_local_config()
 
-    if not config.install_dir:
-        config.install_dir = prompt_text('Choose installation directory', Path().absolute().as_posix())
-        save_local_config(config)
-    else:
-        logger.debug(f'Installation directory set to: {config.install_dir}')
-
     logger.info('Installing Racetrack to local Docker Engine')
     install_to_docker(config)
 
 
 def install_to_docker(config: 'SetupConfig'):
-    install_dir = Path(config.install_dir).expanduser().absolute()
-    if not install_dir.is_dir():
-        install_dir.mkdir(parents=True, exist_ok=True)
-        logger.debug(f'Created installation directory at {install_dir.absolute()}')
-    os.chdir(install_dir.as_posix())
-
     if not config.external_address:
         host_ips = shell_output('hostname --all-ip-addresses').strip().split(' ')
         logger.info(f'IP addresses for network interfaces on this host: {", ".join(host_ips)}')
         default_address = f'http://{host_ips[-1]}' if host_ips else 'http://127.0.0.1'
         config.external_address = prompt_text(
-            'Enter the external address that your Racetrack will be accessed at (IP or domain name)', default_address)
+            'Enter the external address that your Racetrack will be accessed at (IP or domain name)',
+            default_address, 'RT_EXTERNAL_ADDRESS'
+        )
         save_local_config(config)
     else:
         logger.debug(f'External remote address set to: {config.external_address}')
@@ -204,7 +194,6 @@ def change_admin_password(auth_token: str, old_pass: str, new_pass: str):
 @dataclass
 class SetupConfig:
     infrastructure: str = ''
-    install_dir: str = ''
     postgres_password: str = ''
     django_secret_key: str = ''
     auth_key: str = ''
@@ -235,11 +224,15 @@ def save_local_config(config: SetupConfig):
     local_file.write_text(config_json)
 
 
-def prompt_text(question: str, default: str) -> str:
+def prompt_text(question: str, default: str, env_var: str) -> str:
     if '\n' in question:
         print(f'{question}\n[default: {default}]: ', end='')
     else:
         print(f'{question} [default: {default}]: ', end='')
+    env_value = os.environ.get(env_var)
+    if env_value:
+        logger.debug(f'Value set from env variable {env_var}: {env_value}')
+        return env_value
     if NON_INTERACTIVE:
         return default
     value = input()
