@@ -15,7 +15,6 @@ from racetrack_client.utils.config import load_config
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.asgi.fastapi import create_fastapi
 from racetrack_commons.api.metrics import setup_metrics_endpoint
-from racetrack_commons.deploy.job_type import list_available_job_types
 from racetrack_commons.plugin.engine import PluginEngine
 
 
@@ -140,8 +139,3 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
             'logs': logs,
             'error': error,
         }
-
-    @api.get('/job_type/versions')
-    def _get_job_type_versions() -> List[str]:
-        """List available job type versions"""
-        return list_available_job_types(plugin_engine)

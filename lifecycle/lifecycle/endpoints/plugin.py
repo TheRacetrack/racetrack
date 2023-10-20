@@ -1,4 +1,3 @@
-from __future__ import annotations
 import asyncio
 import collections
 from typing import List, Optional, Any
@@ -6,7 +5,7 @@ from typing import List, Optional, Any
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, Request
 
-from racetrack_client.utils.request import Requests, parse_response_list
+from lifecycle.server.cache import LifecycleCache
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
@@ -86,8 +85,7 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     @api.get('/plugin/job_type/versions')
     def _get_job_type_versions() -> list[str]:
         """List available job type versions"""
-        r = Requests.get(f'{config.image_builder_url}/api/v1/job_type/versions')
-        return parse_response_list(r, 'Image builder API error')
+        return sorted(LifecycleCache.job_types.keys())
 
     @api.get('/plugin/infrastructure_targets')
     def _get_infrastructure_targets() -> dict[str, PluginManifest]:
@@ -98,8 +96,7 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _get_plugin_trees() -> dict:
         infrastructure_targets: dict[str, PluginManifest] = list_infrastructure_names_with_origins(plugin_engine)
         plugins: list[PluginManifest] = plugin_engine.plugin_manifests
-        r = Requests.get(f'{config.image_builder_url}/api/v1/job_type/versions')
-        job_type_versions: list[str] = parse_response_list(r, 'Image builder API error')
+        job_type_versions: list[str] = sorted(LifecycleCache.job_types.keys())
 
         # Collect instances running on the same infrastructure
         _infrastructure_instances: dict[str, list[str]] = collections.defaultdict(list)
