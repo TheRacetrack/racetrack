@@ -95,7 +95,7 @@ def install_to_docker(config: 'SetupConfig'):
     download_repository_file('sample/python-class/job.yaml', 'sample/python-class/job.yaml')
 
     logger.info('Starting up containers…')
-    shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always', raw_output=True)
+    shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always --wait', raw_output=True)
 
     logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
     shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash utils/wait-for-lifecycle.sh')
