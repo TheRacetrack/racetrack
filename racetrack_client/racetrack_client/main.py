@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List
+from typing import List, Optional, Dict
 
 import typer
 
@@ -59,17 +59,20 @@ def _deploy(
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     force: bool = typer.Option(False, '--force', help='overwrite existing job'),
     build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building job from local files ("local") or from git repository ("git")'),
+    extra_vars: Optional[List[str]] = typer.Option(None, '-e', '--extra-vars', help='key=value pairs overriding manifest values'),
 ):
     """Send request deploying a Job to the Racetrack cluster"""
-    send_deploy_request(workdir, lifecycle_url=remote or _remote, force=force, build_context_method=build_context)
+    send_deploy_request(workdir, lifecycle_url=remote or _remote, force=force, build_context_method=build_context,
+                        extra_vars=_parse_key_value_pairs(extra_vars))
 
 
 @cli.command('validate')
 def _validate(
     path: str = typer.Argument(default='.', help='path to a Job manifest file or to a directory with it'),
+    extra_vars: Optional[List[str]] = typer.Option(None, '-e', '--extra-vars', help='key=value pairs overriding manifest values'),
 ):
     """Validate Job manifest file"""
-    validate_and_show_manifest(path)
+    validate_and_show_manifest(path, extra_vars=_parse_key_value_pairs(extra_vars))
 
 
 @cli.command('logs', no_args_is_help=True)
@@ -131,9 +134,11 @@ def _run_local(
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
     port: int = typer.Option(default=None, show_default=False, help='HTTP port to run the server on'),
     build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building job from local files ("local") or from git repository ("git")'),
+    extra_vars: Optional[List[str]] = typer.Option(None, '-e', '--extra-vars', help='key=value pairs overriding manifest values'),
 ):
     """Run job locally"""
-    run_job_locally(workdir, remote, build_context_method=build_context, port=port)
+    run_job_locally(workdir, remote, build_context_method=build_context, port=port,
+                    extra_vars=_parse_key_value_pairs(extra_vars))
 
 
 @cli.command('version')
@@ -267,3 +272,12 @@ def _call_job(
 ):
     """Call an endpoint of a job"""
     call_job(name, version, remote, endpoint, payload, curl)
+
+
+def _parse_key_value_pairs(extra_vars: Optional[List[str]]) -> Dict[str, str]:
+    key_values: Dict[str, str] = {}
+    for var in extra_vars:
+        parts = var.split('=')
+        assert len(parts) == 2, f'cannot unpack key-value from "{var}"'
+        key_values[parts[0]] = parts[1]
+    return key_values

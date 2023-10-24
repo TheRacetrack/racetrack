@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Iterable, Optional, List
 from collections import defaultdict
 from lifecycle.auth.authorize import list_permitted_families, list_permitted_jobs
@@ -9,11 +8,11 @@ from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.dto_converter import job_model_to_dto, job_family_model_to_dto
 from lifecycle.monitor.monitors import list_cluster_jobs
+from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import metric_jobs_count_by_status
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.scope import AuthScope
-from racetrack_commons.deploy.job_type import list_available_job_types
 from racetrack_commons.deploy.resource import job_resource_name
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
@@ -128,7 +127,7 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
     - if there are extra jobs found in the cluster, called "orphans", they are ignored, but the log warning is written.
     """
     with wrap_context('synchronizing job'):
-        available_job_types: set[str] = set(list_available_job_types(plugin_engine))
+        available_job_types: set[str] = set(LifecycleCache.job_types.keys())
         cluster_jobs_map: dict[str, JobDto] = _generate_job_map(list_cluster_jobs(config, plugin_engine))
         registry_jobs_map: dict[str, JobDto] = _generate_job_map(list_job_registry(config))
         job_status_count: dict[str, int] = defaultdict(int)

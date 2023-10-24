@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Manifest values can be overriden with key-value pairs coming from a command line.
+  It doesn't modify actual file, but its one-time, in-memory version before submitting it.
+  Racetrack client has `--extra-vars KEY=VALUE` parameter (or `-e` in short)
+  that overwrites values found in YAML manifest.
+
+  - `KEY` is the name of field and it can contain dots to refer to a nested field, for example `git.branch=master`.
+  - `VALUE` can be any YAML or JSON object.
+
+  Extra vars parameters can be used multiple times in one command.  
+  Example: `racetrack deploy -e secret_runtime_env_file=.env.local -e git.branch=$(git rev-parse --abbrev-ref HEAD)`  
+  It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.  
+  Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
+  ([#340](https://github.com/TheRacetrack/racetrack/issues/340))
+
+- You can install Racetrack to a standalone host (e.g. EC2 host or fresh VM instance)
+  using the installer script that runs it on the Docker Engine infrastructure.
+  ([#308](https://github.com/TheRacetrack/racetrack/issues/308))
+
 ### Fixed
 - Manifest is validated after updating it on Dashboard.
   Changing primary keys (name or value) is forbidden.

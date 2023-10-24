@@ -37,7 +37,7 @@ Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
 `racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
-Fill in your configuration in the installer's config `utils/setup-wizard/config.yaml`:
+Fill in your configuration in the installer's config `utils/k8s-setup-wizard/config.yaml`:
 ```yaml
 registry_hostname: 'ghcr.io'
 registry_namespace: 'theracetrack/racetrack'
@@ -49,7 +49,7 @@ write_registry_token: 'WRITE_REGISTRY_TOKEN'
 ## Static IP
 
 You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
-To do so, fill it in the installer's config `utils/setup-wizard/config.yaml`:
+To do so, fill it in the installer's config `utils/k8s-setup-wizard/config.yaml`:
 ```yaml
 your_ip: '1.1.1.1'
 ```
@@ -59,13 +59,13 @@ It will be assigned after the first deployment, then you can get back to this st
 
 ## Prepare Kubernetes resources
 
-You may make adjustments in `utils/setup-wizard/config.yaml`.
-Once you're ready, let's run the installer's script `utils/setup-wizard/installer.py`
+You may make adjustments in `utils/k8s-setup-wizard/config.yaml`.
+Once you're ready, let's run the installer's script `utils/k8s-setup-wizard/installer.py`
 
 This will generate the kubernetes resources, based on your configuration,
 and will generate unique, secure database password, authentication secrets and tokens:
 ```sh
-./utils/setup-wizard/installer.py
+./utils/k8s-setup-wizard/installer.py
 ```
 
 If needed, review and make adjustments in **kustomize/generated/** files.
