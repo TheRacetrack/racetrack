@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import io
+import shutil
 import subprocess
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import json
 import logging
 import os
@@ -9,7 +10,7 @@ from pathlib import Path
 import secrets
 import string
 import sys
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 import urllib.request
 
 from racetrack_client.log.logs import configure_logs
@@ -18,7 +19,7 @@ from racetrack_client.utils.request import Requests, ResponseError
 
 logger = logging.getLogger('racetrack')
 
-LOCAL_CONFIG_FILE = (Path() / 'setup.json').absolute()
+LOCAL_CONFIG_FILE = (Path() / os.environ.get('CONFIG_FILE', 'setup.json')).absolute()
 NON_INTERACTIVE: bool = os.environ.get('RT_NON_INTERACTIVE', '0') == '1'
 RT_BRANCH = os.environ.get('RT_BRANCH', 'master')
 GIT_REPOSITORY_PREFIX = f'https://raw.githubusercontent.com/TheRacetrack/racetrack/{RT_BRANCH}/'
@@ -34,11 +35,21 @@ def main():
 
     config: SetupConfig = load_local_config()
 
-    logger.info('Installing Racetrack to local Docker Engine')
-    install_to_docker(config)
+    config.infrastructure = ensure_var_configured(
+        config.infrastructure, 'infrastructure', 'docker',
+        'Choose the infrastructure target to deploy Racetrack [docker, remote-kubernetes]')
+
+    if config.infrastructure == 'docker':
+        install_to_docker(config)
+    elif config.infrastructure == 'remote-kubernetes':
+        install_to_remote_kubernetes(config)
+    else:
+        raise RuntimeError(f'Unsupported infrastructure: {config.infrastructure}')
 
 
 def install_to_docker(config: 'SetupConfig'):
+    logger.info('Installing Racetrack to local Docker Engine')
+
     if not config.external_address:
         host_ips = shell_output('hostname --all-ip-addresses').strip().split(' ')
         logger.info(f'IP addresses for network interfaces on this host: {", ".join(host_ips)}')
@@ -67,22 +78,22 @@ def install_to_docker(config: 'SetupConfig'):
         metrics_path.chmod(0o777)
 
     logger.info('Templating config files…')
-    template_repository_file('utils/standalone-wizard/templates/docker-compose.template.yaml', 'docker-compose.yaml', {
+    template_repository_file('utils/standalone-wizard/docker/docker-compose.template.yaml', 'docker-compose.yaml', {
         'DOCKER_GID': config.docker_gid,
         'PUB_AUTH_TOKEN': config.pub_auth_token,
         'IMAGE_BUILDER_AUTH_TOKEN': config.image_builder_auth_token,
         'POSTGRES_PASSWORD': config.postgres_password,
         'EXTERNAL_ADDRESS': config.external_address,
     })
-    template_repository_file('utils/standalone-wizard/templates/.env.template', '.env', {
+    template_repository_file('utils/standalone-wizard/docker/.env.template', '.env', {
         'POSTGRES_PASSWORD': config.postgres_password,
         'AUTH_KEY': config.auth_key,
         'SECRET_KEY': config.django_secret_key,
     })
-    template_repository_file('utils/standalone-wizard/templates/lifecycle.template.yaml', 'config/lifecycle.yaml', {
+    template_repository_file('utils/standalone-wizard/docker/lifecycle.template.yaml', 'config/lifecycle.yaml', {
         'EXTERNAL_ADDRESS': config.external_address,
     })
-    download_repository_file('utils/standalone-wizard/templates/Makefile', 'Makefile')
+    download_repository_file('utils/standalone-wizard/docker/Makefile', 'Makefile')
     download_repository_file('image_builder/tests/sample/compose.yaml', 'config/image_builder.yaml')
     download_repository_file('utils/wait-for-lifecycle.sh', 'utils/wait-for-lifecycle.sh')
     download_repository_file('postgres/init.sql', 'config/postgres/init.sql')
@@ -146,6 +157,93 @@ def verify_docker():
         raise e
 
 
+def install_to_remote_kubernetes(config: 'SetupConfig'):
+    logger.info('Installing Racetrack\'s remote gateway to remote Kubernetes')
+
+    k8s_config = config.remote_kubernetes_config
+    k8s_config.registry_hostname = ensure_var_configured(
+        k8s_config.registry_hostname, 'registry_hostname', 'ghcr.io',
+        'Enter Docker registry hostname (to get the job images from)')
+    k8s_config.registry_username = ensure_var_configured(
+        k8s_config.registry_username, 'registry_username', 'racetrack-registry',
+        'Enter Docker registry username')
+    k8s_config.read_registry_token = ensure_var_configured(
+        k8s_config.read_registry_token, 'read_registry_token', '',
+        'Enter token for reading Docker Registry')
+    k8s_config.write_registry_token = ensure_var_configured(
+        k8s_config.write_registry_token, 'read_registry_token', '',
+        'Enter token for reading Docker Registry')
+    k8s_config.public_ip = ensure_var_configured(
+        k8s_config.public_ip, 'public_ip', '',
+        'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
+    k8s_config.pub_remote_image = ensure_var_configured(
+        k8s_config.pub_remote_image, 'pub_remote_image', 'ghcr.io/theracetrack/plugin-remote-kubernetes/pub-remote:latest',
+        'Enter name of the Docker image of remote Pub')
+    k8s_config.kubernetes_namespace = ensure_var_configured(
+        k8s_config.kubernetes_namespace, 'kubernetes_namespace', 'racetrack',
+        'Enter namespace for the Kubernetes resources')
+    save_local_config(config)
+
+    if not k8s_config.remote_gateway_token:
+        k8s_config.remote_gateway_token = generate_password()
+        logger.info(f'Generated remote gateway token: {k8s_config.remote_gateway_token}')
+        save_local_config(config)
+
+    generated_dir = Path('generated')
+    if generated_dir.exists():
+        if prompt_bool(f'directory {generated_dir} already exists. Would you like to clean it?'):
+            logger.info(f'cleaning up directory "{generated_dir}"')
+            shutil.rmtree(generated_dir)
+    generated_dir.mkdir(parents=True, exist_ok=True)
+
+    registry_secrets_content = shell_output(f'''kubectl create secret docker-registry docker-registry-read-secret \\
+        --docker-server="{k8s_config.registry_hostname}" \\
+        --docker-username="{k8s_config.registry_username}" \\
+        --docker-password="{k8s_config.read_registry_token}" \\
+        --namespace=racetrack \\
+        --dry-run=client -oyaml''').strip()
+    registry_secrets_file = generated_dir / 'docker-registry-secret.yaml'
+    registry_secrets_file.write_text(registry_secrets_content)
+    logger.debug(f"encoded Docker registry secret: {registry_secrets_file}")
+
+    if prompt_bool('Would you like to create namespace in kubernetes?'):
+        template_repository_file('utils/standalone-wizard/remote-kubernetes/namespace.yaml', 'generated/namespace.yaml', {
+            'NAMESPACE': k8s_config.kubernetes_namespace,
+        })
+
+    if prompt_bool('Would you like to configure roles so that pods can speak to local Kubernetes API inside the cluster?'):
+        template_repository_file('utils/standalone-wizard/remote-kubernetes/roles.yaml', 'generated/roles.yaml', {
+            'NAMESPACE': k8s_config.kubernetes_namespace,
+        })
+
+    if prompt_bool('Would you like to configure Ingress and Ingress controller to direct incoming traffic?'):
+        download_repository_file('utils/standalone-wizard/remote-kubernetes/ingress-controller.yaml', 'generated/ingress-controller.yaml')
+        template_repository_file('utils/standalone-wizard/remote-kubernetes/ingress.yaml', 'generated/ingress.yaml', {
+            'NAMESPACE': k8s_config.kubernetes_namespace,
+        })
+
+    template_repository_file('utils/standalone-wizard/remote-kubernetes/remote-pub.yaml', 'config/remote-pub.yaml', {
+        'PUB_REMOTE_IMAGE': k8s_config.pub_remote_image,
+        'REMOTE_GATEWAY_TOKEN': k8s_config.remote_gateway_token,
+        'NAMESPACE': k8s_config.kubernetes_namespace,
+    })
+
+    cmd = 'kubectl apply -f generated'
+    if prompt_bool(f'Attempting to execute "{cmd}". Do you confirm?'):
+        shell(cmd, raw_output=True)
+
+    template_repository_file('utils/standalone-wizard/remote-kubernetes/plugin-config.yaml', 'plugin-config.yaml', {
+        'public_ip': k8s_config.public_ip,
+        'remote_gateway_token': k8s_config.remote_gateway_token,
+        'kubernetes_namespace': k8s_config.kubernetes_namespace,
+        'registry_hostname': k8s_config.registry_hostname,
+        'registry_username': k8s_config.registry_username,
+        'write_registry_token': k8s_config.write_registry_token,
+    })
+    logger.info("YAML configuration of the plugin:")
+    print(Path('plugin-config.yaml').read_text())
+
+
 def _generate_secrets(config: 'SetupConfig'):
     if not config.postgres_password:
         config.postgres_password = generate_password()
@@ -203,6 +301,19 @@ class SetupConfig:
     external_address: str = ''
     admin_password: str = ''
     admin_auth_token: str = ''
+    remote_kubernetes_config: 'RemoteKubernetesConfig' = field(default_factory=lambda: RemoteKubernetesConfig())
+
+
+@dataclass
+class RemoteKubernetesConfig:
+    registry_hostname: str = ''
+    registry_username: str = ''
+    read_registry_token: str = ''
+    write_registry_token: str = ''
+    public_ip: str = ''
+    remote_gateway_token: str = ''
+    pub_remote_image: str = ''
+    kubernetes_namespace: str = ''
 
 
 def load_local_config() -> SetupConfig:
@@ -225,21 +336,23 @@ def save_local_config(config: SetupConfig):
 
 
 def prompt_text(question: str, default: str, env_var: str) -> str:
-    if '\n' in question:
-        print(f'{question}\n[default: {default}]: ', end='')
-    else:
-        print(f'{question} [default: {default}]: ', end='')
-    env_value = os.environ.get(env_var)
-    if env_value:
-        logger.debug(f'Value set from env variable {env_var}: {env_value}')
-        return env_value
-    if NON_INTERACTIVE:
-        return default
-    value = input()
-    if value == '':
-        logger.debug(f'Default value set: {default}')
-        return default
-    return value
+    while True:
+        if '\n' in question:
+            print(f'{question}\n[default: {default}]: ', end='')
+        else:
+            print(f'{question} [default: {default}]: ', end='')
+        env_value = os.environ.get(env_var)
+        if env_value:
+            logger.debug(f'Value set from env variable {env_var}: {env_value}')
+            return env_value
+        if NON_INTERACTIVE:
+            return default
+        value = input()
+        if value == '' and default:
+            logger.debug(f'Default value set: {default}')
+            return default
+        if value:
+            return value
 
 
 def prompt_bool(question: str, default: bool = True) -> bool:
@@ -263,6 +376,20 @@ def prompt_bool(question: str, default: bool = True) -> bool:
             return False
 
 
+def ensure_var_configured(
+    current_value: str,
+    short_field_name: str,
+    default: str,
+    prompt_name: str,
+) -> str:
+    if not current_value:
+        env_var = f'RT_{short_field_name}'.upper()
+        return prompt_text(prompt_name, default, env_var)
+    else:
+        logger.debug(f'{short_field_name} set to: {current_value}')
+        return current_value
+
+
 def generate_password(length: int = 32) -> str:
     assert length >= 16, 'password should be at least 16 characters long'
     alphabet = string.ascii_letters + string.digits
@@ -281,7 +408,7 @@ def template_repository_file(src_relative_url: str, dst_path: str, context_vars:
     dst_file.write_text(outcome)
 
 
-def download_repository_file(src_relative_url: str, dst_path: str):
+def download_repository_file(src_relative_url: str, dst_path: Union[str, Path]):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
     logger.debug(f'Downloading {src_file_url}')
     with urllib.request.urlopen(src_file_url) as response:
