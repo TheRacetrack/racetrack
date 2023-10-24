@@ -1,10 +1,14 @@
 from typing import Iterable, List, Optional
-from lifecycle.auth.subject import get_auth_subject_by_job_family
 
+import yaml
+
+from lifecycle.auth.subject import get_auth_subject_by_job_family
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
+from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.errors import EntityNotFound
-from racetrack_client.utils.datamodel import datamodel_to_yaml_str
+from racetrack_client.manifest.load import load_manifest_from_dict
+from racetrack_client.manifest.validate import validate_manifest
 from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_client.log.logs import get_logger
@@ -161,6 +165,15 @@ def update_job_model(job: models.Job, job_dto: JobDto):
 
 @db_access
 def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
+    with wrap_context('parsing YAML'):
+        manifest_dict = yaml.safe_load(manifest_yaml)
+
+    with wrap_context('manifest validation'):
+        manifest = load_manifest_from_dict(manifest_dict)
+        validate_manifest(manifest)
+        assert manifest.name == job_name, 'job name cannot be changed'
+        assert manifest.version == job_version, 'job version cannot be changed'
+
     job_model = read_job_model(job_name, job_version)
     job_model.manifest = manifest_yaml
     job_model.save()
