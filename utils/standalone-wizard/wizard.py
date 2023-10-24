@@ -2,7 +2,6 @@
 import io
 import shutil
 import subprocess
-from dataclasses import dataclass, asdict, field
 import json
 import logging
 import os
@@ -12,6 +11,8 @@ import string
 import sys
 from typing import Dict, Optional, Union
 import urllib.request
+
+from pydantic import BaseModel
 
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.utils.shell import shell_output, CommandError
@@ -35,9 +36,15 @@ def main():
 
     config: SetupConfig = load_local_config()
 
-    config.infrastructure = ensure_var_configured(
-        config.infrastructure, 'infrastructure', 'docker',
-        'Choose the infrastructure target to deploy Racetrack [docker, remote-kubernetes]')
+    config.infrastructure = ensure_var_configured(config.infrastructure, 'infrastructure', '1', '''
+Choose the infrastructure target to deploy Racetrack:
+1. docker - deploy Racetrack to in-place Docker Engine.
+2. remote-kubernetes - deploy remote Pub gateway to external Kubernetes cluster.  
+'''.strip())
+    config.infrastructure = {
+        '1': 'docker',
+        '2': 'remote-kubernetes',
+    }.get(config.infrastructure, config.infrastructure)
 
     if config.infrastructure == 'docker':
         install_to_docker(config)
@@ -60,12 +67,12 @@ def install_to_docker(config: 'SetupConfig'):
         )
         save_local_config(config)
     else:
-        logger.debug(f'External remote address set to: {config.external_address}')
+        logger.debug(f'External remote address set to {config.external_address}')
 
     verify_docker()
     if not config.docker_gid:
         config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
-        logger.debug(f'Docker group ID set to: {config.docker_gid}')
+        logger.debug(f'Docker group ID set to {config.docker_gid}')
 
     _generate_secrets(config)
 
@@ -172,7 +179,7 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         'Enter token for reading Docker Registry')
     k8s_config.write_registry_token = ensure_var_configured(
         k8s_config.write_registry_token, 'read_registry_token', '',
-        'Enter token for reading Docker Registry')
+        'Enter token for writing to Docker Registry')
     k8s_config.public_ip = ensure_var_configured(
         k8s_config.public_ip, 'public_ip', '',
         'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
@@ -182,12 +189,11 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
     k8s_config.kubernetes_namespace = ensure_var_configured(
         k8s_config.kubernetes_namespace, 'kubernetes_namespace', 'racetrack',
         'Enter namespace for the Kubernetes resources')
-    save_local_config(config)
 
     if not k8s_config.remote_gateway_token:
         k8s_config.remote_gateway_token = generate_password()
         logger.info(f'Generated remote gateway token: {k8s_config.remote_gateway_token}')
-        save_local_config(config)
+    save_local_config(config)
 
     generated_dir = Path('generated')
     if generated_dir.exists():
@@ -206,7 +212,7 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
     registry_secrets_file.write_text(registry_secrets_content)
     logger.debug(f"encoded Docker registry secret: {registry_secrets_file}")
 
-    if prompt_bool('Would you like to create namespace in kubernetes?'):
+    if prompt_bool('Would you like to create a namespace in kubernetes?'):
         template_repository_file('utils/standalone-wizard/remote-kubernetes/namespace.yaml', 'generated/namespace.yaml', {
             'NAMESPACE': k8s_config.kubernetes_namespace,
         })
@@ -216,21 +222,22 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
             'NAMESPACE': k8s_config.kubernetes_namespace,
         })
 
-    if prompt_bool('Would you like to configure Ingress and Ingress controller to direct incoming traffic?'):
+    if prompt_bool('Would you like to configure Ingress and Ingress Controller to direct incoming traffic?'):
         download_repository_file('utils/standalone-wizard/remote-kubernetes/ingress-controller.yaml', 'generated/ingress-controller.yaml')
         template_repository_file('utils/standalone-wizard/remote-kubernetes/ingress.yaml', 'generated/ingress.yaml', {
             'NAMESPACE': k8s_config.kubernetes_namespace,
         })
 
-    template_repository_file('utils/standalone-wizard/remote-kubernetes/remote-pub.yaml', 'config/remote-pub.yaml', {
+    template_repository_file('utils/standalone-wizard/remote-kubernetes/remote-pub.yaml', 'generated/remote-pub.yaml', {
         'PUB_REMOTE_IMAGE': k8s_config.pub_remote_image,
         'REMOTE_GATEWAY_TOKEN': k8s_config.remote_gateway_token,
         'NAMESPACE': k8s_config.kubernetes_namespace,
     })
 
     cmd = 'kubectl apply -f generated'
-    if prompt_bool(f'Attempting to execute "{cmd}". Do you confirm?'):
+    if prompt_bool(f'Attempting to execute command "{cmd}". Do you confirm?'):
         shell(cmd, raw_output=True)
+        logger.info("Remote Pub Gateway is ready.")
 
     template_repository_file('utils/standalone-wizard/remote-kubernetes/plugin-config.yaml', 'plugin-config.yaml', {
         'public_ip': k8s_config.public_ip,
@@ -240,7 +247,7 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         'registry_username': k8s_config.registry_username,
         'write_registry_token': k8s_config.write_registry_token,
     })
-    logger.info("YAML configuration of the plugin:")
+    logger.info("Set the following configuration of the remote-kubernetes plugin:")
     print(Path('plugin-config.yaml').read_text())
 
 
@@ -289,23 +296,7 @@ def change_admin_password(auth_token: str, old_pass: str, new_pass: str):
     logger.info('admin password changed')
 
 
-@dataclass
-class SetupConfig:
-    infrastructure: str = ''
-    postgres_password: str = ''
-    django_secret_key: str = ''
-    auth_key: str = ''
-    docker_gid: str = ''
-    pub_auth_token: str = ''
-    image_builder_auth_token: str = ''
-    external_address: str = ''
-    admin_password: str = ''
-    admin_auth_token: str = ''
-    remote_kubernetes_config: 'RemoteKubernetesConfig' = field(default_factory=lambda: RemoteKubernetesConfig())
-
-
-@dataclass
-class RemoteKubernetesConfig:
+class RemoteKubernetesConfig(BaseModel):
     registry_hostname: str = ''
     registry_username: str = ''
     read_registry_token: str = ''
@@ -316,12 +307,26 @@ class RemoteKubernetesConfig:
     kubernetes_namespace: str = ''
 
 
+class SetupConfig(BaseModel):
+    infrastructure: str = ''
+    postgres_password: str = ''
+    django_secret_key: str = ''
+    auth_key: str = ''
+    docker_gid: str = ''
+    pub_auth_token: str = ''
+    image_builder_auth_token: str = ''
+    external_address: str = ''
+    admin_password: str = ''
+    admin_auth_token: str = ''
+    remote_kubernetes_config: RemoteKubernetesConfig = RemoteKubernetesConfig()
+
+
 def load_local_config() -> SetupConfig:
     local_file = Path(LOCAL_CONFIG_FILE)
     if local_file.is_file():
         logger.info(f'Using local setup config found at {local_file.absolute()}')
         config_dict = json.loads(local_file.read_text())
-        return SetupConfig(**config_dict)
+        return SetupConfig.parse_obj(config_dict)
     else:
         config = SetupConfig()
         save_local_config(config)
@@ -330,17 +335,20 @@ def load_local_config() -> SetupConfig:
 
 
 def save_local_config(config: SetupConfig):
-    config_json: str = json.dumps(asdict(config), indent=4)
+    config_json: str = json.dumps(config.dict(), indent=4)
     local_file = Path(LOCAL_CONFIG_FILE)
     local_file.write_text(config_json)
 
 
 def prompt_text(question: str, default: str, env_var: str) -> str:
     while True:
-        if '\n' in question:
-            print(f'{question}\n[default: {default}]: ', end='')
+        if not default:
+            default_info = ''
+        elif '\n' in question:
+            default_info = f'\n[default: {default}]'
         else:
-            print(f'{question} [default: {default}]: ', end='')
+            default_info = f' [default: {default}]'
+        print(f'{question}{default_info}: ', end='')
         env_value = os.environ.get(env_var)
         if env_value:
             logger.debug(f'Value set from env variable {env_var}: {env_value}')
@@ -386,7 +394,7 @@ def ensure_var_configured(
         env_var = f'RT_{short_field_name}'.upper()
         return prompt_text(prompt_name, default, env_var)
     else:
-        logger.debug(f'{short_field_name} set to: {current_value}')
+        logger.debug(f'{short_field_name} set to {current_value}')
         return current_value
 
 
