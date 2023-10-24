@@ -1,10 +1,12 @@
 # Remote Kubernetes Gateway
 Once you have Racetrack up and running somewhere,
 you might want to connect it to an external Kubernetes cluster to keep your Jobs there.
-In other words, you can distribute service between 2 separate infrastructures:
+In other words, you can distribute services between 2 separate infrastructures:
 
-- main hub - hosting core Racetrack services
-- remote jobs - a cluster hosting jobs and remote Pub gateway that protects jobs from unauthorized access.
+- Main Hub - hosting core Racetrack services
+- Remote Jobs cluster - an infrastructure hosting jobs and remote Pub gateway.
+
+Remote Pub gateway protects Jobs from unauthorized access.
 
 ## Requirements
 
@@ -25,7 +27,7 @@ Follow the installation steps. Choose `remote-kubernetes` infrastructure target.
 
 ## Install plugin
 
-On your main hub Racetrack, install 
+On your Racetrack's "Main Hub", install 
 [remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes).
 You can do it with:
 ```
@@ -45,3 +47,5 @@ docker:
   username: 'DOCKER_USERNAME'
   password: 'READ_WRITE_TOKEN'
 ```
+
+After that, you should see a new infrastructure target available in Racetrack.

@@ -68,6 +68,7 @@ nav:
   - Deployment:
     - Installation to standalone host: docs/deployment/standalone-host.md
     - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
+    - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md
     - Administering: docs/admin.md
   - Changelog: docs/CHANGELOG.md
   - Glossary: docs/glossary.md
