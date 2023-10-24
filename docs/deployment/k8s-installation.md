@@ -87,6 +87,7 @@ After that, verify the status of your deployments using one of your favorite too
 
 Assuming your Ingress Controller is now deployed at public IP `$YOUR_IP`,
 you can look up the following services:
+
 - **Racetrack Dashboard** at `http://$YOUR_IP/dashboard`,
 - **Lifecycle** at `http://$YOUR_IP/lifecycle`,
 - **PUB** at `http://$YOUR_IP/pub`,
