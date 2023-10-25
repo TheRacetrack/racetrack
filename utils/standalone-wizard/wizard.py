@@ -36,15 +36,13 @@ def main():
 
     config: SetupConfig = load_local_config()
 
-    config.infrastructure = ensure_var_configured(config.infrastructure, 'infrastructure', '1', '''
-Choose the infrastructure target to deploy Racetrack:
-1. docker - deploy Racetrack to in-place Docker Engine.
-2. remote-kubernetes - deploy remote Pub gateway to external Kubernetes cluster.  
-'''.strip())
-    config.infrastructure = {
-        '1': 'docker',
-        '2': 'remote-kubernetes',
-    }.get(config.infrastructure, config.infrastructure)
+    if not config.infrastructure:
+        config.infrastructure = prompt_text_choice('Choose the infrastructure target to deploy Racetrack:', {
+            'docker': 'Deploy Racetrack to in-place Docker Engine.',
+            'remote-kubernetes': 'Deploy remote Pub gateway to external Kubernetes cluster.',
+        }, 'docker', 'RT_INFRASTRUCTURE')
+    else:
+        logger.debug(f'infrastructure set to {config.infrastructure}')
 
     if config.infrastructure == 'docker':
         install_to_docker(config)
@@ -197,7 +195,7 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
 
     generated_dir = Path('generated')
     if generated_dir.exists():
-        if prompt_bool(f'directory {generated_dir} already exists. Would you like to clean it?'):
+        if prompt_bool(f'Directory "{generated_dir}" already exists. Would you like to clear it?'):
             logger.info(f'cleaning up directory "{generated_dir}"')
             shutil.rmtree(generated_dir)
     generated_dir.mkdir(parents=True, exist_ok=True)
@@ -210,9 +208,9 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         --dry-run=client -oyaml''').strip()
     registry_secrets_file = generated_dir / 'docker-registry-secret.yaml'
     registry_secrets_file.write_text(registry_secrets_content)
-    logger.debug(f"encoded Docker registry secret: {registry_secrets_file}")
+    logger.debug(f"Docker registry secret encoded at {registry_secrets_file}")
 
-    if prompt_bool('Would you like to create a namespace in kubernetes?'):
+    if prompt_bool('Would you like to create a namespace in kubernetes for Racetrack resources?'):
         template_repository_file('utils/standalone-wizard/remote-kubernetes/namespace.yaml', 'generated/namespace.yaml', {
             'NAMESPACE': k8s_config.kubernetes_namespace,
         })
@@ -233,8 +231,9 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         'REMOTE_GATEWAY_TOKEN': k8s_config.remote_gateway_token,
         'NAMESPACE': k8s_config.kubernetes_namespace,
     })
+    logger.info(f'Kubernetes resources created at "{generated_dir.absolute()}". Please review them before applying.')
 
-    cmd = 'kubectl apply -f generated'
+    cmd = f'kubectl apply -f {generated_dir}'
     if prompt_bool(f'Attempting to execute command "{cmd}". Do you confirm?'):
         shell(cmd, raw_output=True)
         logger.info("Remote Pub Gateway is ready.")
@@ -247,7 +246,7 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         'registry_username': k8s_config.registry_username,
         'write_registry_token': k8s_config.write_registry_token,
     })
-    logger.info("Set the following configuration of the remote-kubernetes plugin:")
+    logger.info("Configure remote-kubernetes plugin with the following configuration:")
     print(Path('plugin-config.yaml').read_text())
 
 
@@ -382,6 +381,31 @@ def prompt_bool(question: str, default: bool = True) -> bool:
             return True
         if value.lower() == 'n':
             return False
+
+
+def prompt_text_choice(question: str, answers: Dict[str, str], default: str, env_var: str) -> str:
+    prompt = question.strip()
+    answer_key_by_index: Dict[str, str] = {}
+    for index, answer_key in enumerate(answers.keys()):
+        answer_prompt = answers[answer_key]
+        answer_key_by_index[str(index + 1)] = answer_key
+        prompt += f'\n  {index+1}. {answer_key} - {answer_prompt}'
+    print(f'{prompt}\n[1-{len(answers)}] [default: {default}]:', end='')
+    env_value = os.environ.get(env_var)
+    if env_value:
+        logger.debug(f'Value set from env variable {env_var}: {env_value}')
+        return env_value
+    if NON_INTERACTIVE:
+        return default
+    while True:
+        value = input()
+        if value == '' and default:
+            logger.debug(f'Default value set: {default}')
+            return default
+        if value in answers.values():
+            return value
+        if value in answer_key_by_index.keys():
+            return answer_key_by_index.get(value)
 
 
 def ensure_var_configured(
