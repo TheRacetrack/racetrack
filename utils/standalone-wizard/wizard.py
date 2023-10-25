@@ -38,14 +38,17 @@ def main():
 
     if not config.infrastructure:
         config.infrastructure = prompt_text_choice('Choose the infrastructure target to deploy Racetrack:', {
-            'docker': 'Deploy Racetrack to in-place Docker Engine.',
-            'remote-kubernetes': 'Deploy remote Pub gateway to external Kubernetes cluster.',
+            'docker': 'Deploy Racetrack (and jobs) to in-place Docker Engine.',
+            'kubernetes': 'Deploy Racetrack (and jobs) to Kubernetes.',
+            'remote-kubernetes': 'Deploy remote Pub gateway to external Kubernetes cluster. (Connect another Kubernetes with the running Racetrack)',
         }, 'docker', 'RT_INFRASTRUCTURE')
     else:
         logger.debug(f'infrastructure set to {config.infrastructure}')
 
     if config.infrastructure == 'docker':
         install_to_docker(config)
+    elif config.infrastructure == 'kubernetes':
+        install_to_kubernetes(config)
     elif config.infrastructure == 'remote-kubernetes':
         install_to_remote_kubernetes(config)
     else:
@@ -141,45 +144,127 @@ To deploy here, configure your racetrack client: racetrack set remote {config.ex
 ''')
 
 
-def verify_docker():
-    logger.info('Verifying Docker installation…')
-    try:
-        shell('docker --version', print_stdout=False)
-    except CommandError as e:
-        logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
-        raise e
+def install_to_kubernetes(config: 'SetupConfig'):
+    logger.info('Installing Racetrack to Kubernetes')
+
+    config.registry_hostname = ensure_var_configured(
+        config.registry_hostname, 'registry_hostname', 'ghcr.io',
+        'Enter Docker registry hostname (to get the job images from)')
+    config.registry_namespace = ensure_var_configured(
+        config.registry_namespace, 'registry_namespace', 'theracetrack/racetrack',
+        'Enter Docker registry namespace')
+    config.registry_username = ensure_var_configured(
+        config.registry_username, 'registry_username', 'racetrack-registry',
+        'Enter Docker registry username')
+    config.read_registry_token = ensure_var_configured(
+        config.read_registry_token, 'read_registry_token', '',
+        'Enter token for reading from Docker Registry')
+    config.write_registry_token = ensure_var_configured(
+        config.write_registry_token, 'write_registry_token', '',
+        'Enter token for writing to Docker Registry')
+    config.public_ip = ensure_var_configured(
+        config.public_ip, 'public_ip', '',
+        'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
+    save_local_config(config)
 
     try:
-        shell('docker ps', print_stdout=False)
+        shell('kubectl config get-contexts')
     except CommandError as e:
-        logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
+        logger.error('kubectl is unavailable.')
         raise e
+    kubectl_context = shell_output('kubectl config current-context').strip()
+    logger.info(f'Current kubectl context is {kubectl_context}')
+    shell_output('kubectl config set-context --current --namespace=racetrack')
 
-    try:
-        shell('docker compose version', print_stdout=False)
-    except CommandError as e:
-        logger.error('Please install Docker Compose plugin: https://docs.docker.com/compose/install/linux/')
-        raise e
+    _generate_secrets(config)
+
+    generated_dir = get_generated_dir()
+    registry_secrets_content = shell_output(f'''kubectl create secret docker-registry docker-registry-read-secret \\
+        --docker-server="{config.registry_hostname}" \\
+        --docker-username="{config.registry_username}" \\
+        --docker-password="{config.read_registry_token}" \\
+        --namespace=racetrack \\
+        --dry-run=client -oyaml''').strip()
+    registry_secrets_content += '\n---\n'
+    registry_secrets_content += shell_output(f'''kubectl create secret docker-registry docker-registry-write-secret \\
+        --docker-server="{config.registry_hostname}" \\
+        --docker-username="{config.registry_username}" \\
+        --docker-password="{config.write_registry_token}" \\
+        --namespace=racetrack \\
+        --dry-run=client -oyaml''').strip()
+    registry_secrets_file = generated_dir / 'docker-registry-secret.yaml'
+    registry_secrets_file.write_text(registry_secrets_content)
+    logger.debug(f"encoded Docker registry secrets: {registry_secrets_file}")
+
+    context_vars = {
+        'POSTGRES_PASSWORD': config.postgres_password,
+        'SECRET_KEY': config.django_secret_key,
+        'AUTH_KEY': config.auth_key,
+        'public_ip': config.public_ip,
+        'registry_hostname': config.registry_hostname,
+        'registry_namespace': config.registry_namespace,
+        'IMAGE_BUILDER_TOKEN': config.image_builder_auth_token,
+        'PUB_TOKEN': config.pub_auth_token,
+    }
+    template_files = [
+        'dashboard.yaml',
+        'grafana.yaml',
+        'image-builder.config.yaml',
+        'image-builder.yaml',
+        'ingress.yaml',
+        'ingress-controller.yaml',
+        'kustomization.yaml',
+        'lifecycle.config.yaml',
+        'lifecycle.env',
+        'lifecycle.yaml',
+        'lifecycle-supervisor.yaml',
+        'namespace.yaml',
+        'pgbouncer.env',
+        'postgres.env',
+        'postgres.yaml',
+        'priorities.yaml',
+        'prometheus.yaml',
+        'pub.yaml',
+        'roles.yaml',
+        'volumes.yaml',
+        'config/grafana/datasource.yaml',
+        'config/grafana/dashboards-all.yaml',
+        'config/prometheus/prometheus.yaml',
+    ]
+    for template_file in template_files:
+        template_repository_file(f'utils/standalone-wizard/kubernetes/{template_file}', f'generated/{template_file}', context_vars)
+    logger.info(f'Kubernetes resources created at "{generated_dir.absolute()}". Please review them before applying.')
+
+    cmd = f'kubectl apply -k {generated_dir}/'
+    if prompt_bool(f'Attempting to execute command "{cmd}". Do you confirm?'):
+        shell(cmd, raw_output=True)
+        logger.info("Racetrack has been deployed.")
+
+    logger.info('Verifying installation…')
+    shell('kubectl get pods', raw_output=True)
+
+    logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
+    shell(f'LIFECYCLE_URL=http://{config.public_ip} bash utils/wait-for-lifecycle.sh')
 
 
 def install_to_remote_kubernetes(config: 'SetupConfig'):
     logger.info('Installing Racetrack\'s remote gateway to remote Kubernetes')
 
-    k8s_config = config.remote_kubernetes_config
-    k8s_config.registry_hostname = ensure_var_configured(
-        k8s_config.registry_hostname, 'registry_hostname', 'ghcr.io',
+    k8s_config = config.kubernetes_config
+    config.registry_hostname = ensure_var_configured(
+        config.registry_hostname, 'registry_hostname', 'ghcr.io',
         'Enter Docker registry hostname (to get the job images from)')
-    k8s_config.registry_username = ensure_var_configured(
-        k8s_config.registry_username, 'registry_username', 'racetrack-registry',
+    config.registry_username = ensure_var_configured(
+        config.registry_username, 'registry_username', 'racetrack-registry',
         'Enter Docker registry username')
-    k8s_config.read_registry_token = ensure_var_configured(
-        k8s_config.read_registry_token, 'read_registry_token', '',
-        'Enter token for reading Docker Registry')
-    k8s_config.write_registry_token = ensure_var_configured(
-        k8s_config.write_registry_token, 'read_registry_token', '',
+    config.read_registry_token = ensure_var_configured(
+        config.read_registry_token, 'read_registry_token', '',
+        'Enter token for reading from Docker Registry')
+    config.write_registry_token = ensure_var_configured(
+        config.write_registry_token, 'write_registry_token', '',
         'Enter token for writing to Docker Registry')
-    k8s_config.public_ip = ensure_var_configured(
-        k8s_config.public_ip, 'public_ip', '',
+    config.public_ip = ensure_var_configured(
+        config.public_ip, 'public_ip', '',
         'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
     k8s_config.pub_remote_image = ensure_var_configured(
         k8s_config.pub_remote_image, 'pub_remote_image', 'ghcr.io/theracetrack/plugin-remote-kubernetes/pub-remote:latest',
@@ -193,17 +278,11 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         logger.info(f'Generated remote gateway token: {k8s_config.remote_gateway_token}')
     save_local_config(config)
 
-    generated_dir = Path('generated')
-    if generated_dir.exists():
-        if prompt_bool(f'Directory "{generated_dir}" already exists. Would you like to clear it?'):
-            logger.info(f'cleaning up directory "{generated_dir}"')
-            shutil.rmtree(generated_dir)
-    generated_dir.mkdir(parents=True, exist_ok=True)
-
+    generated_dir = get_generated_dir()
     registry_secrets_content = shell_output(f'''kubectl create secret docker-registry docker-registry-read-secret \\
-        --docker-server="{k8s_config.registry_hostname}" \\
-        --docker-username="{k8s_config.registry_username}" \\
-        --docker-password="{k8s_config.read_registry_token}" \\
+        --docker-server="{config.registry_hostname}" \\
+        --docker-username="{config.registry_username}" \\
+        --docker-password="{config.read_registry_token}" \\
         --namespace=racetrack \\
         --dry-run=client -oyaml''').strip()
     registry_secrets_file = generated_dir / 'docker-registry-secret.yaml'
@@ -239,15 +318,36 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         logger.info("Remote Pub Gateway is ready.")
 
     template_repository_file('utils/standalone-wizard/remote-kubernetes/plugin-config.yaml', 'plugin-config.yaml', {
-        'public_ip': k8s_config.public_ip,
+        'public_ip': config.public_ip,
         'remote_gateway_token': k8s_config.remote_gateway_token,
         'kubernetes_namespace': k8s_config.kubernetes_namespace,
-        'registry_hostname': k8s_config.registry_hostname,
-        'registry_username': k8s_config.registry_username,
-        'write_registry_token': k8s_config.write_registry_token,
+        'registry_hostname': config.registry_hostname,
+        'registry_username': config.registry_username,
+        'write_registry_token': config.write_registry_token,
     })
     logger.info("Configure remote-kubernetes plugin with the following configuration:")
     print(Path('plugin-config.yaml').read_text())
+
+
+def verify_docker():
+    logger.info('Verifying Docker installation…')
+    try:
+        shell('docker --version', print_stdout=False)
+    except CommandError as e:
+        logger.error('Docker is unavailable. Please install Docker Engine: https://docs.docker.com/engine/install/ubuntu/')
+        raise e
+
+    try:
+        shell('docker ps', print_stdout=False)
+    except CommandError as e:
+        logger.error('Docker is not managed by this user. Please manage Docker as a non-root user: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user')
+        raise e
+
+    try:
+        shell('docker compose version', print_stdout=False)
+    except CommandError as e:
+        logger.error('Please install Docker Compose plugin: https://docs.docker.com/compose/install/linux/')
+        raise e
 
 
 def _generate_secrets(config: 'SetupConfig'):
@@ -295,12 +395,7 @@ def change_admin_password(auth_token: str, old_pass: str, new_pass: str):
     logger.info('admin password changed')
 
 
-class RemoteKubernetesConfig(BaseModel):
-    registry_hostname: str = ''
-    registry_username: str = ''
-    read_registry_token: str = ''
-    write_registry_token: str = ''
-    public_ip: str = ''
+class KubernetesConfig(BaseModel):
     remote_gateway_token: str = ''
     pub_remote_image: str = ''
     kubernetes_namespace: str = ''
@@ -317,7 +412,13 @@ class SetupConfig(BaseModel):
     external_address: str = ''
     admin_password: str = ''
     admin_auth_token: str = ''
-    remote_kubernetes_config: RemoteKubernetesConfig = RemoteKubernetesConfig()
+    registry_hostname: str = ''
+    registry_username: str = ''
+    read_registry_token: str = ''
+    write_registry_token: str = ''
+    registry_namespace: str = ''
+    public_ip: str = ''
+    kubernetes_config: KubernetesConfig = KubernetesConfig()
 
 
 def load_local_config() -> SetupConfig:
@@ -390,7 +491,6 @@ def prompt_text_choice(question: str, answers: Dict[str, str], default: str, env
         answer_prompt = answers[answer_key]
         answer_key_by_index[str(index + 1)] = answer_key
         prompt += f'\n  {index+1}. {answer_key} - {answer_prompt}'
-    print(f'{prompt}\n[1-{len(answers)}] [default: {default}]:', end='')
     env_value = os.environ.get(env_var)
     if env_value:
         logger.debug(f'Value set from env variable {env_var}: {env_value}')
@@ -398,11 +498,12 @@ def prompt_text_choice(question: str, answers: Dict[str, str], default: str, env
     if NON_INTERACTIVE:
         return default
     while True:
+        print(f'{prompt}\n[1-{len(answers)}] [default: {default}]: ', end='')
         value = input()
         if value == '' and default:
             logger.debug(f'Default value set: {default}')
             return default
-        if value in answers.values():
+        if value in answers.keys():
             return value
         if value in answer_key_by_index.keys():
             return answer_key_by_index.get(value)
@@ -458,6 +559,16 @@ def generate_auth_token(auth_key: str, service_name: str) -> str:
         f' python -u -m lifecycle generate-auth "{service_name}" --short'
         f' 2>/dev/null'
     ).strip()
+
+
+def get_generated_dir() -> Path:
+    generated_dir = Path('generated')
+    if generated_dir.exists():
+        if prompt_bool(f'Directory "{generated_dir}" already exists. Would you like to clear it?'):
+            logger.info(f'cleaning up directory "{generated_dir}"')
+            shutil.rmtree(generated_dir)
+    generated_dir.mkdir(parents=True, exist_ok=True)
+    return generated_dir
 
 
 def shell(

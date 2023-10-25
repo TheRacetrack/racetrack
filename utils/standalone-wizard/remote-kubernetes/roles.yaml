@@ -14,32 +14,6 @@ subjects:
   name: default
   namespace: ${NAMESPACE}
 
-# allow everyone to manage service monitors
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: servicemonitors
-rules:
-- apiGroups: ["monitoring.coreos.com"]
-  resources: ["servicemonitors"]
-  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  creationTimestamp: null
-  name: servicemonitors-default
-  namespace: ${NAMESPACE}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: servicemonitors
-subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: ${NAMESPACE}
-
 # Allow to read CustomResourceDefinitions
 ---
 apiVersion: rbac.authorization.k8s.io/v1

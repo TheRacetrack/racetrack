@@ -38,9 +38,9 @@ spec:
             - name: LIFECYCLE_URL
               value: 'http://lifecycle:7002/lifecycle'
             - name: EXTERNAL_LIFECYCLE_URL
-              value: 'http://{{ your_ip }}/lifecycle'
+              value: 'http://${public_ip}/lifecycle'
             - name: EXTERNAL_PUB_URL
-              value: 'http://{{ your_ip }}/pub'
+              value: 'http://${public_ip}/pub'
             - name: DJANGO_DEBUG
               value: 'true'
             - name: AUTH_REQUIRED
