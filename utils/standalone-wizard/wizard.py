@@ -38,10 +38,10 @@ def main():
 
     if not config.infrastructure:
         config.infrastructure = prompt_text_choice('Choose the infrastructure target to deploy Racetrack:', {
-            'docker': 'Deploy Racetrack (and jobs) to in-place Docker Engine.',
-            'kubernetes': 'Deploy Racetrack (and jobs) to Kubernetes.',
-            'remote-docker': 'Deploy remote Pub gateway to Docker Daemon so it can host Jobs. (Connect Docker Daemon with the running Racetrack)',
-            'remote-kubernetes': 'Deploy remote Pub gateway to external Kubernetes cluster so it can host Jobs. (Connect Kubernetes cluster with the running Racetrack)',
+            'docker': 'Deploy Racetrack and its jobs to in-place Docker Engine.',
+            'kubernetes': 'Deploy Racetrack and its jobs to Kubernetes.',
+            'remote-docker': 'Deploy Jobs gateway to Docker Daemon host. Connect it with already running Racetrack.',
+            'remote-kubernetes': 'Deploy Jobs gateway to external Kubernetes cluster. Connect it with already running Racetrack.',
         }, 'docker', 'RT_INFRASTRUCTURE')
     else:
         logger.debug(f'infrastructure set to {config.infrastructure}')
@@ -150,7 +150,7 @@ def install_to_kubernetes(config: 'SetupConfig'):
 
     config.registry_hostname = ensure_var_configured(
         config.registry_hostname, 'registry_hostname', 'ghcr.io',
-        'Enter Docker registry hostname (to get the job images from)')
+        'Enter Docker registry hostname (to keep the job images)')
     config.registry_namespace = ensure_var_configured(
         config.registry_namespace, 'registry_namespace', 'theracetrack/racetrack',
         'Enter Docker registry namespace')
@@ -243,11 +243,11 @@ def install_to_kubernetes(config: 'SetupConfig'):
 
 
 def install_to_remote_docker(config: 'SetupConfig'):
-    logger.info('Installing Racetrack\'s remote gateway to remote Docker Daemon')
+    logger.info('Installing Jobs gateway to remote Docker Daemon')
 
     config.registry_hostname = ensure_var_configured(
         config.registry_hostname, 'registry_hostname', 'ghcr.io',
-        'Enter Docker registry hostname (to get the job images from)')
+        'Enter Docker registry hostname (to keep the job images)')
     config.registry_username = ensure_var_configured(
         config.registry_username, 'registry_username', 'racetrack-registry',
         'Enter Docker registry username')
@@ -275,28 +275,26 @@ def install_to_remote_docker(config: 'SetupConfig'):
         docker_vol_dir.mkdir(parents=True, exist_ok=True)
         docker_vol_dir.chmod(0o777)
 
-    logger.debug('Creating docker network…')
+    logger.debug('Creating "racetrack_default" docker network…')
     shell('docker network create racetrack_default || true')
     shell(f'docker pull {config.remote_gateway_config.pub_remote_image}')
     logger.debug('Creating pub-remote container…')
     shell('docker rm -f pub-remote || true')
-    shell(f'''
-    docker run -d \
-      --name=pub-remote \
-      --user=100000:{config.docker_gid} \
-      --env=AUTH_REQUIRED=true \
-      --env=AUTH_DEBUG=true \
-      --env=PUB_PORT=7105 \
-      --env=REMOTE_GATEWAY_MODE=true \
-      --env=REMOTE_GATEWAY_TOKEN="{config.remote_gateway_config.remote_gateway_token}" \
-      -p 7105:7105 \
-      --volume "/var/run/docker.sock:/var/run/docker.sock" \
-      --volume "`pwd`/docker:/opt/docker" \
-      --volume "`pwd`/.docker:/.docker" \
-      --restart=unless-stopped \
-      --network="racetrack_default" \
-      --add-host host.docker.internal:host-gateway \
-      {config.remote_gateway_config.pub_remote_image}
+    shell(f'''docker run -d \
+--name=pub-remote \
+--user=100000:{config.docker_gid} \
+--env=AUTH_REQUIRED=true \
+--env=AUTH_DEBUG=true \
+--env=PUB_PORT=7105 \
+--env=REMOTE_GATEWAY_MODE=true \
+--env=REMOTE_GATEWAY_TOKEN="{config.remote_gateway_config.remote_gateway_token}" \
+-p 7105:7105 \
+--volume "/var/run/docker.sock:/var/run/docker.sock" \
+--volume "{docker_vol_dir.absolute()}:/.docker" \
+--restart=unless-stopped \
+--network="racetrack_default" \
+--add-host host.docker.internal:host-gateway \
+{config.remote_gateway_config.pub_remote_image}
 ''')
     logger.info("Remote Pub Gateway is ready.")
 
@@ -312,11 +310,11 @@ def install_to_remote_docker(config: 'SetupConfig'):
 
 
 def install_to_remote_kubernetes(config: 'SetupConfig'):
-    logger.info('Installing Racetrack\'s remote gateway to remote Kubernetes')
+    logger.info('Installing Jobs gateway to remote Kubernetes')
 
     config.registry_hostname = ensure_var_configured(
         config.registry_hostname, 'registry_hostname', 'ghcr.io',
-        'Enter Docker registry hostname (to get the job images from)')
+        'Enter Docker registry hostname (to keep the job images)')
     config.registry_username = ensure_var_configured(
         config.registry_username, 'registry_username', 'racetrack-registry',
         'Enter Docker registry username')
@@ -410,7 +408,7 @@ def verify_docker():
 def configure_docker_gid(config: 'SetupConfig'):
     if not config.docker_gid:
         config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
-        logger.debug(f'Docker group ID set to {config.docker_gid}')
+        logger.debug(f'Docker group ID is {config.docker_gid}')
 
 
 def generate_secrets(config: 'SetupConfig'):
@@ -520,7 +518,6 @@ def prompt_text(question: str, default: str, env_var: str) -> str:
             return default
         value = input()
         if value == '' and default:
-            logger.debug(f'Default value set: {default}')
             return default
         if value:
             return value
@@ -564,7 +561,6 @@ def prompt_text_choice(question: str, answers: Dict[str, str], default: str, env
         print(f'{prompt}\n[1-{len(answers)}] [default: {default}]: ', end='')
         value = input()
         if value == '' and default:
-            logger.debug(f'Default value set: {default}')
             return default
         if value in answers.keys():
             return value
