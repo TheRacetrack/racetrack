@@ -88,21 +88,18 @@ def install_to_docker(config: 'SetupConfig'):
         metrics_path.chmod(0o777)
 
     logger.info('Templating config files…')
-    template_repository_file('utils/standalone-wizard/docker/docker-compose.template.yaml', 'docker-compose.yaml', {
+    render_vars = {
         'DOCKER_GID': config.docker_gid,
         'PUB_AUTH_TOKEN': config.pub_auth_token,
         'IMAGE_BUILDER_AUTH_TOKEN': config.image_builder_auth_token,
         'POSTGRES_PASSWORD': config.postgres_password,
-        'EXTERNAL_ADDRESS': config.external_address,
-    })
-    template_repository_file('utils/standalone-wizard/docker/.env.template', '.env', {
-        'POSTGRES_PASSWORD': config.postgres_password,
         'AUTH_KEY': config.auth_key,
         'SECRET_KEY': config.django_secret_key,
-    })
-    template_repository_file('utils/standalone-wizard/docker/lifecycle.template.yaml', 'config/lifecycle.yaml', {
         'EXTERNAL_ADDRESS': config.external_address,
-    })
+    }
+    template_repository_file('utils/standalone-wizard/docker/docker-compose.template.yaml', 'docker-compose.yaml', render_vars)
+    template_repository_file('utils/standalone-wizard/docker/.env.template', '.env', render_vars)
+    template_repository_file('utils/standalone-wizard/docker/lifecycle.template.yaml', 'config/lifecycle.yaml', render_vars)
     download_repository_file('utils/standalone-wizard/docker/Makefile', 'Makefile')
     download_repository_file('image_builder/tests/sample/compose.yaml', 'config/image_builder.yaml')
     download_repository_file('postgres/init.sql', 'config/postgres/init.sql')
