@@ -5,6 +5,7 @@ import subprocess
 import json
 import logging
 import os
+import time
 from pathlib import Path
 import secrets
 import string
@@ -16,7 +17,7 @@ from pydantic import BaseModel
 
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.utils.shell import shell_output, CommandError
-from racetrack_client.utils.request import Requests, ResponseError
+from racetrack_client.utils.request import Requests, ResponseError, RequestError
 
 logger = logging.getLogger('racetrack')
 
@@ -104,7 +105,6 @@ def install_to_docker(config: 'SetupConfig'):
     })
     download_repository_file('utils/standalone-wizard/docker/Makefile', 'Makefile')
     download_repository_file('image_builder/tests/sample/compose.yaml', 'config/image_builder.yaml')
-    download_repository_file('utils/wait-for-lifecycle.sh', 'utils/wait-for-lifecycle.sh')
     download_repository_file('postgres/init.sql', 'config/postgres/init.sql')
     download_repository_file('utils/prometheus/prometheus.yaml', 'utils/prometheus/prometheus.yaml')
     download_repository_file('utils/grafana/datasource.yaml', 'utils/grafana/datasource.yaml')
@@ -118,7 +118,7 @@ def install_to_docker(config: 'SetupConfig'):
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always --wait', raw_output=True)
 
     logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
-    shell('LIFECYCLE_URL=http://127.0.0.1:7102 bash utils/wait-for-lifecycle.sh')
+    wait_for_lifecycle('http://127.0.0.1:7102')
 
     try:
         auth_token = get_admin_auth_token('admin')
@@ -280,7 +280,8 @@ def install_to_remote_docker(config: 'SetupConfig'):
     shell(f'docker pull {config.remote_gateway_config.pub_remote_image}')
     logger.debug('Creating pub-remote container…')
     shell('docker rm -f pub-remote || true')
-    shell(f'''docker run -d \
+
+    cmd = f'''docker run -d \
 --name=pub-remote \
 --user=100000:{config.docker_gid} \
 --env=AUTH_REQUIRED=true \
@@ -294,9 +295,10 @@ def install_to_remote_docker(config: 'SetupConfig'):
 --restart=unless-stopped \
 --network="racetrack_default" \
 --add-host host.docker.internal:host-gateway \
-{config.remote_gateway_config.pub_remote_image}
-''')
-    logger.info("Remote Pub Gateway is ready.")
+{config.remote_gateway_config.pub_remote_image}'''
+    if prompt_bool(f'Attempting to execute command: {cmd}\nDo you confirm?'):
+        shell(cmd)
+        logger.info("Remote Pub Gateway is ready.")
 
     template_repository_file('utils/standalone-wizard/remote-docker/plugin-config.yaml', 'plugin-config.yaml', {
         'public_ip': config.public_ip,
@@ -529,10 +531,7 @@ def prompt_bool(question: str, default: bool = True) -> bool:
             options = '[Y/n]'
         else:
             options = '[y/N]'
-        if '\n' in question:
-            print(f'{question}\n{options}: ', end='')
-        else:
-            print(f'{question} {options}: ', end='')
+        print(f'{question} {options}: ', end='')
         if NON_INTERACTIVE:
             return default
         value = input()
@@ -628,6 +627,18 @@ def get_generated_dir() -> Path:
             shutil.rmtree(generated_dir)
     generated_dir.mkdir(parents=True, exist_ok=True)
     return generated_dir
+
+
+def wait_for_lifecycle(url: str):
+    logger.info('Waiting for Lifecycle to be ready…')
+    while True:
+        try:
+            response = Requests.get(f'{url}/ready')
+            if response.status_code == 200:
+                return
+        except RequestError:
+            pass
+        time.sleep(1)
 
 
 def shell(
