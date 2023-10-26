@@ -40,7 +40,8 @@ def main():
         config.infrastructure = prompt_text_choice('Choose the infrastructure target to deploy Racetrack:', {
             'docker': 'Deploy Racetrack (and jobs) to in-place Docker Engine.',
             'kubernetes': 'Deploy Racetrack (and jobs) to Kubernetes.',
-            'remote-kubernetes': 'Deploy remote Pub gateway to external Kubernetes cluster. (Connect another Kubernetes with the running Racetrack)',
+            'remote-docker': 'Deploy remote Pub gateway to Docker Daemon so it can host Jobs. (Connect Docker Daemon with the running Racetrack)',
+            'remote-kubernetes': 'Deploy remote Pub gateway to external Kubernetes cluster so it can host Jobs. (Connect Kubernetes cluster with the running Racetrack)',
         }, 'docker', 'RT_INFRASTRUCTURE')
     else:
         logger.debug(f'infrastructure set to {config.infrastructure}')
@@ -49,6 +50,8 @@ def main():
         install_to_docker(config)
     elif config.infrastructure == 'kubernetes':
         install_to_kubernetes(config)
+    elif config.infrastructure == 'remote-docker':
+        install_to_remote_docker(config)
     elif config.infrastructure == 'remote-kubernetes':
         install_to_remote_kubernetes(config)
     else:
@@ -71,13 +74,11 @@ def install_to_docker(config: 'SetupConfig'):
         logger.debug(f'External remote address set to {config.external_address}')
 
     verify_docker()
-    if not config.docker_gid:
-        config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
-        logger.debug(f'Docker group ID set to {config.docker_gid}')
+    configure_docker_gid(config)
+    generate_secrets(config)
 
-    _generate_secrets(config)
-
-    if not (plugins_path := Path('.plugins')).is_dir():
+    plugins_path = Path('.plugins')
+    if not plugins_path.is_dir():
         logger.info('Creating plugins volume…')
         plugins_path.mkdir(parents=True, exist_ok=True)
         plugins_path.chmod(0o777)
@@ -176,7 +177,7 @@ def install_to_kubernetes(config: 'SetupConfig'):
     logger.info(f'Current kubectl context is {kubectl_context}')
     shell_output('kubectl config set-context --current --namespace=racetrack')
 
-    _generate_secrets(config)
+    generate_secrets(config)
 
     generated_dir = get_generated_dir()
     registry_secrets_content = shell_output(f'''kubectl create secret docker-registry docker-registry-read-secret \\
@@ -196,7 +197,7 @@ def install_to_kubernetes(config: 'SetupConfig'):
     registry_secrets_file.write_text(registry_secrets_content)
     logger.debug(f"encoded Docker registry secrets: {registry_secrets_file}")
 
-    context_vars = {
+    render_vars = {
         'POSTGRES_PASSWORD': config.postgres_password,
         'SECRET_KEY': config.django_secret_key,
         'AUTH_KEY': config.auth_key,
@@ -232,7 +233,7 @@ def install_to_kubernetes(config: 'SetupConfig'):
         'config/prometheus/prometheus.yaml',
     ]
     for template_file in template_files:
-        template_repository_file(f'utils/standalone-wizard/kubernetes/{template_file}', f'generated/{template_file}', context_vars)
+        template_repository_file(f'utils/standalone-wizard/kubernetes/{template_file}', f'generated/{template_file}', render_vars)
     logger.info(f'Kubernetes resources created at "{generated_dir.absolute()}". Please review them before applying.')
 
     cmd = f'kubectl apply -k {generated_dir}/'
@@ -240,17 +241,10 @@ def install_to_kubernetes(config: 'SetupConfig'):
         shell(cmd, raw_output=True)
         logger.info("Racetrack has been deployed.")
 
-    logger.info('Verifying installation…')
-    shell('kubectl get pods', raw_output=True)
 
-    logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
-    shell(f'LIFECYCLE_URL=http://{config.public_ip} bash utils/wait-for-lifecycle.sh')
+def install_to_remote_docker(config: 'SetupConfig'):
+    logger.info('Installing Racetrack\'s remote gateway to remote Docker Daemon')
 
-
-def install_to_remote_kubernetes(config: 'SetupConfig'):
-    logger.info('Installing Racetrack\'s remote gateway to remote Kubernetes')
-
-    k8s_config = config.kubernetes_config
     config.registry_hostname = ensure_var_configured(
         config.registry_hostname, 'registry_hostname', 'ghcr.io',
         'Enter Docker registry hostname (to get the job images from)')
@@ -265,17 +259,89 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         'Enter token for writing to Docker Registry')
     config.public_ip = ensure_var_configured(
         config.public_ip, 'public_ip', '',
-        'Enter your IP address for all public services exposed by Ingress, e.g. 1.1.1.1')
-    k8s_config.pub_remote_image = ensure_var_configured(
-        k8s_config.pub_remote_image, 'pub_remote_image', 'ghcr.io/theracetrack/plugin-remote-kubernetes/pub-remote:latest',
+        'Enter IP address of your infrastructure target, e.g. 1.1.1.1')
+    config.remote_gateway_config.pub_remote_image = ensure_var_configured(
+        config.remote_gateway_config.pub_remote_image, 'pub_remote_image', 'ghcr.io/theracetrack/plugin-remote-docker/pub-remote:latest',
         'Enter name of the Docker image of remote Pub')
-    k8s_config.kubernetes_namespace = ensure_var_configured(
-        k8s_config.kubernetes_namespace, 'kubernetes_namespace', 'racetrack',
+
+    if not config.remote_gateway_config.remote_gateway_token:
+        config.remote_gateway_config.remote_gateway_token = generate_password()
+        logger.info(f'Generated remote gateway token: {config.remote_gateway_config.remote_gateway_token}')
+    save_local_config(config)
+
+    verify_docker()
+    configure_docker_gid(config)
+
+    docker_vol_dir = Path('.docker')
+    if not docker_vol_dir.is_dir():
+        logger.info('Creating .docker volume…')
+        docker_vol_dir.mkdir(parents=True, exist_ok=True)
+        docker_vol_dir.chmod(0o777)
+
+    logger.debug('Creating docker network…')
+    shell('docker network create racetrack_default || true')
+    shell(f'docker pull {config.remote_gateway_config.pub_remote_image}')
+    logger.debug('Creating pub-remote container…')
+    shell('docker rm -f pub-remote || true')
+    shell(f'''
+    docker run -d \
+      --name=pub-remote \
+      --user=100000:{config.docker_gid} \
+      --env=AUTH_REQUIRED=true \
+      --env=AUTH_DEBUG=true \
+      --env=PUB_PORT=7105 \
+      --env=REMOTE_GATEWAY_MODE=true \
+      --env=REMOTE_GATEWAY_TOKEN="{config.remote_gateway_config.remote_gateway_token}" \
+      -p 7105:7105 \
+      --volume "/var/run/docker.sock:/var/run/docker.sock" \
+      --volume "`pwd`/docker:/opt/docker" \
+      --volume "`pwd`/.docker:/.docker" \
+      --restart=unless-stopped \
+      --network="racetrack_default" \
+      --add-host host.docker.internal:host-gateway \
+      {config.remote_gateway_config.pub_remote_image}
+''')
+    logger.info("Remote Pub Gateway is ready.")
+
+    template_repository_file('utils/standalone-wizard/remote-docker/plugin-config.yaml', 'plugin-config.yaml', {
+        'public_ip': config.public_ip,
+        'remote_gateway_token': config.remote_gateway_config.remote_gateway_token,
+        'registry_hostname': config.registry_hostname,
+        'registry_username': config.registry_username,
+        'write_registry_token': config.write_registry_token,
+    })
+    logger.info("Configure remote-docker plugin with the following configuration:")
+    print(Path('plugin-config.yaml').read_text())
+
+
+def install_to_remote_kubernetes(config: 'SetupConfig'):
+    logger.info('Installing Racetrack\'s remote gateway to remote Kubernetes')
+
+    config.registry_hostname = ensure_var_configured(
+        config.registry_hostname, 'registry_hostname', 'ghcr.io',
+        'Enter Docker registry hostname (to get the job images from)')
+    config.registry_username = ensure_var_configured(
+        config.registry_username, 'registry_username', 'racetrack-registry',
+        'Enter Docker registry username')
+    config.read_registry_token = ensure_var_configured(
+        config.read_registry_token, 'read_registry_token', '',
+        'Enter token for reading from Docker Registry')
+    config.write_registry_token = ensure_var_configured(
+        config.write_registry_token, 'write_registry_token', '',
+        'Enter token for writing to Docker Registry')
+    config.public_ip = ensure_var_configured(
+        config.public_ip, 'public_ip', '',
+        'Enter IP address of your infrastructure target, e.g. 1.1.1.1')
+    config.remote_gateway_config.pub_remote_image = ensure_var_configured(
+        config.remote_gateway_config.pub_remote_image, 'pub_remote_image', 'ghcr.io/theracetrack/plugin-remote-kubernetes/pub-remote:latest',
+        'Enter name of the Docker image of remote Pub')
+    config.kubernetes_namespace = ensure_var_configured(
+        config.kubernetes_namespace, 'kubernetes_namespace', 'racetrack',
         'Enter namespace for the Kubernetes resources')
 
-    if not k8s_config.remote_gateway_token:
-        k8s_config.remote_gateway_token = generate_password()
-        logger.info(f'Generated remote gateway token: {k8s_config.remote_gateway_token}')
+    if not config.remote_gateway_config.remote_gateway_token:
+        config.remote_gateway_config.remote_gateway_token = generate_password()
+        logger.info(f'Generated remote gateway token: {config.remote_gateway_config.remote_gateway_token}')
     save_local_config(config)
 
     generated_dir = get_generated_dir()
@@ -289,27 +355,28 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
     registry_secrets_file.write_text(registry_secrets_content)
     logger.debug(f"Docker registry secret encoded at {registry_secrets_file}")
 
+    render_vars = {
+        'NAMESPACE': config.kubernetes_namespace,
+        'PUB_REMOTE_IMAGE': config.remote_gateway_config.pub_remote_image,
+        'REMOTE_GATEWAY_TOKEN': config.remote_gateway_config.remote_gateway_token,
+        'public_ip': config.public_ip,
+        'remote_gateway_token': config.remote_gateway_config.remote_gateway_token,
+        'kubernetes_namespace': config.kubernetes_namespace,
+        'registry_hostname': config.registry_hostname,
+        'registry_username': config.registry_username,
+        'write_registry_token': config.write_registry_token,
+    }
     if prompt_bool('Would you like to create a namespace in kubernetes for Racetrack resources?'):
-        template_repository_file('utils/standalone-wizard/remote-kubernetes/namespace.yaml', 'generated/namespace.yaml', {
-            'NAMESPACE': k8s_config.kubernetes_namespace,
-        })
+        template_repository_file('utils/standalone-wizard/remote-kubernetes/namespace.yaml', 'generated/namespace.yaml', render_vars)
 
     if prompt_bool('Would you like to configure roles so that pods can speak to local Kubernetes API inside the cluster?'):
-        template_repository_file('utils/standalone-wizard/remote-kubernetes/roles.yaml', 'generated/roles.yaml', {
-            'NAMESPACE': k8s_config.kubernetes_namespace,
-        })
+        template_repository_file('utils/standalone-wizard/remote-kubernetes/roles.yaml', 'generated/roles.yaml', render_vars)
 
     if prompt_bool('Would you like to configure Ingress and Ingress Controller to direct incoming traffic?'):
         download_repository_file('utils/standalone-wizard/remote-kubernetes/ingress-controller.yaml', 'generated/ingress-controller.yaml')
-        template_repository_file('utils/standalone-wizard/remote-kubernetes/ingress.yaml', 'generated/ingress.yaml', {
-            'NAMESPACE': k8s_config.kubernetes_namespace,
-        })
+        template_repository_file('utils/standalone-wizard/remote-kubernetes/ingress.yaml', 'generated/ingress.yaml', render_vars)
 
-    template_repository_file('utils/standalone-wizard/remote-kubernetes/remote-pub.yaml', 'generated/remote-pub.yaml', {
-        'PUB_REMOTE_IMAGE': k8s_config.pub_remote_image,
-        'REMOTE_GATEWAY_TOKEN': k8s_config.remote_gateway_token,
-        'NAMESPACE': k8s_config.kubernetes_namespace,
-    })
+    template_repository_file('utils/standalone-wizard/remote-kubernetes/remote-pub.yaml', 'generated/remote-pub.yaml', render_vars)
     logger.info(f'Kubernetes resources created at "{generated_dir.absolute()}". Please review them before applying.')
 
     cmd = f'kubectl apply -f {generated_dir}'
@@ -317,14 +384,7 @@ def install_to_remote_kubernetes(config: 'SetupConfig'):
         shell(cmd, raw_output=True)
         logger.info("Remote Pub Gateway is ready.")
 
-    template_repository_file('utils/standalone-wizard/remote-kubernetes/plugin-config.yaml', 'plugin-config.yaml', {
-        'public_ip': config.public_ip,
-        'remote_gateway_token': k8s_config.remote_gateway_token,
-        'kubernetes_namespace': k8s_config.kubernetes_namespace,
-        'registry_hostname': config.registry_hostname,
-        'registry_username': config.registry_username,
-        'write_registry_token': config.write_registry_token,
-    })
+    template_repository_file('utils/standalone-wizard/remote-kubernetes/plugin-config.yaml', 'plugin-config.yaml', render_vars)
     logger.info("Configure remote-kubernetes plugin with the following configuration:")
     print(Path('plugin-config.yaml').read_text())
 
@@ -350,7 +410,13 @@ def verify_docker():
         raise e
 
 
-def _generate_secrets(config: 'SetupConfig'):
+def configure_docker_gid(config: 'SetupConfig'):
+    if not config.docker_gid:
+        config.docker_gid = shell_output("(getent group docker || echo 'docker:x:0') | cut -d: -f3").strip()
+        logger.debug(f'Docker group ID set to {config.docker_gid}')
+
+
+def generate_secrets(config: 'SetupConfig'):
     if not config.postgres_password:
         config.postgres_password = generate_password()
         logger.info(f'Generated PostgreSQL password: {config.postgres_password}')
@@ -395,10 +461,9 @@ def change_admin_password(auth_token: str, old_pass: str, new_pass: str):
     logger.info('admin password changed')
 
 
-class KubernetesConfig(BaseModel):
+class RemoteGatewayConfig(BaseModel):
     remote_gateway_token: str = ''
     pub_remote_image: str = ''
-    kubernetes_namespace: str = ''
 
 
 class SetupConfig(BaseModel):
@@ -418,7 +483,8 @@ class SetupConfig(BaseModel):
     write_registry_token: str = ''
     registry_namespace: str = ''
     public_ip: str = ''
-    kubernetes_config: KubernetesConfig = KubernetesConfig()
+    kubernetes_namespace: str = ''
+    remote_gateway_config: RemoteGatewayConfig = RemoteGatewayConfig()
 
 
 def load_local_config() -> SetupConfig:
