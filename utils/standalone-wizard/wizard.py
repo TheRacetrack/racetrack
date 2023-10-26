@@ -276,7 +276,8 @@ def install_to_remote_docker(config: 'SetupConfig'):
         docker_vol_dir.chmod(0o777)
 
     logger.debug('Creating "racetrack_default" docker network…')
-    shell('docker network create racetrack_default || true')
+    labels = '--label com.docker.compose.network=racetrack_default racetrack_default --label com.docker.compose.project=wizard'
+    shell(f'docker network create {labels} || true')
     shell(f'docker pull {config.remote_gateway_config.pub_remote_image}')
     logger.debug('Creating pub-remote container…')
     shell('docker rm -f pub-remote || true')
@@ -629,8 +630,7 @@ def get_generated_dir() -> Path:
     return generated_dir
 
 
-def wait_for_lifecycle(url: str):
-    logger.info('Waiting for Lifecycle to be ready…')
+def wait_for_lifecycle(url: str, attempts: int = 30):
     while True:
         try:
             response = Requests.get(f'{url}/ready')
@@ -638,7 +638,11 @@ def wait_for_lifecycle(url: str):
                 return
         except RequestError:
             pass
+        attempts -= 1
+        if attempts < 1:
+            raise RuntimeError('Lifecycle service is not ready')
         time.sleep(1)
+        logger.debug('Waiting for Lifecycle to be ready…')
 
 
 def shell(
