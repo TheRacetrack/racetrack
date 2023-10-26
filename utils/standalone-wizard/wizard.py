@@ -251,9 +251,6 @@ def install_to_remote_docker(config: 'SetupConfig'):
     config.registry_username = ensure_var_configured(
         config.registry_username, 'registry_username', 'racetrack-registry',
         'Enter Docker registry username')
-    config.read_registry_token = ensure_var_configured(
-        config.read_registry_token, 'read_registry_token', '',
-        'Enter token for reading from Docker Registry')
     config.write_registry_token = ensure_var_configured(
         config.write_registry_token, 'write_registry_token', '',
         'Enter token for writing to Docker Registry')
