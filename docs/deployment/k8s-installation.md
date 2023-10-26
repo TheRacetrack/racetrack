@@ -5,14 +5,9 @@ such as AKS, GKE, EKS or a self-hosted Kubernetes.
 
 ## Prerequisites
 
-1. Install [kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
-2. Clone this repository and activate virtual environment:
-  ```shell
-  git clone https://github.com/TheRacetrack/racetrack
-  cd racetrack
-  make setup
-  . venv/bin/activate
-  ```
+- Python 3.8+ with `pip` and `venv`
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
+- curl
 
 ## Create a Kubernetes cluster
 
@@ -29,56 +24,40 @@ kubectl config use-context cloud-racetrack # k8s context is `cloud-racetrack` in
 kubectl config set-context --current --namespace=racetrack
 ```
 
-## Prepare Docker Registry
+## Install Racetrack
+Pick an installation directory:
+```sh
+mkdir -p ~/racetrack && cd ~/racetrack
+```
+and run
+```sh
+sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/standalone-wizard/runner.sh)
+```
+Follow the installation steps. Choose `kubernetes` infrastructure target.
+Shortly after, your Racetrack instance will be ready.
+
+### Docker Registry
 Racetrack needs a Docker registry to store the images of the jobs.
 We need to instruct Kubernetes to pull images from there.
-
-Let's assume we have a Docker registry at `ghcr.io/theracetrack/racetrack/` with
-`racetrack-registry` user and `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
+That's why you need to provide Docker registry hostname, username `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
-Fill in your configuration in the installer's config `utils/k8s-setup-wizard/config.yaml`:
-```yaml
-registry_hostname: 'ghcr.io'
-registry_namespace: 'theracetrack/racetrack'
-registry_username: 'racetrack-registry'
-read_registry_token: 'READ_REGISTRY_TOKEN'
-write_registry_token: 'WRITE_REGISTRY_TOKEN'
-```
-
-## Static IP
-
-You can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
-To do so, fill it in the installer's config `utils/k8s-setup-wizard/config.yaml`:
-```yaml
-your_ip: '1.1.1.1'
-```
+### Static IP
+During the installation, you can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
 
 If you don't know the exact IP address of the LoadBalancer, you can skip this step for now.
 It will be assigned after the first deployment, then you can get back to this step, set the IP address and apply it again.
 
-## Prepare Kubernetes resources
+### Preparing Kubernetes resources
+Installer generates unique, secure database password, authentication secrets and tokens.
+It creates Kubernetes resources files in "generated" directory, based on your configuration.
+Please review them before applying. If needed, abort and make adjustments in **generated/** files.
 
-You may make adjustments in `utils/k8s-setup-wizard/config.yaml`.
-Once you're ready, let's run the installer's script `utils/k8s-setup-wizard/installer.py`
-
-This will generate the kubernetes resources, based on your configuration,
-and will generate unique, secure database password, authentication secrets and tokens:
-```sh
-./utils/k8s-setup-wizard/installer.py
-```
-
-If needed, review and make adjustments in **kustomize/generated/** files.
 See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
 
-## Deploy Racetrack
+## Verify Racetrack
 
-Once you're ready, deploy Racetrack's resources to your cluster:
-```sh
-kubectl apply -k kustomize/generated/
-```
-
-After that, verify the status of your deployments using one of your favorite tools:
+After runninf the installer, verify the status of your deployments using one of your favorite tools:
 
 - `kubectl get pods`
 - Cloud Console
@@ -163,7 +142,7 @@ Use one of these tools to inspect your cluster resources:
 - [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
 - [k9s](https://github.com/derailed/k9s)
 
-- Check what resources you're actually trying to deploy with `kubectl kustomize kustomize/generated`
+- Check what resources you're actually trying to deploy with `kubectl kustomize generated`
 
 ## Production Deployment
 
@@ -178,5 +157,5 @@ Bunch of improvements to keep in mind before deploying Racetrack to production:
 ## Clean up
 Delete the resources when you're done:
 ```shell
-kubectl delete -k kustomize/generated/
+kubectl delete -k generated/
 ```
