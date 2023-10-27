@@ -101,6 +101,7 @@ def install_to_docker(config: 'SetupConfig'):
     template_repository_file('utils/standalone-wizard/docker/.env.template', '.env', render_vars)
     template_repository_file('utils/standalone-wizard/docker/lifecycle.template.yaml', 'config/lifecycle.yaml', render_vars)
     download_repository_file('utils/standalone-wizard/docker/Makefile', 'Makefile')
+    download_repository_file('utils/cleanup-jobs-docker.sh', 'cleanup-jobs-docker.sh')
     download_repository_file('image_builder/tests/sample/compose.yaml', 'config/image_builder.yaml')
     download_repository_file('postgres/init.sql', 'config/postgres/init.sql')
     download_repository_file('utils/prometheus/prometheus.yaml', 'utils/prometheus/prometheus.yaml')
@@ -139,6 +140,7 @@ def install_to_docker(config: 'SetupConfig'):
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at {config.external_address}:7103/dashboard
 Log in with username: admin, password: {config.admin_password}
+Your Racetrack Auth Token (X-Racetrack-Auth): {config.admin_auth_token}
 To deploy here, configure your racetrack client: racetrack set remote {config.external_address}:7102/lifecycle
 ''')
 
@@ -264,6 +266,7 @@ def install_to_kubernetes(config: 'SetupConfig'):
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at http://{config.public_ip}/dashboard
 Log in with username: admin, password: {config.admin_password}
+Your Racetrack Auth Token (X-Racetrack-Auth): {config.admin_auth_token}
 To deploy here, configure your racetrack client: racetrack set remote {lifecycle_url}
 ''')
 
