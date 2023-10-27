@@ -1,6 +1,6 @@
-# Remote Kubernetes Gateway
+# Remote Docker Gateway
 Once you have Racetrack up and running somewhere,
-you might want to connect it to an external Kubernetes cluster to keep your Jobs there.
+you might want to connect it to remote Docker Daemon host to keep your Jobs there.
 In other words, you can distribute services between 2 separate infrastructures:
 
 - Main Hub - hosting core Racetrack services
@@ -12,7 +12,8 @@ Remote Pub gateway protects Jobs from unauthorized access.
 ## Requirements
 
 - Python 3.8+ with `pip` and `venv`
-- [kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
+- [Docker v20.10 (or higher)](https://docs.docker.com/engine/install/)
+  managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 - curl
 
 ## Install Remote Gateway
@@ -25,24 +26,23 @@ and run
 sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/standalone-wizard/runner.sh)
 ```
 Follow the installation steps.
-Choose `remote-kubernetes` infrastructure target.
+Choose `remote-docker` infrastructure target.
 
 ## Install plugin
 
 On your Racetrack's "Main Hub", install 
-[remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes).
+[remote Docker plugin](https://github.com/TheRacetrack/plugin-remote-docker).
 You can do it with:
 ```
-racetrack plugin install github.com/TheRacetrack/plugin-remote-kubernetes
+racetrack plugin install github.com/TheRacetrack/plugin-remote-docker
 ```
 
 Next, fill plugin's configuration with the content that has been given to you by installer:
 ```yaml
 infrastructure_targets:
-  remote-k8s:
+  remote-docker-daemon:
     remote_gateway_url: 'http://1.2.3.4:7105/pub'
     remote_gateway_token: '5tr0nG_PA55VoRD'
-    job_k8s_namespace: 'racetrack'
 
 docker: 
   docker_registry: 'docker.registry.example.com'

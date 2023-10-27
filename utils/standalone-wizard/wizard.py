@@ -274,11 +274,14 @@ def install_to_remote_docker(config: 'SetupConfig'):
 
     logger.debug('Creating "racetrack_default" docker network…')
     labels = '--label com.docker.compose.network=racetrack_default racetrack_default --label com.docker.compose.project=wizard'
-    shell(f'docker network create {labels} || true')
-    shell(f'docker pull {config.remote_gateway_config.pub_remote_image}')
-    logger.debug('Creating pub-remote container…')
-    shell('docker rm -f pub-remote || true')
+    shell(f'docker network create {labels} || true', print_stdout=False)
 
+    shell(f'docker pull {config.remote_gateway_config.pub_remote_image}')
+    if shell_output('docker ps -aq -f name=^pub-remote$').strip():
+        logger.debug('Deleting old pub-remote container…')
+        shell('docker rm -f pub-remote')
+
+    logger.debug('Creating pub-remote container…')
     cmd = f'''docker run -d \
 --name=pub-remote \
 --user=100000:{config.docker_gid} \
@@ -587,7 +590,7 @@ def generate_password(length: int = 32) -> str:
 
 def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
-    logger.debug(f'Downloading {src_file_url}')
+    logger.debug(f'Creating {dst_path}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     template = string.Template(src_content.decode())
@@ -599,7 +602,7 @@ def template_repository_file(src_relative_url: str, dst_path: str, context_vars:
 
 def download_repository_file(src_relative_url: str, dst_path: Union[str, Path]):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
-    logger.debug(f'Downloading {src_file_url}')
+    logger.debug(f'Templating {dst_path}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     dst_file = Path(dst_path)

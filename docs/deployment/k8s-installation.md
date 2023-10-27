@@ -1,6 +1,6 @@
 # Installation to non-local Kubernetes
 
-This guide will walk you through the steps to install Racetrack on a non-local Kubernetes cluster,
+This guide will walk you through the steps to install Racetrack on a non-localhost Kubernetes cluster,
 such as AKS, GKE, EKS or a self-hosted Kubernetes.
 
 ## Prerequisites
