@@ -70,6 +70,8 @@ def install_to_docker(config: 'SetupConfig'):
             'Enter the external address that your Racetrack will be accessed at (IP or domain name)',
             default_address, 'RT_EXTERNAL_ADDRESS'
         )
+        if not config.external_address.startswith('http'):
+            config.external_address = 'http://' + config.external_address
         save_local_config(config)
     else:
         logger.debug(f'External remote address set to {config.external_address}')
