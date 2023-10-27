@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 import io
-import shutil
-import subprocess
 import json
 import logging
 import os
-import time
-from pathlib import Path
 import secrets
+import shutil
 import string
+import subprocess
 import sys
-from typing import Dict, Optional, Union
+import time
 import urllib.request
+from pathlib import Path
+from typing import Dict, Optional, Union
 
 from pydantic import BaseModel
 
 from racetrack_client.log.logs import configure_logs
-from racetrack_client.utils.shell import shell_output, CommandError
 from racetrack_client.utils.request import Requests, ResponseError, RequestError
+from racetrack_client.utils.shell import shell_output, CommandError
 
 logger = logging.getLogger('racetrack')
 
@@ -116,7 +116,6 @@ def install_to_docker(config: 'SetupConfig'):
 
     logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
     lifecycle_url = 'http://127.0.0.1:7102'
-    dashboard_url = 'http://127.0.0.1:7103/dashboard'
     wait_for_lifecycle(lifecycle_url)
 
     try:
@@ -263,10 +262,10 @@ def install_to_kubernetes(config: 'SetupConfig'):
     shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure')
 
     logger.info(f'''Racetrack is ready to use.
-    Visit Racetrack Dashboard at http://{config.public_ip}/dashboard
-    Log in with username: admin, password: {config.admin_password}
-    To deploy here, configure your racetrack client: racetrack set remote {lifecycle_url}
-    ''')
+Visit Racetrack Dashboard at http://{config.public_ip}/dashboard
+Log in with username: admin, password: {config.admin_password}
+To deploy here, configure your racetrack client: racetrack set remote {lifecycle_url}
+''')
 
 
 def install_to_remote_docker(config: 'SetupConfig'):
