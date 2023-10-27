@@ -115,21 +115,23 @@ def install_to_docker(config: 'SetupConfig'):
     shell('DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false docker compose up -d --no-build --pull=always --wait', raw_output=True)
 
     logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
-    wait_for_lifecycle('http://127.0.0.1:7102')
+    lifecycle_url = 'http://127.0.0.1:7102'
+    dashboard_url = 'http://127.0.0.1:7103/dashboard'
+    wait_for_lifecycle(lifecycle_url)
 
     try:
-        auth_token = get_admin_auth_token('admin')
+        auth_token = get_admin_auth_token('admin', dashboard_url)
         logger.info('Changing default admin password…')
-        change_admin_password(auth_token, 'admin', config.admin_password)
+        change_admin_password(auth_token, 'admin', config.admin_password, dashboard_url)
     except ResponseError as e:
         if not e.status_code == 401:  # Unauthorized
             raise e
 
-    config.admin_auth_token = get_admin_auth_token(config.admin_password)
+    config.admin_auth_token = get_admin_auth_token(config.admin_password, dashboard_url)
 
     logger.info('Configuring racetrack client…')
     racetrack_cmd = 'python -m racetrack_client '
-    shell(racetrack_cmd + 'set remote http://127.0.0.1:7102')
+    shell(racetrack_cmd + f'set remote {lifecycle_url}')
     shell(racetrack_cmd + f'login {config.admin_auth_token}')
     logger.info('Installing plugins…')
     shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-python-job-type')
@@ -237,6 +239,35 @@ def install_to_kubernetes(config: 'SetupConfig'):
     if prompt_bool(f'Attempting to execute command "{cmd}". Do you confirm?'):
         shell(cmd, raw_output=True)
         logger.info("Racetrack has been deployed.")
+
+    logger.info('Waiting until Racetrack is operational…')
+    lifecycle_url = f'http://{config.public_ip}/lifecycle'
+    dashboard_url = f'http://{config.public_ip}/dashboard'
+    wait_for_lifecycle(lifecycle_url)
+
+    try:
+        auth_token = get_admin_auth_token('admin', dashboard_url)
+        logger.info('Changing default admin password…')
+        change_admin_password(auth_token, 'admin', config.admin_password, dashboard_url)
+    except ResponseError as e:
+        if not e.status_code == 401:  # Unauthorized
+            raise e
+
+    config.admin_auth_token = get_admin_auth_token(config.admin_password, dashboard_url)
+
+    logger.info('Configuring racetrack client…')
+    racetrack_cmd = 'python -m racetrack_client '
+    shell(racetrack_cmd + f'set remote {lifecycle_url}')
+    shell(racetrack_cmd + f'login {config.admin_auth_token}')
+    logger.info('Installing plugins…')
+    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-python-job-type')
+    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure')
+
+    logger.info(f'''Racetrack is ready to use.
+    Visit Racetrack Dashboard at {dashboard_url}
+    Log in with username: admin, password: {config.admin_password}
+    To deploy here, configure your racetrack client: racetrack set remote {lifecycle_url}
+    ''')
 
 
 def install_to_remote_docker(config: 'SetupConfig'):
@@ -439,8 +470,8 @@ def generate_secrets(config: 'SetupConfig'):
     save_local_config(config)
 
 
-def get_admin_auth_token(password: str) -> str:
-    response = Requests.post('http://127.0.0.1:7103/dashboard/api/v1/users/login', json={
+def get_admin_auth_token(password: str, dashboard_url: str) -> str:
+    response = Requests.post(f'{dashboard_url}/api/v1/users/login', json={
         'username': 'admin',
         'password': password,
     })
@@ -448,8 +479,8 @@ def get_admin_auth_token(password: str) -> str:
     return response.json()['token']
 
 
-def change_admin_password(auth_token: str, old_pass: str, new_pass: str):
-    response = Requests.put('http://127.0.0.1:7103/dashboard/api/v1/users/change_password', headers={
+def change_admin_password(auth_token: str, old_pass: str, new_pass: str, dashboard_url: str):
+    response = Requests.put(f'{dashboard_url}/api/v1/users/change_password', headers={
         'X-Racetrack-Auth': auth_token,
     }, json={
         'old_password': old_pass,
@@ -630,7 +661,7 @@ def get_generated_dir() -> Path:
     return generated_dir
 
 
-def wait_for_lifecycle(url: str, attempts: int = 30):
+def wait_for_lifecycle(url: str, attempts: int = 120):
     while True:
         try:
             response = Requests.get(f'{url}/ready')

@@ -48,7 +48,7 @@ During the installation, you can set a static LoadBalancer IP for all public ser
 If you don't know the exact IP address of the LoadBalancer, you can skip this step for now.
 It will be assigned after the first deployment, then you can get back to this step, set the IP address and apply it again.
 
-### Preparing Kubernetes resources
+### Reviewing Kubernetes resources
 Installer generates unique, secure database password, authentication secrets and tokens.
 It creates Kubernetes resources files in "generated" directory, based on your configuration.
 Please review them before applying. If needed, abort and make adjustments in **generated/** files.
@@ -57,7 +57,7 @@ See [Production Deployment](#production-deployment) section before deploying Rac
 
 ## Verify Racetrack
 
-After runninf the installer, verify the status of your deployments using one of your favorite tools:
+After running the installer, verify the status of your deployments using one of your favorite tools:
 
 - `kubectl get pods`
 - Cloud Console
