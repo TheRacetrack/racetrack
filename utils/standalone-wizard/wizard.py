@@ -120,14 +120,14 @@ def install_to_docker(config: 'SetupConfig'):
     wait_for_lifecycle(lifecycle_url)
 
     try:
-        auth_token = get_admin_auth_token('admin', dashboard_url)
+        auth_token = get_admin_auth_token('admin', lifecycle_url)
         logger.info('Changing default admin password…')
-        change_admin_password(auth_token, 'admin', config.admin_password, dashboard_url)
+        change_admin_password(auth_token, 'admin', config.admin_password, lifecycle_url)
     except ResponseError as e:
         if not e.status_code == 401:  # Unauthorized
             raise e
 
-    config.admin_auth_token = get_admin_auth_token(config.admin_password, dashboard_url)
+    config.admin_auth_token = get_admin_auth_token(config.admin_password, lifecycle_url)
 
     logger.info('Configuring racetrack client…')
     racetrack_cmd = 'python -m racetrack_client '
@@ -242,18 +242,17 @@ def install_to_kubernetes(config: 'SetupConfig'):
 
     logger.info('Waiting until Racetrack is operational…')
     lifecycle_url = f'http://{config.public_ip}/lifecycle'
-    dashboard_url = f'http://{config.public_ip}/dashboard'
     wait_for_lifecycle(lifecycle_url)
 
     try:
-        auth_token = get_admin_auth_token('admin', dashboard_url)
+        auth_token = get_admin_auth_token('admin', lifecycle_url)
         logger.info('Changing default admin password…')
-        change_admin_password(auth_token, 'admin', config.admin_password, dashboard_url)
+        change_admin_password(auth_token, 'admin', config.admin_password, lifecycle_url)
     except ResponseError as e:
         if not e.status_code == 401:  # Unauthorized
             raise e
 
-    config.admin_auth_token = get_admin_auth_token(config.admin_password, dashboard_url)
+    config.admin_auth_token = get_admin_auth_token(config.admin_password, lifecycle_url)
 
     logger.info('Configuring racetrack client…')
     racetrack_cmd = 'python -m racetrack_client '
@@ -264,7 +263,7 @@ def install_to_kubernetes(config: 'SetupConfig'):
     shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure')
 
     logger.info(f'''Racetrack is ready to use.
-    Visit Racetrack Dashboard at {dashboard_url}
+    Visit Racetrack Dashboard at http://{config.public_ip}/dashboard
     Log in with username: admin, password: {config.admin_password}
     To deploy here, configure your racetrack client: racetrack set remote {lifecycle_url}
     ''')
@@ -470,8 +469,8 @@ def generate_secrets(config: 'SetupConfig'):
     save_local_config(config)
 
 
-def get_admin_auth_token(password: str, dashboard_url: str) -> str:
-    response = Requests.post(f'{dashboard_url}/api/v1/users/login', json={
+def get_admin_auth_token(password: str, lifecycle_url: str) -> str:
+    response = Requests.post(f'{lifecycle_url}/api/v1/users/login', json={
         'username': 'admin',
         'password': password,
     })
@@ -479,8 +478,8 @@ def get_admin_auth_token(password: str, dashboard_url: str) -> str:
     return response.json()['token']
 
 
-def change_admin_password(auth_token: str, old_pass: str, new_pass: str, dashboard_url: str):
-    response = Requests.put(f'{dashboard_url}/api/v1/users/change_password', headers={
+def change_admin_password(auth_token: str, old_pass: str, new_pass: str, lifecycle_url: str):
+    response = Requests.put(f'{lifecycle_url}/api/v1/users/change_password', headers={
         'X-Racetrack-Auth': auth_token,
     }, json={
         'old_password': old_pass,
