@@ -11,6 +11,17 @@ and how to deploy a sample job there.
   verify with `docker ps && docker --version`
 - [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository) -
   verify with `docker compose version`
+- curl
+
+For instance, on Debian-based systems, it can be installed it with:
+```sh
+sudo apt update && sudo apt install curl python3 python3-pip python3-venv
+# Install user-managed docker
+curl -fsSL https://get.docker.com -o install-docker.sh
+sh install-docker.sh
+sudo usermod -aG docker $USER
+newgrp docker
+```
 
 ## 1. Set up a local environment (optional)
 For your convenience use virtual environment:
@@ -20,19 +31,20 @@ python3 -m venv venv
 . venv/bin/activate
 ```
 
-## 2. Set up local Racetrack
+## 2. Install local Racetrack
 
-Start Racetrack components with a [utility script](https://github.com/TheRacetrack/racetrack/blob/master/utils/quickstart-up.sh):
+Start Racetrack components with an [installer script](https://github.com/TheRacetrack/racetrack/blob/master/utils/standalone-wizard/wizard.py):
 ```shell
-curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-up.sh | bash -s
+sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/standalone-wizard/runner.sh)
 ```
 
-Racetrack is now ready to accept `python3` jobs at [127.0.0.1:7102](http://127.0.0.1:7102).
+Follow the installation steps. Choose `docker` infrastructure target (default one).
+Shortly after, your Racetrack instance will be ready to accept `python3` jobs at [127.0.0.1:7102](http://127.0.0.1:7102).
 
 ## 3. Install Racetrack client
 
 Install `racetrack` CLI client:
-```
+```sh
 python3 -m pip install --upgrade racetrack-client
 ```
 
@@ -72,7 +84,7 @@ This will convert your source code to a REST microservice workload, called "Job"
 
 You can find your application on the Racetrack Dashboard,
 which is available at [http://127.0.0.1:7103/dashboard](http://127.0.0.1:7103/dashboard)
-(use default login `admin` with password `admin`).
+(use login `admin` and password provided by the installer script).
 
 Also, you should get the link to your Job from the `racetrack` client output.
 Check it out at [http://127.0.0.1:7105/pub/job/adder/0.0.1](http://127.0.0.1:7105/pub/job/adder/0.0.1).
@@ -90,7 +102,7 @@ curl -X POST "http://127.0.0.1:7105/pub/job/adder/latest/api/v1/perform" \
 
 ## 6. Clean up
 
-Tear down all the components with a [quickstart-down.sh script](https://github.com/TheRacetrack/racetrack/blob/master/utils/quickstart-down.sh):
+Tear down Racetrack instance using `Makefile` created by the installer script:
 ```shell
-curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/quickstart-down.sh | bash -s
+make clean
 ```

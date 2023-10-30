@@ -13,4 +13,5 @@ down:
 	DOCKER_BUILDKIT=1 docker compose down
 
 clean: down
+	bash cleanup-jobs-docker.sh
 	rm -rf .plugins
