@@ -49,31 +49,34 @@ extra:
 
 nav:
   - Introduction: README.md
-  - Tutorials:
-    - Using Racetrack:
+  - Using Racetrack:
+    - How-to guides:
       - Quickstart: docs/quickstart.md
+      - Using plugins: docs/development/using-plugins.md
+    - Tutorials:
       - User Guide: docs/user.md
       - Local Kubernetes Setup: docs/local-kubernetes-setup.md
       - Permission model: docs/permissions.md
       - CLI client: racetrack_client/README.md
-    - Plugins:
-      - Using plugins: docs/development/using-plugins.md
       - Developing plugins: docs/development/developing-plugins.md
       - Job type plugins: docs/development/plugins-job-types.md
-    - Development:
-      - Developer manual: docs/development/develop.md
-  - How-to guides:
-    - Deployment:
+    - Reference:
+      - Job Manifest File Schema: docs/manifest-schema.md
+      - Changelog: docs/CHANGELOG.md
+    - Explanation:
+      - Glossary: docs/glossary.md
+  - Installation:
+    - How-to guides:
       - Installation to standalone host: docs/deployment/standalone-host.md
       - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
       - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md
       - Remote Docker Gateway: docs/deployment/remote-docker-gateway.md
-    - Administering: docs/admin.md
-    - Releasing a version: docs/development/release.md
-  - Reference:
-    - Job Manifest File Schema: docs/manifest-schema.md
-    - Changelog: docs/CHANGELOG.md
-    - Bill of Materials: docs/development/bom.md
-    - Copyright Notices: docs/license/copyright-notices.md
-  - Explanation:
-    - Glossary: docs/glossary.md
+  - Development:
+    - Tutorials:
+      - Developer manual: docs/development/develop.md
+    - How-to guides:
+      - Administering: docs/admin.md
+      - Releasing a version: docs/development/release.md
+    - Reference:
+      - Bill of Materials: docs/development/bom.md
+      - Copyright Notices: docs/license/copyright-notices.md
