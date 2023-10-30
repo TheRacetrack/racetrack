@@ -39,7 +39,7 @@ spec:
             - name: AUTH_DEBUG
               value: 'true'
             - name: LIFECYCLE_AUTH_TOKEN
-              value: '{{ PUB_TOKEN }}'
+              value: '${PUB_TOKEN}'
           livenessProbe:
             httpGet:
               path: /live

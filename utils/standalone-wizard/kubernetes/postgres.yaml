@@ -116,7 +116,7 @@ data:
   db.sql: |
     -- should be the same as in postgres/init.sql --
     CREATE SCHEMA IF NOT EXISTS racetrack AUTHORIZATION racetrack;
-    CREATE USER racetrack WITH ENCRYPTED PASSWORD '{{ POSTGRES_PASSWORD }}';
+    CREATE USER racetrack WITH ENCRYPTED PASSWORD '${POSTGRES_PASSWORD}';
     GRANT ALL PRIVILEGES ON DATABASE racetrack TO racetrack;
     ALTER ROLE racetrack SET search_path = racetrack;
 
