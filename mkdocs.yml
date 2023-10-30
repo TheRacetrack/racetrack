@@ -50,21 +50,24 @@ extra:
 nav:
   - Introduction: README.md
   - Using Racetrack:
-    - How-to guides:
-      - Quickstart: docs/quickstart.md
-      - Using plugins: docs/development/using-plugins.md
     - Tutorials:
       - User Guide: docs/user.md
       - Local Kubernetes Setup: docs/local-kubernetes-setup.md
       - Permission model: docs/permissions.md
       - CLI client: racetrack_client/README.md
-      - Developing plugins: docs/development/developing-plugins.md
-      - Job type plugins: docs/development/plugins-job-types.md
+    - How-to guides:
+      - Quickstart: docs/quickstart.md
     - Reference:
       - Job Manifest File Schema: docs/manifest-schema.md
       - Changelog: docs/CHANGELOG.md
     - Explanation:
       - Glossary: docs/glossary.md
+  - Plugins:
+    - Tutorials:
+      - Developing plugins: docs/development/developing-plugins.md
+      - Job type plugins: docs/development/plugins-job-types.md
+    - How-to guides:
+      - Using plugins: docs/development/using-plugins.md
   - Installation:
     - How-to guides:
       - Installation to standalone host: docs/deployment/standalone-host.md
