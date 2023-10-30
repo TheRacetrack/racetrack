@@ -36,7 +36,13 @@ def main():
         logger.warning(f'This installer requires Python 3.8 or higher, but found: {sys.version_info}')
 
     config: SetupConfig = load_local_config()
+    try:
+        install_racetrack(config)
+    except KeyboardInterrupt:
+        print()
 
+
+def install_racetrack(config: 'SetupConfig'):
     if not config.infrastructure:
         config.infrastructure = prompt_text_choice('Choose the infrastructure target to deploy Racetrack:', {
             'docker': 'Deploy Racetrack and its jobs to in-place Docker Engine.',
@@ -120,24 +126,10 @@ def install_to_docker(config: 'SetupConfig'):
     logger.info('Waiting until Racetrack is operational (usually it takes 30s)…')
     lifecycle_url = 'http://127.0.0.1:7102'
     wait_for_lifecycle(lifecycle_url)
-
-    try:
-        auth_token = get_admin_auth_token('admin', lifecycle_url)
-        logger.info('Changing default admin password…')
-        change_admin_password(auth_token, 'admin', config.admin_password, lifecycle_url)
-    except ResponseError as e:
-        if not e.status_code == 401:  # Unauthorized
-            raise e
-
-    config.admin_auth_token = get_admin_auth_token(config.admin_password, lifecycle_url)
-
-    logger.info('Configuring racetrack client…')
-    racetrack_cmd = 'python -m racetrack_client '
-    shell(racetrack_cmd + f'set remote {lifecycle_url}')
-    shell(racetrack_cmd + f'login {config.admin_auth_token}')
+    login_first_time(config, lifecycle_url)
     logger.info('Installing plugins…')
-    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-python-job-type')
-    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
+    shell('python -m racetrack_client plugin install github.com/TheRacetrack/plugin-python-job-type')
+    shell('python -m racetrack_client plugin install github.com/TheRacetrack/plugin-docker-infrastructure')
 
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at {config.external_address}:7103/dashboard
@@ -246,24 +238,11 @@ def install_to_kubernetes(config: 'SetupConfig'):
     logger.info('Waiting until Racetrack is operational…')
     lifecycle_url = f'http://{config.public_ip}/lifecycle'
     wait_for_lifecycle(lifecycle_url)
+    login_first_time(config, lifecycle_url)
 
-    try:
-        auth_token = get_admin_auth_token('admin', lifecycle_url)
-        logger.info('Changing default admin password…')
-        change_admin_password(auth_token, 'admin', config.admin_password, lifecycle_url)
-    except ResponseError as e:
-        if not e.status_code == 401:  # Unauthorized
-            raise e
-
-    config.admin_auth_token = get_admin_auth_token(config.admin_password, lifecycle_url)
-
-    logger.info('Configuring racetrack client…')
-    racetrack_cmd = 'python -m racetrack_client '
-    shell(racetrack_cmd + f'set remote {lifecycle_url}')
-    shell(racetrack_cmd + f'login {config.admin_auth_token}')
     logger.info('Installing plugins…')
-    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-python-job-type')
-    shell(racetrack_cmd + 'plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure')
+    shell('python -m racetrack_client plugin install github.com/TheRacetrack/plugin-python-job-type')
+    shell('python -m racetrack_client plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure')
 
     logger.info(f'''Racetrack is ready to use.
 Visit Racetrack Dashboard at http://{config.public_ip}/dashboard
@@ -471,6 +450,22 @@ def generate_secrets(config: 'SetupConfig'):
         logger.info("Generating Image builder's auth token…")
         config.image_builder_auth_token = generate_auth_token(config.auth_key, 'image-builder')
     save_local_config(config)
+
+
+def login_first_time(config: 'SetupConfig', lifecycle_url: str):
+    try:
+        auth_token = get_admin_auth_token('admin', lifecycle_url)
+        logger.info('Changing default admin password…')
+        change_admin_password(auth_token, 'admin', config.admin_password, lifecycle_url)
+    except ResponseError as e:
+        if not e.status_code == 401:  # Unauthorized
+            raise e
+    config.admin_auth_token = get_admin_auth_token(config.admin_password, lifecycle_url)
+
+    logger.info('Configuring racetrack client…')
+    racetrack_cmd = 'python -m racetrack_client '
+    shell(racetrack_cmd + f'set remote {lifecycle_url}')
+    shell(racetrack_cmd + f'login {config.admin_auth_token}')
 
 
 def get_admin_auth_token(password: str, lifecycle_url: str) -> str:
