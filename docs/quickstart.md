@@ -1,6 +1,6 @@
 # Quickstart
 
-This tutorial shows how to start a local instance of Racetrack
+This how-to guide shows how to start a local instance of Racetrack
 and how to deploy a sample job there.
 
 ## Prerequisites
@@ -106,3 +106,10 @@ Tear down Racetrack instance using `Makefile` created by the installer script:
 ```shell
 make clean
 ```
+
+## What's next?
+- [User Guide](./user.md)
+- [Available plugins](./user/available-plugins.md)
+- [Glossary](./glossary.md)
+- [Local Kubernetes Setup](./local-kubernetes-setup.md)
+- [Installation to standalone host](./deployment/standalone-host.md)

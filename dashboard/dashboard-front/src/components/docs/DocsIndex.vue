@@ -46,7 +46,7 @@ onMounted(() => {
                         <ul>
                         <li><router-link :to="{name: 'docs-page', params: {pageName: 'user.md'}}">User Guidelines</router-link> - what is Racetrack, getting started, tutorial</li>
                         <li><router-link :to="{name: 'docs-page', params: {pageName: 'manifest-schema.md'}}">Job Manifest File Schema</router-link> - list of available YAML fields</li>
-                        <li><router-link :to="{name: 'docs-page', params: {pageName: 'development/using-plugins.md'}}">Using plugins</router-link> - 
+                        <li><router-link :to="{name: 'docs-page', params: {pageName: 'user/using-plugins.md'}}">Using plugins</router-link> -
                         how to install plugins</li>
                         <li><router-link :to="{name: 'docs-page', params: {pageName: 'glossary.md'}}">Glossary</router-link> - terminology explained</li>
                         <li><router-link :to="{name: 'docs-page', params: {pageName: 'CHANGELOG.md'}}">CHANGELOG</router-link> - latest user-facing, notable changes</li>

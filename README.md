@@ -90,7 +90,7 @@ please follow the [Tutorial](docs/user.md#tutorials).
 * [Quickstart - local installation](docs/quickstart.md)
 * [Glossary](docs/glossary.md)
 * [Installation to Kubernetes](docs/deployment/k8s-installation.md)
-* [Using plugins](docs/development/using-plugins.md)
+* [Available plugins](docs/user/available-plugins.md)
 * [Developing plugins](docs/development/developing-plugins.md)
 * [Developing a new job type](docs/development/plugins-job-types.md)
 * [CLI client](racetrack_client/README.md)

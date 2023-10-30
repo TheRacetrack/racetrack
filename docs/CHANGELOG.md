@@ -447,7 +447,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of `3.8-slim-buster`.
 - Plugins are distributed as ZIP files.
   They can be installed and uninstalled in a Dashboard's Administration page.
-  See [using-plugins.md](development/using-plugins.md).
+  See [using-plugins.md](user/using-plugins.md).
 
 ## [2.2.1] - 2022-08-25
 ### Changed

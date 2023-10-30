@@ -10,7 +10,7 @@ Kubernetes workloads.
 You write your code - say for a ML model or micro-service - in a specific style,
 you hand it over to Racetrack, and a minute later it is in production.
 
-Racetrack allows you to use several languages and frameworks (provided by [installed plugins](./development/using-plugins.md)):
+Racetrack allows you to use several languages and frameworks (provided by [installed plugins](./user/available-plugins.md)), for example:
 
 * [Standard Python 3](https://github.com/TheRacetrack/plugin-python-job-type)
 * [Golang services](https://github.com/TheRacetrack/plugin-go-job-type)
@@ -183,9 +183,9 @@ Racetrack command line client will need authentication.
 As a Racetrack user, your workflow will typically look similar to this:
 
 1. Write a piece of code doing something useful
-1. Pick the appropriate Racetrack Job Type
+1. Pick the appropriate Racetrack [Job Type](./user/available-plugins.md)
 1. Refactor your code to follow the Convention
-1. Compose an appropriate `job.yaml`
+1. Compose an appropriate `job.yaml` [Manifest](manifest-schema.md)
 1. Push it to GitLab or Github
 1. Standing in the root directory of your code, submit the Job using the
    Racetrack command line client
@@ -336,13 +336,9 @@ racetrack set remote RACETRACK_URL_OR_ALIAS
 ```
 and then you can omit `--remote` parameter in the next commands.
 
-### The Job Manifest File Schema
-
-See [Job Manifest File Schema](manifest-schema.md)
-
 ### The Job Types
 
-These links show how to use particular job types installed by the [plugins](./development/using-plugins.md):
+These links show how to use particular job types installed by the [plugins](./user/available-plugins.md):
 
 - [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
   designed for Python projects
@@ -549,3 +545,11 @@ index 2063911..a2e196d 100644
      apt-get update -y && apt-get install -y docker-ce-cli
 ```
 </details>
+
+## What's next?
+- [User Guide](./user.md)
+- [Available plugins](./user/available-plugins.md)
+- [Glossary](./glossary.md)
+- [Job Manifest File Schema](./manifest-schema.md)
+- [Local Kubernetes Setup](./local-kubernetes-setup.md)
+- [Installation to standalone host](./deployment/standalone-host.md)
