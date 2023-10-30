@@ -54,14 +54,14 @@ nav:
       - User Guide: docs/user.md
       - Local Kubernetes Setup: docs/local-kubernetes-setup.md
       - Permission model: docs/permissions.md
-      - CLI client: racetrack_client/README.md
     - How-to guides:
       - Quickstart: docs/quickstart.md
     - Reference:
       - Job Manifest File Schema: docs/manifest-schema.md
-      - Changelog: docs/CHANGELOG.md
+      - CLI client: racetrack_client/README.md
     - Explanation:
       - Glossary: docs/glossary.md
+      - Changelog: docs/CHANGELOG.md
   - Plugins:
     - Tutorials:
       - Developing plugins: docs/development/developing-plugins.md
