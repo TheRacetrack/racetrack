@@ -6,19 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Manifest values can be overriden with key-value pairs coming from a command line.
-  It doesn't modify actual file, but its one-time, in-memory version before submitting it.
-  Racetrack client has `--extra-vars KEY=VALUE` parameter (or `-e` in short)
-  that overwrites values found in YAML manifest.
+-   Manifest values can be overriden with key-value pairs coming from a command line.
+    It doesn't modify actual file, but its one-time, in-memory version before submitting it.
+    Racetrack client has `--extra-vars KEY=VALUE` parameter (or `-e` in short)
+    that overwrites values found in YAML manifest.
 
-  - `KEY` is the name of field and it can contain dots to refer to a nested field, for example `git.branch=master`.
-  - `VALUE` can be any YAML or JSON object.
+    - `KEY` is the name of field and it can contain dots to refer to a nested field, for example `git.branch=master`.
+    - `VALUE` can be any YAML or JSON object.
 
-  Extra vars parameters can be used multiple times in one command.  
-  Example: `racetrack deploy -e secret_runtime_env_file=.env.local -e git.branch=$(git rev-parse --abbrev-ref HEAD)`  
-  It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.  
-  Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
-  ([#340](https://github.com/TheRacetrack/racetrack/issues/340))
+    Extra vars parameters can be used multiple times in one command.  
+    Example: `racetrack deploy -e secret_runtime_env_file=.env.local -e git.branch=$(git rev-parse --abbrev-ref HEAD)`  
+    It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.  
+    Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
+    ([#340](https://github.com/TheRacetrack/racetrack/issues/340))
 
 - You can install Racetrack to a standalone host (e.g. EC2 host or fresh VM instance)
   using the installer script that runs it on the Docker Engine infrastructure.
@@ -31,14 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.21.0] - 2023-10-16
 ### Added
-- Pub can now be turned into a remote gateway mode.
-  It allows to distribute services between clusters as 2 (or more) separate infrastructures:
-  - main hub - hosting core Racetrack services: Lifecycle, image-builder, Dashboard, main Pub
-  - remote jobs - infrastructure hosting jobs and remote Pub gateway that protects jobs from unauthorized access.
+-   Pub can now be turned into a remote gateway mode.
+    It allows to distribute services between clusters as 2 (or more) separate infrastructures:
 
-  It can cooperate with the following infrastructure plugins:
-  - [remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes)
-  - [remote docker plugin](https://github.com/TheRacetrack/plugin-remote-docker)
+    - main hub - hosting core Racetrack services: Lifecycle, image-builder, Dashboard, main Pub
+    - remote jobs - infrastructure hosting jobs and remote Pub gateway that protects jobs from unauthorized access.
+
+    It can cooperate with the following infrastructure plugins:
+
+    - [remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes)
+    - [remote docker plugin](https://github.com/TheRacetrack/plugin-remote-docker)
 
 - New administrative endpoint for cleaning up plugins mess.
   ([#331](https://github.com/TheRacetrack/racetrack/issues/331))

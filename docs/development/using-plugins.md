@@ -6,63 +6,62 @@ customized, tailored functionality to a generic Racetrack.
 These are the known, public Racetrack plugins that are commonly available to be installed:
 
 - Job types:
-    - [github.com/TheRacetrack/plugin-python-job-type](https://github.com/TheRacetrack/plugin-python-job-type) -
-      Python 3 Job Type
+
+    - [Python 3 Job Type](https://github.com/TheRacetrack/plugin-python-job-type)
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
       ```
 
-    - [github.com/TheRacetrack/plugin-docker-proxy-job-type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) -
-      Dockerfile-based Job Type (any language or app wrapped in a Dockerfile like Drupal or Sphinx)
+    - [Dockerfile-based Job Type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
+      (any language or app wrapped in a Dockerfile like Drupal or Sphinx)
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-docker-proxy-job-type
       ```
 
-    - [github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type) -
-      Golang (Go) Job Type
+    - [Golang (Go) Job Type](https://github.com/TheRacetrack/plugin-go-job-type)
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-go-job-type
       ```
 
-    - [github.com/TheRacetrack/plugin-rust-job-type](https://github.com/TheRacetrack/plugin-rust-job-type) -
-      Rust Job Type
+    - [Rust Job Type](https://github.com/TheRacetrack/plugin-rust-job-type)
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-rust-job-type
       ```
 
-    - [https://github.com/TheRacetrack/plugin-hugo-job-type](https://github.com/TheRacetrack/plugin-hugo-job-type) -
-      HUGO Job Type
+    - [HUGO Job Type](https://github.com/TheRacetrack/plugin-hugo-job-type)
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-hugo-job-type
       ```
 
 - Infrastructure Targets:
-    - [github.com/TheRacetrack/plugin-docker-infrastructure](https://github.com/TheRacetrack/plugin-docker-infrastructure) -
-      deploys to a local Docker
+
+    - [Docker infrastructure](https://github.com/TheRacetrack/plugin-docker-infrastructure) -
+      deploys to a local (in-place) Docker
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure
       ```
 
-    - [github.com/TheRacetrack/plugin-kubernetes-infrastructure](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure) -
+    - [Kubernetes infrastructure](https://github.com/TheRacetrack/plugin-kubernetes-infrastructure) -
       deploys to local Kubernetes
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
       ```
 
-    - [github.com/TheRacetrack/plugin-remote-docker](https://github.com/TheRacetrack/plugin-remote-docker) -
+    - [Remote Docker](https://github.com/TheRacetrack/plugin-remote-docker) -
       deploys to remote Docker Daemon
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-remote-docker
       ```
 
-    - [github.com/TheRacetrack/plugin-remote-kubernetes](https://github.com/TheRacetrack/plugin-remote-kubernetes) -
+    - [Remote Kubernetes](https://github.com/TheRacetrack/plugin-remote-kubernetes) -
       deploys to remote Kubernetes
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-remote-kubernetes
       ```
 
 - Others:
-    - [github.com/TheRacetrack/plugin-teams-notifications](https://github.com/TheRacetrack/plugin-teams-notifications) -
+
+    - [Teams notifications](https://github.com/TheRacetrack/plugin-teams-notifications) -
       Sending notifications to Teams channel
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-teams-notifications
@@ -91,7 +90,7 @@ where `plugin_uri` can be either:
   it takes the ZIP file from the specific release.
   Pay attention to omit `https://` part.
 
-In first place, choose the current remote address so you can omit `--remote` parameter later on:
+In first place, choose the current remote address, so you can omit `--remote` parameter later on:
 ```shell
 racetrack set remote http://127.0.0.1:7002 # use local kind setup
 ```

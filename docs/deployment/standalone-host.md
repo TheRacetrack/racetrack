@@ -29,7 +29,8 @@ and run
 ```sh
 sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/standalone-wizard/runner.sh)
 ```
-Follow the installation steps. Shortly after, your Racetrack instance will be ready.
+Follow the installation steps. Choose `docker` infrastructure target.
+Shortly after, your Racetrack instance will be ready.
 
 ### Notes
 
@@ -39,21 +40,23 @@ Follow the installation steps. Shortly after, your Racetrack instance will be re
   to skip answering installer's questions and go with the defaults.
   You can also set custom values for parameters by setting environment variables:
 
-  - `export RT_EXTERNAL_ADDRESS="http://127.0.0.1"` to set the external address that your Racetrack will be accessed at (IP or domain name).
+    - `export RT_EXTERNAL_ADDRESS="http://127.0.0.1"` to set the external address that your Racetrack will be accessed at (IP or domain name).
+    - `export RT_INFRASTRUCTURE="docker"` to set the infrastructure target to deploy Racetrack.
 
 - Edit or remove local setup configuration at `setup.json`
   and run installer again to reconfigure installation steps.
 - You can use locally installed `racetrack` CLI client after activating venv `. venv/bin/activate`.
   It's already logged in and has remote address configured.
-- The following services are hosted on address `0.0.0.0`, thus publicly available:
 
-  - Dashboard on port `7103`
-  - Lifecycle on port `7102`
-  - Pub on port `7105`
-  - Lifecycle Supervisor on port `7106`
-  - Grafana on port `3100`
+-   The following services are hosted on address `0.0.0.0`, thus publicly available:
 
-  Jobs and other services should be running only in the internal network.
+    - Dashboard on port `7103`
+    - Lifecycle on port `7102`
+    - Pub on port `7105`
+    - Lifecycle Supervisor on port `7106`
+    - Grafana on port `3100`
+
+    Jobs and other services should be running only in the internal network.
 
 - This installer makes use of [Docker Infrastructure plugin](https://github.com/TheRacetrack/plugin-docker-infrastructure)
   to deploy jobs to in-place Docker Engine infrastructure target.

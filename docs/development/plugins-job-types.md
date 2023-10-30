@@ -84,7 +84,7 @@ following the guide above would look as follows:
 
 ### 1. Create a git repository
 
-Create https://github.com/TheRacetrack/plugin-go-job-type.
+Create [https://github.com/TheRacetrack/plugin-go-job-type](https://github.com/TheRacetrack/plugin-go-job-type).
 
 ### 2. Create a plugin manifest in a plugin subdirectory
 
