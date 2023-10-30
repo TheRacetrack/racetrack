@@ -39,9 +39,9 @@ If you're new to Racetrack, you can just run the following command to launch a l
 make compose-up
 ```
 
-Then, you can visit http://127.0.0.1:7103 to see the Racetrack Dashboard (default user/password: admin/admin).
+Then, you can visit [http://127.0.0.1:7103](http://127.0.0.1:7103) to see the Racetrack Dashboard (default user/password: admin/admin).
 
-Lifecycle server runs on http://127.0.0.1:7102 (it's the URL you deploy your jobs there).
+Lifecycle server runs on [http://127.0.0.1:7102](http://127.0.0.1:7102) (it's the URL you deploy your jobs there).
 Let's create a "dev" alias for it and set it as a current remote:
 ```bash
 racetrack set alias dev http://127.0.0.1:7102
@@ -92,11 +92,11 @@ Submitting a job:
 racetrack deploy sample/python-class/ --remote http://127.0.0.1:7202
 ```
 
-New container should be created. It can be accessed at http://127.0.0.1:7000
+New container should be created. It can be accessed at [http://127.0.0.1:7000](http://127.0.0.1:7000)
 You need to `docker rm` or `make docker-clean-job` to clean leftover job on your own.
 In case of errors, troubleshoot with `docker ps` and `docker logs -f <job_name>`.
 
-Job can be accessed through the PUB at http://127.0.0.1:7205/pub/job/adder/latest,
+Job can be accessed through the PUB at [http://127.0.0.1:7205/pub/job/adder/latest](http://127.0.0.1:7205/pub/job/adder/latest),
 where "adder" is a name of a job from `job.yaml`.
 
 ## Docker compose
@@ -133,9 +133,9 @@ Jobs are deployed as k8s pods, and should be managed as such.
 
 ## Dashboard
 
-- Racetrack admin panel is at: http://127.0.0.1:7002/lifecycle/admin/
+- Racetrack admin panel is at: [http://127.0.0.1:7002/lifecycle/admin/](http://127.0.0.1:7002/lifecycle/admin/)
   (user/password: admin)
-- Racetrack dashboard (for public consumption) is at: http://127.0.0.1:7003/dashboard/
+- Racetrack dashboard (for public consumption) is at: [http://127.0.0.1:7003/dashboard/](http://127.0.0.1:7003/dashboard/)
   
 (ports might need to be adjusted according to below table)
 
