@@ -619,7 +619,7 @@ def generate_password(length: int = 32) -> str:
 
 def template_repository_file(src_relative_url: str, dst_path: str, context_vars: Dict[str, str]):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
-    logger.debug(f'Creating {dst_path}')
+    logger.debug(f'Templating {dst_path}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     template = string.Template(src_content.decode())
@@ -631,7 +631,7 @@ def template_repository_file(src_relative_url: str, dst_path: str, context_vars:
 
 def download_repository_file(src_relative_url: str, dst_path: Union[str, Path]):
     src_file_url = GIT_REPOSITORY_PREFIX + src_relative_url
-    logger.debug(f'Templating {dst_path}')
+    logger.debug(f'Creating {dst_path}')
     with urllib.request.urlopen(src_file_url) as response:
         src_content: bytes = response.read()
     dst_file = Path(dst_path)
