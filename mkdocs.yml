@@ -50,24 +50,36 @@ extra:
 nav:
   - Introduction: README.md
   - Using Racetrack:
-    - Quickstart: docs/quickstart.md
-    - User Guide: docs/user.md
-    - Local Kubernetes Setup: docs/local-kubernetes-setup.md
-    - Job Manifest File Schema: docs/manifest-schema.md
-    - Permission model: docs/permissions.md
-    - CLI client: racetrack_client/README.md
+    - Tutorials:
+      - User Guide: docs/user.md
+      - Local Kubernetes Setup: docs/local-kubernetes-setup.md
+      - Permission model: docs/permissions.md
+    - How-to guides:
+      - Quickstart: docs/quickstart.md
+    - Reference:
+      - Job Manifest File Schema: docs/manifest-schema.md
+      - CLI client: racetrack_client/README.md
+    - Explanation:
+      - Glossary: docs/glossary.md
+      - Changelog: docs/CHANGELOG.md
   - Plugins:
-    - Using plugins: docs/development/using-plugins.md
-    - Developing plugins: docs/development/developing-plugins.md
-    - Job type plugins: docs/development/plugins-job-types.md
+    - Tutorials:
+      - Developing plugins: docs/development/developing-plugins.md
+      - Job type plugins: docs/development/plugins-job-types.md
+    - How-to guides:
+      - Using plugins: docs/development/using-plugins.md
+  - Installation:
+    - How-to guides:
+      - Installation to standalone host: docs/deployment/standalone-host.md
+      - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
+      - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md
+      - Remote Docker Gateway: docs/deployment/remote-docker-gateway.md
   - Development:
-    - Developer manual: docs/development/develop.md
-    - Releasing a version: docs/development/release.md
-    - Bill of Materials: docs/development/bom.md
-    - Copyright Notices: docs/license/copyright-notices.md
-  - Deployment:
-    - Installation to standalone host: docs/deployment/standalone-host.md
-    - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
-    - Administering: docs/admin.md
-  - Changelog: docs/CHANGELOG.md
-  - Glossary: docs/glossary.md
+    - Tutorials:
+      - Developer manual: docs/development/develop.md
+    - How-to guides:
+      - Administering: docs/admin.md
+      - Releasing a version: docs/development/release.md
+    - Reference:
+      - Bill of Materials: docs/development/bom.md
+      - Copyright Notices: docs/license/copyright-notices.md
