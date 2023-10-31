@@ -3,7 +3,8 @@ from typing import Callable, Iterable
 from lifecycle.config import Config
 from lifecycle.infrastructure.infra_target import get_infrastructure_target, list_infrastructure_targets
 from lifecycle.monitor.base import LogsStreamer
-from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.context_error import wrap_context, ContextError
+from racetrack_client.log.exception import log_exception
 from racetrack_commons.entities.dto import JobDto
 from racetrack_commons.plugin.engine import PluginEngine
 
@@ -12,7 +13,10 @@ def list_cluster_jobs(config: Config, plugin_engine: PluginEngine) -> Iterable[J
     """List jobs deployed in a cluster"""
     infrastructures = list_infrastructure_targets(plugin_engine)
     for infrastructure in infrastructures:
-        yield from infrastructure.job_monitor.list_jobs(config)
+        try:
+            yield from infrastructure.job_monitor.list_jobs(config)
+        except BaseException as e:
+            log_exception(ContextError(f'failed to list jobs from {infrastructure}', e))
 
 
 def check_job_condition(job: JobDto, on_job_alive: Callable):
