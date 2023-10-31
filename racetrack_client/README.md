@@ -122,3 +122,7 @@ racetrack deploy -e secret_runtime_env_file=.env.local -e git.branch=$(git rev-p
 
 It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.  
 Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
+
+### Getting auth token
+Command `racetrack get auth-token` prints out current auth token.
+It can be used in CLI scripts: `curl -H "X-Racetrack-Auth: $(racetrack get auth-token)"`

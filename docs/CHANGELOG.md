@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   using the installer script that runs it on the Docker Engine infrastructure.
   ([#308](https://github.com/TheRacetrack/racetrack/issues/308))
 
+- A new command `racetrack get auth-token` prints out current auth token.
+  It can be used in CLI scripts: `curl -H "X-Racetrack-Auth: $(racetrack get auth-token)"`
+  ([#357](https://github.com/TheRacetrack/racetrack/issues/357))
+
 ### Fixed
 - Manifest is validated after updating it on Dashboard.
   Changing primary keys (name or value) is forbidden.
