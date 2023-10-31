@@ -453,12 +453,14 @@ def generate_secrets(config: 'SetupConfig'):
 
 
 def login_first_time(config: 'SetupConfig', lifecycle_url: str):
+    # Try to log in with admin:admin. If it succeeds, change the password to something more secure.
     try:
         auth_token = get_admin_auth_token('admin', lifecycle_url)
         logger.info('Changing default admin password…')
         change_admin_password(auth_token, 'admin', config.admin_password, lifecycle_url)
     except ResponseError as e:
-        if not e.status_code == 401:  # Unauthorized
+        # In case of 401 Unauthorized, password is already changed
+        if e.status_code != 401:
             raise e
     config.admin_auth_token = get_admin_auth_token(config.admin_password, lifecycle_url)
 
@@ -502,7 +504,7 @@ class SetupConfig(BaseModel):
     pub_auth_token: str = ''
     image_builder_auth_token: str = ''
     external_address: str = ''
-    admin_password: str = ''
+    admin_password: str = ''  # not the actual password but the one that is supposed to be set
     admin_auth_token: str = ''
     registry_hostname: str = ''
     registry_username: str = ''
