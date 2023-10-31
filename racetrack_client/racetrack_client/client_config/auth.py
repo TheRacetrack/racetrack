@@ -1,3 +1,5 @@
+from typing import Optional
+
 from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.client_config import ClientConfig
 from racetrack_client.client_config.io import load_client_config, save_client_config
@@ -47,3 +49,9 @@ def get_user_auth(client_config: ClientConfig, lifecycle_url: str) -> str:
         raise AuthError(f"missing auth token for {lifecycle_url}. You need to do: racetrack login <token> --remote {lifecycle_url}")
 
     return ''
+
+
+def get_current_auth(remote: Optional[str]) -> str:
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, remote)
+    return get_user_auth(client_config, lifecycle_url)

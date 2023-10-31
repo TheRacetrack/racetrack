@@ -10,7 +10,7 @@ from racetrack_client.client.deploy import BuildContextMethod, send_deploy_reque
 from racetrack_client.client.manage import JobTableColumn, move_job, delete_job, list_jobs, complete_job_name
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client.run import run_job_locally
-from racetrack_client.client_config.auth import login_user_auth, logout_user_auth
+from racetrack_client.client_config.auth import login_user_auth, logout_user_auth, get_current_auth
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_current_remote, get_current_remote, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
@@ -165,7 +165,7 @@ def _logout(
 
 
 # racetrack set ...
-cli_set = typer.Typer(no_args_is_help=True, help='Set global options of the Racetrack client')
+cli_set = typer.Typer(no_args_is_help=True, help='Set local options of the Racetrack client')
 cli.add_typer(cli_set, name="set")
 
 
@@ -197,7 +197,7 @@ def _set_alias(
 
 
 # racetrack get ...
-cli_get = typer.Typer(no_args_is_help=True, help='Read global options of the Racetrack client')
+cli_get = typer.Typer(no_args_is_help=True, help='Read local options of the Racetrack client')
 cli.add_typer(cli_get, name="get")
 
 
@@ -212,6 +212,15 @@ def _get_config():
     """Show all racetrack config values"""
     client_config = load_client_config()
     print(datamodel_to_yaml_str(client_config))
+
+
+@cli_get.command('auth-token')
+def _get_auth_token(
+    remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
+):
+    """Show all racetrack config values"""
+    auth_token = get_current_auth(remote)
+    print(auth_token)
 
 
 # racetrack plugin ...
