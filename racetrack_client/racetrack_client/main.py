@@ -10,7 +10,7 @@ from racetrack_client.client.deploy import BuildContextMethod, send_deploy_reque
 from racetrack_client.client.manage import JobTableColumn, move_job, delete_job, list_jobs, complete_job_name
 from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client.run import run_job_locally
-from racetrack_client.client_config.auth import login_user_auth, logout_user_auth, get_current_auth
+from racetrack_client.client_config.auth import login_user_auth, logout_user_auth, get_current_auth, login_with_username
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_current_remote, get_current_remote, set_config_url_alias
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
@@ -149,11 +149,17 @@ def _version():
 
 @cli.command('login', no_args_is_help=True)
 def _login(
-    user_token: str = typer.Argument(..., show_default=False, help='Racetrack Auth Token from Racetrack\'s user profile'),
+    user_token: str = typer.Argument(default=None, show_default=False, help='Racetrack Auth Token from Racetrack\'s user profile'),
+    username: str = typer.Option(default=None, show_default=False, help="Username to authenticate"),
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
     """Save user's Racetrack Auth Token for Racetrack server"""
-    login_user_auth(remote, user_token)
+    if user_token:
+        login_user_auth(remote, user_token)
+    elif username:
+        login_with_username(remote, username)
+    else:
+        raise RuntimeError('Use either auth token or username')
 
 
 @cli.command('logout')

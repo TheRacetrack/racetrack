@@ -57,6 +57,8 @@ Log in to Racetrack with your user account (you can get your token from the Dash
 racetrack login T0k3n.g0es.H3r3
 ```
 
+Alternatively, command `racetrack login --username ADMIN` allows you to log in with your username and password and saves the auth token without having to visit the Dashboard page.
+
 In case you're going to use a private repository, provide your git credentials so the job can be built from your code:
 ```shell
 racetrack set credentials https://github.com/YourUser/YourRepository USERNAME TOKEN
