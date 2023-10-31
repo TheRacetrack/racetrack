@@ -47,27 +47,27 @@ Racetrack can be extended to [introduce new languages and frameworks](./developm
 
 ![Racetrack architecture for civilians](assets/arch-00.png)
 
-The following terms recur through this document and describe the elements and
+The following terms recur through this documentation and describe the elements and
 actions involved in using Racetrack:
 
-* Job: your code, written in the style required by Racetrack
-* Job Type: which of the languages and frameworks supported by Racetrack you
+* **Job code**: your code, written in the style required by Racetrack
+* **Job Type**: which of the languages and frameworks supported by Racetrack you
   choose to develop your job in
-* Job submission: when you're happy with your code, and you push it to Racetrack
+* **Job submission**: when you're happy with your code, and you push it to Racetrack
   to be deployed
-* Job: when a job is submitted to Racetrack, Racetrack converts it to a
+* **Job**: when a job code is submitted to Racetrack, Racetrack converts it to a
   workload and deploys it. This workload is called a Job
-* Convention: when you pick your Job Type, you will be asked to follow a specific
+* **Convention**: when you pick your Job Type, you will be asked to follow a specific
   style for that type which Racetrack understands; that style is a Convention
-* Manifest: a YAML file in the root of your Job, which specifies the job type
+* **Manifest**: a YAML file in the root of your Job, which specifies the job type
   and provides configuration values for your Job according to that Job Type
 
 To tie all of these terms together:
 
 > As a data scientist, I selected the Python 3 **Job Type** to develop my ML
-> model **Job** in. I wrote my Job according to the Job Type **convention**. I
+> model **Job** in. I wrote my **Job code** according to the Job Type **convention**. I
 > composed a **Manifest** in which I specified the Job Type I used, and in it I
-> tweaked a few specific parameters for this Job Type. I **submitted** the job
+> tweaked a few specific parameters for this Job Type. I **submitted** the job code
 > to Racetrack, after which it was deployed as a **Job**.
 
 ### Conventions
