@@ -27,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Command `racetrack get auth-token` prints out current auth token.
   It can be used in CLI scripts: `curl -H "X-Racetrack-Auth: $(racetrack get auth-token)"`
   ([#357](https://github.com/TheRacetrack/racetrack/issues/357))
-- Command `racetrack login --username ADMIN` allows you to log in with your username and password and saves the auth token without having to visit the Dashboard page.
+- Command `racetrack login --username <username>` allows you to log in with your username and password
+  (entered into the standard input) and saves the auth token without having to visit the Dashboard page.
 
 ### Fixed
 - Manifest is validated after updating it on Dashboard.
