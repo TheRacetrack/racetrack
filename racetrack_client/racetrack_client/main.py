@@ -224,7 +224,7 @@ def _get_config():
 def _get_auth_token(
     remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
 ):
-    """Show all racetrack config values"""
+    """Show currently logged in auth token"""
     auth_token = get_current_auth(remote)
     print(auth_token)
 
