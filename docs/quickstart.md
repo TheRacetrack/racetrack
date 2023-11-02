@@ -1,6 +1,6 @@
 # Quickstart
 
-This how-to guide shows how to start a local instance of Racetrack
+This guide shows how to start a local instance of Racetrack
 and how to deploy a sample job there.
 
 ## Prerequisites
@@ -108,8 +108,8 @@ make clean
 ```
 
 ## What's next?
-- [User Guide](./user.md)
+- [User Guide](./user/user-guide-2.md)
 - [Available plugins](./user/available-plugins.md)
 - [Glossary](./glossary.md)
-- [Local Kubernetes Setup](./local-kubernetes-setup.md)
+- [Local Kubernetes Setup](./deployment/local-kubernetes-setup.md)
 - [Installation to standalone host](./deployment/standalone-host.md)

@@ -5,17 +5,17 @@ This tutorial deploys Racetrack locally on your computer in a
 intended to give you the muscle memory for using a production instance of
 Racetrack, and to help you get used to the core Racetrack concepts.
 
-If you want to set up Racetrack on local Docker engine, see [Quickstart](./quickstart.md).
+If you want to set up Racetrack on local Docker engine, see [Quickstart](../quickstart.md).
 
 ### Prerequisites
 
 1. [Docker v20.10+](https://docs.docker.com/engine/install/ubuntu/)
   managed by a [non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
-1. [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
-1. Python 3.8+ (python3 and python3-venv)
-1. [kind](https://kind.sigs.k8s.io/)
-1. [Kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
-1. (optional) [k9s](https://github.com/derailed/k9s)
+2. [Docker Compose plugin](https://docs.docker.com/compose/install/linux/#install-using-the-repository)
+3. Python 3.8+ (python3 and python3-venv)
+4. [kind](https://kind.sigs.k8s.io/)
+5. [Kubectl](https://kubernetes.io/docs/tasks/tools/) (version 1.24.3 or higher)
+6. (optional) [k9s](https://github.com/derailed/k9s)
 
 ### Installing Racetrack Locally
 
@@ -70,10 +70,10 @@ Before opening this URL, open [Dashboard page](http://127.0.0.1:7003/dashboard/)
 and log in with default `admin` username and `admin` password.
 That will set up a session allowing you to access Jobs through your browser.
 
-The code in the [sample/python-class/adder.py](../sample/python-class/adder.py)
+The code in the [sample/python-class/adder.py](../../sample/python-class/adder.py)
 module has been converted by Racetrack into a
 fully functional and well-formed Kubernetes micro-service; our Job. Please
-examine this file [sample/python-class/adder.py](../sample/python-class/adder.py) 
+examine this file [sample/python-class/adder.py](../../sample/python-class/adder.py) 
 in order to understand what to expect.
 
 ### Testing the Resulting Job

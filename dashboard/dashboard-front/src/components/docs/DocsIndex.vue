@@ -44,7 +44,8 @@ onMounted(() => {
                     <li>
                         <p>Racetrack User, see:</p>
                         <ul>
-                        <li><router-link :to="{name: 'docs-page', params: {pageName: 'user.md'}}">User Guidelines</router-link> - what is Racetrack, getting started, tutorial</li>
+                        <li><router-link :to="{name: 'docs-page', params: {pageName: 'user/user-guide-1.md'}}">User Guide - part 1</router-link> - what is Racetrack</li>
+                        <li><router-link :to="{name: 'docs-page', params: {pageName: 'user/user-guide-2.md'}}">User Guide - part 2</router-link> - getting started</li>
                         <li><router-link :to="{name: 'docs-page', params: {pageName: 'manifest-schema.md'}}">Job Manifest File Schema</router-link> - list of available YAML fields</li>
                         <li><router-link :to="{name: 'docs-page', params: {pageName: 'user/using-plugins.md'}}">Using plugins</router-link> -
                         how to install plugins</li>

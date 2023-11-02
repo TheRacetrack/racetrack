@@ -84,9 +84,10 @@ or called with a curl command:
 ## Getting started
 
 For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.io/) environment;
-please follow the [Tutorial](docs/user.md#tutorials).
+please follow the [Tutorial](docs/deployment/k8s-installation.md).
 
-* [User Guide](docs/user.md)
+* [User Guide: Introduction](docs/user/user-guide-1.md)
+* [User Guide: Creating a Job](docs/user/user-guide-2.md)
 * [Quickstart - local installation](docs/quickstart.md)
 * [Glossary](docs/glossary.md)
 * [Installation to Kubernetes](docs/deployment/k8s-installation.md)

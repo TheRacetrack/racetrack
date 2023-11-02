@@ -51,7 +51,9 @@ nav:
   - Introduction: README.md
   - Using Racetrack:
     - Quickstart: docs/quickstart.md
-    - User Guide: docs/user.md
+    - User Guide:
+      - part 1 - Introduction: docs/user/user-guide-1.md
+      - part 2 - Creating a Job: docs/user/user-guide-2.md
     - Available plugins: docs/user/available-plugins.md
     - Installing plugins: docs/user/using-plugins.md
     - Reference:
@@ -63,7 +65,7 @@ nav:
       - Glossary: docs/glossary.md
   - Installation:
     - How-to guides:
-      - Local Kubernetes Setup: docs/local-kubernetes-setup.md
+      - Local Kubernetes Setup: docs/deployment/local-kubernetes-setup.md
       - Installation to standalone host: docs/deployment/standalone-host.md
       - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
       - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md

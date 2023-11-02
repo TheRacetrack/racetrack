@@ -640,7 +640,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Fatman manifest can declare resources to be allocated to the Fatman
   with `resources` field, including minimum/maximum memory, minimum/maximum CPU cores.
-  See [Fatman Manifest File](user.md#the-fatman-manifest-file)
+  See [Fatman Manifest File](manifest-schema.md)
 - Dashboard shows datetime when the last call was made to a fatman.
   Fatman redeployment is needed for the changes to take effect.
 - Dashboard has a new "Portfolio" tab for browsing fatmen freely
