@@ -13,7 +13,7 @@ and how to deploy a sample job there.
   verify with `docker compose version`
 - curl
 
-For instance, on Debian-based systems, it can be installed it with:
+For instance, on Debian-based systems, it can be installed with:
 ```sh
 sudo apt update && sudo apt install curl python3 python3-pip python3-venv
 # Install user-managed docker
@@ -108,7 +108,7 @@ make clean
 ```
 
 ## What's next?
-- [User Guide](./user/user-guide-2.md)
+- [User Guide: part 1 - Introduction](./user/user-guide-1.md)
 - [Available plugins](./user/available-plugins.md)
 - [Glossary](./glossary.md)
 - [Local Kubernetes Setup](./deployment/local-kubernetes-setup.md)

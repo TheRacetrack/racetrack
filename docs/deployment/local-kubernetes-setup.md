@@ -32,9 +32,11 @@ Execute the following:
 cd racetrack
 # install the command line client
 make setup
+# Activate Python virtual environment
 . venv/bin/activate
 # Deploy the KinD cluster and install Racetrack in it
 make kind-up
+# Install racetrack CLI
 python3 -m pip install --upgrade racetrack-client
 ```
 
@@ -60,7 +62,7 @@ racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
 # go to the sample directory
 cd sample/python-class/
-# deploy from the current directory (.) to the Racetrack service
+# deploy from the current directory to the Racetrack service
 racetrack deploy
 ```
 
@@ -68,7 +70,7 @@ After a pretty short time, the `racetrack` command will exit successfully and le
 know the Job is deployed, giving you the URL.
 Before opening this URL, open [Dashboard page](http://127.0.0.1:7003/dashboard/)
 and log in with default `admin` username and `admin` password.
-That will set up a session allowing you to access Jobs through your browser.
+That will set up a session cookie allowing you to access Jobs through your browser.
 
 The code in the [sample/python-class/adder.py](../../sample/python-class/adder.py)
 module has been converted by Racetrack into a
@@ -86,7 +88,7 @@ You now have the following running on your developer workstation:
 
 There are several ways you can interact with Racetrack and this Job:
 
-#### Using the Job
+#### Calling the Job
 
 The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this:
