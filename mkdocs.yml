@@ -61,8 +61,8 @@ nav:
       - CLI client: racetrack_client/README.md
       - Changelog: docs/CHANGELOG.md
     - Explanation:
-      - Permission model: docs/permissions.md
       - Glossary: docs/glossary.md
+      - Permission model: docs/permissions.md
   - Installation:
     - How-to guides:
       - Local Kubernetes Setup: docs/deployment/local-kubernetes-setup.md
