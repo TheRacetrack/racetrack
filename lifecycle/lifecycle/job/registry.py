@@ -142,7 +142,7 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
                 if registry_job.status != JobStatus.LOST.value:
                     logger.info(f'job is lost: {registry_job}')
                     registry_job.status = JobStatus.LOST.value
-                    models_registry.save_job_model(registry_job)
+                    models_registry.update_job(registry_job)
 
             job_status_count[registry_job.status] += 1
 
@@ -192,7 +192,7 @@ def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
             changed = True
 
     if changed:
-        models_registry.save_job_model(registry_job)
+        models_registry.update_job(registry_job)
 
 
 def _generate_job_map(jobs: Iterable[JobDto]) -> dict[str, JobDto]:
@@ -205,4 +205,4 @@ def _apply_job_notice(job: JobDto, available_job_types: set[str]):
         job.notice = f"This job type version is deprecated since it's not available anymore."
 
     if notice != job.notice:
-        models_registry.save_job_model(job)
+        models_registry.update_job(job)

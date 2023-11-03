@@ -8,7 +8,7 @@ from lifecycle.django.registry import models
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import save_deployment_phase
 from lifecycle.job.dto_converter import job_family_model_to_dto
-from lifecycle.job.models_registry import create_job_family_if_not_exist, save_job_model
+from lifecycle.job.models_registry import create_job_family_if_not_exist, save_job_model, update_job
 from lifecycle.job.public_endpoints import create_job_public_endpoint_if_not_exist
 from lifecycle.monitor.monitors import check_job_condition
 from lifecycle.server.metrics import metric_deployed_job
@@ -86,7 +86,7 @@ def provision_job(
                         auth_subject, previous_job, plugin_engine)
 
     job.status = JobStatus.RUNNING.value
-    save_job_model(job)
+    update_job(job)
 
     metric_deployed_job.inc()
     logger.info(f'job {manifest.name} v{manifest.version} has been provisioned, deployment ID: {deployment.id}')

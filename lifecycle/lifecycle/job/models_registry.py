@@ -191,10 +191,18 @@ def save_job_model(job_dto: JobDto) -> models.Job:
     """Create or update existing job"""
     try:
         job_model = read_job_model(job_dto.name, job_dto.version)
-        update_job_model(job_model, job_dto)
-        return job_model
     except EntityNotFound:
         return create_job_model(job_dto)
+    update_job_model(job_model, job_dto)
+    return job_model
+
+
+@db_access
+def update_job(job_dto: JobDto) -> models.Job:
+    """Update existing job"""
+    job_model = read_job_model(job_dto.name, job_dto.version)
+    update_job_model(job_model, job_dto)
+    return job_model
 
 
 @db_access
