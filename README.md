@@ -4,6 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/racetrack-client)](https://pypi.org/project/racetrack-client/)
 [![Github Pages](https://img.shields.io/badge/docs-github.io-blue)](https://theracetrack.github.io/racetrack)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/TheRacetrack/racetrack/test.yml?branch=master&label=tests)](https://github.com/TheRacetrack/racetrack/actions?query=workflow%3Atest)
+[![Chat](https://img.shields.io/badge/chat-matrix-blue)](https://app.element.io/#/room/#racetrack:gitter.im)
 
 Racetrack is a framework for deploying, managing, and serving application workloads.
 

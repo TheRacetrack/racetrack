@@ -95,7 +95,7 @@ You can do it from CLI with an HTTP client as well:
 ```shell
 curl -X POST "http://127.0.0.1:7105/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
-  -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
+  -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
   -d '{"a": 40, "b": 2}'
 # Expect: 42
 ```
