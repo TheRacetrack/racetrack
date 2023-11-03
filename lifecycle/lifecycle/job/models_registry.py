@@ -1,5 +1,6 @@
 from typing import Iterable, List, Optional
 
+from django.db.utils import IntegrityError
 import yaml
 
 from lifecycle.auth.subject import get_auth_subject_by_job_family
@@ -199,7 +200,7 @@ def create_job_family_if_not_exist(job_family: str) -> models.JobFamily:
 
 
 @db_access
-def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
+def create_trashed_job(job_dto: JobDto):
     age_days = days_ago(job_dto.create_time)
     new_job = models.TrashJob(
         id=job_dto.id,
@@ -218,8 +219,10 @@ def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
         infrastructure_target=job_dto.infrastructure_target,
         age_days=age_days,
     )
-    new_job.save()
-    return new_job
+    try:
+        new_job.save()
+    except IntegrityError:
+        logger.warning(f'Trash Job already exists with ID={job_dto.id}')
 
 
 @db_access
