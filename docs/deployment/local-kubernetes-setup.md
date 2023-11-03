@@ -34,10 +34,10 @@ cd racetrack
 make setup
 # Activate Python virtual environment
 . venv/bin/activate
-# Deploy the KinD cluster and install Racetrack in it
-make kind-up
 # Install racetrack CLI
 python3 -m pip install --upgrade racetrack-client
+# Deploy the KinD cluster and install Racetrack in it
+make kind-up
 ```
 
 After a period ranging between 30-50 years, KinD will be up and running and
@@ -54,11 +54,11 @@ Job.
 ```shell
 # Set the current Racetrack's remote address - localhost inside KinD, listening on port 7002
 racetrack set remote http://127.0.0.1:7002
-# Login to Racetrack prior to deploying a job
+# Login to Racetrack prior to deploying a job (with a dev token)
 racetrack login eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
-# Activate python3 job type in the Racetrack
+# Install python3 job type in the Racetrack
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
-# Activate kubernetes infrastructure target in the Racetrack
+# Install kubernetes infrastructure target in the Racetrack
 racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
 # go to the sample directory
 cd sample/python-class/
@@ -83,20 +83,20 @@ in order to understand what to expect.
 You now have the following running on your developer workstation:
 
 1. A KinD cluster
-1. Racetrack deployed inside it
-1. A Python 3 micro-service converted to a Job, running inside this Racetrack
+2. Racetrack deployed inside it
+3. A Python 3 micro-service converted to a Job, running inside this Racetrack
 
 There are several ways you can interact with Racetrack and this Job:
 
 #### Calling the Job
 
-The function in `adder.py` now hangs off a HTTP endpoint, and can be used as a
+The function in `adder.py` now hangs off an HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this:
 
 ```shell
 curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
-  -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
+  -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
 ```
@@ -108,7 +108,7 @@ can access it in your web browser
 [here](http://127.0.0.1:7005/pub/job/adder/latest), 
 but first you need to authenticate in order to make requests through your browser.
 Open [Dashboard page](http://127.0.0.1:7003/dashboard/) and log in with default `admin` username and `admin` password.
-That will set up a session allowing you to call Jobs.
+That will set up a session cookie allowing you to call Jobs.
 
 #### Checking the Job Health
 
@@ -138,7 +138,7 @@ racetrack logs adder
 #### Inspecting the Job in the Racetrack Dashboard
 
 Racetrack ships with a dashboard. In production, it will be the admin who has
-access to this, but you're testing locally so you can see it
+access to this, but you're testing locally, so you can see it
 [here](http://127.0.0.1:7003/dashboard) and you can see your adder job.
 
 #### (optional) Inspecting the Job inside KinD Using k9s
@@ -151,7 +151,7 @@ should see `job-adder-v-0-0-2`.
 
 Racetrack requires you to authenticate with a token.
 To manage users and tokens, visit [Racetrack dashboard page](http://127.0.0.1:7003/dashboard/).
-Default super user is `admin` with password `admin`.
+Default super-user is `admin` with password `admin`.
 Once the Racetrack is started, it is recommended to create other users, and deactivate default `admin` user for security purposes.
 
 Then visit your Profile page to see your auth token.
@@ -166,7 +166,7 @@ Authentication applies to both deploying a Job and calling it:
   ```shell
   curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
     -H "Content-Type: application/json" \
-    -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
+    -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
     -d '{"numbers": [40, 2]}'
   ```
 

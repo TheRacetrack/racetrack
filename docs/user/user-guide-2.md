@@ -10,7 +10,7 @@ As a Racetrack user, your workflow will typically look similar to this:
 4. Compose an appropriate `job.yaml` [Manifest](../manifest-schema.md)
 5. Push it to GitLab or Github
 6. Standing in the root directory of your code, submit the Job using the
-   Racetrack command line client
+   [Racetrack command line client](../../racetrack_client/README.md)
 7. Wait briefly
 8. Receive the message that it has been deployed
 9. Check it by either `curl`'ing to it, looking at it in the Racetrack
@@ -19,8 +19,8 @@ As a Racetrack user, your workflow will typically look similar to this:
 ## Developing Your Own Jobs
 
 These instructions will work against the local test version described in the
-[Local Tutorial](../deployment/local-kubernetes-setup.md) section, but are also explained such that they make sense
-against a production instance of Racetrack on a real Kubernetes cluster.
+[Local Tutorial](../quickstart.md) section, but are also explained such that they make sense
+against a production instance of Racetrack on a [real Kubernetes cluster](../deployment/k8s-installation.md).
 
 You will follow the workflow described in the section [The Racetrack Workflow](#the-racetrack-workflow)
 in both cases.
@@ -56,6 +56,7 @@ Other endpoints described in the tutorial will also change away from
 `localhost`. for example `http://127.0.0.1:7003/` might become
 `https://racetrack-lifecycle.platform.example.com/`. You will need to check with
 your local Racetrack admin to get these endpoints.
+Or learn [how-to deploy Racetrack on your own](../deployment/standalone-host.md)
 
 #### Authentication
 
@@ -64,7 +65,7 @@ of Job on RT Dashboard, you need to create user there.
 
 Visit your `https://racetrack.platform.example.com/dashboard/`
 (or local [http://127.0.0.1:7003/dashboard](http://127.0.0.1:7003/dashboard)), click link to **Register**.
-Type username (an email) and password. Password will be needed to login, 
+Type username (an email) and password. Password will be needed to log in, 
 so manage it carefully. Then notify your admin that he should activate your user.
 
 When he does that, you can **Login**, and in the top right corner click **Profile**.

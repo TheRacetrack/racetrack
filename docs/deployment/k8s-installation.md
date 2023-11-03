@@ -36,22 +36,26 @@ sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/
 Follow the installation steps. Choose `kubernetes` infrastructure target.
 Shortly after, your Racetrack instance will be ready.
 
+Pay attention to the output, it contains your unique admin password.
+
 ### Docker Registry
 Racetrack needs a Docker registry to store the images of the jobs.
 We need to instruct Kubernetes to pull images from there.
-That's why you need to provide Docker registry hostname, username `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
+That's why you need to provide Docker registry hostname, username, `READ_REGISTRY_TOKEN` and `WRITE_REGISTRY_TOKEN`
 tokens for reading and writing images respectively.
 
 ### Static IP
 During the installation, you can set a static LoadBalancer IP for all public services exposed by an Ingress Controller.
 
+Sometimes cloud providers doesn't let you know the IP address before creating a resource.
 If you don't know the exact IP address of the LoadBalancer, you can skip this step for now.
 It will be assigned after the first deployment, then you can get back to this step, set the IP address and apply it again.
 
 ### Reviewing Kubernetes resources
 Installer generates unique, secure database password, authentication secrets and tokens.
 It creates Kubernetes resources files in "generated" directory, based on your configuration.
-Please review them before applying. If needed, abort and make adjustments in **generated/** files.
+Please review them before applying.
+If needed, abort, make adjustments in **generated/** files and apply them on your own.
 
 See [Production Deployment](#production-deployment) section before deploying Racetrack to production.
 
@@ -73,24 +77,21 @@ you can look up the following services:
 
 ## Configure Racetrack
 
-Install racetrack-client using pip:
+Install racetrack-client:
 ```shell
 python3 -m pip install --upgrade racetrack-client
 ```
 
-Log in to the *Racetrack Dashboard* at `http://$YOUR_IP/dashboard` with default login `admin` and password `admin`.
-Then, go to the *Profile* tab and copy your auth token.
-Please replace the following occurrences of `$USER_TOKEN` with your token or set it as an environment variable:
-```shell
-USER_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI
-```
+Log in to the *Racetrack Dashboard* at `http://$YOUR_IP/dashboard`
+with login `admin` and password provided to you by the installer.
+Then, go to the *Profile* tab and get your auth token.
 
 Go back to the command line and configure a few things with the racetrack client:
 ```sh
 # Set the current Racetrack's remote address
 racetrack set remote http://$YOUR_IP/lifecycle
-# Login to Racetrack (use your Auth Token)
-racetrack login $USER_TOKEN
+# Login to Racetrack (enter your admin password provided by the installer)
+racetrack login --username admin
 # Activate python3 job type in the Racetrack - we're gonna deploy Python jobs
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 # Activate kubernetes infrastructure target in the Racetrack
@@ -101,11 +102,8 @@ racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructur
 
 Let's use the Racetrack's sample model which purpose is to add numbers.
 
-Clone the [Racetrack's repository](https://github.com/TheRacetrack/racetrack)
-and run `racetrack deploy` command:
+Run `racetrack deploy` command on the sample directory:
 ```shell
-git clone https://github.com/TheRacetrack/racetrack
-cd racetrack
 racetrack deploy sample/python-class
 ```
 
@@ -126,7 +124,7 @@ You can do it from CLI with an HTTP client as well:
 ```shell
 curl -X POST "http://$YOUR_IP/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
-  -H "X-Racetrack-Auth: $USER_TOKEN" \
+  -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
   -d '{"numbers": [40, 2]}'
 # Expect: 42
 ```
@@ -148,7 +146,6 @@ Use one of these tools to inspect your cluster resources:
 
 Bunch of improvements to keep in mind before deploying Racetrack to production:
 
-- After logging in to Dashboard, create a new adminitrator account with a strong password and deactivate the default *admin* user.
 - Make sure to enable TLS traffic to your cluster, since **PUB** and **Lifecycle API**
   will receive secret tokens, which otherwise would be sent plaintext.
 - Encrypt your secrets, for instance, using [SOPS](https://github.com/mozilla/sops) tool

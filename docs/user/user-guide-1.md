@@ -82,9 +82,8 @@ and a short while after, your code is in operation. This convention is a key
 aspect of Racetrack: you can think of it as a "way the code should look" for
 Racetrack to understand it and deploy it to production.
 
-You can browse the documentation for the supported Job Types in the
-`docs/job_types/` directory. In there, the Convention for each Job Type is
-described.
+You can browse the documentation for the supported Job Types in their dedicated repositories.
+In there, the Convention for each Job Type is described.
 
 Conventions for any Job Type are simple, easy to follow, and very few. Some
 examples are:
@@ -92,7 +91,7 @@ examples are:
 * For the Python 3 Job Type, you must have a `class JobEntrypoint` with a
   method `perform()` for the Python 3 function which receives input and gives
   output (e.g. receiving a vector, and returning it normalized). Racetrack will
-  then know to wrap this in a HTTP server and expose it.
+  then know to wrap this in an HTTP server and expose it.
 * For the Go Job Type, your main function must have the following signature:
   `func Perform(args []interface{}, kwargs map[string]interface{}) (interface{},
   error)`.
@@ -170,7 +169,7 @@ Racetrack Jobs are deployed to operation; that means, they are sent off from
 your development computer to run on a server somewhere. This sending is in
 Racetrack terminology called Job "submission".
 
-As you will experience in the [Local Kubernetes Setup](../deployment/local-kubernetes-setup.md), Racetrack provides a
+As you will experience in the [CLI client](../../racetrack_client/README.md), Racetrack provides a
 command line client you can install, and which handles this Submission for you.
 
 When operating with Racetrack (either local instance or production server), the

@@ -23,29 +23,31 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-## 1. Set up a local environment (optional)
-For your convenience use virtual environment:
+## 1. Install local Racetrack
+
+Pick installation directory:
 ```shell
 mkdir -p racetrack && cd racetrack
-python3 -m venv venv
-. venv/bin/activate
 ```
 
-## 2. Install local Racetrack
-
-Start Racetrack components with an [installer script](https://github.com/TheRacetrack/racetrack/blob/master/utils/standalone-wizard/wizard.py):
+and install Racetrack components with an [installer script](https://github.com/TheRacetrack/racetrack/blob/master/utils/standalone-wizard/wizard.py):
 ```shell
 sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/standalone-wizard/runner.sh)
 ```
 
-Follow the installation steps. Choose `docker` infrastructure target (default one).
+Follow the installation steps.
+Choose `docker` infrastructure target (default one).
 Shortly after, your Racetrack instance will be ready to accept `python3` jobs at [127.0.0.1:7102](http://127.0.0.1:7102).
 
-## 3. Install Racetrack client
+Pay attention to the output, it contains your unique admin password.
+
+## 2. Install Racetrack client
 
 Install `racetrack` CLI client:
 ```sh
 python3 -m pip install --upgrade racetrack-client
+racetrack set remote http://127.0.0.1:7102
+racetrack login --username admin # and enter your admin password
 ```
 
 ## 4. Deploy a Job
@@ -75,7 +77,7 @@ jobtype_extra:
 
 Finally, submit your job to Racetrack:
 ```shell
-racetrack deploy sample/ --remote http://127.0.0.1:7102
+racetrack deploy sample/
 ```
 
 This will convert your source code to a REST microservice workload, called "Job".

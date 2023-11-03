@@ -14,8 +14,10 @@ python3 -m pip install --upgrade racetrack-client
 # Set current remote
 racetrack set remote https://racetrack.platform.example.com
 
-# Log in
+# Log in with token
 racetrack login T0k3n.g0es.H3r3
+# Or log in with username
+racetrack login --username admin
 
 # Deploy a Job
 racetrack deploy
