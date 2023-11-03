@@ -83,22 +83,31 @@ or called with a curl command:
 
 ## Getting started
 
-For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.io/) environment;
-please follow the [Tutorial](docs/deployment/k8s-installation.md).
+Depending on your role, you may be insterested in different documents:
 
-* [User Guide: Introduction](docs/user/user-guide-1.md)
-* [User Guide: Creating a Job](docs/user/user-guide-2.md)
-* [Quickstart - local installation](docs/quickstart.md)
-* [Glossary](docs/glossary.md)
-* [Installation to Kubernetes](docs/deployment/k8s-installation.md)
-* [Available plugins](docs/user/available-plugins.md)
-* [Developing plugins](docs/development/developing-plugins.md)
-* [Developing a new job type](docs/development/plugins-job-types.md)
-* [CLI client](racetrack_client/README.md)
-* [Developing Racetrack](docs/development/develop.md)
-* [Administering Racetrack](docs/admin.md)
+* Racetrack User:
 
-See the [Documentation](https://theracetrack.github.io/racetrack/) for more details.
+    - [Quickstart](docs/quickstart.md) - How-to install Racetrack locally
+    - [User Guide: part 1 - Introduction](docs/user/user-guide-1.md)
+    - [User Guide: part 2 - Creating a Job](docs/user/user-guide-2.md)
+    - [Available plugins](docs/user/available-plugins.md)
+    - [Installing plugins](docs/user/using-plugins.md)
+    - [Job Manifest File Schema](docs/manifest-schema.md)
+    - [Glossary](docs/glossary.md) - terminology explained
+
+* Racetrack Admin:
+
+    - [Local Kubernetes Setup](docs/deployment/local-kubernetes-setup.md) - run Racetrack on Kind - longer, but more comprehensive guide.
+    - [Installation to standalone host](docs/deployment/standalone-host.md)
+    - [Installation to Kubernetes](docs/deployment/k8s-installation.md)
+
+* Racetrack Developer:
+
+    - [Developing plugins](docs/development/developing-plugins.md)
+    - [Job type plugins](docs/development/plugins-job-types.md)
+    - [Developer manual](docs/development/develop.md)
+
+See the [Documentation Pages](https://theracetrack.github.io/racetrack/) for more details.
 
 ## Currently supported
 

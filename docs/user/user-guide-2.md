@@ -153,7 +153,7 @@ and then you can omit `--remote` parameter in the next commands.
 
 ### The Job Types
 
-These links show how to use particular job types installed by the [plugins](./user/available-plugins.md):
+These links show how to use particular job types installed by the [plugins](./available-plugins.md):
 
 - [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
   designed for Python projects

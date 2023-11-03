@@ -54,8 +54,9 @@ nav:
     - User Guide:
       - part 1 - Introduction: docs/user/user-guide-1.md
       - part 2 - Creating a Job: docs/user/user-guide-2.md
-    - Available plugins: docs/user/available-plugins.md
-    - Installing plugins: docs/user/using-plugins.md
+    - Plugins:
+      - Available plugins: docs/user/available-plugins.md
+      - Installing plugins: docs/user/using-plugins.md
     - Reference:
       - Job Manifest File Schema: docs/manifest-schema.md
       - CLI client: racetrack_client/README.md
