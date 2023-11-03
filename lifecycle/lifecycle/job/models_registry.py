@@ -161,7 +161,10 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.infrastructure_target = job_dto.infrastructure_target
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
     job.job_type_version = job_dto.job_type_version
-    job.save()
+    try:
+        job.save(force_update=True)
+    except models.Job.DoesNotExist:
+        raise EntityNotFound(f'Job model has gone before updating: {job}')
 
 
 @db_access
@@ -177,7 +180,10 @@ def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
 
     job_model = read_job_model(job_name, job_version)
     job_model.manifest = manifest_yaml
-    job_model.save()
+    try:
+        job_model.save(force_update=True)
+    except models.Job.DoesNotExist:
+        raise EntityNotFound(f'Job model has gone before updating: {job_model}')
 
 
 @db_access
