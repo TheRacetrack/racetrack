@@ -1,4 +1,4 @@
-# User Guide: part 2 - Creating a Job
+# User Guide - Creating a Job
 
 ## The Racetrack Workflow
 
@@ -364,17 +364,8 @@ You can do so by applying the following diff (save it in repo root and `git appl
 
 ## What's next?
 
-You can choose from these tutorials on installing Racetrack on your local computer:
-
 - [Quickstart](../quickstart.md) - quickly setup Racetrack on local Docker engine.
 - [Local Kubernetes Setup](../deployment/local-kubernetes-setup.md) - run Racetrack on KinD - longer, but more comprehensive guide.
-
-How-to guides:
-- [Installation to standalone host](../deployment/standalone-host.md)
-
-Reference:
 - [Available plugins](./available-plugins.md)
 - [Job Manifest File Schema](../manifest-schema.md)
-
-Explanation:
-- [Glossary](../glossary.md)
+- [Installation to standalone host](../deployment/standalone-host.md)

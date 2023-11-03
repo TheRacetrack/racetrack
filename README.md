@@ -87,17 +87,17 @@ Depending on your role, you may be insterested in different documents:
 
 * Racetrack User:
 
-    - [Quickstart](docs/quickstart.md) - How-to install Racetrack locally
-    - [User Guide: part 1 - Introduction](docs/user/user-guide-1.md)
-    - [User Guide: part 2 - Creating a Job](docs/user/user-guide-2.md)
+    - [Quickstart](docs/quickstart.md)
+    - [User Manual](docs/user/user-guide-1.md)
+    - [User Guide - Creating a Job](docs/user/user-guide-2.md)
     - [Available plugins](docs/user/available-plugins.md)
     - [Installing plugins](docs/user/using-plugins.md)
     - [Job Manifest File Schema](docs/manifest-schema.md)
-    - [Glossary](docs/glossary.md) - terminology explained
+    - [Glossary](docs/glossary.md)
 
 * Racetrack Admin:
 
-    - [Local Kubernetes Setup](docs/deployment/local-kubernetes-setup.md) - run Racetrack on Kind - longer, but more comprehensive guide.
+    - [Local Kubernetes Setup](docs/deployment/local-kubernetes-setup.md)
     - [Installation to standalone host](docs/deployment/standalone-host.md)
     - [Installation to Kubernetes](docs/deployment/k8s-installation.md)
 

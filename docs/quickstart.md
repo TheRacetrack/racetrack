@@ -108,8 +108,9 @@ make clean
 ```
 
 ## What's next?
-- [User Guide: part 1 - Introduction](./user/user-guide-1.md)
-- [Available plugins](./user/available-plugins.md)
-- [Glossary](./glossary.md)
+
+- [User Manual](./user/user-guide-1.md)
+- [User Guide - Creating a Job](./user/user-guide-2.md)
 - [Local Kubernetes Setup](./deployment/local-kubernetes-setup.md)
+- [Available plugins](./user/available-plugins.md)
 - [Installation to standalone host](./deployment/standalone-host.md)

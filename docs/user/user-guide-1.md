@@ -1,4 +1,4 @@
-# User Guide: part 1 - Introduction
+# User Manual
 
 ## What is Racetrack?
 
@@ -178,18 +178,9 @@ Racetrack command line client will need authentication.
 
 ## What's next?
 
-You can choose from these tutorials on installing Racetrack on your local computer:
-
+- [User Guide - Creating a Job](./user-guide-2.md)
 - [Quickstart](../quickstart.md) - quickly setup Racetrack on local Docker engine.
 - [Local Kubernetes Setup](../deployment/local-kubernetes-setup.md) - run Racetrack on KinD - longer, but more comprehensive guide.
-
-How-to guides:
-- [User Guide: part 2 - Creating a Job](./user-guide-2.md)
-- [Installation to standalone host](../deployment/standalone-host.md)
-
-Reference:
 - [Available plugins](./available-plugins.md)
 - [Job Manifest File Schema](../manifest-schema.md)
-
-Explanation:
-- [Glossary](../glossary.md)
+- [Installation to standalone host](../deployment/standalone-host.md)
