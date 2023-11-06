@@ -177,7 +177,7 @@ Racetrack command line client will need authentication.
 
 ## What's next?
 
-- [User Guide - Creating a Job](./user-guide-2.md)
+- [User Guide - Deploying a Job](./user-guide-2.md)
 - [Quickstart](../quickstart.md) - quickly setup Racetrack on local Docker engine.
 - [Local Kubernetes Setup](../deployment/local-kubernetes-setup.md) - run Racetrack on KinD - longer, but more comprehensive guide.
 - [Available plugins](./available-plugins.md)

@@ -90,7 +90,7 @@ Depending on your role, you may be insterested in different documents:
 
     - [Quickstart](docs/quickstart.md)
     - [User Manual](docs/user/user-guide-1.md)
-    - [User Guide - Creating a Job](docs/user/user-guide-2.md)
+    - [User Guide - Deploying a Job](docs/user/user-guide-2.md)
     - [Available plugins](docs/user/available-plugins.md)
     - [Installing plugins](docs/user/using-plugins.md)
     - [Job Manifest File Schema](docs/manifest-schema.md)

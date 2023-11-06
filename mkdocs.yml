@@ -52,7 +52,7 @@ nav:
   - Using Racetrack:
     - Quickstart: docs/quickstart.md
     - User Manual: docs/user/user-guide-1.md
-    - User Guide - Creating a Job: docs/user/user-guide-2.md
+    - User Guide - Deploying a Job: docs/user/user-guide-2.md
     - Plugins:
       - Available plugins: docs/user/available-plugins.md
       - Installing plugins: docs/user/using-plugins.md

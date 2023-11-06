@@ -112,7 +112,7 @@ make clean
 ## What's next?
 
 - [User Manual](./user/user-guide-1.md)
-- [User Guide - Creating a Job](./user/user-guide-2.md)
+- [User Guide - Deploying a Job](./user/user-guide-2.md)
 - [Local Kubernetes Setup](./deployment/local-kubernetes-setup.md)
 - [Available plugins](./user/available-plugins.md)
 - [Installation to standalone host](./deployment/standalone-host.md)

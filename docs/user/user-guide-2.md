@@ -1,36 +1,43 @@
-# User Guide - Creating a Job
+# User Guide - Deploying a Job
 
 ## The Racetrack Workflow
 
-As a Racetrack user, your workflow will typically look similar to this:
+As a Racetrack user, to deploy a Job your workflow will typically look similar to this:
 
-1. Write a piece of code doing something useful
-2. Pick the appropriate Racetrack [Job Type](./available-plugins.md)
-3. Refactor your code to follow the Convention
-4. Compose an appropriate `job.yaml` [Manifest](../manifest-schema.md)
-5. Push it to GitLab or Github
-6. Standing in the root directory of your code, submit the Job using the
-   [Racetrack command line client](../../racetrack_client/README.md)
-7. Wait briefly
-8. Receive the message that it has been deployed
-9. Check it by either `curl`'ing to it, looking at it in the Racetrack
-   dashboard, or asking your friendly Racetrack admin.
-
-## Developing Your Own Jobs
+1. (Do it once) [Install Racetrack](#1-install-racetrack).
+2. (Do it once) [Configure your racetrack client](#2-before-you-deploy---configure-your-racetrack-client).
+3. [Write a piece of code doing something useful](#3-write-a-piece-of-code-doing-something-useful)
+4. [Develop a Job](#4-develop-a-job) by picking the Job Type and following the Convention.
+5. [Compose a Job Manifest](#5-compose-a-job-manifest)
+6. [Push it to git](#6-push-it-to-git)
+7. [Submit the Job code](#7-submit-the-job-code)
+8. [Call the Job](#8-call-the-job)
 
 These instructions will work against the local test version described in the
-[Local Tutorial](../quickstart.md) section, but are also explained such that they make sense
+[Local Tutorial](../quickstart.md), but are also explained such that they make sense
 against a production instance of Racetrack on a [real Kubernetes cluster](../deployment/k8s-installation.md).
+You will follow the same workflow in both cases.
 
-You will follow the workflow described in the section [The Racetrack Workflow](#the-racetrack-workflow)
-in both cases.
+## 1. Install Racetrack
 
-### Using a Production Racetrack
+You have the following options:
 
-As was the case in the tutorial, you need the
-[racetrack-client](https://pypi.org/project/racetrack-client/) CLI tool
-installed. Something like this ought to work:
+- [Install Racetrack locally](../quickstart.md) - quickly setup Racetrack on local Docker engine.
+- [Install Racetrack in local Kubernetes](../deployment/local-kubernetes-setup.md) - run Racetrack on Kind.
+- [Install to standalone host](../deployment/standalone-host.md) - e.g. Virtual Machine or EC2
+- Ask your friendly admin to install Racetrack for you and get you a link.
 
+In this tutorial, we chose first option and we'll assume Racetrack is running on:
+
+- [http://127.0.0.1:7102](http://127.0.0.1:7102) - Lifecycle API service
+- [http://127.0.0.1:7103](http://127.0.0.1:7103) - Racetrack Dashboard
+
+## 2. Before you deploy - Configure your racetrack client
+
+### Get the Racetrack CLI client
+
+You need the [racetrack-client](https://pypi.org/project/racetrack-client/) CLI tool
+installed to manage Jobs. Something like this ought to work:
 ```shell
 python3 -m venv venv
 . venv/bin/activate
@@ -38,46 +45,71 @@ python3 -m pip install --upgrade racetrack-client
 racetrack --help
 ```
 
-In the case of a production cluster, the only real change will be to the `racetrack
-deploy` invocations. You will need to obtain the Racetrack address instead of
+### Set Remote
+
+You can set the current Racetrack server's URL (a "remote") with:
+```shell
+racetrack set remote http://127.0.0.1:7102
+```
+
+This then affects all subsequent invocations to `racetrack`,
+if `--remote` parameter is not set explicitly.
+
+#### Using a Production Racetrack
+
+In the case of a production cluster, the only real change will be to the remote URL.
+You will need to obtain the Racetrack address instead of
 `127.0.0.1:7002`, so that:
 
 ```shell
-racetrack deploy my/awesome/job --remote http://127.0.0.1:7002
+racetrack set remote http://127.0.0.1:7102
 ```
 
 becomes
 
 ```shell
-racetrack deploy my/awesome/job --remote http://racetrack.platform.example.com:12345/lifecycle
+racetrack set remote http://racetrack.platform.example.com:12345/lifecycle
 ```
 
 Other endpoints described in the tutorial will also change away from
-`localhost`. for example `http://127.0.0.1:7003/` might become
-`https://racetrack-lifecycle.platform.example.com/`. You will need to check with
-your local Racetrack admin to get these endpoints.
-Or learn [how-to deploy Racetrack on your own](../deployment/standalone-host.md)
+`localhost`. for example `http://127.0.0.1:7103/` might become
+`https://racetrack-lifecycle.platform.example.com/dashboard`.
+You will need to check with your local Racetrack admin to get these endpoints.
+Or see [how-to deploy Racetrack on your own](../deployment/standalone-host.md).
 
-#### Authentication
+### Create an account
 
 Before you can deploy a job to production Racetrack server or even view the list
 of Job on RT Dashboard, you need to create user there.
 
-Visit your `https://racetrack.platform.example.com/dashboard/`
-(or local [http://127.0.0.1:7003/dashboard](http://127.0.0.1:7003/dashboard)), click link to **Register**.
+Visit your Racetrack Dashboard at `https://racetrack.platform.example.com/dashboard/`
+(or local [http://127.0.0.1:7103/dashboard](http://127.0.0.1:7103/dashboard)), click link to **Register**.
 Type username (an email) and password. Password will be needed to log in, 
 so manage it carefully. Then notify your admin that he should activate your user.
 
-When he does that, you can **Login**, and in the top right corner click **Profile**.
-There will be your user token for racetrack client CLI, along with ready command
-to login. It will look like `racetrack login <token> [--remote <remote>]`. When you
+### Activate the account
+
+The administrator now has to visit Racetrack Dashboard, open **Administration** tab, open **Lifecycle Admin panel**, Browse the **Users**, and tick the **Active** checkbox near the new user.
+
+### Authentication
+
+When he does that, you can log in, and click **Profile** tab.
+There will be your auth token for racetrack client CLI, along with ready command
+to log in. It will look like `racetrack login <token> [--remote <remote>]`. When you
 run this, then you can finally deploy your Job.
+
+Alternatively, use command
+```shell
+racetrack login --username <username>
+```
+to log in with your username and password (entered into the standard input)
+and to save the auth token without having to visit the Dashboard page.
 
 If you need, you can log out with `racetrack logout [--remote <remote>]`. To check your
 logged servers, there's `racetrack get config` command.
 
-You can view the Job swagger page if you're logged to Racetrack Dashboard, on
-which Job is displayed. Session is maintained through cookie. 
+You can aceess Job pages though the browser as long as you're logged to Racetrack Dashboard.
+Session is maintained through cookie.
 
 When viewing Job swagger page, you can run there the `/perform` method without specifying
 additional credentials, because auth data in cookie from Racetrack Dashboard is 
@@ -97,10 +129,9 @@ curl -X 'POST' \
 Then it won't work, because there's no auth data specified: 
 `Unauthenticated: no header X-Racetrack-Auth: not logged in`
 
-You will need to include it in curl using `-H 'X-Racetrack-Auth: <token>`.
+You will need to include it in curl using `-H 'X-Racetrack-Auth: $(racetrack get auth-token)`.
 
-
-### Jobs in Private or Protected git Repositories
+### Jobs in private git Repositories
 
 As you noticed earlier, Racetrack requires in the `job.yaml` a git URL from
 which to fetch the Job source code. If this repo is private or protected, you
@@ -118,15 +149,15 @@ In both cases it has to have `read_repository` privilege.
 Once you have this token, you need to register it with the `racetrack` CLI tool:
 
 ```shell
-racetrack set credentials repo_url username token
+racetrack set credentials REPO_URL USERNAME TOKEN
 ```
 where:
 
-- `repo_url`: url to git repository, ie. `https://github.com/theracetrack/racetrack`
-  You can also set this to root domain ie. `https://github.com` to make this token
+- `REPO_URL`: url to git repository, i.e. `https://github.com/theracetrack/racetrack`
+  You can also set this to root domain i.e. `https://github.com` to make this token
   handle all projects.
-- `username`: it's your gitlab account name, usually in the form of email
-- `token`: as above. Keep it secret.
+- `USERNAME`: it's your GitHub/Gitlab account name, usually in the form of email
+- `TOKEN`: A token giving the **read-only** access to repository. Keep it secret.
 
 ### Setting aliases for Racetrack servers
 
@@ -152,19 +183,6 @@ racetrack set remote RACETRACK_URL_OR_ALIAS
 ```
 and then you can omit `--remote` parameter in the next commands.
 
-### The Job Types
-
-These links show how to use particular job types installed by the [plugins](./available-plugins.md):
-
-- [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
-  designed for Python projects
-- [golang](https://github.com/TheRacetrack/plugin-go-job-type/blob/master/docs/job_golang.md) -
-  designed for Go projects
-- [docker-proxy](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md) -
-  designed for any other Dockefile-based jobs
-
-See the [sample/](../sample) directory for more examples.
-
 ### Local Client Configuration
 
 The `racetrack` CLI tool maintains a configuration on your developer workstation. 
@@ -180,7 +198,71 @@ racetrack set remote http://127.0.0.1:7002
 
 Local client configuration is stored at `~/.racetrack/config.yaml`
 
-## Guidelines
+## 3. Write a piece of code doing something useful
+
+We've got a piece of Python code, checking if a given number is prime.
+```python
+import math
+
+def is_prime(number: int) -> bool:
+    """Check if a number is prime"""
+    if number < 2:
+        return False
+    for i in range(2, int(math.sqrt(number)) + 1):
+        if number % i == 0:
+            return False
+    return True
+```
+
+## 4. Develop a Job
+
+You must pick the appropriate Racetrack [Job Type](./available-plugins.md)
+and Refactor your code to follow its Convention.
+
+### Job Type
+These links show how to use particular job types installed by the [plugins](./available-plugins.md):
+
+- [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
+  designed for Python projects
+- [golang](https://github.com/TheRacetrack/plugin-go-job-type/blob/master/docs/job_golang.md) -
+  designed for Go projects
+- [docker-proxy](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md) -
+  designed for any other Dockefile-based jobs
+
+We decide to use `python3` job type.
+
+See the [sample/](../../sample) directory for more examples.
+
+### Refactor your code to follow the Convention
+
+Python3 job type requires to embed our code in a `perform` method inside a class.
+It also says that implementing method `docs_input_example` will show the example input values on the Swagger Documentation page.
+
+Let's create **entrypoint.py** file:
+```python
+import math
+
+
+class JobEntrypoint:
+
+    def perform(self, number: int) -> bool:
+        """Check if a number is prime"""
+        if number < 2:
+            return False
+        for i in range(2, int(math.sqrt(number)) + 1):
+            if number % i == 0:
+                return False
+        return True
+
+    def docs_input_example(self) -> dict:
+        """Return example input values for this model"""
+        return {'number': 7907}
+```
+
+If needed, we might want to specify additional Python packages in **requirements.txt**,
+but we skipped that as we don't need any third-party libraries this time.
+
+### General Job Guidelines
 
 This document uses the terms may, must, should, should not, and must not in
 accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
@@ -188,13 +270,12 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 ### Must
 
 1. You must use one of the pre-defined (currently installed) job types.
-   Racetrack will error out if you do not.
 
 ### Should
 
 1. The call path should be kept shallow. We prefer a bit bigger Job over
    small that creates a deep call path.
-1. If part of the functionality of your Job becomes useful to a Service
+2. If part of the functionality of your Job becomes useful to a Service
    Consumer *other* than the current set of Service Consumers, consider if this
    part of its functionality should be split out into a separate Job. This is
    usually only a good idea of this part of the functionality is expensive in
@@ -202,11 +283,12 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 ### Should not
 
-1. You are discouraged from creating code boundaries by splitting a RT job up
+1. You are discouraged from creating code boundaries by splitting a job up
    into several, if they all serve the same request. While Racetrack supports
    chaining Jobs, it prefers tight coupling in Jobs serving single business
    purposes.
-1. The user should not use the Dockerfile job type. It's preferable to use one
+2. The user should not use the [Dockerfile](https://github.com/TheRacetrack/plugin-docker-proxy-job-type) job type.
+   It's preferable to use one
    of the more specialised job types, or to coordinate with the RT developers to
    implement new job types. The Dockerfile job type exists as a fallback of last
    resort for tight deadlines and genuinely one-off runs which are demonstrably
@@ -219,12 +301,92 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
    types, you may raise the need with the Racetrack developers in the GitHub
    issue tracker.
 
+## 5. Compose a Job Manifest
+
+To deploy a Job, the Developer should provide a build recipe called a Manifest,
+describing how to build, run, and deploy.
+
+Here's our `job.yaml` Manifest file:
+```yaml
+name: primer
+owner_email: sample@example.com
+jobtype: python3:latest
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/python-primer
+jobtype_extra:
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'JobEntrypoint'
+```
+
+which translates to:
+
+> My job is called "primer". It's been created by "sample@example.com".
+> It adheres to `python3` job type, in `latest` version.
+> The code of my job is stored in git at https://github.com/TheRacetrack/racetrack,
+> in a `sample/python-primer/` directory.
+> There's an `entrypoint.py` file, in which there's `JobEntrypoint` class.
+> According to this job type, the main logic is in the `perform` method.
+
+See [Job Manifest File Schema](../manifest-schema.md)
+
+## 6. Push it to git
+It's important to note that Racetrack builds the Job from the code found in git.
+That's why all the changes have to be pushed to git prior to deploying a Job.
+
+Push it to the same repository that is declared in `job.yaml` manifest file.
+
+If your repository is private, remember to also [configure read access to your repository](#jobs-in-private-git-repositories).
+
+## 7. Submit the Job code
+Standing in the root directory of your Job code,
+submit the Job using the Racetrack command line client:
+```shell
+racetrack deploy
+```
+
+Wait briefly.
+
+Receive the message that it has been deployed.
+
+## 8. Call the Job
+
+### Through Browser
+You can check it by either `curl`'ing to it
+or looking at it in the Racetrack Dashboard.
+
+A link to the Job will be provided to you in the `racetrack deploy` output.
+Open it directly or find it in the Racetrack Dashboard and click *Open*.
+
+![](../assets/dashboard-example.png)
+
+You'll see the Swagger UI page, on which you can make an HTTP request at the `/perform` endpoint.
+
+![](../assets/swaggerino.png)
+
+### Through Curl
+Alternatively, call the job by `curl`:
+
+```shell
+curl -X POST "http://127.0.0.1:7105/pub/job/primer/latest/api/v1/perform" \
+  -H "Content-Type: application/json" \
+  -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
+  -d '{"number": 7907}'
+# Expect: true
+```
+
+### Through Racetrack client
+Or use `racetrack` CLI:
+```shell
+racetrack call primer /api/v1/perform '{"number": 7907}'
+```
+
 ## FAQ
 
 ### I've submitted a job, where can I see if it's ready?
 
 When you invoke `racetrack deploy . --remote https://racetrack.platform.example.com/lifecycle`, the client will
-block while the deploy operation is in progress. When the command terminates,
+block while the deployment operation is in progress. When the command terminates,
 unless you are given an error message, your job has been deployed into a Job.
 
 It will be added to the list of running Jobs in the Racetrack dashboard; you
@@ -235,9 +397,6 @@ Racetrack admin.
 
 If the error relates to the deployment action, the racetrack CLI tool will
 display an error for you. You can also see it on Racetrack Dashboard.
-
-If the error occurred in the process of converting the Job to a Job, your
-Racetrack admin can help you.
 
 ### My Job produces raw output, I need it in another format
 
@@ -271,97 +430,17 @@ to combine.
 
 Racetrack supports chaining of Jobs for this purpose.
 
-### I need to have one or more versions of a Job running at the same time
-
-You could use something similar as the handler pattern where you place a Job in 
-front of the Jobs you would like to call. The handler is responsible for calling all 
-versions of the Job involved in the call and save the result for later evaluation,
-but only the result from the active Job should be returned.
-
-***NB*** This might evolve to a standard Job you can deploy and just configure.
-
-### I have other problem running Racetrack locally, please help debug.
-
-Do the following:
-```shell
-make clean
-rm -rf venv
-make setup
-source venv/bin/activate
-docker system prune -a
-make kind-up
-# Wait 10 minutes
-make kind-test
-racetrack set remote http://127.0.0.1:7002
-racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
-racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
-racetrack deploy sample/python-class
-```
-
-If it doesn't work, diagnostic commands:
-
-- `kubectl get pods` - do everything has "Running" status? If not, view logs of 
-  that pod (ie. `kubectl logs <failing_pod_name>`)
-- look into `kubectl logs service/lifecycle`
-- Can you access the server at [http://127.0.0.1:7002](http://127.0.0.1:7002/) (in browser)?
-- `netstat -tuanpl | grep 7002` - is the port blocked by something?
-
-If you can't debug the problem yourself, please send the results of above commands
-to developer channel.
-
 ### I need to be able to receive my answers asynchronously
 
 The way to implement this is to create your own handler that can give you your answers
 asynchronously. A simple way of archiving this would be to provide a callback URL in the ESC query. 
 
 So you would send the request to the Job from your ESC; as soon as the Job
-receives the request, the request terminates successfully; it does *not* wait to 
+receives the request, the request terminates successfully; it does **not** wait to 
 provide a response. Then your ESC listens on a defined webhook endpoint - the path
 which was for example provided in the request - and when the Job has finished 
 processing the request and is ready with a response, it POSTs this to the endpoint
 on the ESC. Obviously, asynchronous calls require you to do some work on the ESC side as well.
-
-### I want to build on an ARM system (such as M1 Mac)
-
-Disclaimer: we don't officially support or test for those architectures, but after
-little tweaking you should be still able to run on them. 
-
-To build on an ARM system, you need to add the docker arm64 repositories to the 
-image_builder and lifecycle Dockerfiles so apt-get can find the docker tools for amd64. 
-You can do so by applying the following diff (save it in repo root and `git apply arm64_enable.diff`):
-<details>
-  <summary>File `arm64_enable.diff`</summary>
-    
-    ```diff
-    diff --git a/image_builder/Dockerfile b/image_builder/Dockerfile
-    index 4dddd57..110564e 100644
-    --- a/image_builder/Dockerfile
-    +++ b/image_builder/Dockerfile
-    @@ -11,6 +11,9 @@ RUN apt-get update -y && apt-get install -y \
-     RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
-         echo \
-       "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    +  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-    +    echo \
-    +  "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-         apt-get update -y && apt-get install -y docker-ce-cli
-
-    diff --git a/lifecycle/Dockerfile b/lifecycle/Dockerfile
-    index 2063911..a2e196d 100644
-    --- a/lifecycle/Dockerfile
-    +++ b/lifecycle/Dockerfile
-    @@ -11,6 +11,9 @@ RUN apt-get update -y && apt-get install -y \
-     RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
-         echo \
-       "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    +  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-    +    echo \
-    +  "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-         apt-get update -y && apt-get install -y docker-ce-cli
-    ```
-</details>
 
 ## What's next?
 
