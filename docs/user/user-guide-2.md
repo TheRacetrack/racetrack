@@ -10,7 +10,7 @@ As a Racetrack user, to deploy a Job your workflow will typically look similar t
 4. [Develop a Job](#4-develop-a-job) by picking the Job Type and following the Convention.
 5. [Compose a Job Manifest](#5-compose-a-job-manifest)
 6. [Push it to git](#6-push-it-to-git)
-7. [Submit the Job code](#7-submit-the-job-code)
+7. [Submit the Job code](#7-deploy-a-job)
 8. [Call the Job](#8-call-the-job)
 
 These instructions will work against the local test version described in the
@@ -55,7 +55,7 @@ racetrack set remote http://127.0.0.1:7102
 This then affects all subsequent invocations to `racetrack`,
 if `--remote` parameter is not set explicitly.
 
-#### Using a Production Racetrack
+### Using a Production Racetrack
 
 In the case of a production cluster, the only real change will be to the remote URL.
 You will need to obtain the Racetrack address instead of
@@ -76,6 +76,28 @@ Other endpoints described in the tutorial will also change away from
 `https://racetrack-lifecycle.platform.example.com/dashboard`.
 You will need to check with your local Racetrack admin to get these endpoints.
 Or see [how-to deploy Racetrack on your own](../deployment/standalone-host.md).
+
+### Setting aliases for Racetrack servers
+
+You can set up aliases for Racetrack server URL addresses by issuing command:
+```shell
+racetrack set alias ALIAS RACETRACK_URL
+```
+
+If you operate with many environments, setting short names may come in handy. For instance:
+```shell
+racetrack set alias docker http://127.0.0.1:7102
+racetrack set alias kind http://127.0.0.1:7002
+racetrack set alias dev https://racetrack.dev.platform.example.com/lifecycle
+racetrack set alias test https://racetrack.test.platform.example.com/lifecycle
+racetrack set alias prod https://racetrack.prod.platform.example.com/lifecycle
+```
+
+and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy --remote docker`.
+You can also use it in the current remote name. For instance, let's set it to "docker":
+```shell
+racetrack set remote docker
+```
 
 ### Create an account
 
@@ -131,9 +153,9 @@ Then it won't work, because there's no auth data specified:
 
 You will need to include it in curl using `-H 'X-Racetrack-Auth: $(racetrack get auth-token)`.
 
-### Jobs in private git Repositories
+### Jobs in private git repositories
 
-As you noticed earlier, Racetrack requires in the `job.yaml` a git URL from
+Racetrack requires in the `job.yaml` a git URL from
 which to fetch the Job source code. If this repo is private or protected, you
 will need to issue a token for the `racetrack` CLI tool to work. In GitLab, there
 are two kinds of tokens (either of them can be used):
@@ -159,30 +181,6 @@ where:
 - `USERNAME`: it's your GitHub/Gitlab account name, usually in the form of email
 - `TOKEN`: A token giving the **read-only** access to repository. Keep it secret.
 
-### Setting aliases for Racetrack servers
-
-You can set up aliases for Racetrack server URL addresses by issuing command:
-```shell
-racetrack set alias ALIAS RACETRACK_URL
-```
-
-If you operate with many environments, setting short names may come in handy. For instance:
-```shell
-racetrack set alias dev https://racetrack.dev.platform.example.com/lifecycle
-racetrack set alias test https://racetrack.test.platform.example.com/lifecycle
-racetrack set alias prod https://racetrack.prod.platform.example.com/lifecycle
-racetrack set alias kind http://127.0.0.1:7002
-racetrack set alias docker http://127.0.0.1:7102
-```
-
-and then you can use your short names instead of full `RACETRACK_URL` address when calling `racetrack deploy --remote dev`.
-
-You can set the current remote with
-```shell
-racetrack set remote RACETRACK_URL_OR_ALIAS
-```
-and then you can omit `--remote` parameter in the next commands.
-
 ### Local Client Configuration
 
 The `racetrack` CLI tool maintains a configuration on your developer workstation. 
@@ -200,7 +198,7 @@ Local client configuration is stored at `~/.racetrack/config.yaml`
 
 ## 3. Write a piece of code doing something useful
 
-We've got a piece of Python code, checking if a given number is prime.
+Let's say we have a piece of Python code, checking if a given number is prime.
 ```python
 import math
 
@@ -220,7 +218,7 @@ You must pick the appropriate Racetrack [Job Type](./available-plugins.md)
 and Refactor your code to follow its Convention.
 
 ### Job Type
-These links show how to use particular job types installed by the [plugins](./available-plugins.md):
+These links show how to use particular job types that are provided by the [plugins](./available-plugins.md):
 
 - [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md) -
   designed for Python projects
@@ -229,13 +227,13 @@ These links show how to use particular job types installed by the [plugins](./av
 - [docker-proxy](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md) -
   designed for any other Dockefile-based jobs
 
-We decide to use `python3` job type.
-
-See the [sample/](../../sample) directory for more examples.
+We decide to use [python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md)
+job type to deploy our Python code.
 
 ### Refactor your code to follow the Convention
 
-Python3 job type requires to embed our code in a `perform` method inside a class.
+[Python3](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md)
+job type requires to embed our code in a `perform` method inside a class.
 It also says that implementing method `docs_input_example` will show the example input values on the Swagger Documentation page.
 
 Let's create `sample/python-primer/entrypoint.py` file:
@@ -259,18 +257,18 @@ class JobEntrypoint:
 ```
 
 If needed, we might want to specify additional Python packages in **requirements.txt**,
-but we skipped that as we don't need any third-party libraries this time.
+but we skipped that step as we don't need any third-party libraries this time.
 
 ### General Job Guidelines
 
 This document uses the terms may, must, should, should not, and must not in
 accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
-### Must
+#### Must
 
 1. You must use one of the pre-defined (currently installed) job types.
 
-### Should
+#### Should
 
 1. The call path should be kept shallow. We prefer a bit bigger Job over
    small that creates a deep call path.
@@ -280,7 +278,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
    usually only a good idea of this part of the functionality is expensive in
    time or physical resources.
 
-### Should not
+#### Should not
 
 1. You are discouraged from creating code boundaries by splitting a job up
    into several, if they all serve the same request. While Racetrack supports
@@ -294,7 +292,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
    not accomplishable with current specialised job types, or which don't lend
    themselves via curation to improvements in specialised job types.
 
-### May
+#### May
 
 1. If you have a need which isn't covered by the currently implemented job
    types, you may raise the need with the Racetrack developers in the GitHub
@@ -320,24 +318,24 @@ jobtype_extra:
 
 which translates to:
 
-> My job is called "primer". It's been created by "sample@example.com".
-> It adheres to `python3` job type, in `latest` version.
-> The code of my job is stored in git at https://github.com/TheRacetrack/racetrack,
+> My job is called `primer`. It's been created by `sample@example.com`.
+> It adheres to `python3` job type, in `latest` version.  
+> The code of my job is stored in git at `https://github.com/TheRacetrack/racetrack`,
 > in a `sample/python-primer/` directory.
 > There's an `entrypoint.py` file, in which there's `JobEntrypoint` class.
 > According to this job type, the main logic is in the `perform` method.
 
-See [Job Manifest File Schema](../manifest-schema.md)
+See [Job Manifest File Schema](../manifest-schema.md).
 
 ## 6. Push it to git
 It's important to note that Racetrack builds the Job from the code found in git.
 That's why all the changes have to be pushed to git prior to deploying a Job.
 
-Push it to the same repository that is declared in `job.yaml` manifest file.
+Push the job code to the same repository that is declared in `job.yaml` manifest file.
 
 If your repository is private, remember to also [configure read access to your repository](#jobs-in-private-git-repositories).
 
-## 7. Submit the Job code
+## 7. Deploy a Job
 Standing in the root directory of your Job code (`sample/python-primer/`),
 submit the Job using the Racetrack command line client:
 ```shell
@@ -351,15 +349,13 @@ Receive the message that it has been deployed.
 ## 8. Call the Job
 
 ### Through Browser
-You can check it by either `curl`'ing to it
-or looking at it in the Racetrack Dashboard.
-
 A link to the Job will be provided to you in the `racetrack deploy` output.
 Open it directly or find it in the Racetrack Dashboard and click *Open*.
 
 ![](../assets/dashboard-example.png)
 
 You'll see the Swagger UI page, on which you can make an HTTP request at the `/perform` endpoint.
+You'll find the example input value there as well.
 
 ![](../assets/swaggerino.png)
 
