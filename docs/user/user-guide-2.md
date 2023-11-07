@@ -5,7 +5,7 @@
 As a Racetrack user, to deploy a Job your workflow will typically look similar to this:
 
 1. (Do it once) [Install Racetrack](#1-install-racetrack).
-2. (Do it once) [Configure your racetrack client](#2-before-you-deploy---configure-your-racetrack-client).
+2. (Do it once) [Configure your racetrack client](#2-configure-your-racetrack-client).
 3. [Write a piece of code doing something useful](#3-write-a-piece-of-code-doing-something-useful)
 4. [Develop a Job](#4-develop-a-job) by picking the Job Type and following the Convention.
 5. [Compose a Job Manifest](#5-compose-a-job-manifest)
@@ -32,7 +32,7 @@ In this tutorial, we chose first option and we'll assume Racetrack is running on
 - [http://127.0.0.1:7102](http://127.0.0.1:7102) - Lifecycle API service
 - [http://127.0.0.1:7103](http://127.0.0.1:7103) - Racetrack Dashboard
 
-## 2. Before you deploy - Configure your racetrack client
+## 2. Configure your racetrack client
 
 ### Get the Racetrack CLI client
 
@@ -187,7 +187,7 @@ and then you can omit `--remote` parameter in the next commands.
 
 The `racetrack` CLI tool maintains a configuration on your developer workstation. 
 As you saw earlier in the section on 
-[Jobs in Private or Protected git Repositories](#jobs-in-private-or-protected-git-repositories)
+[Jobs in private git Repositories](#jobs-in-private-git-repositories)
 it can store Project/Personal Access Tokens.
 
 It is also possible to store the address of the Racetrack server:
@@ -238,13 +238,12 @@ See the [sample/](../../sample) directory for more examples.
 Python3 job type requires to embed our code in a `perform` method inside a class.
 It also says that implementing method `docs_input_example` will show the example input values on the Swagger Documentation page.
 
-Let's create **entrypoint.py** file:
+Let's create `sample/python-primer/entrypoint.py` file:
 ```python
 import math
 
 
 class JobEntrypoint:
-
     def perform(self, number: int) -> bool:
         """Check if a number is prime"""
         if number < 2:
@@ -306,7 +305,7 @@ accord with [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 To deploy a Job, the Developer should provide a build recipe called a Manifest,
 describing how to build, run, and deploy.
 
-Here's our `job.yaml` Manifest file:
+Here's our `sample/python-primer/job.yaml` Manifest file:
 ```yaml
 name: primer
 owner_email: sample@example.com
@@ -339,7 +338,7 @@ Push it to the same repository that is declared in `job.yaml` manifest file.
 If your repository is private, remember to also [configure read access to your repository](#jobs-in-private-git-repositories).
 
 ## 7. Submit the Job code
-Standing in the root directory of your Job code,
+Standing in the root directory of your Job code (`sample/python-primer/`),
 submit the Job using the Racetrack command line client:
 ```shell
 racetrack deploy
