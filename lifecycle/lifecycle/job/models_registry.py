@@ -236,7 +236,7 @@ def create_trashed_job(job_dto: JobDto):
     try:
         new_job.save()
     except IntegrityError:
-        logger.warning(f'Trash Job already exists with ID={job_dto.id}')
+        logger.error(f'Trash Job already exists with ID={job_dto.id}, {job_dto.name} {job_dto.version}')
 
 
 @db_access
