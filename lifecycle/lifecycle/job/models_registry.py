@@ -1,5 +1,6 @@
 from typing import Iterable, List, Optional
 
+from django.db.utils import IntegrityError
 import yaml
 
 from lifecycle.auth.subject import get_auth_subject_by_job_family
@@ -160,7 +161,10 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.infrastructure_target = job_dto.infrastructure_target
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
     job.job_type_version = job_dto.job_type_version
-    job.save()
+    try:
+        job.save(force_update=True)
+    except models.Job.DoesNotExist:
+        raise EntityNotFound(f'Job model has gone before updating: {job}')
 
 
 @db_access
@@ -176,7 +180,10 @@ def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
 
     job_model = read_job_model(job_name, job_version)
     job_model.manifest = manifest_yaml
-    job_model.save()
+    try:
+        job_model.save(force_update=True)
+    except models.Job.DoesNotExist:
+        raise EntityNotFound(f'Job model has gone before updating: {job_model}')
 
 
 @db_access
@@ -184,10 +191,18 @@ def save_job_model(job_dto: JobDto) -> models.Job:
     """Create or update existing job"""
     try:
         job_model = read_job_model(job_dto.name, job_dto.version)
-        update_job_model(job_model, job_dto)
-        return job_model
     except EntityNotFound:
         return create_job_model(job_dto)
+    update_job_model(job_model, job_dto)
+    return job_model
+
+
+@db_access
+def update_job(job_dto: JobDto) -> models.Job:
+    """Update existing job"""
+    job_model = read_job_model(job_dto.name, job_dto.version)
+    update_job_model(job_model, job_dto)
+    return job_model
 
 
 @db_access
@@ -199,7 +214,7 @@ def create_job_family_if_not_exist(job_family: str) -> models.JobFamily:
 
 
 @db_access
-def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
+def create_trashed_job(job_dto: JobDto):
     age_days = days_ago(job_dto.create_time)
     new_job = models.TrashJob(
         id=job_dto.id,
@@ -218,8 +233,10 @@ def create_trashed_job(job_dto: JobDto) -> models.TrashJob:
         infrastructure_target=job_dto.infrastructure_target,
         age_days=age_days,
     )
-    new_job.save()
-    return new_job
+    try:
+        new_job.save()
+    except IntegrityError:
+        logger.error(f'Trash Job already exists with ID={job_dto.id}, {job_dto.name} {job_dto.version}')
 
 
 @db_access
