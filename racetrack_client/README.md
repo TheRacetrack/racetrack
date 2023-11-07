@@ -14,8 +14,10 @@ python3 -m pip install --upgrade racetrack-client
 # Set current remote
 racetrack set remote https://racetrack.platform.example.com
 
-# Log in
+# Log in with token
 racetrack login T0k3n.g0es.H3r3
+# Or log in with username
+racetrack login --username admin
 
 # Deploy a Job
 racetrack deploy
@@ -56,6 +58,9 @@ Log in to Racetrack with your user account (you can get your token from the Dash
 ```shell
 racetrack login T0k3n.g0es.H3r3
 ```
+
+Alternatively, command `racetrack login --username <username>` allows you to log in with your username and password
+(entered into the standard input) and saves the auth token without having to visit the Dashboard page.
 
 In case you're going to use a private repository, provide your git credentials so the job can be built from your code:
 ```shell
@@ -122,3 +127,7 @@ racetrack deploy -e secret_runtime_env_file=.env.local -e git.branch=$(git rev-p
 
 It makes CLI commands more script-friendly, so you can overwrite manifest without tracking changes in job.yaml file.  
 Tip: Use `racetrack validate` command beforehand to make sure your final manifest is what you expected.
+
+### Getting auth token
+Command `racetrack get auth-token` prints out current auth token.
+It can be used in CLI scripts: `curl -H "X-Racetrack-Auth: $(racetrack get auth-token)"`

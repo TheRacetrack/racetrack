@@ -185,7 +185,7 @@ Enter directory with `job.yaml` and issue:
 racetrack deploy . --remote https://racetrack.<cluster name>/lifecycle
 ```
 
-See [User Guide](../user.md) for more details on how to deploy a job
+See [Installation to Kubernetes](../deployment/k8s-installation.md) for more details on how to deploy a job
 to the Racetrack instance running on Kubernetes as an end user.
 
 ## Testing

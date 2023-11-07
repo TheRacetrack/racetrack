@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/racetrack-client)](https://pypi.org/project/racetrack-client/)
 [![Github Pages](https://img.shields.io/badge/docs-github.io-blue)](https://theracetrack.github.io/racetrack)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/TheRacetrack/racetrack/test.yml?branch=master&label=tests)](https://github.com/TheRacetrack/racetrack/actions?query=workflow%3Atest)
-[![Chat](https://img.shields.io/badge/chat-matrix-blue)](https://app.element.io/#/room/#racetrack:gitter.im)
+[![Slack](https://img.shields.io/badge/slack-theracetrack-brightgreen.svg?logo=slack)](https://join.slack.com/t/theracetrack/shared_invite/zt-26gv32boy-rT974~WV9WqDeJypE8ECzA)
 
 Racetrack is a framework for deploying, managing, and serving application workloads.
 
@@ -84,21 +84,31 @@ or called with a curl command:
 
 ## Getting started
 
-For new users, you can run Racetrack locally in a [KinD](https://kind.sigs.k8s.io/) environment;
-please follow the [Tutorial](docs/user.md#tutorials).
+Depending on your role, you may be insterested in different documents:
 
-* [User Guide](docs/user.md)
-* [Quickstart - local installation](docs/quickstart.md)
-* [Glossary](docs/glossary.md)
-* [Installation to Kubernetes](docs/deployment/k8s-installation.md)
-* [Using plugins](docs/development/using-plugins.md)
-* [Developing plugins](docs/development/developing-plugins.md)
-* [Developing a new job type](docs/development/plugins-job-types.md)
-* [CLI client](racetrack_client/README.md)
-* [Developing Racetrack](docs/development/develop.md)
-* [Administering Racetrack](docs/admin.md)
+* Racetrack User:
 
-See the [Documentation](https://theracetrack.github.io/racetrack/) for more details.
+    - [Quickstart](docs/quickstart.md)
+    - [User Manual](docs/user/user-guide-1.md)
+    - [User Guide - Deploying a Job](docs/user/user-guide-2.md)
+    - [Available plugins](docs/user/available-plugins.md)
+    - [Installing plugins](docs/user/using-plugins.md)
+    - [Job Manifest File Schema](docs/manifest-schema.md)
+    - [Glossary](docs/glossary.md)
+
+* Racetrack Admin:
+
+    - [Local Kubernetes Setup](docs/deployment/local-kubernetes-setup.md)
+    - [Installation to standalone host](docs/deployment/standalone-host.md)
+    - [Installation to Kubernetes](docs/deployment/k8s-installation.md)
+
+* Racetrack Developer:
+
+    - [Developing plugins](docs/development/developing-plugins.md)
+    - [Job type plugins](docs/development/plugins-job-types.md)
+    - [Developer manual](docs/development/develop.md)
+
+See the [Documentation Pages](https://theracetrack.github.io/racetrack/) for more details.
 
 ## Currently supported
 

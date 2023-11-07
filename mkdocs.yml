@@ -51,23 +51,29 @@ nav:
   - Introduction: README.md
   - Using Racetrack:
     - Quickstart: docs/quickstart.md
-    - User Guide: docs/user.md
-    - Local Kubernetes Setup: docs/local-kubernetes-setup.md
+    - User Manual: docs/user/user-guide-1.md
+    - User Guide - Deploying a Job: docs/user/user-guide-2.md
+    - Plugins:
+      - Available plugins: docs/user/available-plugins.md
+      - Installing plugins: docs/user/using-plugins.md
     - Job Manifest File Schema: docs/manifest-schema.md
     - Permission model: docs/permissions.md
     - CLI client: racetrack_client/README.md
-  - Plugins:
-    - Using plugins: docs/development/using-plugins.md
-    - Developing plugins: docs/development/developing-plugins.md
-    - Job type plugins: docs/development/plugins-job-types.md
+    - Glossary: docs/glossary.md
+    - Changelog: docs/CHANGELOG.md
+  - Installation:
+    - How-to guides:
+      - Local Kubernetes Setup: docs/deployment/local-kubernetes-setup.md
+      - Installation to standalone host: docs/deployment/standalone-host.md
+      - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
+      - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md
+      - Remote Docker Gateway: docs/deployment/remote-docker-gateway.md
+    - Administering: docs/admin.md
   - Development:
+    - Plugins:
+      - Developing plugins: docs/development/developing-plugins.md
+      - Job type plugins: docs/development/plugins-job-types.md
     - Developer manual: docs/development/develop.md
     - Releasing a version: docs/development/release.md
     - Bill of Materials: docs/development/bom.md
     - Copyright Notices: docs/license/copyright-notices.md
-  - Deployment:
-    - Installation to standalone host: docs/deployment/standalone-host.md
-    - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
-    - Administering: docs/admin.md
-  - Changelog: docs/CHANGELOG.md
-  - Glossary: docs/glossary.md

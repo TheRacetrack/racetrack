@@ -1,6 +1,6 @@
 # Quickstart
 
-This tutorial shows how to start a local instance of Racetrack
+This guide shows how to start a local instance of Racetrack
 and how to deploy a sample job there.
 
 ## Prerequisites
@@ -13,7 +13,7 @@ and how to deploy a sample job there.
   verify with `docker compose version`
 - curl
 
-For instance, on Debian-based systems, it can be installed it with:
+For instance, on Debian-based systems, it can be installed with:
 ```sh
 sudo apt update && sudo apt install curl python3 python3-pip python3-venv
 # Install user-managed docker
@@ -23,29 +23,31 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-## 1. Set up a local environment (optional)
-For your convenience use virtual environment:
+## 1. Install local Racetrack
+
+Pick installation directory:
 ```shell
 mkdir -p racetrack && cd racetrack
-python3 -m venv venv
-. venv/bin/activate
 ```
 
-## 2. Install local Racetrack
-
-Start Racetrack components with an [installer script](https://github.com/TheRacetrack/racetrack/blob/master/utils/standalone-wizard/wizard.py):
+and install Racetrack components with an [installer script](https://github.com/TheRacetrack/racetrack/blob/master/utils/standalone-wizard/wizard.py):
 ```shell
 sh <(curl -fsSL https://raw.githubusercontent.com/TheRacetrack/racetrack/master/utils/standalone-wizard/runner.sh)
 ```
 
-Follow the installation steps. Choose `docker` infrastructure target (default one).
+Follow the installation steps.
+Choose `docker` infrastructure target (default one).
 Shortly after, your Racetrack instance will be ready to accept `python3` jobs at [127.0.0.1:7102](http://127.0.0.1:7102).
 
-## 3. Install Racetrack client
+Pay attention to the output, it contains your unique admin password.
+
+## 2. Install Racetrack client
 
 Install `racetrack` CLI client:
 ```sh
 python3 -m pip install --upgrade racetrack-client
+racetrack set remote http://127.0.0.1:7102
+racetrack login --username admin # and enter your admin password
 ```
 
 ## 4. Deploy a Job
@@ -75,7 +77,7 @@ jobtype_extra:
 
 Finally, submit your job to Racetrack:
 ```shell
-racetrack deploy sample/ --remote http://127.0.0.1:7102
+racetrack deploy sample/
 ```
 
 This will convert your source code to a REST microservice workload, called "Job".
@@ -95,7 +97,7 @@ You can do it from CLI with an HTTP client as well:
 ```shell
 curl -X POST "http://127.0.0.1:7105/pub/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
-  -H "X-Racetrack-Auth: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiY2UwODFiMDUtYTRhMC00MTRhLThmNmEtODRjMDIzMTkxNmE2Iiwic3ViamVjdCI6ImFkbWluIiwic3ViamVjdF90eXBlIjoidXNlciIsInNjb3BlcyI6bnVsbH0.xDUcEmR7USck5RId0nwDo_xtZZBD6pUvB2vL6i39DQI" \
+  -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
   -d '{"a": 40, "b": 2}'
 # Expect: 42
 ```
@@ -106,3 +108,11 @@ Tear down Racetrack instance using `Makefile` created by the installer script:
 ```shell
 make clean
 ```
+
+## What's next?
+
+- [User Manual](./user/user-guide-1.md)
+- [User Guide - Deploying a Job](./user/user-guide-2.md)
+- [Local Kubernetes Setup](./deployment/local-kubernetes-setup.md)
+- [Available plugins](./user/available-plugins.md)
+- [Installation to standalone host](./deployment/standalone-host.md)
