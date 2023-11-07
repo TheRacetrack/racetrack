@@ -1,5 +1,5 @@
 # Installation to standalone host
-You can install Racetrack to a standalone host (eg. EC2 host or fresh VM instance)
+You can install Racetrack to a standalone host (e.g. EC2 host or fresh VM instance)
 using the installer script that runs it on the Docker Engine infrastructure.
 
 ## Requirements

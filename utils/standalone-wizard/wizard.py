@@ -211,6 +211,8 @@ def install_to_kubernetes(config: 'SetupConfig'):
     ]
     for template_file in template_files:
         template_repository_file(f'utils/standalone-wizard/kubernetes/{template_file}', f'generated/{template_file}', render_vars)
+    download_repository_file('sample/python-class/adder.py', 'sample/python-class/adder.py')
+    download_repository_file('sample/python-class/job.yaml', 'sample/python-class/job.yaml')
     logger.info(f'Kubernetes resources created at "{generated_dir.absolute()}". Please review them before applying.')
 
     cmd = f'kubectl apply -k {generated_dir}/'

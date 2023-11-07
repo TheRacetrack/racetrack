@@ -453,7 +453,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of `3.8-slim-buster`.
 - Plugins are distributed as ZIP files.
   They can be installed and uninstalled in a Dashboard's Administration page.
-  See [using-plugins.md](development/using-plugins.md).
+  See [using-plugins.md](user/using-plugins.md).
 
 ## [2.2.1] - 2022-08-25
 ### Changed
@@ -646,7 +646,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Fatman manifest can declare resources to be allocated to the Fatman
   with `resources` field, including minimum/maximum memory, minimum/maximum CPU cores.
-  See [Fatman Manifest File](user.md#the-fatman-manifest-file)
+  See [Fatman Manifest File](manifest-schema.md)
 - Dashboard shows datetime when the last call was made to a fatman.
   Fatman redeployment is needed for the changes to take effect.
 - Dashboard has a new "Portfolio" tab for browsing fatmen freely
