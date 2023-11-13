@@ -1,6 +1,6 @@
 from typing import List
 
-from job_wrapper.call import call_job
+from racetrack_job_wrapper.call import call_job
 
 
 class JobEntrypoint:

@@ -64,12 +64,12 @@ def run_job_locally(
     except CommandError as e:
         raise RuntimeError('Docker is not installed in the system') from e
 
-    logger.info(f'Pulling image {job_image_name}')
     docker_registry = extract_docker_registry(job_image_name)
     logger.info(f'Logging in to Docker registry: {docker_registry}')
-    shell(f'docker login {docker_registry}', read_bytes=True)
+    shell(f'docker login {docker_registry}', raw_output=True)
 
-    shell(f'docker pull {job_image_name}')
+    logger.info(f'Pulling image {job_image_name}')
+    shell(f'docker pull {job_image_name}', raw_output=True)
 
     port = port or 7000
     container_name = f'local-job-{manifest.name}-v-{manifest.version}'.replace('.', '-')
