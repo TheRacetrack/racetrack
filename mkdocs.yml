@@ -49,7 +49,7 @@ extra:
 
 nav:
   - Introduction: README.md
-  - Using Racetrack:
+  - For Users:
     - Quickstart: docs/quickstart.md
     - User Manual: docs/user/user-guide-1.md
     - User Guide - Deploying a Job: docs/user/user-guide-2.md
@@ -61,15 +61,15 @@ nav:
     - CLI client: racetrack_client/README.md
     - Glossary: docs/glossary.md
     - Changelog: docs/CHANGELOG.md
-  - Installation:
-    - How-to guides:
+  - For Administrators:
+    - Installation guides:
       - Local Kubernetes Setup: docs/deployment/local-kubernetes-setup.md
       - Installation to standalone host: docs/deployment/standalone-host.md
       - Installation to non-local Kubernetes: docs/deployment/k8s-installation.md
       - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md
       - Remote Docker Gateway: docs/deployment/remote-docker-gateway.md
     - Administering: docs/admin.md
-  - Development:
+  - For Developers:
     - Plugins:
       - Developing plugins: docs/development/developing-plugins.md
       - Job type plugins: docs/development/plugins-job-types.md
