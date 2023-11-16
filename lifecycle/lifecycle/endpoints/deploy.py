@@ -4,6 +4,7 @@ from fastapi import APIRouter, Request
 from lifecycle.auth.check import check_auth
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.config import Config
+from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.builder import build_job_in_background
 from lifecycle.deployer.deploy import deploy_job_in_background
 from lifecycle.job.deployment import check_deployment_result, save_deployment_phase
@@ -67,7 +68,8 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     @api.post('/deploy')
     def _deploy(payload: DeployPayloadModel, request: Request):
         """Start deployment of Job"""
-        check_auth(request)
+        ensure_no_maintenance()
+        auth_subject = check_auth(request)
         metric_requested_job_deployments.inc()
 
         manifest = load_manifest_from_dict(payload.manifest)
@@ -76,7 +78,6 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         build_context = payload.build_context
         force = payload.force if payload.force is not None else False
         username = get_username_from_token(request)
-        auth_subject = check_auth(request)
         deployment_id = deploy_job_in_background(
             config, manifest, git_credentials, secret_vars, build_context,
             force, plugin_engine, username, auth_subject,

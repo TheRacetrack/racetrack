@@ -13,7 +13,7 @@ MAINTENANCE_MODE = "maintenance_mode"
 @db_access
 def read_setting(name: str) -> JsonType:
     try:
-        return models.Setting.objects.get(name=name)
+        return models.Setting.objects.get(name=name).value
     except models.Setting.DoesNotExist:
         return None
 
