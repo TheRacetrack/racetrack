@@ -1,7 +1,6 @@
 from typing import Optional
 
 from lifecycle.config import Config
-from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.deploy import build_and_provision, provision_job
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.deployer.secrets import JobSecrets
@@ -94,7 +93,6 @@ def move_job(
     auth_subject: Optional[models.AuthSubject],
 ):
     """Move job from one infrastructure target to another"""
-    ensure_no_maintenance()
     job = read_job(job_name, job_version, config)
     manifest = job.manifest
     old_infra_target = job.infrastructure_target
