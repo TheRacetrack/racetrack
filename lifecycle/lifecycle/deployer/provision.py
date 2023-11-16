@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 from lifecycle.auth.authorize import grant_permission
 from lifecycle.config import Config
+from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.deployer.permissions import check_deploy_permissions
 from lifecycle.django.registry import models
@@ -42,6 +43,7 @@ def provision_job(
     Deploy built Job to a cluster
     :param previous_job: previous job version in case of redeploying
     """
+    ensure_no_maintenance()
     if auth_subject is not None:
         check_deploy_permissions(auth_subject, manifest)
 

@@ -3,6 +3,7 @@ from collections import defaultdict
 from lifecycle.auth.authorize import list_permitted_families, list_permitted_jobs
 
 from lifecycle.config import Config
+from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
@@ -73,6 +74,7 @@ def delete_job(
     username: str,
     plugin_engine: PluginEngine,
 ):
+    ensure_no_maintenance()
     job = read_job(job_name, job_version, config)  # raise 404 if not found
     if job.status != JobStatus.LOST.value:
         deployer = get_job_deployer(job.infrastructure_target)

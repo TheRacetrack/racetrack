@@ -12,6 +12,7 @@ from racetrack_client.utils.time import now
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus, JobDto
 from lifecycle.config import Config
+from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.builder import build_job, wait_for_image_builder_ready
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.infrastructure.infra_target import determine_infrastructure_name
@@ -37,6 +38,7 @@ def deploy_new_job(
     plugin_engine: PluginEngine,
 ):
     """Deploy (build and provision) new Job instance, providing secrets"""
+    ensure_no_maintenance()
     if not config.allow_job_overwrite:
         _protect_job_overwriting(manifest, force)
     check_deploy_permissions(auth_subject, manifest)
