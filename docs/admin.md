@@ -90,6 +90,16 @@ There is a Container Registry utility for cleaning obsolete images from the regi
 (collecting garbage).
 See [registry_cleaner](../utils/registry_cleaner/README.md).
 
+### Maintenance Mode
+Racetrack can be turned into a Maintenance mode.
+During that time, users are unable to make changes.
+Therefore, deploying, deleting and moving jobs is disabled.
+
+To configure it, go to Racetrack Dashboard, Administration tab, open Lifecycle Admin panel,
+go to Settings, add or update a setting object:
+
+- Name: `maintenance_mode`
+- Value: `true` to enable or `false` to disable the maintenance mode.
 
 ### Troubleshooting
 If something's malfunctioning, check out the following places to find more information:
