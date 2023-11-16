@@ -190,3 +190,12 @@ class AuthResourcePermission(models.Model):
     job_family = models.ForeignKey(JobFamily, on_delete=models.CASCADE, null=True, blank=True)
     job = models.ForeignKey(Job, on_delete=models.CASCADE, null=True, blank=True)
     endpoint = models.CharField(max_length=256, null=True, blank=True)
+
+
+class Setting(models.Model):
+    class Meta:
+        app_label = 'registry'
+        verbose_name_plural = "Settings"
+
+    name = models.CharField(max_length=512, primary_key=True)
+    value = models.JSONField(null=True, blank=True)

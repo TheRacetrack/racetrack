@@ -8,7 +8,7 @@ from django.contrib.admin.options import (
 )
 from django.contrib.admin import SimpleListFilter
 
-from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent
+from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent, Setting
 from ...auth.subject import regenerate_auth_token_by_id
 
 
@@ -131,6 +131,11 @@ class AuthResourcePermissionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['auth_subject', 'job_family', 'job']
 
 
+class SettingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'value')
+    search_fields = ['name', 'value']
+
+
 admin.site.unregister(User)
 admin.site.register(User, RacetrackUserAdmin)
 
@@ -143,6 +148,7 @@ admin.site.register(TrashJob, TrashJobAdmin)
 admin.site.register(AuditLogEvent, AuditLogEventAdmin)
 admin.site.register(AuthSubject, AuthSubjectAdmin)
 admin.site.register(AuthResourcePermission, AuthResourcePermissionAdmin)
+admin.site.register(Setting, SettingAdmin)
 
 
 admin.site.index_title = f"Site administration (db: {os.environ.get('DJANGO_DB_TYPE')})"
