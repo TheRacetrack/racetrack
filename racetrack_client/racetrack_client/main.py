@@ -208,9 +208,11 @@ cli.add_typer(cli_get, name="get")
 
 
 @cli_get.command('remote')
-def _get_remote():
+def _get_remote(
+    quiet: bool = typer.Option(False, '--quiet', '-q', help='print only the URL address'),
+):
     """Get current Racetrack's remote address"""
-    get_current_remote()
+    get_current_remote(quiet)
 
 
 @cli_get.command('config')

@@ -21,14 +21,16 @@ def set_current_remote(remote: str):
     logger.info(f'Current remote set to "{remote}"')
 
 
-def get_current_remote():
+def get_current_remote(quiet: bool):
     client_config = load_client_config()
     remote_name = client_config.lifecycle_url
     remote_url = resolve_lifecycle_url(client_config, remote_name)
-    if remote_name == remote_url:
-        logger.info(f'Current remote is "{remote_name}"')
+    if quiet:
+        print(remote_url)
+    elif remote_name == remote_url:
+        logger.info(f'Current remote is "{remote_url}"')
     else:
-        logger.info(f'Current remote is "{remote_name}" - {remote_url}')
+        logger.info(f'Current remote is "{remote_name}", resolving to {remote_url}')
 
 
 def set_config_setting(setting_name: str, setting_value: str):
