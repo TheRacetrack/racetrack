@@ -39,7 +39,7 @@ function close() {
           <div class="text-h6">{{title}}</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-            <pre class="x-monospace">{{content}}</pre>
+            <pre class="x-monospace word-wrap">{{content}}</pre>
         </q-card-section>
       </q-card>
     </q-dialog>
