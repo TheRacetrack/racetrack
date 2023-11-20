@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - A command `racetrack get remote -q` (with flag `-q` or `--quiet`)
-  prints only the current address of Lifecycle (without logs), which makes it usable for scripts.
-- A command `racetrack get pub -q` (with flag `-q` or `--quiet`)
-  prints the current address of Pub service, which makes it usable for scripts.
+  prints only the current address of Lifecycle (without other logs), which makes it usable for scripts.
+  Likewise, a command `racetrack get pub -q` (with flag `-q` or `--quiet`)
+  prints the current address of Pub service.
+  "Quiet" mode is automatically applied when not in a TTY.
 
 ## [2.22.0] - 2023-11-07
 ### Added
