@@ -1,3 +1,5 @@
+import sys
+
 from racetrack_client.client_config.alias import resolve_lifecycle_url
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.log.logs import get_logger
@@ -10,7 +12,7 @@ def get_current_remote(quiet: bool):
     client_config = load_client_config()
     remote_name = client_config.lifecycle_url
     lifecycle_url = resolve_lifecycle_url(client_config, remote_name)
-    if quiet:
+    if quiet or not sys.stdout.isatty():
         print(lifecycle_url)
     elif remote_name == lifecycle_url:
         logger.info(f'Current remote is "{lifecycle_url}"')
@@ -29,7 +31,7 @@ def get_current_pub_address(quiet: bool):
     response = parse_response_object(r, 'Lifecycle response error')
     pub_url = response.get('external_pub_url')
     assert pub_url, 'Pub URL is not specified by the Racetrack server'
-    if quiet:
+    if quiet or not sys.stdout.isatty():
         print(pub_url)
     else:
         logger.info(f'Current Pub URL is: {pub_url}')
