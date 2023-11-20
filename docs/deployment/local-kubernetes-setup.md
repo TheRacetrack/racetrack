@@ -94,7 +94,7 @@ The function in `adder.py` now hangs off an HTTP endpoint, and can be used as a
 ReST service. You can use `curl` to test this:
 
 ```shell
-curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
+curl -X POST "$(racetrack get pub)/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
   -d '{"numbers": [40, 2]}'
@@ -116,7 +116,7 @@ You also get a free [service health
 endpoint](https://kubernetes.io/docs/reference/using-api/health-checks/):
 
 ```shell
-curl "http://127.0.0.1:7005/pub/job/adder/latest/health"
+curl "$(racetrack get pub)/job/adder/latest/health"
 # Expect:
 # {"service": "job", "job_name": "adder", "status": "pass"}
 ```
@@ -164,7 +164,7 @@ Authentication applies to both deploying a Job and calling it:
   ```
 - In order to call a Job (fetch results from it), include your token in `X-Racetrack-Auth` header. For instance:
   ```shell
-  curl -X POST "http://127.0.0.1:7005/pub/job/adder/latest/api/v1/perform" \
+  curl -X POST "$(racetrack get pub)/job/adder/latest/api/v1/perform" \
     -H "Content-Type: application/json" \
     -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
     -d '{"numbers": [40, 2]}'

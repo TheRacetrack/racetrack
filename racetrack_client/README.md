@@ -53,6 +53,15 @@ racetrack set remote my-dev
 ```
 This will set up a "remote" context for later use.
 
+### Checking current remote
+You can check your current remote with `racetrack get remote`.
+
+A command `racetrack get remote -q` (with flag `-q` or `--quiet`)
+prints only the current address of Lifecycle (without other logs), which makes it usable for scripts.
+Likewise, a command `racetrack get pub -q` (with flag `-q` or `--quiet`)
+prints the current address of Pub service.
+"Quiet" mode is automatically applied when not in a TTY.
+
 ### Logging in
 Log in to Racetrack with your user account (you can get your token from the Dashboard's profile page):
 ```shell
