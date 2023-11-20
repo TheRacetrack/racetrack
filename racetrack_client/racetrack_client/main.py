@@ -12,7 +12,8 @@ from racetrack_client.client.logs import show_runtime_logs, show_build_logs
 from racetrack_client.client.run import run_job_locally
 from racetrack_client.client_config.auth import login_user_auth, logout_user_auth, get_current_auth, login_with_username
 from racetrack_client.client_config.io import load_client_config
-from racetrack_client.client_config.update import set_credentials, set_current_remote, get_current_remote, set_config_url_alias
+from racetrack_client.client_config.update import set_credentials, set_current_remote, set_config_url_alias
+from racetrack_client.client_config.remote import get_current_remote, get_current_pub_address
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
 from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
 from racetrack_client.log.exception import log_exception
@@ -211,8 +212,16 @@ cli.add_typer(cli_get, name="get")
 def _get_remote(
     quiet: bool = typer.Option(False, '--quiet', '-q', help='print only the URL address'),
 ):
-    """Get current Racetrack's remote address"""
+    """Get current Racetrack's remote address (Lifecycle URL)"""
     get_current_remote(quiet)
+
+
+@cli_get.command('pub')
+def _get_remote(
+    quiet: bool = typer.Option(False, '--quiet', '-q', help='print only the URL address'),
+):
+    """Get current Racetrack's Pub address"""
+    get_current_pub_address(quiet)
 
 
 @cli_get.command('config')
