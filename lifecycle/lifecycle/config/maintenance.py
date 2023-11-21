@@ -8,4 +8,4 @@ def is_maintenance_mode() -> bool:
 
 def ensure_no_maintenance():
     if is_maintenance_mode():
-        raise RuntimeError('Racetrack is now in maintenance mode. Please try again later.')
+        raise RuntimeError('Racetrack is currently in maintenance mode. Please try again later.')
