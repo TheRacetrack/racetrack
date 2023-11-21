@@ -241,9 +241,9 @@ class Requests:
                 headers=e.headers,
             )
         except URLError as e:
-            raise RequestError(f'Request failed: {method} {url}') from e
+            raise RequestError(f'Request {method} {url} failed') from e
         except BaseException as e:
-            raise RequestError('Request failed') from e
+            raise RequestError(f'Request to {url} failed') from e
 
     @classmethod
     def _get_ssl_context(cls) -> ssl.SSLContext:

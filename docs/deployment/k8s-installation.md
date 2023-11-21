@@ -122,7 +122,7 @@ This opens a SwaggerUI page, from which you can call your function
 
 You can do it from CLI with an HTTP client as well:
 ```shell
-curl -X POST "http://$YOUR_IP/pub/job/adder/latest/api/v1/perform" \
+curl -X POST "$(racetrack get pub)/job/adder/latest/api/v1/perform" \
   -H "Content-Type: application/json" \
   -H "X-Racetrack-Auth: $(racetrack get auth-token)" \
   -d '{"numbers": [40, 2]}'
