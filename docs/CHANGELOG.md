@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- A command `racetrack get remote -q` (with flag `-q` or `--quiet`)
+  prints only the current address of Lifecycle (without other logs), which makes it usable for scripts.
+  Likewise, a command `racetrack get pub -q` (with flag `-q` or `--quiet`)
+  prints the current address of Pub service.
+  "Quiet" mode is automatically applied when not in a TTY.
 - Racetrack can be turned into a Maintenance mode.
   During that time, users are unable to make changes.
   Therefore, deploying, deleting and moving jobs is disabled.
