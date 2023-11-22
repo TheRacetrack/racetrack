@@ -22,9 +22,9 @@ def resolve_lifecycle_url(client_config: ClientConfig, lifecycle_name: Optional[
     if not lifecycle_name:
         remote_name = client_config.lifecycle_url
         if remote_name == resolved_url:
-            logger.info(f'Using current remote: {remote_name}')
+            logger.info(f'Using current remote: {resolved_url}')
         else:
-            logger.info(f'Using current remote: {remote_name} - {resolved_url}')
+            logger.info(f'Using current remote: {resolved_url} ({remote_name})')
     return resolved_url
 
 
