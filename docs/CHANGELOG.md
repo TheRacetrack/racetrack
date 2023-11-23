@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Likewise, a command `racetrack get pub -q` (with flag `-q` or `--quiet`)
   prints the current address of Pub service.
   "Quiet" mode is automatically applied when not in a TTY.
+- Racetrack can be turned into a Maintenance mode.
+  During that time, users are unable to make changes.
+  Therefore, deploying, deleting and moving jobs is disabled.
+  See [how to enable maintenance mode](./admin.md#maintenance-mode)
+  ([#370](https://github.com/TheRacetrack/racetrack/issues/370))
 
 ### Fixed
 - Fixed checking job condition in case of a missing `Content-Type` header of job's live endpoint.
