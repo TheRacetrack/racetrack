@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See [how to enable maintenance mode](./admin.md#maintenance-mode)
   ([#370](https://github.com/TheRacetrack/racetrack/issues/370))
 
+### Fixed
+- Fixed checking job condition in case of a missing `Content-Type` header of job's live endpoint.
+  [#376](https://github.com/TheRacetrack/racetrack/issues/376)
+- Word wrapping applied to job logs in Dashboard.
+  [#372](https://github.com/TheRacetrack/racetrack/issues/372)
+
 ## [2.22.0] - 2023-11-07
 ### Added
 -   Manifest values can be overriden with key-value pairs coming from a command line.

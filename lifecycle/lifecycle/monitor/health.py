@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable
 
 import backoff
 
@@ -34,7 +34,11 @@ def check_until_job_is_operational(
 # this can have long timeout since any potential malfunction in here is not related to a model/entrypoint
 # but the cluster errors that shouldn't happen usually
 @backoff.on_exception(backoff.fibo, RuntimeError, max_value=3, max_time=360, jitter=None, logger=None)
-def wait_until_job_is_alive(base_url: str, expected_deployment_timestamp: int, headers: dict[str, str] | None = None) -> Response:
+def wait_until_job_is_alive(
+    base_url: str,
+    expected_deployment_timestamp: int,
+    headers: dict[str, str] | None = None,
+) -> Response:
     """Wait until Job resource (pod or container) is up. This catches internal cluster errors"""
     try:
         response = Requests.get(f'{base_url}/live', headers=headers, timeout=3)
@@ -42,11 +46,16 @@ def wait_until_job_is_alive(base_url: str, expected_deployment_timestamp: int, h
         raise RuntimeError(f"Cluster error: can't reach Job: {e}")
 
     # prevent from getting responses from the old, dying pod. Ensure new Job responds to probes
-    if expected_deployment_timestamp and 'application/json' in response.headers['content-type']:
-        result: Dict = response.json()
+    if expected_deployment_timestamp:
+        content_type = response.headers.get('content-type', '')
+        assert content_type, 'Missing Content-Type header in live endpoint'
+        assert 'application/json' in content_type, 'live endpoint should respond with application/json content-type'
+        result: dict = response.json()
+        assert isinstance(result, dict), 'live endpoint should respond with JSON object'
+        assert 'deployment_timestamp' in result, 'live endpoint JSON should have "deployment_timestamp" field'
         current_deployment_timestamp = int(result.get('deployment_timestamp') or 0)
         if current_deployment_timestamp != expected_deployment_timestamp:
-            raise RuntimeError("Cluster error: can't reach newer Job")
+            raise RuntimeError("Cluster error: can't reach newer Job, incorrect deployment_timestamp field")
 
     return response
 
@@ -72,9 +81,9 @@ def _validate_live_response(response: Response):
     if response.status_code == 404:
         raise RuntimeError('Job health error: liveness endpoint not found')
 
-    if 'application/json' in response.headers['content-type']:
+    if 'application/json' in response.headers.get('content-type', ''):
         result = response.json()
-        if 'error' in result:
+        if isinstance(result, dict) and 'error' in result:
             raise RuntimeError(f'Job initialization error: {result.get("error")}')
 
     raise RuntimeError(f'Job liveness error: {response.status_code} {response.status_reason}')
