@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
+from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.redeploy import redeploy_job, reprovision_job, move_job
 from lifecycle.job.ansi import strip_ansi_colors
 from lifecycle.job.graph import build_job_dependencies_graph
@@ -71,6 +72,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     @api.delete('/job/{job_name}/{job_version}')
     def _delete_job(job_name: str, job_version: str, request: Request):
         """Delete Job; expects specific version (can't be latest)"""
+        ensure_no_maintenance()
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DELETE_JOB)
         username = get_username_from_token(request)
         return delete_job(job_name, job_version, config, username, plugin_engine)
@@ -78,6 +80,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     @api.post('/job/{job_name}/{job_version}/redeploy')
     def _redeploy_job(job_name: str, job_version: str, request: Request):
         """Deploy specific Job image once again (build and provision)"""
+        ensure_no_maintenance()
         auth_subject = check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
         username = get_username_from_token(request)
         return redeploy_job(job_name, job_version, config, plugin_engine, username, auth_subject)
@@ -85,6 +88,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     @api.post('/job/{job_name}/{job_version}/reprovision')
     def _reprovision_job(job_name: str, job_version: str, request: Request):
         """Provision specific Job image once again to a cluster"""
+        ensure_no_maintenance()
         auth_subject = check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
         username = get_username_from_token(request)
         return reprovision_job(job_name, job_version, config, plugin_engine, username, auth_subject)
@@ -92,6 +96,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     @api.post('/job/{job_name}/{job_version}/move')
     def _move_job(job_name: str, job_version: str, payload: MoveJobPayload, request: Request):
         """Move Job from one infrastructure target to another"""
+        ensure_no_maintenance()
         auth_subject = check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
         username = get_username_from_token(request)
         return move_job(job_name, job_version, payload.infrastructure_target, config, plugin_engine, username, auth_subject)
@@ -133,5 +138,6 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     @api.put("/job/{job_name}/{job_version}/manifest")
     def _update_job_manifest(request: Request, job_name: str, job_version: str, payload: UpdateManifestPayload):
         """Update job manifest"""
+        ensure_no_maintenance()
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
         return update_job_manifest(job_name, job_version, payload.manifest_yaml)
