@@ -234,6 +234,7 @@ onUnmounted(() => {
             <div class="text-h6">Jobs
                 <q-badge outline color="grey">{{jobsCount}}</q-badge>
             </div>
+            <q-btn color="primary" push label="Deploy a new job" icon="add" :to="{name: 'deploy-job'}" />
         </q-card-section>
         
         <q-card-section>

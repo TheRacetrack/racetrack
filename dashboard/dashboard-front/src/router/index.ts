@@ -11,6 +11,7 @@ import DocsIndex from '@/components/docs/DocsIndex.vue'
 import DocsPage from '@/components/docs/DocsPage.vue'
 import DocsPlugin from '@/components/docs/DocsPlugin.vue'
 import JobsListView from '@/components/jobs/JobsListView.vue'
+import DeployView from '@/components/jobs/DeployView.vue'
 import GraphView from '@/components/jobs/graph/GraphView.vue'
 import PortfolioView from '@/components/jobs/portfolio/PortfolioView.vue'
 import AuditLogView from '@/components/jobs/audit/AuditLogView.vue'
@@ -31,6 +32,12 @@ const router = createRouter({
       path: '/jobs',
       name: 'jobs',
       component: JobsListView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/jobs/deploy',
+      name: 'deploy-job',
+      component: DeployView,
       meta: { requiresAuth: true },
     },
     {
