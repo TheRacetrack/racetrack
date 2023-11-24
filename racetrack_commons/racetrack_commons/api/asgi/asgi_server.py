@@ -26,7 +26,7 @@ HIDDEN_ACCESS_LOGS = {
     'GET /metrics/ 200',
 }
 
-UVICORN_DEBUG_LOGS = False
+UVICORN_ERROR_LOGS = True
 
 
 def serve_asgi_app(
@@ -73,8 +73,8 @@ def _setup_uvicorn_logs(access_log: bool):
         },
     }
 
-    if not UVICORN_DEBUG_LOGS:
-        LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
+    LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
+    if not UVICORN_ERROR_LOGS:
         LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'INFO'
         LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
 
