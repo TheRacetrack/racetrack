@@ -23,3 +23,18 @@ export interface DocPageContent {
     doc_name: string
     html_content: string
 }
+
+export interface DeploymentDto {
+    id: string
+    status: string
+    create_time: number
+    update_time: number
+    error?: string
+    deployed_by?: string
+    phase?: string
+    image_name?: string
+    infrastructure_target?: string
+    manifest_yaml: string
+    job_name: string
+    job_version: string
+}

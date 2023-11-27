@@ -49,6 +49,10 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         image_name=model.image_name,
         infrastructure_target=model.infrastructure_target,
         manifest_yaml=model.manifest,
+        create_time=datetime_to_timestamp(model.create_time),
+        update_time=datetime_to_timestamp(model.update_time),
+        job_name=model.job_name,
+        job_version=model.job_version,
     )
 
 
