@@ -75,7 +75,7 @@ export class ToastService {
         if (err instanceof AxiosError) {
             console.error(`Request Error: ${context}: ${err.message}`)
         } else {
-            console.error(`Error: ${context}: ${err}`)
+            console.error(`Error: ${context}: ${errDetails}`)
         }
         this.error(`${context}: ${errDetails}`)
     }

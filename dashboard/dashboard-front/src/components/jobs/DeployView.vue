@@ -1,18 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
-import { QTree } from 'quasar'
-import { io, Socket } from "socket.io-client"
-import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
-import { outlinedInfo } from '@quasar/extras/material-icons-outlined'
+import { ref, type Ref } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
-import { envInfo } from '@/services/EnvironmentInfo'
-import { type JobData } from '@/utils/api-schema'
-import JobDetails from '@/components/jobs/JobDetails.vue'
-import JobStatus from '@/components/jobs/JobStatus.vue'
-import TimeAgoLabel from '@/components/jobs/TimeAgoLabel.vue'
-import { JobOrder, filterJobByKeyword, sortedJobs } from '@/utils/jobs'
-import {progressService} from "@/services/ProgressService";
+import {progressService} from "@/services/ProgressService"
+import yaml from 'js-yaml'
 
 const yamlManifestRef: Ref<string> = ref('')
 const gitUsername = ref('')
@@ -20,14 +11,45 @@ const gitPassword = ref('')
 const forceEnabled: Ref<boolean> = ref(false)
 const loading = ref(false)
 
+interface CredentialsModel {
+    username: string
+    password: string
+}
+
 function deployJob() {
+    let manifestDict: Record<string, any>
+    try {
+        manifestDict = yaml.load(yamlManifestRef.value)
+        if (typeof manifestDict !== 'object') {
+            throw new TypeError('Expected mapping type')
+        }
+    } catch(err: any) {
+        toastService.showErrorDetails('Invalid Manifest YAML', err)
+        return
+    }
+
+    let gitCredentials: CredentialsModel | null = null
+    if (gitUsername.value !== '' || gitPassword.value !== '') {
+        gitCredentials = {
+            "username": gitUsername.value,
+            "password": gitPassword.value,
+        }
+    }
+
     progressService.runLoading({
         task: apiClient.post(`/api/v1/deploy`, {
+            "manifest": manifestDict,
+            "git_credentials": gitCredentials,
+            "secret_vars": null,
+            "force": forceEnabled.value,
         }),
         loadingState: loading,
         progressMsg: `Deploying a job...`,
-        successMsg: `Job deployed.`,
+        successMsg: `Job deployment requested.`,
         errorMsg: `Failed to deploy a job`,
+        onSuccess: () => {
+            // TODO redirect to deployments list
+        },
     })
 }
 </script>
@@ -38,7 +60,6 @@ function deployJob() {
         </q-card-section>
         
         <q-card-section class="q-pt-none">
-            <p>YAML Manifest of a job:</p>
             <div>
                 <q-input
                     outlined
@@ -57,7 +78,7 @@ function deployJob() {
               v-model="gitPassword"
               />
             <div>
-              <q-checkbox v-model="forceEnabled" label="Overwrite existing job (force)">
+              <q-checkbox v-model="forceEnabled" label="Overwrite existing job">
                   <q-tooltip>Apply "force" flag to overwrite existing job</q-tooltip>
               </q-checkbox>
             </div>
