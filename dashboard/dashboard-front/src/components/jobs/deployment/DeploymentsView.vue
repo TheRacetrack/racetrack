@@ -3,7 +3,7 @@ import { ref, type Ref, onMounted } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { timestampPrettyAgo, timestampToLocalTime } from '@/utils/time'
-import {DeploymentDto} from "@/utils/api-schema"
+import { type DeploymentDto } from '@/utils/api-schema'
 
 const deploymentsData: Ref<DeploymentDto[]> = ref([] as DeploymentDto[])
 const loading = ref(false)
@@ -41,14 +41,14 @@ onMounted(() => {
 
                 <q-item v-for="item in deploymentsData">
                     <q-item-section avatar>
-                        <q-spinner color="primary" size="2em" v-if="result.status == 'in_progress'"/>
-                        <q-icon color="positive" name="check_circle" v-if="result.status == 'done'"/>
-                        <q-icon color="negative" name="error" v-if="result.status == 'failed'"/>
+                        <q-spinner color="primary" size="2em" v-if="item.status == 'in_progress'"/>
+                        <q-icon color="positive" name="check_circle" v-if="item.status == 'done'"/>
+                        <q-icon color="negative" name="error" v-if="item.status == 'failed'"/>
                     </q-item-section>
 
                     <q-item-section>
-                        <q-item-label>{{item.id}}</q-item-label>
-                        <q-item-label caption>{{item.status}}, {{item.deployed_by}}, {{item.job_name}} {{item.job_version}}</q-item-label>
+                        <q-item-label>{{item.job_name}} {{item.job_version}}, requested by {{item.deployed_by}}</q-item-label>
+                        <q-item-label caption>{{item.status.toUpperCase()}}, {{item.id}}</q-item-label>
                     </q-item-section>
 
                     <q-item-section side>

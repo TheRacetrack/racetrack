@@ -51,7 +51,7 @@ function deployJob() {
         successMsg: `Job deployment requested.`,
         errorMsg: `Failed to deploy a job`,
         onSuccess: () => {
-            router.push({ name: 'home' })
+            router.push({ name: 'deployments' })
         },
     })
 }
