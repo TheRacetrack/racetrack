@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import yaml from 'js-yaml'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
-import {progressService} from "@/services/ProgressService"
-import yaml from 'js-yaml'
+import { progressService } from "@/services/ProgressService"
 
 const yamlManifestRef: Ref<string> = ref('')
 const gitUsername = ref('')
 const gitPassword = ref('')
 const forceEnabled: Ref<boolean> = ref(false)
 const loading = ref(false)
+
+const router = useRouter()
 
 interface CredentialsModel {
     username: string
@@ -19,9 +22,9 @@ interface CredentialsModel {
 function deployJob() {
     let manifestDict: Record<string, any>
     try {
-        manifestDict = yaml.load(yamlManifestRef.value)
+        manifestDict = yaml.load(yamlManifestRef.value) as Record<string, any>
         if (typeof manifestDict !== 'object') {
-            throw new TypeError('Expected mapping type')
+            throw new TypeError('Expected mapping object')
         }
     } catch(err: any) {
         toastService.showErrorDetails('Invalid Manifest YAML', err)
@@ -48,7 +51,7 @@ function deployJob() {
         successMsg: `Job deployment requested.`,
         errorMsg: `Failed to deploy a job`,
         onSuccess: () => {
-            // TODO redirect to deployments list
+            router.push({ name: 'home' })
         },
     })
 }
@@ -56,7 +59,7 @@ function deployJob() {
 <template>
     <q-card>
         <q-card-section class="q-pb-none">
-            <div class="text-h6">Deploy a new Job</div>
+            <div class="text-h6">Deploy a Job</div>
         </q-card-section>
         
         <q-card-section class="q-pt-none">
@@ -84,7 +87,7 @@ function deployJob() {
             </div>
             <div class="row q-pt-sm">
                 <q-space />
-                <q-btn color="primary" push label="Deploy" icon="save"
+                <q-btn color="primary" push label="Deploy" icon="construction"
                     @click="deployJob" :loading="loading" />
             </div>
         </q-card-section>
