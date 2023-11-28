@@ -1,28 +1,16 @@
 <script setup lang="ts">
-import { ref, type Ref, computed, onMounted } from 'vue'
+import { ref, type Ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import hljs from 'highlight.js/lib/core'
-import hljs_yaml from 'highlight.js/lib/languages/yaml'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { timestampToLocalTime } from '@/utils/time'
 import {type DeploymentDto} from '@/utils/api-schema'
 import TimeAgoLabel from "@/components/jobs/TimeAgoLabel.vue"
-import 'highlight.js/styles/github.css'
-
-hljs.registerLanguage('yaml', hljs_yaml)
+import ManifestView from "@/components/jobs/ManifestView.vue"
 
 const route = useRoute()
 const deploymentId = route.params.deploymentId
 const deployment: Ref<DeploymentDto | null> = ref(null)
-
-const manifestYaml: Ref<string> = computed(() => {
-    return deployment.value?.manifest_yaml || ''
-})
-
-const manifestHtml: Ref<string> = computed(() => {
-    return hljs.highlight(manifestYaml.value, {language: 'yaml'}).value
-})
 
 function fetchDeploymentData() {
     apiClient.get<DeploymentDto>(`/api/v1/deploy/${deploymentId}`)
@@ -121,7 +109,7 @@ onMounted(() => {
 
             <q-field outlined label="Manifest" stack-label>
                 <template v-slot:control>
-                    <div class="x-monospace x-overflow-any" v-html="manifestHtml" style="white-space: pre;"></div>
+                    <ManifestView :manifestYaml="deployment?.manifest_yaml" />
                 </template>
             </q-field>
         </q-card-section>
