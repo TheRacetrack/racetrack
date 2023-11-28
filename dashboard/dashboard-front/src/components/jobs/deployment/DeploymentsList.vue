@@ -39,7 +39,10 @@ onMounted(() => {
 
                 <q-item v-if="deploymentsData.length == 0" class="text-grey-6">(empty)</q-item>
 
-                <q-item v-for="item in deploymentsData">
+                <q-item clickable v-ripple
+                        v-for="item in deploymentsData"
+                        :to="{name: 'deployment-details', params: {deploymentId: item.id}}">
+
                     <q-item-section avatar>
                         <q-spinner color="primary" size="2em" v-if="item.status == 'in_progress'"/>
                         <q-icon color="positive" name="check_circle" v-if="item.status == 'done'"/>
@@ -47,7 +50,7 @@ onMounted(() => {
                     </q-item-section>
 
                     <q-item-section>
-                        <q-item-label>{{item.job_name}} {{item.job_version}}, requested by {{item.deployed_by}}</q-item-label>
+                        <q-item-label>{{item.job_name}} {{item.job_version}}, by {{item.deployed_by}}</q-item-label>
                         <q-item-label caption>{{item.status.toUpperCase()}}, {{item.id}}</q-item-label>
                     </q-item-section>
 
