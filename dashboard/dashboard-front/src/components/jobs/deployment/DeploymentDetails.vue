@@ -3,7 +3,7 @@ import { ref, type Ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import { timestampToLocalTime } from '@/utils/time'
+import {formatDuration, timestampToLocalTime} from '@/utils/time'
 import {type DeploymentDto} from '@/utils/api-schema'
 import TimeAgoLabel from "@/components/jobs/TimeAgoLabel.vue"
 import ManifestView from "@/components/jobs/ManifestView.vue"
@@ -73,13 +73,21 @@ onMounted(() => {
                         </template>
                     </q-field>
                 </div>
+                <div class="col-6">
+                    <q-field outlined label="Job name (and version)" stack-label>
+                        <template v-slot:control>
+                            <div>{{ deployment?.job_name }} ({{ deployment?.job_version }})</div>
+                        </template>
+                    </q-field>
+                </div>
+                <div class="col-6">
+                    <q-field outlined label="Duration" stack-label>
+                        <template v-slot:control>
+                            {{ formatDuration(deployment?.create_time, deployment?.update_time) }}
+                        </template>
+                    </q-field>
+                </div>
             </div>
-
-            <q-field outlined label="Job name (and version)" stack-label>
-                <template v-slot:control>
-                    <div>{{ deployment?.job_name }} ({{ deployment?.job_version }})</div>
-                </template>
-            </q-field>
 
             <q-field outlined label="Started at" stack-label>
                 <template v-slot:prepend><q-icon name="event" /></template>
