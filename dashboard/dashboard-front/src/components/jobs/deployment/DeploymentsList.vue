@@ -27,11 +27,16 @@ onMounted(() => {
 <template>
     <q-card>
         <q-card-section class="q-pb-none">
-            <q-btn color="primary" push label="Deploy a new job" icon="add" :to="{name: 'deploy-job'}" />
+            <span class="text-h6">
+                Deployments
+                <q-tooltip>Recent deployment attempts</q-tooltip>
+            </span>
         </q-card-section>
 
-        <q-card-section>
-            <div class="text-h6">Deployments</div>
+        <q-card-section class="q-pb-none">
+            <div class="full-width row wrap justify-end">
+                <q-btn color="primary" push label="Deploy a new job" icon="add" :to="{name: 'deploy-job'}" />
+            </div>
         </q-card-section>
 
         <q-card-section>

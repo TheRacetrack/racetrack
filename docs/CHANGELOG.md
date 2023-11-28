@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Therefore, deploying, deleting and moving jobs is disabled.
   See [how to enable maintenance mode](./admin.md#maintenance-mode)
   ([#370](https://github.com/TheRacetrack/racetrack/issues/370))
+- A job can be deployed through the Dashboard.
+  To submit a job manifest, go to the *"Deployments"* tab and then *"Deploy a new job"* .
+  Note that secret variables are not supported in this manner; instead, use the command line client.
+  ([#306](https://github.com/TheRacetrack/racetrack/issues/306))
+- A new tab called *"Deployments"* displays a list of recent deployment attempts.
+  After selecting one, you may view deployment data such as status, failure cause, duration, and so on.
+  In case of trouble with deployment, you can share this link with a support team.
 
 ### Fixed
 - Fixed checking job condition in case of a missing `Content-Type` header of job's live endpoint.
