@@ -45,7 +45,7 @@ COPY docs/. /src/docs/
 
 COPY --from=frontend-builder /build/dist /src/dashboard/static/
 
-CMD python -u dashboard/main.py
+CMD ["python", "-u", "dashboard/main.py"]
 
 EXPOSE 7003
 STOPSIGNAL SIGINT
