@@ -49,9 +49,9 @@ onMounted(() => {
                         :to="{name: 'deployment-details', params: {deploymentId: item.id}}">
 
                     <q-item-section avatar>
-                        <q-spinner color="primary" size="2em" v-if="item.status == 'in_progress'"/>
-                        <q-icon color="positive" name="check_circle" v-if="item.status == 'done'"/>
-                        <q-icon color="negative" name="error" v-if="item.status == 'failed'"/>
+                        <q-spinner color="primary" size="2em" v-if="item.status === 'in_progress'"/>
+                        <q-icon color="positive" name="check_circle" v-if="item.status === 'done'"/>
+                        <q-icon color="negative" name="error" v-if="item.status === 'failed'"/>
                     </q-item-section>
 
                     <q-item-section>
