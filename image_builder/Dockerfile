@@ -42,9 +42,10 @@ RUN cd /src/racetrack_client && python setup.py develop &&\
   cd /src/racetrack_commons && python setup.py develop &&\
   cd /src/image_builder && python setup.py develop
 
-CMD python -u -m image_builder serve
+CMD ["python", "-u", "-m", "image_builder", "serve"]
 
 EXPOSE 7001
+STOPSIGNAL SIGTERM
 ARG GIT_VERSION
 ARG DOCKER_TAG
 ENV GIT_VERSION ${GIT_VERSION}

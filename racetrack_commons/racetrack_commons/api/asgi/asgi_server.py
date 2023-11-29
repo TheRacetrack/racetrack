@@ -1,7 +1,8 @@
 import contextlib
+import signal
 import threading
 import time
-from typing import Union
+from typing import Union, Callable, Optional
 import logging
 
 import uvicorn
@@ -9,6 +10,7 @@ from uvicorn.config import LOGGING_CONFIG
 from uvicorn.logging import DefaultFormatter, AccessFormatter
 from starlette.types import ASGIApp
 
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.debug import is_deployment_local
 
@@ -34,12 +36,14 @@ def serve_asgi_app(
     http_port: int,
     http_addr: str = '0.0.0.0',
     access_log: bool = False,
+    on_shutdown: Optional[Callable[[], None]] = None
 ):
     use_reloader = is_deployment_local() and isinstance(app, str)
     mode_info = ' in RELOAD mode' if use_reloader else ''
     logger.info(f'Running ASGI server on http://{http_addr}:{http_port}{mode_info}')
     _setup_uvicorn_logs(access_log)
-    uvicorn.run(
+
+    config = uvicorn.Config(
         app=app,
         host=http_addr,
         port=http_port,
@@ -47,6 +51,21 @@ def serve_asgi_app(
         reload=use_reloader,
         timeout_graceful_shutdown=3,
     )
+    server = ManagableServer(config)
+
+    def signal_handler(sig, frame):
+        logger.info(f'received signal {sig}, shutting down...')
+        if on_shutdown is not None:
+            try:
+                on_shutdown()
+            except BaseException as e:
+                log_exception(e)
+        server.should_exit = True
+
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+
+    server.run()
 
 
 def serve_asgi_in_background(
@@ -153,3 +172,8 @@ class BackgroundServer(uvicorn.Server):
         finally:
             self.should_exit = True
             thread.join()
+
+
+class ManagableServer(uvicorn.Server):
+    def install_signal_handlers(self):
+        pass
