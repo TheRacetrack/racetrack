@@ -53,7 +53,7 @@ def serve_asgi_app(
     )
     server = ManagableServer(config)
 
-    def signal_handler(sig, frame):
+    def shutdown_signal_handler(sig, frame):
         logger.info(f'received signal {sig}, shutting down...')
         if on_shutdown is not None:
             try:
@@ -62,8 +62,8 @@ def serve_asgi_app(
                 log_exception(e)
         server.should_exit = True
 
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, shutdown_signal_handler)
+    signal.signal(signal.SIGINT, shutdown_signal_handler)
 
     server.run()
 
