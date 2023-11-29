@@ -42,7 +42,7 @@ onMounted(() => {
         <q-card-section>
             <q-list bordered separator class="rounded-borders">
 
-                <q-item v-if="deploymentsData.length == 0" class="text-grey-6">(empty)</q-item>
+                <q-item v-if="!deploymentsData.length" class="text-grey-6">(empty)</q-item>
 
                 <q-item clickable v-ripple
                         v-for="item in deploymentsData"
