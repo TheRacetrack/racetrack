@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import yaml from 'js-yaml'
 import { apiClient } from '@/services/ApiClient'
 import { toastService } from '@/services/ToastService'
 import { progressService } from "@/services/ProgressService"
 
-const yamlManifestRef: Ref<string> = ref('')
+const yamlManifestRef = ref('')
 const gitUsername = ref('')
 const gitPassword = ref('')
-const forceEnabled: Ref<boolean> = ref(false)
+const forceEnabled = ref(false)
 const loading = ref(false)
 
 const router = useRouter()
@@ -32,7 +32,7 @@ function deployJob() {
     }
 
     let gitCredentials: CredentialsModel | null = null
-    if (gitUsername.value !== '' || gitPassword.value !== '') {
+    if (gitUsername.value !== '' && gitPassword.value !== '') {
         gitCredentials = {
             "username": gitUsername.value,
             "password": gitPassword.value,

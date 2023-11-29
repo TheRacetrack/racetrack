@@ -11,7 +11,7 @@ const props = defineProps({
 })
 
 const manifestHtml: Ref<string> = computed(() => {
-    const manifestYamlN = props.manifestYaml || ''
+    const manifestYamlN = props.manifestYaml ?? ''
     return hljs.highlight(manifestYamlN, {language: 'yaml'}).value
 })
 </script>

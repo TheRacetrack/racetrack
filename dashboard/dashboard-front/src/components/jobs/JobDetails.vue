@@ -105,7 +105,7 @@ function openJobGrafanaDashboard(job: JobData) {
 }
 
 function editJobManifest(job: JobData) {
-    manifestDialogRef.value?.openDialog(job, job.manifest_yaml || '')
+    manifestDialogRef.value?.openDialog(job, job.manifest_yaml ?? '')
 }
 
 function onManifestUpdated() {
