@@ -67,7 +67,7 @@ export function timestampSecondsAgo(timestampS: number | undefined): number | nu
 }
 
 export function formatDuration(timestampStart: number | undefined, timestampEnd: number | undefined): string {
-    if (!timestampStart || !timestampEnd)
+    if (timestampStart == null || timestampEnd == null)
         return ''
 
     const totalSeconds = timestampEnd - timestampStart

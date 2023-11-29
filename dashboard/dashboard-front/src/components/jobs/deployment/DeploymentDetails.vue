@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
@@ -10,7 +10,7 @@ import ManifestView from "@/components/jobs/ManifestView.vue"
 
 const route = useRoute()
 const deploymentId = route.params.deploymentId
-const deployment: Ref<DeploymentDto | null> = ref(null)
+const deployment = ref<DeploymentDto | null>(null)
 
 function fetchDeploymentData() {
     apiClient.get<DeploymentDto>(`/api/v1/deploy/${deploymentId}`)

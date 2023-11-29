@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, type Ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { timestampPrettyAgo, timestampToLocalTime } from '@/utils/time'
 import { type DeploymentDto } from '@/utils/api-schema'
 
-const deploymentsData: Ref<DeploymentDto[]> = ref([] as DeploymentDto[])
+const deploymentsData = ref<DeploymentDto[]>([])
 const loading = ref(false)
 
 function fetchDeploymentsData() {
