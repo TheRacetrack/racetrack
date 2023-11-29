@@ -48,9 +48,10 @@ RUN cd /src/racetrack_client && python setup.py develop &&\
 RUN chmod 777 -R /src/lifecycle/lifecycle/django
 
 ENV DJANGO_SETTINGS_MODULE "lifecycle.django.app.settings"
-CMD python -u -m lifecycle serve
+CMD ["python", "-u", "-m", "lifecycle", "serve"]
 
 EXPOSE 7002
+STOPSIGNAL SIGTERM
 ARG GIT_VERSION
 ARG DOCKER_TAG
 ENV GIT_VERSION ${GIT_VERSION}

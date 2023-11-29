@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#376](https://github.com/TheRacetrack/racetrack/issues/376)
 - Word wrapping applied to job logs in Dashboard.
   [#372](https://github.com/TheRacetrack/racetrack/issues/372)
+- SIGTERM signal triggers graceful shutdown.
+  [#379](https://github.com/TheRacetrack/racetrack/issues/379)
 
 ## [2.22.0] - 2023-11-07
 ### Added

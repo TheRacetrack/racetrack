@@ -2,7 +2,7 @@ prometheus-client==0.17.1
 pydantic==1.10.5
 pyjwt[crypto]==2.6.0
 fastapi==0.103.1
-uvicorn[standard]==0.23.2
+uvicorn[standard]==0.24.0
 opentelemetry-exporter-otlp-proto-http==1.16.0
 protobuf==4.22.0  # needed by opentelemetry exporter
 python-multipart==0.0.6  # uploading files

@@ -1,6 +1,7 @@
 import os
 
 import django
+from django.db import connections
 import socketio
 from fastapi import APIRouter
 from a2wsgi import WSGIMiddleware
@@ -37,7 +38,12 @@ logger = get_logger(__name__)
 def run_api_server(config: Config, plugin_engine: PluginEngine, service_name: str = 'lifecycle'):
     """Create app from config and run ASGI HTTP server"""
     app = create_fastapi_app(config, plugin_engine, service_name)
-    serve_asgi_app(app, http_addr=config.http_addr, http_port=config.http_port)
+
+    def _on_shutdown():
+        logger.debug('Closing database connections')
+        connections.close_all()
+
+    serve_asgi_app(app, http_addr=config.http_addr, http_port=config.http_port, on_shutdown=_on_shutdown)
 
 
 def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name: str, event_stream_server: EventStreamServer | None = None) -> ASGIApp:
