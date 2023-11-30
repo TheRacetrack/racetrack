@@ -30,5 +30,8 @@ export function extractErrorDetails(err: any): string {
             }
         }
     }
+    if (typeof err.toString === 'function') {
+        return err.toString()
+    }
     return JSON.stringify(err)
 }

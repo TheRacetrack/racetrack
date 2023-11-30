@@ -36,6 +36,15 @@ defineExpose({
           </q-item-section>
         </q-item>
 
+        <q-item v-ripple clickable :to="{name: 'deployments'}">
+          <q-item-section avatar>
+            <q-icon name="construction" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Deployments</q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-item v-ripple clickable :to="{name: 'graph'}">
           <q-item-section avatar>
             <q-icon :name="mdiGraphOutline" />

@@ -65,3 +65,24 @@ export function timestampSecondsAgo(timestampS: number | undefined): number | nu
     const diffMs = new Date().getTime() - timestampS * 1000
     return Math.floor(diffMs / 1000)
 }
+
+export function formatDuration(timestampStart: number | undefined, timestampEnd: number | undefined): string {
+    if (timestampStart == null || timestampEnd == null)
+        return ''
+
+    const totalSeconds = timestampEnd - timestampStart
+    const seconds = totalSeconds % 60
+    const minutes = Math.floor(totalSeconds / 60) % 60
+    const hours = Math.floor(totalSeconds / 60 / 60) % 24
+    const days = Math.floor(totalSeconds / 60 / 60 / 24)
+
+    if (totalSeconds < 0)
+        return ''
+    if (days > 0)
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`
+    if (hours > 0)
+        return `${hours}h ${minutes}m ${seconds}s`
+    if (minutes > 0)
+        return `${minutes}m ${seconds}s`
+    return `${seconds}s`
+}

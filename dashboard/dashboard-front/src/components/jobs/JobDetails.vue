@@ -2,8 +2,6 @@
 import { type Ref, computed, ref } from 'vue'
 import { openURL } from 'quasar'
 import { mdiDotsVertical, mdiTextBoxOutline } from '@quasar/extras/mdi-v7'
-import hljs from 'highlight.js/lib/core'
-import hljs_yaml from 'highlight.js/lib/languages/yaml'
 import { progressService } from '@/services/ProgressService'
 import { apiClient } from '@/services/ApiClient'
 import { type JobData } from '@/utils/api-schema'
@@ -13,10 +11,8 @@ import DeleteJobButton from '@/components/jobs/DeleteJobButton.vue'
 import LogsView from '@/components/jobs/LogsView.vue'
 import { getJobGraphanaUrl } from '@/utils/jobs'
 import ManifestEditDialog from './ManifestEditDialog.vue'
-import TimeAgoLabel from './TimeAgoLabel.vue'
-import 'highlight.js/styles/github.css'
-
-hljs.registerLanguage('yaml', hljs_yaml)
+import TimeAgoLabel from "@/components/jobs/TimeAgoLabel.vue"
+import ManifestView from "@/components/jobs/ManifestView.vue"
 
 const emit = defineEmits(['refreshJobs'])
 const props = defineProps(['currentJob'])
@@ -28,15 +24,6 @@ const logsContent: Ref<string> = ref('')
 const logsOpen: Ref<boolean> = ref(false)
 const loadingLogs: Ref<boolean> = ref(false)
 const manifestDialogRef: Ref<typeof ManifestEditDialog | null> = ref(null)
-
-const manifestYaml: Ref<string> = computed(() => {
-    return job.value?.manifest_yaml || ''
-})
-
-const manifestHtml: Ref<string> = computed(() => {
-    let html = hljs.highlight(manifestYaml.value, {language: 'yaml'}).value
-    return html
-})
 
 function showBuildLogs(job: JobData) {
     progressService.runLoading({
@@ -118,7 +105,7 @@ function openJobGrafanaDashboard(job: JobData) {
 }
 
 function editJobManifest(job: JobData) {
-    manifestDialogRef.value?.openDialog(job, manifestYaml.value)
+    manifestDialogRef.value?.openDialog(job, job.manifest_yaml ?? '')
 }
 
 function onManifestUpdated() {
@@ -268,9 +255,9 @@ function onManifestUpdated() {
         </template>
     </q-field>
 
-    <q-field outlined label="Manifest" stack-label class="q-mt-md">
+    <q-field outlined label="Manifest" stack-label>
         <template v-slot:control>
-            <div class="x-monospace x-overflow-any" v-html="manifestHtml" style="white-space: pre;"></div>
+            <ManifestView :manifestYaml="job?.manifest_yaml" />
         </template>
         <template v-slot:append>
             <q-btn round flat icon="edit" @click="editJobManifest(job)">

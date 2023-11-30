@@ -58,6 +58,8 @@ class DeploymentStatus(Enum):
 class DeploymentDto(BaseModel, arbitrary_types_allowed=True):
     id: str
     status: str
+    create_time: int
+    update_time: int
     error: Optional[str] = None
     job: Optional[JobDto] = None  # successfully deployed job related to it
     deployed_by: Optional[str] = None  # username of the last deployer
@@ -65,6 +67,8 @@ class DeploymentDto(BaseModel, arbitrary_types_allowed=True):
     image_name: Optional[str] = None
     infrastructure_target: Optional[str] = None
     manifest_yaml: str  # manifest represented as YAML string
+    job_name: str
+    job_version: str
 
 
 class EscDto(BaseModel):

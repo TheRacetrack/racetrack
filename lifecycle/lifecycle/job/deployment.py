@@ -71,6 +71,12 @@ def check_deployment_result(deploy_id: str, config: Config) -> DeploymentDto:
 
 
 @db_access
+def list_recent_deployments(limit: int) -> List[DeploymentDto]:
+    deployment_models = models.Deployment.objects.all().order_by('-update_time')[:limit]
+    return [deployment_model_to_dto(m) for m in deployment_models]
+
+
+@db_access
 def list_deployments_by_status(status: str) -> List[models.Deployment]:
     deployments_queryset = models.Deployment.objects.filter(status=status)
     return list(deployments_queryset)

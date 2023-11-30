@@ -7,7 +7,7 @@ from lifecycle.config import Config
 from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.builder import build_job_in_background
 from lifecycle.deployer.deploy import deploy_job_in_background
-from lifecycle.job.deployment import check_deployment_result, save_deployment_phase
+from lifecycle.job.deployment import check_deployment_result, save_deployment_phase, list_recent_deployments
 from lifecycle.server.metrics import metric_requested_job_deployments
 from pydantic import BaseModel, Field
 from racetrack_commons.plugin.engine import PluginEngine
@@ -83,6 +83,12 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             force, plugin_engine, username, auth_subject,
         )
         return {"id": deployment_id}
+
+    @api.get('/deploy')
+    def _get_deployments(request: Request, limit: int = 100):
+        """List recent deployment attempts"""
+        check_auth(request)
+        return list_recent_deployments(limit)
 
     @api.post('/build')
     def _build(payload: DeployPayloadModel, request: Request):
