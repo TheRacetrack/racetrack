@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.23.0] - 2023-12-04
 ### Added
 - A command `racetrack get remote -q` (with flag `-q` or `--quiet`)
   prints only the current address of Lifecycle (without other logs), which makes it usable for scripts.
