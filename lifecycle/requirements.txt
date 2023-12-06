@@ -6,5 +6,5 @@ psycopg[binary,pool]==3.1.12
 python-socketio==5.9.0
 python-socketio[client]==5.9.0
 Jinja2==3.1.2
-werkzeug==2.2.3
+werkzeug==2.3.8
 psutil==5.9.4
