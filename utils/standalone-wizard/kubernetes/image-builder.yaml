@@ -19,6 +19,18 @@ spec:
         fsGroup: 200000
       hostname: image-builder
       subdomain: image-builder
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app.kubernetes.io/name"
+                      operator: In
+                      values:
+                        - image-builder
+                topologyKey: kubernetes.io/hostname
       priorityClassName: high-priority
       containers:
         - name: image-builder
