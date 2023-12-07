@@ -17,6 +17,18 @@ spec:
     spec:
       hostname: lifecycle
       subdomain: lifecycle
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app.kubernetes.io/name"
+                      operator: In
+                      values:
+                        - lifecycle
+                topologyKey: kubernetes.io/hostname
       serviceAccountName: null
       priorityClassName: high-priority
       initContainers:

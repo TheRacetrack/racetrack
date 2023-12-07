@@ -21,6 +21,18 @@ spec:
         runAsGroup: 100000
       hostname: dashboard
       subdomain: dashboard
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app.kubernetes.io/name"
+                      operator: In
+                      values:
+                        - dashboard
+                topologyKey: kubernetes.io/hostname
       priorityClassName: high-priority
       containers:
         - name: dashboard
