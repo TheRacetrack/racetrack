@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Infrastructure targets can now mount secret vars to a job beyond environment variables.
+  Secret variables are passed as separate argument.
+  Infrastructure plugins have to be updated accordingly.
+  Precisely, `deploy_job` function of `JobDeployer` class has
+  now a new argument `runtime_secret_vars: Dict[str, str]` with secret env vars for a job.
+  ([#394](https://github.com/TheRacetrack/racetrack/issues/394))
 
 ## [2.23.0] - 2023-12-04
 ### Added
