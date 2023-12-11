@@ -17,7 +17,8 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
 
     with wrap_context('cloning git repo'):
         try:
-            shell(f'GIT_TERMINAL_PROMPT=0 git clone {remote_url} {workspace.resolve()}', workdir=project_root())
+            shell(f'GIT_TERMINAL_PROMPT=0 git clone {remote_url} {workspace.resolve()}',
+                  workdir=project_root(), print_log=False)
         except CommandError as e:
             if 'fatal: Authentication failed' in e.stdout:
                 if git_credentials is None:

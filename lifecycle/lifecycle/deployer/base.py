@@ -19,6 +19,7 @@ class JobDeployer(ABC):
         runtime_env_vars: Dict[str, str],
         family: JobFamilyDto,
         containers_num: int = 1,
+        runtime_secret_vars: Dict[str, str] | None = None,
     ) -> JobDto:
         """Deploy a Job from a manifest file"""
         raise NotImplementedError()

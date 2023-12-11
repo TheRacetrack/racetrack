@@ -57,15 +57,18 @@ def provision_job(
         family = create_job_family_if_not_exist(manifest.name)
         family_dto = job_family_model_to_dto(family)
 
-        runtime_env_vars = merge_env_vars(manifest.runtime_env, secret_runtime_env)
         build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
-        runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
+        all_runtime_vars = merge_env_vars(manifest.runtime_env, secret_runtime_env)
+        runtime_env_vars = manifest.runtime_env or {}
+        for build_var in build_env_vars.keys():
+            if build_var not in all_runtime_vars:
+                runtime_env_vars[build_var] = ''  # Clear out unused build env vars
 
         job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
         containers_num = len(job_type.template_paths)
 
-        job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine,
-                                              tag, runtime_env_vars, family_dto, containers_num)
+        job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine, tag,
+                                              runtime_env_vars, family_dto, containers_num, secret_runtime_env)
 
     with wrap_context('saving job in database'):
         job.deployed_by = deployment.deployed_by
