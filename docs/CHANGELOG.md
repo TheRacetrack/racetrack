@@ -6,11 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- Infrastructure targets can now mount secret vars to a job beyond environment variables.
-  Secret variables are passed as separate argument.
-  Infrastructure plugins have to be updated accordingly.
-  Precisely, `deploy_job` function of `JobDeployer` class has
-  now a new argument `runtime_secret_vars: Dict[str, str]` with secret env vars for a job.
+- Infrastructure targets can now mount secret vars to a job regardless of environment variables.
+  Secret variables are passed as a separate argument, they're no longer mixed with regular env vars.
+  Infrastructure plugins have to be updated accordingly due to interface change.
+  Specifically, `deploy_job` function of `JobDeployer` class now has
+  a new argument `runtime_secret_vars: Dict[str, str]` with secret env vars for a job.
+  See [Supported hooks](./development/developing-plugins.md#supported-hooks).
   ([#394](https://github.com/TheRacetrack/racetrack/issues/394))
 
 ## [2.23.0] - 2023-12-04
