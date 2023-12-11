@@ -13,7 +13,7 @@ from lifecycle.job.models_registry import create_job_family_if_not_exist, save_j
 from lifecycle.job.public_endpoints import create_job_public_endpoint_if_not_exist
 from lifecycle.monitor.monitors import check_job_condition
 from lifecycle.server.metrics import metric_deployed_job
-from racetrack_client.client.env import hide_env_vars, merge_env_vars
+from racetrack_client.client.env import merge_env_vars
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
