@@ -11,10 +11,10 @@ jobtype_extra:
   entrypoint_path: 'entrypoint.py'
   entrypoint_class: 'JobEntrypoint'
 
-secret_build_env_file: .env
+secret_build_env_file: build.env
 build_env:
   DEBIAN_FRONTEND: noninteractive
 
-secret_runtime_env_file: .env
+secret_runtime_env_file: runtime.env
 runtime_env:
   TORCH_MODEL_ZOO: zoo
