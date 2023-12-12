@@ -16,7 +16,7 @@ PLUGIN_FILENAME = 'plugin.py'
 PLUGIN_MANIFEST_FILENAME = 'plugin-manifest.yaml'
 
 
-def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional[str]):
+def bundle_plugin(workdir: str, out_dir: Optional[str], out_filename: Optional[str], plugin_version: Optional[str]):
     """Turn local plugin code into ZIP file"""
     plugin_dir = Path(workdir)
     assert (plugin_dir / PLUGIN_FILENAME).is_file(), f'{plugin_dir / PLUGIN_FILENAME} file was not found in a plugin directory'
@@ -30,7 +30,9 @@ def bundle_plugin(workdir: str, out_dir: Optional[str], plugin_version: Optional
 
     out_dir_path = Path(out_dir) if out_dir else plugin_dir
     assert out_dir_path.is_dir(), f'out directory {out_dir_path} doesn\'t exist'
-    out_path = out_dir_path / f'{plugin_manifest.name}-{plugin_manifest.version}.zip'
+    if not out_filename:
+        out_filename = f'{plugin_manifest.name}-{plugin_manifest.version}.zip'
+    out_path = out_dir_path / out_filename
 
     ignore_file = plugin_dir / '.racetrackignore'
     if ignore_file.is_file():
