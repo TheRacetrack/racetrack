@@ -57,12 +57,13 @@ def provision_job(
         family = create_job_family_if_not_exist(manifest.name)
         family_dto = job_family_model_to_dto(family)
 
-        build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
+        all_build_vars = merge_env_vars(manifest.build_env, secret_build_env)
         all_runtime_vars = merge_env_vars(manifest.runtime_env, secret_runtime_env)
         runtime_env_vars = manifest.runtime_env or {}
-        for build_var in build_env_vars.keys():
+        # Clear out unused build vars to hide secrets and avoid conflicts with env vars at runtime
+        for build_var in all_build_vars.keys():
             if build_var not in all_runtime_vars:
-                runtime_env_vars[build_var] = ''  # Clear out unused build env vars
+                runtime_env_vars[build_var] = ''
 
         job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
         containers_num = len(job_type.template_paths)

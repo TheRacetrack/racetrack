@@ -132,10 +132,10 @@ Here's the overview of the most important classes:
 
 - `name: str | None` - name of the infrastructure target
 - `job_deployer: JobDeployer | None` - instance of `lifecycle.deployer.base.JobDeployer`, see below.
--  `job_monitor: JobMonitor | None` - instance of `lifecycle.monitor.base.JobMonitor`, see below.
--  `logs_streamer: LogsStreamer | None` - instance of `lifecycle.monitor.base.LogsStreamer`, see below.
--  `remote_gateway_url: str | None` - Address of a remote Pub in case of "remote gateway mode".
--  `remote_gateway_token: str | None` - Auth token for internal communication in case of "remote gateway mode".
+- `job_monitor: JobMonitor | None` - instance of `lifecycle.monitor.base.JobMonitor`, see below.
+- `logs_streamer: LogsStreamer | None` - instance of `lifecycle.monitor.base.LogsStreamer`, see below.
+- `remote_gateway_url: str | None` - Address of a remote Pub in case of "remote gateway mode".
+- `remote_gateway_token: str | None` - Auth token for internal communication in case of "remote gateway mode".
 
 #### Class `lifecycle.deployer.base.JobDeployer`
 
@@ -153,18 +153,17 @@ Here's the overview of the most important classes:
         family: JobFamilyDto,
         containers_num: int = 1,
         runtime_secret_vars: Dict[str, str] | None = None,
-    ) -> JobDto:
-    """Deploy a Job from a manifest file"""
+    ) -> JobDto
 ```
 
 - `delete_job` - Delete a Job based on its name
 ```python
-    def delete_job(self, job_name: str, job_version: str):
+    def delete_job(self, job_name: str, job_version: str) -> None
 ```
 
 - `job_exists` - Tell whether a Job already exists or not
 ```python
-    def job_exists(self, job_name: str, job_version: str) -> bool:
+    def job_exists(self, job_name: str, job_version: str) -> bool
 ```
 
 - `save_job_secrets` - Create or update secrets needed to build and deploy a Job
@@ -174,7 +173,7 @@ Here's the overview of the most important classes:
         job_name: str,
         job_version: str,
         job_secrets: JobSecrets,
-    ):
+    ) -> None
 ```
 
 - `get_job_secrets` - Retrieve secrets for building and deploying a Job
@@ -183,7 +182,7 @@ Here's the overview of the most important classes:
         self,
         job_name: str,
         job_version: str,
-    ) -> JobSecrets:
+    ) -> JobSecrets
 ```
 
 #### Class `lifecycle.monitor.base.JobMonitor`
@@ -192,7 +191,7 @@ Here's the overview of the most important classes:
 
 - `list_jobs` - List jobs deployed in a cluster
 ```python
-    def list_jobs(self, config: Config) -> Iterable[JobDto]:
+    def list_jobs(self, config: Config) -> Iterable[JobDto]
 ```
 
 - `check_job_condition` - Verify if deployed Job is really operational. If not, raise exception with reason
@@ -202,7 +201,7 @@ Here's the overview of the most important classes:
                             deployment_timestamp: int = 0,
                             on_job_alive: Callable = None,
                             logs_on_error: bool = True,
-                            ):
+                            ) -> None:
         """
         Verify if deployed Job is really operational. If not, raise exception with reason
         :param job: job data
@@ -231,7 +230,7 @@ Here's the overview of the most important classes:
 
 - `create_session` - Start a session transmitting messages to client
 ```python
-    def create_session(self, session_id: str, resource_properties: dict[str, str], on_next_line: Callable[[str, str], None]):
+    def create_session(self, session_id: str, resource_properties: dict[str, str], on_next_line: Callable[[str, str], None]) -> None:
         """
         Start a session transmitting messages to client.
         Session should call `broadcast` method when next message arrives.
@@ -243,5 +242,5 @@ Here's the overview of the most important classes:
 
 - `close_session` - Close session when a client disconnects
 ```python
-    def close_session(self, session_id: str):
+    def close_session(self, session_id: str) -> None
 ```
