@@ -17,6 +17,7 @@ from racetrack_client.client.env import merge_env_vars
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
+from racetrack_commons.plugin.call import safe_call
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
@@ -68,8 +69,17 @@ def provision_job(
         job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
         containers_num = len(job_type.template_paths)
 
-        job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine, tag,
-                                              runtime_env_vars, family_dto, containers_num, secret_runtime_env)
+        job: JobDto = safe_call(
+            job_deployer.deploy_job,
+            manifest=manifest,
+            config=config,
+            plugin_engine=plugin_engine,
+            tag=tag,
+            runtime_env_vars=runtime_env_vars,
+            family=family_dto,
+            containers_num=containers_num,
+            runtime_secret_vars=secret_runtime_env,
+        )
 
     with wrap_context('saving job in database'):
         job.deployed_by = deployment.deployed_by
