@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `racetrack plugin bundle` command has `--out-filename` parameter that allows you
+  to overwrite the filename of the output ZIP file.
+  ([#391](https://github.com/TheRacetrack/racetrack/issues/391))
+
 ### Changed
 - Infrastructure targets can now mount secret vars to a job regardless of environment variables.
   Secret variables are passed as a separate argument, they're no longer mixed with regular env vars.

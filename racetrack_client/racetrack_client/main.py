@@ -281,10 +281,11 @@ def _list_installed_plugins(
 def _plugin_bundle(
     workdir: str = typer.Argument(default='.', help='path to a plugin directory'),
     out: str = typer.Option(default=None, show_default=False, help='output directory where to save the ZIP file'),
+    out_filename: str = typer.Option(default=None, show_default=False, help='filename of the output ZIP file'),
     plugin_version: str = typer.Option(default=None, show_default=False, help='override plugin version'),
 ):
     """Turn local plugin code into ZIP file"""
-    bundle_plugin(workdir, out, plugin_version)
+    bundle_plugin(workdir, out, out_filename, plugin_version)
 
 
 @cli.command('call', no_args_is_help=True)
