@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Infrastructure targets can now mount secret vars to a job regardless of environment variables.
   Secret variables are passed as a separate argument, they're no longer mixed with regular env vars.
-  Infrastructure plugins have to be updated accordingly due to interface change.
+  Infrastructure plugins should be updated accordingly due to interface change.
   Specifically, `deploy_job` function of `JobDeployer` class now has
   a new argument `runtime_secret_vars: Dict[str, str]` with secret env vars for a job.
   See [Supported hooks](./development/developing-plugins.md#supported-hooks).
