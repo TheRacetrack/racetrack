@@ -46,7 +46,7 @@ class PluginCore(ABC):
         """
         Infrastructure Targets (deployment targets for Jobs) provided by this plugin
         Infrastructure Target should contain Job Deployer, Job Monitor and Job Logs Streamer.
-        :return dict of infrastructure name -> an instance of InfrastructureTarget
+        :return dict of infrastructure name -> an instance of lifecycle.infrastructure.model.InfrastructureTarget
         """
         return {}
 

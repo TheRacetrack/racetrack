@@ -99,7 +99,7 @@ def infrastructure_targets(self) -> dict[str, Any]:
     """
     Infrastructure Targets (deployment targets for Jobs) provided by this plugin
     Infrastructure Target should contain Job Deployer, Job Monitor and Job Logs Streamer.
-    :return dict of infrastructure name -> an instance of InfrastructureTarget
+    :return dict of infrastructure name -> an instance of lifecycle.infrastructure.model.InfrastructureTarget
     """
     return {}
 ```
@@ -122,4 +122,125 @@ def post_job_delete(self, job: JobDto, username_executor: str = None):
 ```python
 def run_action(self, **kwargs) -> Any:
     """Call a supplementary action of a plugin"""
+```
+
+### Infrastructure targets
+`infrastructure_targets` hook expects instances of `lifecycle.infrastructure.model.InfrastructureTarget`.
+Here's the overview of the most important classes: 
+
+#### Class `lifecycle.infrastructure.model.InfrastructureTarget`
+
+- `name: str | None` - name of the infrastructure target
+- `job_deployer: JobDeployer | None` - instance of `lifecycle.deployer.base.JobDeployer`, see below.
+- `job_monitor: JobMonitor | None` - instance of `lifecycle.monitor.base.JobMonitor`, see below.
+- `logs_streamer: LogsStreamer | None` - instance of `lifecycle.monitor.base.LogsStreamer`, see below.
+- `remote_gateway_url: str | None` - Address of a remote Pub in case of "remote gateway mode".
+- `remote_gateway_token: str | None` - Auth token for internal communication in case of "remote gateway mode".
+
+#### Class `lifecycle.deployer.base.JobDeployer`
+
+`JobDeployer` should contain the logic responsible for deploying jobs, deleting jobs and managing secrets.
+
+- `deploy_job` - Deploy a Job from a manifest file
+```python
+    def deploy_job(
+        self,
+        manifest: Manifest,
+        config: Config,
+        plugin_engine: PluginEngine,
+        tag: str,
+        runtime_env_vars: Dict[str, str],
+        family: JobFamilyDto,
+        containers_num: int = 1,
+        runtime_secret_vars: Dict[str, str] | None = None,
+    ) -> JobDto
+```
+
+- `delete_job` - Delete a Job based on its name
+```python
+    def delete_job(self, job_name: str, job_version: str) -> None
+```
+
+- `job_exists` - Tell whether a Job already exists or not
+```python
+    def job_exists(self, job_name: str, job_version: str) -> bool
+```
+
+- `save_job_secrets` - Create or update secrets needed to build and deploy a Job
+```python
+    def save_job_secrets(
+        self,
+        job_name: str,
+        job_version: str,
+        job_secrets: JobSecrets,
+    ) -> None
+```
+
+- `get_job_secrets` - Retrieve secrets for building and deploying a Job
+```python
+    def get_job_secrets(
+        self,
+        job_name: str,
+        job_version: str,
+    ) -> JobSecrets
+```
+
+#### Class `lifecycle.monitor.base.JobMonitor`
+
+`JobMonitor` implements the logic responsible for discovering workloads running in a cluster and monitoring their condition.
+
+- `list_jobs` - List jobs deployed in a cluster
+```python
+    def list_jobs(self, config: Config) -> Iterable[JobDto]
+```
+
+- `check_job_condition` - Verify if deployed Job is really operational. If not, raise exception with reason
+```python
+    def check_job_condition(self,
+                            job: JobDto,
+                            deployment_timestamp: int = 0,
+                            on_job_alive: Callable = None,
+                            logs_on_error: bool = True,
+                            ) -> None:
+        """
+        Verify if deployed Job is really operational. If not, raise exception with reason
+        :param job: job data
+        :param deployment_timestamp: timestamp of deployment to verify if the running version is really the expected one
+        If set to zero, checking version is skipped.
+        :param on_job_alive: handler called when Job is live, but not ready yet
+        (server running already, but still initializing)
+        :param logs_on_error: if True, logs are read from the Job and returned in the exception in case of failure
+        """
+```
+
+- `read_recent_logs` - Return last output logs from a Job
+```python
+    def read_recent_logs(self, job: JobDto, tail: int = 20) -> str:
+        """
+        Return last output logs from a Job
+        :param job: job data
+        :param tail: number of recent lines to show
+        :return logs output lines joined in a one string
+        """
+```
+
+#### Class `lifecycle.monitor.base.LogsStreamer`
+
+`LogsStreamer` is responsible for producing logs from the jobs, setting up & tearing down sessions providing live logs stream.
+
+- `create_session` - Start a session transmitting messages to client
+```python
+    def create_session(self, session_id: str, resource_properties: dict[str, str], on_next_line: Callable[[str, str], None]) -> None:
+        """
+        Start a session transmitting messages to client.
+        Session should call `broadcast` method when next message arrives.
+        :param session_id: ID of a client session to be referred when closing
+        :param resource_properties: properties describing a resource to be monitored (job name, version, etc)
+        :param on_next_line: callback for sending log messages to connected clients. Parameters: session_id: str, message: str
+        """
+```
+
+- `close_session` - Close session when a client disconnects
+```python
+    def close_session(self, session_id: str) -> None
 ```

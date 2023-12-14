@@ -13,10 +13,11 @@ from lifecycle.job.models_registry import create_job_family_if_not_exist, save_j
 from lifecycle.job.public_endpoints import create_job_public_endpoint_if_not_exist
 from lifecycle.monitor.monitors import check_job_condition
 from lifecycle.server.metrics import metric_deployed_job
-from racetrack_client.client.env import hide_env_vars, merge_env_vars
+from racetrack_client.client.env import merge_env_vars
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
+from racetrack_commons.plugin.call import safe_call
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
@@ -57,15 +58,28 @@ def provision_job(
         family = create_job_family_if_not_exist(manifest.name)
         family_dto = job_family_model_to_dto(family)
 
-        runtime_env_vars = merge_env_vars(manifest.runtime_env, secret_runtime_env)
-        build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
-        runtime_env_vars = hide_env_vars(runtime_env_vars, build_env_vars)
+        all_build_vars = merge_env_vars(manifest.build_env, secret_build_env)
+        all_runtime_vars = merge_env_vars(manifest.runtime_env, secret_runtime_env)
+        runtime_env_vars = manifest.runtime_env or {}
+        # Clear out unused build vars to hide secrets and avoid conflicts with env vars at runtime
+        for build_var in all_build_vars.keys():
+            if build_var not in all_runtime_vars:
+                runtime_env_vars[build_var] = ''
 
         job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
         containers_num = len(job_type.template_paths)
 
-        job: JobDto = job_deployer.deploy_job(manifest, config, plugin_engine,
-                                              tag, runtime_env_vars, family_dto, containers_num)
+        job: JobDto = safe_call(
+            job_deployer.deploy_job,
+            manifest=manifest,
+            config=config,
+            plugin_engine=plugin_engine,
+            tag=tag,
+            runtime_env_vars=runtime_env_vars,
+            family=family_dto,
+            containers_num=containers_num,
+            runtime_secret_vars=secret_runtime_env,
+        )
 
     with wrap_context('saving job in database'):
         job.deployed_by = deployment.deployed_by

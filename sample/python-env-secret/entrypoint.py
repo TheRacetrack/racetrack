@@ -10,5 +10,8 @@ class JobEntrypoint:
         return {
             'model': self.model,
             'result': random.random(),
-            'passwd': os.environ.get('PGPASSWD'),
+            'GITLAB_USERNAME': os.environ.get('GITLAB_USERNAME'),
+            'DEBIAN_FRONTEND': os.environ.get('DEBIAN_FRONTEND'),
+            'PGPASSWD': os.environ.get('PGPASSWD'),
+            'TORCH_MODEL_ZOO': os.environ.get('TORCH_MODEL_ZOO'),
         }

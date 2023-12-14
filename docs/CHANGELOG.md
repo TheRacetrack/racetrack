@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to overwrite the filename of the output ZIP file.
   ([#391](https://github.com/TheRacetrack/racetrack/issues/391))
 
+### Changed
+- Infrastructure targets can now mount secret vars to a job regardless of environment variables.
+  Secret variables are passed as a separate argument, they're no longer mixed with regular env vars.
+  Infrastructure plugins should be updated accordingly due to interface change.
+  Specifically, `deploy_job` function of `JobDeployer` class now has
+  a new argument `runtime_secret_vars: Dict[str, str]` with secret env vars for a job.
+  See [Supported hooks](./development/developing-plugins.md#supported-hooks).
+  ([#394](https://github.com/TheRacetrack/racetrack/issues/394))
+
 ## [2.23.0] - 2023-12-04
 ### Added
 - A command `racetrack get remote -q` (with flag `-q` or `--quiet`)
