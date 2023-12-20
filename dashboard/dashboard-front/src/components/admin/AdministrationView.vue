@@ -9,6 +9,7 @@ import { progressService } from '@/services/ProgressService'
 import { authToken } from '@/services/UserDataStore'
 import { extractErrorDetails } from "@/utils/error"
 import { rememberInLocalStorage } from '@/utils/storage'
+import XTooltip from '@/components/XTooltip.vue'
 
 const pluginsDataRef: Ref<PluginsData> = ref({
     plugins: [],
@@ -63,8 +64,10 @@ const jobTypeVersionsTree = computed(() => [{
 const populateJobTypeGroup = (group: JobTypePluginData) => {
     return {
         label: `${group.name} ${group.version}`,
+        rt_type: 'plugin',
         children: group.job_types.map((jobtype: JobTypeData) => ({
-            label: `${jobtype.name} (${jobtype.active_jobs})`,
+            label: jobtype.name,
+            rt_jobs: jobtype.active_jobs,
         }))
     }
 }
@@ -77,8 +80,10 @@ const infrastructureTargetsTree = computed(() => [{
 const populateInfrastructureGroup = (group: InfrastructurePluginData) => {
     return {
         label: `${group.name} ${group.version}`,
+        rt_type: 'plugin',
         children: group.infrastructures.map((infrastructure: InfrastructureData) => ({
-            label: `${infrastructure.name} (${infrastructure.active_jobs})`,
+            label: infrastructure.name,
+            rt_jobs: infrastructure.active_jobs,
         }))
     }
 }
@@ -231,7 +236,22 @@ function stringToColour(str: string) {
                 node-key="label"
                 default-expand-all
                 dense
-                />
+                >
+                <template v-slot:default-header="prop">
+                    <span>
+                        {{ prop.node.label }}
+                        <template v-if="prop.node.rt_type == 'plugin'">
+                            <XTooltip>A plugin providing the job types</XTooltip>
+                        </template>
+                        <template v-if="prop.node.rt_jobs != null">
+                            <q-badge outline :color="prop.node.rt_jobs > 0 ? 'primary' : 'grey'" class="q-ml-sm">
+                                {{prop.node.rt_jobs}}
+                                <XTooltip>{{prop.node.rt_jobs}} jobs use this job type</XTooltip>
+                            </q-badge>
+                        </template>
+                    </span>
+                </template>
+            </q-tree>
         </q-card-section>
 
         <q-card-section class="q-pb-none">
@@ -241,7 +261,23 @@ function stringToColour(str: string) {
                 :nodes="infrastructureTargetsTree"
                 node-key="label"
                 default-expand-all
-                />
+                dense
+                >
+                <template v-slot:default-header="prop">
+                    <span>
+                        {{ prop.node.label }}
+                        <template v-if="prop.node.rt_type == 'plugin'">
+                            <XTooltip>A plugin providing the infrastructure targets</XTooltip>
+                        </template>
+                        <template v-if="prop.node.rt_jobs != null">
+                            <q-badge outline :color="prop.node.rt_jobs > 0 ? 'primary' : 'grey'" class="q-ml-sm">
+                                {{prop.node.rt_jobs}}
+                                <XTooltip>{{prop.node.rt_jobs}} jobs use this infrastructure target</XTooltip>
+                            </q-badge>
+                        </template>
+                    </span>
+                </template>
+            </q-tree>
         </q-card-section>
         <q-card-section class="q-py-none">
             
