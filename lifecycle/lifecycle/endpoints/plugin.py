@@ -6,11 +6,10 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, Request
 
 from lifecycle.django.registry import models
-from lifecycle.infrastructure.model import InfrastructureTarget
 from lifecycle.job import models_registry
 from lifecycle.server.cache import LifecycleCache
 from racetrack_client.plugin.plugin_manifest import PluginManifest
-from racetrack_commons.deploy.job_type import JobType, list_jobtype_names_of_plugins
+from racetrack_commons.deploy.job_type import list_jobtype_names_of_plugins
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
@@ -122,60 +121,45 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
 
     @api.get('/plugin/tree')
     def _get_plugin_trees() -> PluginsData:
-        plugins: list[PluginManifest] = plugin_engine.plugin_manifests
-        job_types: dict[str, JobType] = LifecycleCache.job_types
-        infrastructure_targets: dict[str, InfrastructureTarget] = LifecycleCache.infrastructure_targets
+        return _get_plugins_data(plugin_engine)
 
-        job_models: list[models.Job] = list(models_registry.list_job_models())
-        jobtypes_usage: dict[str, int] = collections.defaultdict(int)
-        infrastructure_usage: dict[str, int] = collections.defaultdict(int)
-        for job_model in job_models:
-            jobtypes_usage[job_model.job_type_version] += 1
-            infrastructure_usage[job_model.infrastructure_target] += 1
 
-        infrastructure_names_of_plugins: list[tuple[PluginManifest, str]] = list_infrastructure_names_of_plugins(plugin_engine)
-        jobtype_names_of_plugins: list[tuple[PluginManifest, str]] = list_jobtype_names_of_plugins(plugin_engine)
+def _get_plugins_data(plugin_engine: PluginEngine) -> PluginsData:
+    job_models: list[models.Job] = list(models_registry.list_job_models())
+    jobtypes_usage: dict[str, int] = collections.defaultdict(int)
+    infrastructure_usage: dict[str, int] = collections.defaultdict(int)
+    for job_model in job_models:
+        jobtypes_usage[job_model.job_type_version] += 1
+        infrastructure_usage[job_model.infrastructure_target] += 1
 
-        infrastructure_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
-        for plugin, name in infrastructure_names_of_plugins:
-            infrastructure_names_by_plugins[(plugin.name, plugin.version)].append(name)
+    jobtype_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
+    for plugin, jobtype_name in list_jobtype_names_of_plugins(plugin_engine):
+        jobtype_names_by_plugins[(plugin.name, plugin.version)].append(jobtype_name)
 
-        jobtype_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
-        for plugin, name in jobtype_names_of_plugins:
-            jobtype_names_by_plugins[(plugin.name, plugin.version)].append(name)
+    job_type_plugins_data: list[JobTypePluginData] = []
+    for plugin_tuple, jobtype_names in jobtype_names_by_plugins.items():
+        job_types_data: list[JobTypeData] = [JobTypeData(name=name, active_jobs=jobtypes_usage[name]) for name in jobtype_names]
+        job_type_plugins_data.append(JobTypePluginData(
+            name=plugin_tuple[0],
+            version=plugin_tuple[1],
+            job_types=job_types_data,
+        ))
 
-        job_type_plugins_data: list[JobTypePluginData] = []
-        for plugin_tuple, jobtype_names in jobtype_names_by_plugins.items():
-            plugin_name, plugin_version = plugin_tuple
+    infrastructure_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
+    for plugin, infrastructure_name in list_infrastructure_names_of_plugins(plugin_engine):
+        infrastructure_names_by_plugins[(plugin.name, plugin.version)].append(infrastructure_name)
 
-            job_types: list[JobTypeData] = []
-            for jobtype_name in jobtype_names:
-                active_jobs = jobtypes_usage[jobtype_name]
-                job_types.append(JobTypeData(name=jobtype_name, active_jobs=active_jobs))
+    infrastructure_plugins_data: list[InfrastructurePluginData] = []
+    for plugin_tuple, infrastructure_names in infrastructure_names_by_plugins.items():
+        infrastructures_data: list[InfrastructureData] = [InfrastructureData(name=name, active_jobs=infrastructure_usage[name]) for name in infrastructure_names]
+        infrastructure_plugins_data.append(InfrastructurePluginData(
+            name=plugin_tuple[0],
+            version=plugin_tuple[1],
+            infrastructures=infrastructures_data,
+        ))
 
-            job_type_plugins_data.append(JobTypePluginData(
-                name=plugin_name,
-                version=plugin_version,
-                job_types=job_types,
-            ))
-
-        infrastructure_plugins_data: list[InfrastructurePluginData] = []
-        for plugin_tuple, infrastructure_names in infrastructure_names_by_plugins.items():
-            plugin_name, plugin_version = plugin_tuple
-
-            infrastructures_data: list[InfrastructureData] = []
-            for infrastructure_name in infrastructure_names:
-                active_jobs = infrastructure_usage[infrastructure_name]
-                infrastructures_data.append(InfrastructureData(name=infrastructure_name, active_jobs=active_jobs))
-
-            infrastructure_plugins_data.append(InfrastructurePluginData(
-                name=plugin_name,
-                version=plugin_version,
-                infrastructures=infrastructures_data,
-            ))
-
-        return PluginsData(
-            plugins=plugins,
-            job_type_plugins_data=sorted(job_type_plugins_data, key=lambda x: (x.name, x.version)),
-            infrastructure_plugins_data=sorted(infrastructure_plugins_data, key=lambda x: (x.name, x.version)),
-        )
+    return PluginsData(
+        plugins=plugin_engine.plugin_manifests,
+        job_type_plugins_data=sorted(job_type_plugins_data, key=lambda x: (x.name, x.version)),
+        infrastructure_plugins_data=sorted(infrastructure_plugins_data, key=lambda x: (x.name, x.version)),
+    )
