@@ -151,7 +151,7 @@ services:
       CLIENT_IDLE_TIMEOUT: 90
       SERVER_CONNECT_TIMEOUT: 10
       CLIENT_LOGIN_TIMEOUT: 10
-      QUERY_WAIT_TIMEOUT: 10
+      QUERY_WAIT_TIMEOUT: 30
       ADMIN_USERS: postgres,admin,racetrack
       AUTH_TYPE: scram-sha-256
 
