@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Dashboard's auto-update feature works with multiple Lifecycle replicas.
+  Live updates on the job list are enabled.
+  ([#317](https://github.com/TheRacetrack/racetrack/issues/317))
 
 ## [2.24.0] - 2023-12-14
 ### Added
