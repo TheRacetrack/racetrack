@@ -1,10 +1,15 @@
 import asyncio
 import threading
-
 import time
-import falcon
+import warnings
+
+warnings.filterwarnings(
+    action='ignore',
+    category=DeprecationWarning,
+    module=r'falcon.media'
+)
 from falcon import Request
-from falcon.asgi import WebSocket
+from falcon.asgi import WebSocket, App
 
 from lifecycle.config import Config
 from lifecycle.job.registry import list_job_registry
@@ -44,13 +49,13 @@ class EventStreamServer:
                     metric_event_stream_client_disconnected.inc()
                     server.clients.remove(ws)
 
-        self.asgi_app = falcon.asgi.App()
+        self.asgi_app = App()
         self.asgi_app.add_route('/lifecycle/websocket/events', WebSocketResource())
 
     async def notify_clients_async(self, event: dict):
         logger.debug(f'Notifying all Event Stream clients: {len(self.clients)}')
         for ws in self.clients.copy():
-            await ws.send_text('broadcast_event: job_models_changed')
+            await ws.send_media(event)
 
     def notify_clients(self, event: dict):
         asyncio.run(self.notify_clients_async(event))

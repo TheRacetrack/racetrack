@@ -172,7 +172,7 @@ function setupEventStreamClient() {
     const trimmedLifecycleUrl = url.toString()
     // client options: https://socket.io/docs/v4/client-options/
     const socket = io(trimmedLifecycleUrl, {
-        path: '/lifecycle/socketio/events',
+        path: '/lifecycle/websocket/events',
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax : 5000,
