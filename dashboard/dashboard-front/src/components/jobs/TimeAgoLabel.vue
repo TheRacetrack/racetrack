@@ -6,7 +6,7 @@ const props = defineProps({
     timestamp: { type: Number, required: false },
 })
 const agoLabel: Ref<string> = ref('')
-const timerId: Ref<number | null> = ref(null)
+const timerId: Ref<NodeJS.Timeout | null> = ref(null)
 
 watch(() => props.timestamp, () => {
     renderAgoLabel()
