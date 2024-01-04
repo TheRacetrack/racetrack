@@ -93,7 +93,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
         base_url + '/static': django_app,
         '/socket.io': WSGIMiddleware(sio_wsgi_app),
         base_url + '/socket.io': WSGIMiddleware(sio_wsgi_app),
-        '/lifecycle/socketio/events': event_stream_server.asgi_app,
+        '/lifecycle/websocket/events': event_stream_server.asgi_app,
     }, default=proxy)
 
     return dispatcher

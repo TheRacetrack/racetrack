@@ -1,8 +1,10 @@
 import asyncio
 import threading
 
-import socketio
 import time
+import falcon
+from falcon import Request
+from falcon.asgi import WebSocket
 
 from lifecycle.config import Config
 from lifecycle.job.registry import list_job_registry
@@ -14,51 +16,47 @@ logger = get_logger(__name__)
 
 
 class EventStreamServer:
-    def __init__(self, config: Config, socketio_path: str = 'lifecycle/socketio/events'):
+    def __init__(self, config: Config):
         """Socket.IO server for streaming events to clients"""
-        self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
-        self.clients: list[str] = []  # List of Client IDs
-        self.watcher_thread: threading.Thread | None = None
         self.config = config
+        self.clients: list[WebSocket] = []
+        self.watcher_thread: threading.Thread | None = None
+        server = self
 
-        @self.sio.event
-        async def connect(client_id: str, environ):
-            logger.debug(f'Client {client_id} connected to Event Streamer')
-            self.clients.append(client_id)
-            metric_event_stream_client_connected.inc()
-            await self.sio.emit('connected', {}, to=client_id)
-            if len(self.clients) > 0 and (self.watcher_thread is None or not self.watcher_thread.is_alive()):
-                self.watcher_thread = threading.Thread(target=self.watch_database_events, args=(), daemon=True)
-                self.watcher_thread.start()
+        class WebSocketResource:
+            async def on_websocket(self, _: Request, ws: WebSocket):
+                await ws.accept()
+                logger.debug(f'Client connected to Event Stream')
+                metric_event_stream_client_connected.inc()
+                server.clients.append(ws)
 
-        @self.sio.event
-        async def disconnect(client_id: str):
-            logger.debug(f'Client {client_id} disconnected from Event Streamer')
-            if client_id in self.clients:
-                metric_event_stream_client_disconnected.inc()
-                self.clients.remove(client_id)
+                try:
+                    if server.watcher_thread is None or not server.watcher_thread.is_alive():
+                        server.watcher_thread = threading.Thread(target=server.watch_database_events, args=(), daemon=True)
+                        server.watcher_thread.start()
 
-        @self.sio.on('*')
-        async def catch_all(event, sid, data):
-            logger.warning(f'Unhandled Socket.IO event: {event}, {sid}, {data}')
+                    while True:
+                        message: str = await ws.receive_text()
+                        logger.debug(f'Received websocket message: {message}')
 
-        self.asgi_app = socketio.ASGIApp(self.sio, socketio_path=socketio_path)
+                finally:
+                    logger.debug(f'Client disconnected from Event Stream')
+                    metric_event_stream_client_disconnected.inc()
+                    server.clients.remove(ws)
+
+        self.asgi_app = falcon.asgi.App()
+        self.asgi_app.add_route('/lifecycle/websocket/events', WebSocketResource())
 
     async def notify_clients_async(self, event: dict):
         logger.debug(f'Notifying all Event Stream clients: {len(self.clients)}')
-        for client_id in self.clients.copy():
-            # emit doesn't wait for the response
-            await self.sio.emit('broadcast_event', event, to=client_id)
+        for ws in self.clients.copy():
+            await ws.send_text('broadcast_event: job_models_changed')
 
     def notify_clients(self, event: dict):
         asyncio.run(self.notify_clients_async(event))
 
-    async def disconnect_all(self):
-        for client_id in self.clients.copy():
-            await self.sio.disconnect(client_id, ignore_queue=True)
-
     def watch_database_events(self):
-        logger.debug('Starting watcher thread in Event Streamer')
+        logger.debug('Starting watcher thread in Event Stream')
         last_jobs: dict[str, JobDto] | None = None
         while len(self.clients) > 0:
 
@@ -72,4 +70,5 @@ class EventStreamServer:
             last_jobs = current_jobs
 
             time.sleep(self.config.job_watcher_interval)
-        logger.debug('Stopping watcher thread in Event Streamer')
+
+        logger.debug('Event Stream watcher thread stopped')

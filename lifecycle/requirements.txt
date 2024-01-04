@@ -8,3 +8,4 @@ python-socketio[client]==5.9.0
 Jinja2==3.1.2
 werkzeug==2.3.8
 psutil==5.9.4
+falcon==3.1.3
