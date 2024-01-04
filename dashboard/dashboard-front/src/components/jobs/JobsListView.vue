@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
-import WebSocket from 'ws'
 import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
 import { outlinedInfo } from '@quasar/extras/material-icons-outlined'
 import { apiClient } from '@/services/ApiClient'
@@ -167,23 +166,34 @@ function setupEventStreamClient() {
     const ws: WebSocket = new WebSocket(websocketUrl)
     autoReloadSocket = ws
 
-    ws.on('error', (err: any) => {
-        console.error(`events stream error: ${err}`)
-    })
-
-    ws.on('open', function open() {
+    ws.onopen = (event) => {
         console.log(`connected to live events stream`)
-    });
+    }
 
-    ws.on('close', function close() {
-        console.log(`connected from live events stream`)
-    });
+    ws.onmessage = (event) => {
+        if (typeof event.data === "string") {
+            const message_obj = JSON.parse(event.data)
+            const event_type = message_obj['event']
+            if (event_type) {
+                onWebsocketEvent(event_type, event)
+            }
+        }
+    }
 
-    ws.on('message', function message(data: string) {
-        console.log('received event message', data);
+    ws.onerror = (err) => {
+        console.error(`events stream error: ${err}`)
+    }
+
+    ws.onclose = (event) => {
+        console.log(`disconnected from live events stream`)
+    }
+}
+
+function onWebsocketEvent(event_type: string, event: any) {
+    if (event_type == 'job_models_changed') {
         console.log('Change detected, reloading jobs')
         fetchJobs()
-    });
+    }
 }
 
 onMounted(() => {
