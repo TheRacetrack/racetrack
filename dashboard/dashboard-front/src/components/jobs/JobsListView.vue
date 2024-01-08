@@ -23,7 +23,7 @@ const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
 const selectedNodeKey: Ref<string | null> = ref(null)
 const jobOrder: Ref<JobOrder> = ref(JobOrder.ByName)
 const loadingTree = ref(true)
-const autoUpdateEnabled = ref(true)
+const autoUpdateEnabled = ref(false)
 const lastReloadTimestamp: Ref<number> = ref(0)
 
 function fetchJobs() {
