@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 from lifecycle.auth.authorize import grant_permission
 from lifecycle.config import Config
 from lifecycle.config.maintenance import ensure_no_maintenance
@@ -33,16 +31,24 @@ def provision_job(
     config: Config,
     manifest: Manifest,
     tag: str,
-    secret_build_env: Dict[str, str],
-    secret_runtime_env: Dict[str, str],
+    secret_build_env: dict[str, str],
+    secret_runtime_env: dict[str, str],
     deployment: DeploymentDto,
-    auth_subject: Optional[models.AuthSubject],
-    previous_job: Optional[JobDto],
+    auth_subject: models.AuthSubject | None,
+    previous_job: JobDto | None,
     plugin_engine: PluginEngine,
 ) -> JobDto:
     """
     Deploy built Job to a cluster
+    :param config: Lifecycle server configuration
+    :param manifest: job's manifest
+    :param tag: tag name of the docker image
+    :param secret_build_env: dicionary of secret build environment variables
+    :param secret_runtime_env: dictionary of secret runtime environment variables
+    :param deployment: Deployment model data
+    :param auth_subject: user attempting to provision a job
     :param previous_job: previous job version in case of redeploying
+    :param plugin_engine: engine for calling hooks from the uploaded plugins
     """
     ensure_no_maintenance()
     if auth_subject is not None:
@@ -114,8 +120,8 @@ def post_job_deploy(
     job: JobDto,
     image_name: str,
     deployment: DeploymentDto,
-    auth_subject: Optional[models.AuthSubject],
-    previous_job: Optional[JobDto],
+    auth_subject: models.AuthSubject | None,
+    previous_job: JobDto | None,
     plugin_engine: PluginEngine,
 ):
     """Supplementary actions invoked after job is deployed"""
