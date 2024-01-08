@@ -63,6 +63,9 @@ class Job(models.Model):
 class Deployment(models.Model):
     class Meta:
         app_label = 'registry'
+        indexes = [
+            models.Index(fields=["update_time"], name="update_time_idx"),
+        ]
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
     status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in DeploymentStatus])
@@ -134,6 +137,12 @@ class TrashJob(models.Model):
 class AuditLogEvent(models.Model):
     class Meta:
         app_label = 'registry'
+        indexes = [
+            models.Index(fields=["timestamp"], name="timestamp_idx"),
+            models.Index(fields=["username_executor"], name="username_executor_idx"),
+            models.Index(fields=["job_name"], name="job_name_idx"),
+            models.Index(fields=["job_version"], name="job_version_idx"),
+        ]
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
     version = models.IntegerField(default=1)  # data structure version
