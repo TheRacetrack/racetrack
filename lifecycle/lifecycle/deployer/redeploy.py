@@ -4,11 +4,13 @@ from lifecycle.config import Config
 from lifecycle.deployer.deploy import build_and_provision, provision_job
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.deployer.secrets import JobSecrets
+from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import create_deployment, save_deployment_phase, save_deployment_result
 from lifecycle.job.registry import decommission_job_infrastructure, read_job
 from lifecycle.django.registry import models
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.manifest.manifest import Manifest
+from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.entities.dto import DeploymentStatus, JobDto
 
@@ -121,6 +123,13 @@ def move_job(
                 job_name, job_version, old_infra_target, config, deployer_username, plugin_engine
             )
 
+        AuditLogger().log_event(
+            AuditLogEventType.JOB_MOVED,
+            username_executor=deployer_username,
+            username_subject=job.deployed_by,
+            job_name=job_name,
+            job_version=job_version,
+        )
         save_deployment_result(deployment.id, DeploymentStatus.DONE)
 
     except BaseException as e:
