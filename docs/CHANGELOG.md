@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+-   *Activity* tab on Dashboard tracks more kinds of events:
+    
+    - Plugin installed
+    - Plugin uninstalled
+    - Deployment attempt failed
+    - Job moved (to other infrastructure)
+  
+    ([#382](https://github.com/TheRacetrack/racetrack/issues/382))
+
+### Changed
+- Dashboard's "Audit Log" tab is now called "Activity".
 
 ## [2.24.0] - 2023-12-14
 ### Added
