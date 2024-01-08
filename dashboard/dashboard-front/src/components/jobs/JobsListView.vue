@@ -192,7 +192,8 @@ function setupEventStreamClient() {
 function onWebsocketEvent(event_type: string, event: any) {
     if (event_type == 'job_models_changed') {
         console.log('Change detected, reloading jobs')
-        fetchJobs()
+        const intervalMs = Math.random() * 750
+        setTimeout(fetchJobs, intervalMs) // wait random interval to avoid DDoS-ing a server
     }
 }
 
