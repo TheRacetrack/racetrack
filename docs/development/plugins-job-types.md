@@ -344,18 +344,14 @@ ENV DEPLOYED_BY_RACETRACK_VERSION "{{ deployed_by_racetrack_version }}"
 
 ```python
 from __future__ import annotations
-from pathlib import Path
 class Plugin:
-    def job_types(self) -> dict[str, tuple[Path, Path]]:
+    def job_types(self) -> dict[str, list[str]]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> list of images: dockerfile template path relative to a jobtype directory
         """
         return {
-            f'golang:{self.plugin_manifest.version}': (
-                self.plugin_dir / 'base.Dockerfile',
-                self.plugin_dir / 'job-template.Dockerfile',
-            ),
+            f'golang:{self.plugin_manifest.version}': ['job-template.Dockerfile'],
         }
 ```
 </details>

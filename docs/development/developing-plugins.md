@@ -86,10 +86,10 @@ def job_runtime_env_vars(self) -> Optional[Dict[str, str]]:
 
 - `job_types` - Job types provided by this plugin
 ```python
-def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+def job_types(self) -> dict[str, list[str]]:
     """
     Job types provided by this plugin
-        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
+    :return dict of job type name (with version) -> list of images: dockerfile template path relative to a jobtype directory
     """
 ```
 
