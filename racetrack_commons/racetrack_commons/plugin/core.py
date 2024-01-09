@@ -1,7 +1,6 @@
 from __future__ import annotations
 from abc import ABC
 from typing import Any
-from pathlib import Path
 
 from racetrack_client.manifest import Manifest
 from racetrack_commons.entities.dto import JobDto
@@ -35,10 +34,10 @@ class PluginCore(ABC):
         """Supplementary env vars dictionary added to runtime vars when deploying a Job"""
         return None
 
-    def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+    def job_types(self) -> dict[str, list[str]]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> list of images: dockerfile template path relative to a jobtype directory
         """
         return {}
 

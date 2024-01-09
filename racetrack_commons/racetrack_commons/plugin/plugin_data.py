@@ -11,3 +11,4 @@ class PluginData:
     plugin_manifest: PluginManifest
     plugin_instance: PluginCore
     config_path: Path
+    plugin_dir: Path

@@ -67,7 +67,6 @@ def provision_job(
                 runtime_env_vars[build_var] = ''
 
         job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
-        containers_num = len(job_type.template_paths)
 
         job: JobDto = safe_call(
             job_deployer.deploy_job,
@@ -77,7 +76,7 @@ def provision_job(
             tag=tag,
             runtime_env_vars=runtime_env_vars,
             family=family_dto,
-            containers_num=containers_num,
+            containers_num=job_type.containers_num,
             runtime_secret_vars=secret_runtime_env,
         )
 

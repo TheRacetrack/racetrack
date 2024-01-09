@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union
 
 import backoff
 
@@ -9,21 +8,23 @@ from racetrack_client.log.context_error import wrap_context
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
-
-
-JobTypeImagePaths = Union[list[tuple[Path, Path]], tuple[Path, Path]]
+from racetrack_commons.plugin.plugin_data import PluginData
 
 
 @dataclass
 class JobType:
     lang_name: str
     version: str  # semantic version of the job type
-    base_image_paths: list[Path]  # paths to base Dockerfiles (for each container)
-    template_paths: list[Path]  # paths to job template Dockerfiles (for each container)
+    template_paths: list[str]  # relative path names to job template Dockerfiles (for each container)
+    jobtype_dir: Path
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         return f'{self.lang_name}:{self.version}'
+
+    @property
+    def containers_num(self) -> int:
+        return len(self.template_paths)
 
 
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
@@ -81,49 +82,50 @@ def gather_job_types(
 ) -> dict[str, JobType]:
     """
     Load job types from plugins.
-    Return job name (with version) -> (base image name, dockerfile template path)
+    Return dictionary: job name (with version) mapped to JobType object
     """
     job_types: dict[str, JobType] = {}
 
-    plugin_results: list[dict[str, JobTypeImagePaths]] = plugin_engine.invoke_plugin_hook(PluginCore.job_types)
-    for plugin_job_types in plugin_results:
-        if plugin_job_types:
-            for job_full_name, job_data in plugin_job_types.items():
+    plugin_data: PluginData
+    plugin_job_types: dict[str, list[str]]
+    for plugin_data, plugin_job_types in plugin_engine.invoke_hook_with_origin(PluginCore.job_types):
+        if not plugin_job_types:
+            continue
 
-                if isinstance(job_data, tuple):
-                    base_image_paths = [job_data[0]]
-                    template_paths = [job_data[1]]
-                elif isinstance(job_data, list):
-                    base_image_paths = [item[0] for item in job_data]
-                    template_paths = [item[1] for item in job_data]
-                else:
-                    raise RuntimeError(f'Invalid job type data. It should be list[tuple[Path, Path]], was {type(job_data)}')
+        for job_type_key, job_type_value in plugin_job_types.items():
 
-                name_parts = job_full_name.split(':')
-                assert len(name_parts) == 2, f'job type {job_full_name} should have the version defined (name:version)'
-                lang_name = name_parts[0]
-                lang_version = name_parts[1]
-                job_type_version = JobType(
-                    lang_name=lang_name,
-                    version=lang_version,
-                    base_image_paths=base_image_paths,
-                    template_paths=template_paths,
-                )
-                job_types[job_full_name] = job_type_version
+            template_paths: list[str]
+            if isinstance(job_type_value, list):
+                for item in job_type_value:
+                    assert isinstance(item, str), f'Invalid dockerfile template path of a job type. Expected str, but found {type(item)}'
+                template_paths = job_type_value
+            elif isinstance(job_type_value, str):
+                template_paths = [job_type_value]
+            else:
+                raise RuntimeError(f'Invalid job type data. Expected list[str], was {type(job_type_value)}')
+            assert len(template_paths) > 0, 'list of job type template paths can not be empty'
+
+            name_parts = job_type_key.split(':')
+            assert len(name_parts) == 2, f'job type {job_type_key} should have the version defined (name:version)'
+            lang_name = name_parts[0]
+            lang_version = name_parts[1]
+            job_type_version = JobType(
+                lang_name=lang_name,
+                version=lang_version,
+                template_paths=template_paths,
+                jobtype_dir=plugin_data.plugin_dir,
+            )
+            job_types[job_type_key] = job_type_version
 
     return job_types
 
 
 def _validate_job_type(job_type: JobType):
-    _validate_dockerfile_paths(job_type.base_image_paths, job_type.template_paths, job_type.full_name)
+    template_paths: list[str] = job_type.template_paths
+    job_full_name: str = job_type.full_name
+    assert len(template_paths) > 0, 'Job type should have non-empty list of template images'
 
-
-def _validate_dockerfile_paths(base_image_paths: list[Path], template_paths: list[Path], job_full_name: str):
-    assert len(base_image_paths) > 0, 'Job type should have non-empty list of base images'
-
-    for i, base_image_path in enumerate(base_image_paths):
-        template_path = template_paths[i]
-        if base_image_path is not None:
-            assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
+    for i, template_path in enumerate(template_paths):
         if template_path is not None:
-            assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
+            template_full_path = job_type.jobtype_dir / template_path
+            assert template_full_path.is_file(), f'cannot find Dockerfile template for {job_full_name} job type: {template_full_path}'

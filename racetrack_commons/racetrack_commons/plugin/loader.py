@@ -98,7 +98,7 @@ def _load_plugin_from_dir(plugin_dir: Path, config_path: Path, zip_path: Path, i
     else:
         plugin = PluginCore()
 
-    return PluginData(zip_path=zip_path, config_path=config_path, plugin_manifest=plugin_manifest, plugin_instance=plugin)
+    return PluginData(zip_path=zip_path, config_path=config_path, plugin_dir=plugin_dir, plugin_manifest=plugin_manifest, plugin_instance=plugin)
 
 
 def _load_plugin_manifest(plugin_dir: Path) -> PluginManifest:
