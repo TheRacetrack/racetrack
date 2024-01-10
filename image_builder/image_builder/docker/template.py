@@ -15,6 +15,7 @@ def template_dockerfile(
     racetrack_version: Optional[str],
     job_type_version: Optional[str],
     env_vars: Dict[str, str],
+    base_image: str | None = None,
 ):
     """
     Create Dockerfile from Jinja template and manifest data
@@ -25,12 +26,14 @@ def template_dockerfile(
     :param racetrack_version: Version of Racetrack the Job was deployed with
     :param job_type_version: Version of Job Type used to build the Job's image
     :param env_vars: environment variables that should be set during building
+    :param base_image: (Deprecated) name of the base docker image
     """
     template_content = Path(template_path).read_text()
     template = Template(template_content)
     resource_name = job_resource_name(manifest.name, manifest.version)
     render_vars = {
         'manifest': manifest,
+        'base_image': base_image,
         'resource_name': resource_name,
         'git_version': git_version,
         'deployed_by_racetrack_version': racetrack_version,

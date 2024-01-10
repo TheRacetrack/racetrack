@@ -95,6 +95,11 @@ def _build_job_image(
     progress = f'({image_index+1}/{images_num})'
     update_deployment_phase(config, deployment_id, f'building image {progress}')
 
+    base_image: str = ''  # Base images are deprecated, to be removed
+    if job_type.base_image_paths and job_type.base_image_paths[image_index] is not None:
+        with wrap_context(f'building base image {progress}'):
+            base_image = _build_base_image(config, job_type, image_index, deployment_id)
+
     dockerfile_path: Path
     if image_index == 1:  # User-module Dockerfile
         assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
@@ -107,7 +112,7 @@ def _build_job_image(
             dockerfile_path = job_workspace / f'.job-{image_index}.Dockerfile'
             racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
             template_dockerfile(manifest, template_path, dockerfile_path,
-                                git_version, racetrack_version, job_type.version, env_vars)
+                                git_version, racetrack_version, job_type.version, env_vars, base_image)
 
     with wrap_context(f'building job image {progress}'):
         image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
@@ -181,3 +186,36 @@ def get_base_image_name(docker_registry: str, registry_namespace: str, name: str
     else:
         image_type = f'job-base-{module_index}'
     return join_paths(docker_registry, registry_namespace, image_type, f'{name}:{tag}')
+
+
+def _build_base_image(
+    config: Config,
+    job_type: JobType,
+    image_index: int,
+    deployment_id: str,
+) -> str:
+    image_name = get_base_image_name(
+        config.docker_registry, config.docker_registry_namespace,
+        job_type.lang_name, job_type.version, image_index,
+    )
+    if config.cache_base_images and _image_exists_in_registry(image_name):
+        return image_name
+
+    logs_filename = f'{config.build_logs_dir}/{deployment_id}.base.log'
+    logger.info(f'rebuilding base image {image_name}, '
+                f'deployment ID: {deployment_id}, keeping logs in {logs_filename}')
+
+    dockerfile_path = job_type.base_image_paths[image_index]
+    assert dockerfile_path.is_file(), f'base Dockerfile doesn\'t exist: {dockerfile_path}'
+    context_dir = dockerfile_path.parent
+    shell_output(
+        f'DOCKER_BUILDKIT=1 docker build -t {image_name} -f {dockerfile_path} --network=host '
+        f'{context_dir}',
+        print_stdout=False,
+        output_filename=logs_filename,
+    )
+
+    shell(f'docker push {image_name}', print_stdout=False, output_filename=logs_filename)
+
+    logger.info(f'base Job image has been built and pushed: {image_name}')
+    return image_name
