@@ -3,6 +3,8 @@ import threading
 import time
 import warnings
 
+# Suppress Deprecation warning of falcon library: 'cgi' is deprecated and slated for removal in Python 3.13
+# Remove after solving https://github.com/falconry/falcon/issues/2066
 warnings.filterwarnings(
     action='ignore',
     category=DeprecationWarning,

@@ -193,7 +193,7 @@ function onWebsocketEvent(event_type: string, event: any) {
     if (event_type == 'job_models_changed') {
         console.log('Change detected, reloading jobs')
         const intervalMs = Math.random() * 750
-        setTimeout(fetchJobs, intervalMs) // wait random interval to avoid DDoS-ing a server
+        setTimeout(fetchJobs, intervalMs) // wait between 0 and 750 ms to avoid DDoS-ing a server
     }
 }
 
