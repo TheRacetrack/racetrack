@@ -5,15 +5,19 @@ from typing import List, Optional, Any
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, Request
 
-from lifecycle.auth.authenticate import get_username_from_token
-from lifecycle.job.audit import AuditLogger
-from lifecycle.server.cache import LifecycleCache
 from racetrack_client.plugin.plugin_manifest import PluginManifest
+from racetrack_commons.deploy.job_type import list_jobtype_names_of_plugins
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
+from lifecycle.django.registry import models
+from lifecycle.job import models_registry
+from lifecycle.auth.authenticate import get_username_from_token
+from lifecycle.job.audit import AuditLogger
+from lifecycle.server.cache import LifecycleCache
 from lifecycle.config import Config
-from lifecycle.infrastructure.infra_target import list_infrastructure_names_with_origins
+from lifecycle.infrastructure.infra_target import list_infrastructure_names_with_origins, \
+    list_infrastructure_names_of_plugins
 from lifecycle.auth.check import check_staff_user
 
 
@@ -21,9 +25,32 @@ class PluginUpdate(BaseModel):
     config_data: str = Field(description='text content of configuration file')
 
 
-class PluginInfrastructureGroup(BaseModel):
-    kind: str
-    instances: list[str]
+class JobTypeData(BaseModel):
+    name: str
+    active_jobs: int
+
+
+class JobTypePluginData(BaseModel):
+    name: str
+    version: str
+    job_types: list[JobTypeData]
+
+
+class InfrastructureData(BaseModel):
+    name: str
+    active_jobs: int
+
+
+class InfrastructurePluginData(BaseModel):
+    name: str
+    version: str
+    infrastructures: list[InfrastructureData]
+
+
+class PluginsData(BaseModel):
+    plugins: list[PluginManifest]
+    job_type_plugins_data: list[JobTypePluginData]
+    infrastructure_plugins_data: list[InfrastructurePluginData]
 
 
 def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
@@ -104,26 +131,49 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         return list_infrastructure_names_with_origins(plugin_engine)
 
     @api.get('/plugin/tree')
-    def _get_plugin_trees() -> dict:
-        infrastructure_targets: dict[str, PluginManifest] = list_infrastructure_names_with_origins(plugin_engine)
-        plugins: list[PluginManifest] = plugin_engine.plugin_manifests
-        job_type_versions: list[str] = sorted(LifecycleCache.job_types.keys())
+    def _get_plugin_trees() -> PluginsData:
+        return _get_plugins_data(plugin_engine)
 
-        # Collect instances running on the same infrastructure
-        _infrastructure_instances: dict[str, list[str]] = collections.defaultdict(list)
-        for infrastructure_name, plugin_manifest in infrastructure_targets.items():
-            _infrastructure_instances[plugin_manifest.name].append(infrastructure_name)
-        infrastructure_instances: list[PluginInfrastructureGroup] = [
-            PluginInfrastructureGroup(kind=k, instances=v)
-            for k, v in _infrastructure_instances.items()
-        ]
 
-        return {
-            'plugins': plugins,
-            'job_type_versions': job_type_versions,
-            'infrastructure_targets': infrastructure_targets,
-            'infrastructure_instances': sorted(infrastructure_instances, key=lambda i: i.kind),
-        }
+def _get_plugins_data(plugin_engine: PluginEngine) -> PluginsData:
+    job_models: list[models.Job] = list(models_registry.list_job_models())
+    jobtypes_usage: dict[str, int] = collections.defaultdict(int)
+    infrastructure_usage: dict[str, int] = collections.defaultdict(int)
+    for job_model in job_models:
+        jobtypes_usage[job_model.job_type_version] += 1
+        infrastructure_usage[job_model.infrastructure_target] += 1
+
+    jobtype_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
+    for plugin, jobtype_name in list_jobtype_names_of_plugins(plugin_engine):
+        jobtype_names_by_plugins[(plugin.name, plugin.version)].append(jobtype_name)
+
+    job_type_plugins_data: list[JobTypePluginData] = []
+    for plugin_tuple, jobtype_names in jobtype_names_by_plugins.items():
+        job_types_data: list[JobTypeData] = [JobTypeData(name=name, active_jobs=jobtypes_usage[name]) for name in jobtype_names]
+        job_type_plugins_data.append(JobTypePluginData(
+            name=plugin_tuple[0],
+            version=plugin_tuple[1],
+            job_types=job_types_data,
+        ))
+
+    infrastructure_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
+    for plugin, infrastructure_name in list_infrastructure_names_of_plugins(plugin_engine):
+        infrastructure_names_by_plugins[(plugin.name, plugin.version)].append(infrastructure_name)
+
+    infrastructure_plugins_data: list[InfrastructurePluginData] = []
+    for plugin_tuple, infrastructure_names in infrastructure_names_by_plugins.items():
+        infrastructures_data: list[InfrastructureData] = [InfrastructureData(name=name, active_jobs=infrastructure_usage[name]) for name in infrastructure_names]
+        infrastructure_plugins_data.append(InfrastructurePluginData(
+            name=plugin_tuple[0],
+            version=plugin_tuple[1],
+            infrastructures=infrastructures_data,
+        ))
+
+    return PluginsData(
+        plugins=plugin_engine.plugin_manifests,
+        job_type_plugins_data=sorted(job_type_plugins_data, key=lambda x: (x.name, x.version)),
+        infrastructure_plugins_data=sorted(infrastructure_plugins_data, key=lambda x: (x.name, x.version)),
+    )
 
 
 def log_event_plugin_installed(plugin_name: str, plugin_version: str, username: str):

@@ -6,6 +6,7 @@ from typing import Union
 import backoff
 
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
@@ -127,3 +128,12 @@ def _validate_dockerfile_paths(base_image_paths: list[Path], template_paths: lis
             assert base_image_path.is_file(), f'cannot find base image Dockerfile for {job_full_name} language wrapper: {base_image_path}'
         if template_path is not None:
             assert template_path.is_file(), f'cannot find Dockerfile template for {job_full_name} language wrapper: {template_path}'
+
+
+def list_jobtype_names_of_plugins(plugin_engine: PluginEngine) -> list[tuple[PluginManifest, str]]:
+    entries: list[tuple[PluginManifest, str]] = []
+    for plugin_manifest, result in plugin_engine.invoke_associated_plugin_hook(PluginCore.job_types):
+        if result:
+            for jobtype_name in result.keys():
+                entries.append((plugin_manifest, jobtype_name))
+    return entries
