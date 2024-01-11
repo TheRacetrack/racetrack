@@ -16,9 +16,9 @@ from racetrack_commons.plugin.plugin_data import PluginData
 class JobType:
     lang_name: str
     version: str  # semantic version of the job type
-    template_paths: list[str]  # relative path names to job template Dockerfiles (for each container)
+    template_paths: list[str | None]  # relative path names to job template Dockerfiles (for each container)
     jobtype_dir: Path
-    base_image_paths: list[Path]  # Deprecated
+    base_image_paths: list[Path | None]  # Deprecated
 
     @property
     def full_name(self) -> str:
@@ -96,15 +96,18 @@ def gather_job_types(
 
         for job_type_key, job_type_value in plugin_job_types.items():
 
-            template_paths: list[str]
-            base_image_paths: list[Path] = []  # Deprecated, kept for backwards compatibility
+            template_paths: list[str | None]
+            base_image_paths: list[Path | None] = []  # Deprecated, kept for backwards compatibility
             if isinstance(job_type_value, list):
                 if all(isinstance(item, tuple) for item in job_type_value):
-                    base_image_paths = [Path(item[0]) for item in job_type_value]
-                    template_paths = [Path(item[1]).as_posix() for item in job_type_value]
+                    base_image_paths = [Path(item[0]) if item[0] else None
+                                        for item in job_type_value]
+                    template_paths = [Path(item[1]).as_posix() if item[1] else None
+                                      for item in job_type_value]
                 else:
                     for item in job_type_value:
-                        assert isinstance(item, str), f'Invalid dockerfile template path of a job type. Expected str, but found {type(item)}'
+                        if item is not None:
+                            assert isinstance(item, str), f'Invalid dockerfile template path of a job type. Expected str, but found {type(item)}'
                     template_paths = job_type_value
             elif isinstance(job_type_value, str):
                 template_paths = [job_type_value]
@@ -132,7 +135,7 @@ def gather_job_types(
 
 
 def _validate_job_type(job_type: JobType):
-    template_paths: list[str] = job_type.template_paths
+    template_paths: list[str | None] = job_type.template_paths
     job_full_name: str = job_type.full_name
     assert len(template_paths) > 0, 'Job type should have non-empty list of template images'
 
