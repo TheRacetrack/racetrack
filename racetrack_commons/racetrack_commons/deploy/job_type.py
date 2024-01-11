@@ -5,6 +5,7 @@ from pathlib import Path
 import backoff
 
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
@@ -139,3 +140,12 @@ def _validate_job_type(job_type: JobType):
         if template_path is not None:
             template_full_path = job_type.jobtype_dir / template_path
             assert template_full_path.is_file(), f'cannot find Dockerfile template for {job_full_name} job type: {template_full_path}'
+
+
+def list_jobtype_names_of_plugins(plugin_engine: PluginEngine) -> list[tuple[PluginManifest, str]]:
+    entries: list[tuple[PluginManifest, str]] = []
+    for plugin_data, result in plugin_engine.invoke_hook_with_origin(PluginCore.job_types):
+        if result:
+            for jobtype_name in result.keys():
+                entries.append((plugin_data.plugin_manifest, jobtype_name))
+    return entries

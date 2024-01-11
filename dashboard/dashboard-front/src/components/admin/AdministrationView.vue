@@ -9,13 +9,13 @@ import { progressService } from '@/services/ProgressService'
 import { authToken } from '@/services/UserDataStore'
 import { extractErrorDetails } from "@/utils/error"
 import { rememberInLocalStorage } from '@/utils/storage'
+import XTooltip from '@/components/XTooltip.vue'
 
-const pluginDataRef: Ref<PluginData> = ref({
+const pluginsDataRef: Ref<PluginsData> = ref({
     plugins: [],
-    job_type_versions: [],
-    infrastructure_targets: new Map(),
-    infrastructure_instances: [],
-} as PluginData)
+    job_type_plugins_data: [],
+    infrastructure_plugins_data: [],
+} as PluginsData)
 const lifecycleAdminUrl = computed(() => `${envInfo.lifecycle_url}/admin`)
 const jobTypeVersionsTreeRef: Ref<QTree | null> = ref(null)
 const infrastructureTargetsTreeRef: Ref<QTree | null> = ref(null)
@@ -28,39 +28,62 @@ interface PluginManifest {
     category?: string
 }
 
-interface InfrastructureGroup {
-    kind: string
-    instances: string[]
+interface JobTypeData {
+    name: string
+    active_jobs: number
 }
 
-interface PluginData {
+interface JobTypePluginData {
+    name: string
+    version: string
+    job_types: JobTypeData[]
+}
+
+interface InfrastructureData {
+    name: string
+    active_jobs: number
+}
+
+interface InfrastructurePluginData {
+    name: string
+    version: string
+    infrastructures: InfrastructureData[]
+}
+
+interface PluginsData {
     plugins: PluginManifest[]
-    job_type_versions: string[]
-    infrastructure_targets: Map<string, PluginManifest>
-    infrastructure_instances: InfrastructureGroup[]
+    job_type_plugins_data: JobTypePluginData[]
+    infrastructure_plugins_data: InfrastructurePluginData[]
 }
 
-const jobTypeVersionsTree = computed(() => [
-    {
-        label: 'Available Job Type versions',
-        children: pluginDataRef.value?.job_type_versions?.map(jobTypeVersion => ({
-            label: jobTypeVersion,
-        }))
-    },
-])
+const jobTypeVersionsTree = computed(() => [{
+    label: 'Available Job Type versions',
+    children: pluginsDataRef.value?.job_type_plugins_data?.map(populateJobTypeGroup),
+}])
 
-const infrastructureTargetsTree = computed(() => [
-    {
-        label: 'Available Infrastructure Targets',
-        children: pluginDataRef.value?.infrastructure_instances?.map(populateInfraTargetGroup),
-    },
-])
-
-function populateInfraTargetGroup(group: InfrastructureGroup): any {
+const populateJobTypeGroup = (group: JobTypePluginData) => {
     return {
-        label: group.kind,
-        children: group.instances.map(instance => ({
-            label: instance,
+        label: `${group.name} ${group.version}`,
+        rt_type: 'plugin',
+        children: group.job_types.map((jobtype: JobTypeData) => ({
+            label: jobtype.name,
+            rt_jobs: jobtype.active_jobs,
+        }))
+    }
+}
+
+const infrastructureTargetsTree = computed(() => [{
+    label: 'Available Infrastructure Targets',
+    children: pluginsDataRef.value?.infrastructure_plugins_data?.map(populateInfrastructureGroup),
+}])
+
+const populateInfrastructureGroup = (group: InfrastructurePluginData) => {
+    return {
+        label: `${group.name} ${group.version}`,
+        rt_type: 'plugin',
+        children: group.infrastructures.map((infrastructure: InfrastructureData) => ({
+            label: infrastructure.name,
+            rt_jobs: infrastructure.active_jobs,
         }))
     }
 }
@@ -89,10 +112,10 @@ function copyText(text: string | null) {
 }
 
 function fetchPluginsData() {
-    apiClient.get<PluginData>(`/api/v1/plugin/tree`).then(response => {
-        const pluginData: PluginData = response.data
+    apiClient.get<PluginsData>(`/api/v1/plugin/tree`).then(response => {
+        const pluginData: PluginsData = response.data
         pluginData.plugins.sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version))
-        pluginDataRef.value = pluginData
+        pluginsDataRef.value = pluginData
     }).catch(err => {
         toastService.showErrorDetails(`Failed to fetch plugins data`, err)
     })
@@ -212,7 +235,23 @@ function stringToColour(str: string) {
                 :nodes="jobTypeVersionsTree"
                 node-key="label"
                 default-expand-all
-                />
+                dense
+                >
+                <template v-slot:default-header="prop">
+                    <span>
+                        {{ prop.node.label }}
+                        <template v-if="prop.node.rt_type == 'plugin'">
+                            <XTooltip>A plugin providing the job types</XTooltip>
+                        </template>
+                        <template v-if="prop.node.rt_jobs != null">
+                            <q-badge outline :color="prop.node.rt_jobs > 0 ? 'primary' : 'grey'" class="q-ml-sm">
+                                {{prop.node.rt_jobs}}
+                                <XTooltip>{{prop.node.rt_jobs}} jobs use this job type</XTooltip>
+                            </q-badge>
+                        </template>
+                    </span>
+                </template>
+            </q-tree>
         </q-card-section>
 
         <q-card-section class="q-pb-none">
@@ -222,7 +261,23 @@ function stringToColour(str: string) {
                 :nodes="infrastructureTargetsTree"
                 node-key="label"
                 default-expand-all
-                />
+                dense
+                >
+                <template v-slot:default-header="prop">
+                    <span>
+                        {{ prop.node.label }}
+                        <template v-if="prop.node.rt_type == 'plugin'">
+                            <XTooltip>A plugin providing the infrastructure targets</XTooltip>
+                        </template>
+                        <template v-if="prop.node.rt_jobs != null">
+                            <q-badge outline :color="prop.node.rt_jobs > 0 ? 'primary' : 'grey'" class="q-ml-sm">
+                                {{prop.node.rt_jobs}}
+                                <XTooltip>{{prop.node.rt_jobs}} jobs use this infrastructure target</XTooltip>
+                            </q-badge>
+                        </template>
+                    </span>
+                </template>
+            </q-tree>
         </q-card-section>
         <q-card-section class="q-py-none">
             
@@ -238,9 +293,9 @@ function stringToColour(str: string) {
             <q-list bordered separator class="rounded-borders">
                 <q-item-label header>Active plugins</q-item-label>
 
-                <q-item v-if="pluginDataRef.plugins.length == 0" class="text-grey-6">(empty)</q-item>
+                <q-item v-if="pluginsDataRef.plugins.length == 0" class="text-grey-6">(empty)</q-item>
 
-                <q-item v-for="plugin in pluginDataRef.plugins">
+                <q-item v-for="plugin in pluginsDataRef.plugins">
                     <q-item-section>
                         <q-item-label>{{ plugin.name }}</q-item-label>
                         <q-item-label caption>
