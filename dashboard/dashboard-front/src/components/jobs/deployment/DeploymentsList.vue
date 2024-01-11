@@ -6,7 +6,7 @@ import { timestampPrettyAgo, timestampToLocalTime } from '@/utils/time'
 import { type DeploymentDto } from '@/utils/api-schema'
 
 const deploymentsData = ref<DeploymentDto[]>([])
-const loading = ref(false)
+const loading = ref(true)
 
 function fetchDeploymentsData() {
     loading.value = true
@@ -67,6 +67,9 @@ onMounted(() => {
                     </q-item-section>
                 </q-item>
             </q-list>
+            <q-inner-loading :showing="loading">
+                <q-spinner-gears size="50px" color="primary" />
+            </q-inner-loading>
         </q-card-section>
 
     </q-card>
