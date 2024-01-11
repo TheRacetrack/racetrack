@@ -74,6 +74,15 @@ def list_infrastructure_names_with_origins(plugin_engine: PluginEngine) -> dict[
     return infra_names_with_origins
 
 
+def list_infrastructure_names_of_plugins(plugin_engine: PluginEngine) -> list[tuple[PluginManifest, str]]:
+    entries: list[tuple[PluginManifest, str]] = []
+    for plugin_manifest, result in plugin_engine.invoke_associated_plugin_hook(PluginCore.infrastructure_targets):
+        if result:
+            for infra_name in result.keys():
+                entries.append((plugin_manifest, infra_name))
+    return entries
+
+
 class RemoteCommandError(CommandError):
     def __init__(self, cmd: str, stdout: str, returncode: int):
         super().__init__(cmd, stdout, returncode)
