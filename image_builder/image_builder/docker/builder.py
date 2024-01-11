@@ -101,7 +101,7 @@ def _build_job_image(
             base_image = _build_base_image(config, job_type, image_index, deployment_id)
 
     dockerfile_path: Path
-    if image_index == 1:  # User-module Dockerfile
+    if job_type.template_paths[image_index] is None:  # User-module Dockerfile
         assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
         dockerfile_path = job_workspace / manifest.docker.dockerfile_path
         assert dockerfile_path.is_file(), f'User-module Dockerfile was not found: {dockerfile_path}'
