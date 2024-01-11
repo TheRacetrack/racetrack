@@ -289,10 +289,10 @@ func ReadyHandler(c *gin.Context) {
   <summary>File `go-job-type/job-template.Dockerfile`</summary>
 
 ```dockerfile
-FROM golang:1.16-alpine
+FROM golang:1.20-alpine
 WORKDIR /src/go_wrapper
 # Copy wrapper code to the image & remove the stub that is about to be replaced
-# Note usage of `COPY --from=jobtype` as we want to copy from the job type plugin files rather than the job files
+# Note `COPY --from=jobtype` as we want to copy from the job type plugin files rather than the job files
 COPY --from=jobtype go_wrapper/. /src/go_wrapper/
 RUN go get ./... && rm -rf /src/go_wrapper/handler
 CMD ./go_wrapper < /dev/null
