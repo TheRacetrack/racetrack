@@ -6,7 +6,7 @@ to extend Racetrack.
 ## Quickstart Step-by-step
 1. Create a git repository for your plugin
 
-2. Create a [plugin manifest](../manifest-schema.md) in a plugin subdirectory
+2. Create a plugin manifest in a plugin subdirectory
 
 3. Write a wrapper for the software you are making a job type for
 
@@ -14,17 +14,11 @@ to extend Racetrack.
   wraps it up in a web server, adds features to it (eg. metrics, swagger page)
   and forwards HTTP requests calling the wrapped code.
 
-4. Prepare the base dockerfile
-
-    The base dockerfile contains the wrapper code and is common to every Job
-  using the Job type provided by it. As such, it doesn't depend on any
-  particular Job or manifest. The image is built by Racetrack on first use.
-
-5. Prepare the Job template dockerfile
+4. Prepare the Job template dockerfile
 
     The Job template dockerfile is a [Jinja2](https://github.com/pallets/jinja)
-  template with the following variables, that gets built for each individual
-  Job automatically by Racetrack.
+    template with the following variables, that gets built for each individual
+    Job automatically by Racetrack.
 
     - `base_image` - the name of the base docker image to use for building a Job
     - `env_vars` - dict with environment variables that should be assigned to the Job container
@@ -33,20 +27,21 @@ to extend Racetrack.
     - `deployed_by_racetrack_version` - version of the Racetrack that has been
     used to build this image.
 
-    As it is built for every individual job, if there's any logic that depends
-  on the specific job manifest should be done here and not in the previous step.
+    The templated Dockerfile will be built by Racetrack. The final image should contain
+    the wrapper code, the source code of a job as well as any individual logic that depends
+    on the specific job manifest.
 
-6. Create an appropriate `plugin.py`
+5. Create an appropriate `plugin.py`
 
     `plugin.py` describes the Plugin class - to be considered a job type, your
   `plugin.py` must at minimum implements the `job_types` method as described here in
   [the documentation of all available hooks.](./developing-plugins.md#supported-hooks)
 
-7. Create a `.racetrackignore`
+6. Create a `.racetrackignore`
 
     Files not needed for the plugin should be added to the `.racetrackignore` file.
 
-8. Bundle plugin into a zipfile with `racetrack plugin bundle`
+7. Bundle plugin into a zipfile with `racetrack plugin bundle`
 
 ## Wrapper Principles
 
@@ -291,26 +286,19 @@ func ReadyHandler(c *gin.Context) {
 ### 4 through 7: Put needed files in the `golang-job-type` subdirectory
 
 <details>
-  <summary>File `go-job-type/base.Dockerfile`</summary>
+  <summary>File `go-job-type/job-template.Dockerfile`</summary>
 
 ```dockerfile
 FROM golang:1.16-alpine
 WORKDIR /src/go_wrapper
 # Copy wrapper code to the image & remove the stub that is about to be replaced
-COPY go_wrapper/. /src/go_wrapper/
+# Note usage of `COPY --from=jobtype` as we want to copy from the job type plugin files rather than the job files
+COPY --from=jobtype go_wrapper/. /src/go_wrapper/
 RUN go get ./... && rm -rf /src/go_wrapper/handler
 CMD ./go_wrapper < /dev/null
 # Label image so the container can be identified as Job (for automated cleanup)
 LABEL racetrack-component="job"
-```
-</details>
 
-<details>
-  <summary>File `go-job-type/job-template.Dockerfile`</summary>
-
-```Dockerfile
-# It extends wrapper image
-FROM {{ base_image }}
 # Setting environment variables from env_vars
 {% for env_key, env_value in env_vars.items() %}
 ENV {{ env_key }} "{{ env_value }}"
@@ -369,12 +357,3 @@ python3 -m pip install --upgrade racetrack-client
 ```
 
 And then run `racetrack plugin bundle` in the `go-job-type` directory.
-
-## FAQ
-**Q: What distinguishes a base image from a job template?**
-
-**A:** A Job is created in two distinct stages. First, a *base image* is
-created, which is common to all jobs of a single job type. Primarily, the
-wrapper. The *job template* is then combined with the user-facing manifest,
-creating a job image that extends the base image. This job image is unique
-to each job, and is what will be deployed on racetrack.
