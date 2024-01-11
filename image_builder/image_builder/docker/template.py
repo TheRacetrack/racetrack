@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional, Dict
 
 from jinja2 import Template
 
@@ -12,9 +11,9 @@ def template_dockerfile(
     template_path: Path,
     dockerfile_path: Path,
     git_version: str,
-    racetrack_version: Optional[str],
-    job_type_version: Optional[str],
-    env_vars: Dict[str, str],
+    racetrack_version: str | None,
+    job_type_version: str | None,
+    env_vars: dict[str, str],
     base_image: str | None = None,
 ):
     """

@@ -331,7 +331,6 @@ ENV DEPLOYED_BY_RACETRACK_VERSION "{{ deployed_by_racetrack_version }}"
   <summary>File `go-job-type/plugin.py`</summary>
 
 ```python
-from __future__ import annotations
 class Plugin:
     def job_types(self) -> dict[str, list[str]]:
         """
