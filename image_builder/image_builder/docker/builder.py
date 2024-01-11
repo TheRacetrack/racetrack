@@ -176,7 +176,7 @@ def _image_exists_in_registry(image_name: str):
 
 @backoff.on_exception(backoff.fibo, CommandError, max_value=3, max_time=30, jitter=None)
 def _wait_for_docker_engine_ready():
-    shell('docker ps')
+    shell('docker ps', print_stdout=False, print_log=False)
 
 
 def get_base_image_name(docker_registry: str, registry_namespace: str, name: str, tag: str, module_index: int = 0) -> str:
