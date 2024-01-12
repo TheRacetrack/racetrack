@@ -38,6 +38,7 @@ def template_dockerfile(
         'deployed_by_racetrack_version': racetrack_version,
         'job_type_version': job_type_version,
         'env_vars': env_vars,
+        'manifest_jobtype_extra': manifest.get_jobtype_extra() or {},
     }
     templated = template.render(**render_vars)
     Path(dockerfile_path).write_text(templated)
