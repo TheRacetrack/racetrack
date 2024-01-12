@@ -33,7 +33,7 @@ def check() -> bool:
     on warn - return False
     """
     try:
-        shell('docker ps')
+        shell('docker ps', print_stdout=False, print_log=False)
     except Exception as e:
         raise ContextError('docker daemon not ready') from e
 
