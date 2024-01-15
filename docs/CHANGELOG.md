@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It also shows which job types and infrastructures are provided by which plugins in a tree view.
   ([#392](https://github.com/TheRacetrack/racetrack/issues/392))
 
+### Fixed
+- Dashboard's auto-update feature works with multiple Lifecycle replicas.
+  Live updates can now be enabled on the jobs list. It is turned off by default.
+  ([#317](https://github.com/TheRacetrack/racetrack/issues/317))
+
 ## [2.24.0] - 2023-12-14
 ### Added
 - `racetrack plugin bundle` command has `--out-filename` parameter that allows you

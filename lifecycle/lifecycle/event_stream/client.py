@@ -1,8 +1,10 @@
 import contextlib
+import json
 import threading
 from typing import Callable
 
-import socketio
+from websockets.sync.client import connect, ClientConnection
+from websockets.exceptions import ConnectionClosedOK
 
 from racetrack_client.log.logs import get_logger
 
@@ -14,38 +16,27 @@ class EventStreamClient:
         self,
         url: str,
         on_event: Callable[[dict], None],
-        socketio_path: str = 'lifecycle/socketio/events',
     ):
         self.url = url
-        self.socketio_path = socketio_path
-        self.sio = socketio.Client(reconnection=True, ssl_verify=False)
-
-        @self.sio.event
-        def connect():
-            logger.debug('Socket.IO connection established')
-
-        @self.sio.event
-        def connect_error(data):
-            logger.error(f'Socket.IO connection error: {data}')
-
-        @self.sio.event
-        def disconnect():
-            logger.debug('Disconnected from Socket.IO server')
-
-        @self.sio.event
-        def broadcast_event(data):
-            logger.debug(f'Event received: {data}')
-            on_event(data)
-            return True
+        self.on_event = on_event
+        self.should_exit = False
+        self.websocket: ClientConnection | None = None
 
     @contextlib.contextmanager
     def connect_async(self):
-        self.sio.connect(self.url, socketio_path=self.socketio_path)
-        try:
+        with connect(self.url) as websocket:
+            self.websocket = websocket
             threading.Thread(
-                target=lambda: self.sio.wait(),
+                target=lambda: self.receive_loop(),
                 daemon=True,
             ).start()
             yield
-        finally:
-            self.sio.disconnect()
+
+    def receive_loop(self):
+        while not self.should_exit:
+            try:
+                raw_message: str = self.websocket.recv()
+                message = json.loads(raw_message)
+                self.on_event(message)
+            except ConnectionClosedOK:
+                return
