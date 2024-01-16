@@ -9,6 +9,7 @@ from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.manifest import Manifest
 from racetrack_client.utils.time import now
+from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus, JobDto
 from lifecycle.config import Config
@@ -19,6 +20,7 @@ from lifecycle.deployer.permissions import check_deploy_permissions
 from lifecycle.deployer.provision import provision_job
 from lifecycle.deployer.secrets import JobSecrets
 from lifecycle.django.registry import models
+from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import create_deployment, save_deployment_result
 from lifecycle.job.models_registry import job_exists, find_deleted_job
 
@@ -126,6 +128,12 @@ def deploy_job_saving_result(
     except BaseException as e:
         log_exception(e)
         save_deployment_result(deployment.id, DeploymentStatus.FAILED, error=str(e))
+        AuditLogger().log_event(
+            AuditLogEventType.DEPLOYMENT_FAILED,
+            username_executor=deployment.deployed_by,
+            job_name=deployment.job_name,
+            job_version=deployment.job_version,
+        )
 
 
 def _protect_job_overwriting(manifest: Manifest, force: bool):

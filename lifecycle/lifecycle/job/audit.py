@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional
+from typing import Any
 
 from django.db.models import Q
 
@@ -18,7 +18,7 @@ class AuditLogger:
     def log_event(
         self,
         event_type: AuditLogEventType,
-        properties: Dict | None = None,
+        properties: dict[str, Any] | None = None,
         username_executor: str | None = None,
         username_subject: str | None = None,
         job_name: str | None = None,
@@ -48,13 +48,15 @@ class AuditLogger:
 
 @db_access
 def read_audit_log_user_events(
-    username: Optional[str] = None,
-    job_name: Optional[str] = None,
-    job_version: Optional[str] = None,
-) -> List[AuditLogEventDto]:
+    username: str | None = None,
+    job_name: str | None = None,
+    job_version: str | None = None,
+) -> list[AuditLogEventDto]:
     """
     Get list of active public endpoints that can be accessed
     without authentication for a particular Job
+    :param username: Username to filter the events
+    :param job_name: Name of the job to filter the events
     :param job_version: Exact job version or an alias ("latest" or wildcard)
     """
     username_filter = Q(username_executor=username) | Q(username_subject=username) if username else Q()
