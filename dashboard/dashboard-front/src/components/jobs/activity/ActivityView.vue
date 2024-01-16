@@ -4,19 +4,19 @@ import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import { timestampToLocalTime } from '@/utils/time'
 
-const auditLogData: Ref<AuditLogData> = ref({
+const activityLogData: Ref<ActivityLogData> = ref({
     events: [],
-} as AuditLogData)
+} as ActivityLogData)
 const jobNameFilter: Ref<string> = ref('')
 const jobVersionFilter: Ref<string> = ref('')
 const relatedToMeFilter: Ref<boolean> = ref(false)
 const loading = ref(false)
 
-interface AuditLogData {
-    events: AuditLogEvent[]
+interface ActivityLogData {
+    events: ActivityLogEvent[]
 }
 
-interface AuditLogEvent {
+interface ActivityLogEvent {
     id: string
     version: number
     timestamp: number
@@ -30,16 +30,16 @@ interface AuditLogEvent {
     explanation: string
 }
 
-function fetchAuditLogData() {
+function fetchActivityLogData() {
     loading.value = true
     const encodedJobName = encodeURI(jobNameFilter.value)
     const encodedJobVersion = encodeURI(jobVersionFilter.value)
     const encodedRelatedToMe = relatedToMeFilter.value ? '1' : '0'
-    apiClient.get<AuditLogData>(`/api/v1/audit/activity?job_name=${encodedJobName}&job_version=${encodedJobVersion}&related_to_me=${encodedRelatedToMe}`)
+    apiClient.get<ActivityLogData>(`/api/v1/audit/activity?job_name=${encodedJobName}&job_version=${encodedJobVersion}&related_to_me=${encodedRelatedToMe}`)
         .then(response => {
-            auditLogData.value = response.data
+            activityLogData.value = response.data
         }).catch(err => {
-            toastService.showErrorDetails(`Failed to fetch audit log`, err)
+            toastService.showErrorDetails(`Failed to fetch Activity log`, err)
         }).finally(() => {
             loading.value = false
         })
@@ -54,32 +54,32 @@ function capitalizeEventType(title: string): string {
 }
 
 onMounted(() => {
-    fetchAuditLogData()
+    fetchActivityLogData()
 })
 </script>
 
 <template>
     <q-card>
         <q-card-section class="q-pb-none">
-            <div class="text-h6">Audit Log</div>
+            <div class="text-h6">Activity</div>
         </q-card-section>
 
         <q-card-section>
             <div class="row">
-                <q-input dense outlined v-model="jobNameFilter" label="Filter by job name" @keydown.enter.prevent="fetchAuditLogData" />
-                <q-input dense outlined v-model="jobVersionFilter" label="Filter by job version" @keydown.enter.prevent="fetchAuditLogData" />
+                <q-input dense outlined v-model="jobNameFilter" label="Filter by job name" @keydown.enter.prevent="fetchActivityLogData" />
+                <q-input dense outlined v-model="jobVersionFilter" label="Filter by job version" @keydown.enter.prevent="fetchActivityLogData" />
                 <q-checkbox v-model="relatedToMeFilter" label="Only related to me" />
                 <q-space />
-                <q-btn push label="Filter" icon="search" color="primary" :loading="loading" @click="fetchAuditLogData" />
+                <q-btn push label="Filter" icon="search" color="primary" :loading="loading" @click="fetchActivityLogData" />
             </div>
         </q-card-section>
 
         <q-card-section>
             <q-list bordered separator class="rounded-borders">
                 
-                <q-item v-if="auditLogData.events.length == 0" class="text-grey-6">(empty)</q-item>
+                <q-item v-if="activityLogData.events.length == 0" class="text-grey-6">(empty)</q-item>
                 
-                <q-item v-for="event in auditLogData.events">
+                <q-item v-for="event in activityLogData.events">
                     <q-item-section>
                         <q-item-label>{{capitalizeEventType(event.event_type)}}</q-item-label>
                         <q-item-label caption>{{event.explanation}}</q-item-label>

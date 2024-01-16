@@ -68,7 +68,7 @@ defineExpose({
             <q-icon :name="mdiTextBoxOutline" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Audit Log</q-item-label>
+            <q-item-label>Activity</q-item-label>
           </q-item-section>
         </q-item>
 

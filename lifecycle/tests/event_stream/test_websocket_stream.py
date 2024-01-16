@@ -26,7 +26,7 @@ def anyio_backend():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_socketio_stream():
+def test_websocket_stream():
     configure_logs(log_level='debug')
     unregister_metrics()
     port = free_tcp_port()
@@ -38,7 +38,7 @@ def test_socketio_stream():
         _wait_until_server_ready(port)
 
         received_events = []
-        socket_client = EventStreamClient(f'http://127.0.0.1:{port}',
+        socket_client = EventStreamClient(f'ws://127.0.0.1:{port}/lifecycle/websocket/events',
                                           on_event=lambda event: received_events.append(event))
 
         with socket_client.connect_async():

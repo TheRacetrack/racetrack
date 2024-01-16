@@ -5,13 +5,16 @@ from typing import List, Optional, Any
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, Request
 
-from lifecycle.django.registry import models
-from lifecycle.job import models_registry
-from lifecycle.server.cache import LifecycleCache
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.deploy.job_type import list_jobtype_names_of_plugins
+from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
+from lifecycle.django.registry import models
+from lifecycle.job import models_registry
+from lifecycle.auth.authenticate import get_username_from_token
+from lifecycle.job.audit import AuditLogger
+from lifecycle.server.cache import LifecycleCache
 from lifecycle.config import Config
 from lifecycle.infrastructure.infra_target import list_infrastructure_names_with_origins, \
     list_infrastructure_names_of_plugins
@@ -61,23 +64,30 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _upload_plugin(file: UploadFile, request: Request, replace: int = 0):
         """Upload plugin from ZIP file using multipart/form-data"""
         check_staff_user(request)
+        username = get_username_from_token(request)
         file_bytes = file.file.read()
-        plugin_engine.upload_plugin(file.filename, file_bytes, bool(replace))
+        manifest = plugin_engine.upload_plugin(file.filename, file_bytes, bool(replace))
+        log_event_plugin_installed(manifest.name, manifest.version, username)
 
     @api.post('/plugin/upload/{filename}')
     async def _upload_plugin_bytes(filename: str, request: Request, replace: int = 0) -> PluginManifest:
         """Upload plugin from ZIP file sending raw bytes in body"""
         check_staff_user(request)
+        username = get_username_from_token(request)
         file_bytes: bytes = await request.body()
         loop = asyncio.get_running_loop()
         # Run synchronous function asynchronously without blocking an event loop, using default ThreadPoolExecutor
-        return await loop.run_in_executor(None, plugin_engine.upload_plugin, filename, file_bytes, bool(replace))
+        manifest = await loop.run_in_executor(None, plugin_engine.upload_plugin, filename, file_bytes, bool(replace))
+        log_event_plugin_installed(manifest.name, manifest.version, username)
+        return manifest
     
     @api.delete('/plugin/{plugin_name}/{plugin_version}')
     def _delete_plugin_by_version(plugin_name: str, plugin_version: str, request: Request):
         """Deactivate and remove plugin with given name and version"""
         check_staff_user(request)
+        username = get_username_from_token(request)
         plugin_engine.delete_plugin_by_version(plugin_name, plugin_version)
+        log_event_plugin_uninstalled(plugin_name, plugin_version, username)
 
     @api.delete('/plugin/all')
     def _delete_all_plugins(request: Request):
@@ -105,6 +115,7 @@ def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     @api.post('/plugin/{plugin_name}/run')
     def _run_plugin_action(plugin_name: str, payload_params: dict[str, Any], request: Request) -> Any:
         """Call a supplementary action of a plugin"""
+        check_staff_user(request)
         params = dict(request.query_params)
         params.update(payload_params)
         return plugin_engine.invoke_one_plugin_hook(plugin_name, PluginCore.run_action, **params)
@@ -162,4 +173,26 @@ def _get_plugins_data(plugin_engine: PluginEngine) -> PluginsData:
         plugins=plugin_engine.plugin_manifests,
         job_type_plugins_data=sorted(job_type_plugins_data, key=lambda x: (x.name, x.version)),
         infrastructure_plugins_data=sorted(infrastructure_plugins_data, key=lambda x: (x.name, x.version)),
+    )
+
+
+def log_event_plugin_installed(plugin_name: str, plugin_version: str, username: str):
+    AuditLogger().log_event(
+        AuditLogEventType.PLUGIN_INSTALLED,
+        username_executor=username,
+        properties={
+            'plugin_name': plugin_name,
+            'plugin_version': plugin_version,
+        },
+    )
+
+
+def log_event_plugin_uninstalled(plugin_name: str, plugin_version: str, username: str):
+    AuditLogger().log_event(
+        AuditLogEventType.PLUGIN_UNINSTALLED,
+        username_executor=username,
+        properties={
+            'plugin_name': plugin_name,
+            'plugin_version': plugin_version,
+        },
     )

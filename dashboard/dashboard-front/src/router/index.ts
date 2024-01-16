@@ -16,7 +16,7 @@ import DeploymentsList from '@/components/jobs/deployment/DeploymentsList.vue'
 import DeploymentDetails from '@/components/jobs/deployment/DeploymentDetails.vue'
 import GraphView from '@/components/jobs/graph/GraphView.vue'
 import PortfolioView from '@/components/jobs/portfolio/PortfolioView.vue'
-import AuditLogView from '@/components/jobs/audit/AuditLogView.vue'
+import ActivityView from '@/components/jobs/activity/ActivityView.vue'
 import ProfileView from '@/components/account/ProfileView.vue'
 import AdministrationView from '@/components/admin/AdministrationView.vue'
 import PluginConfigView from '@/components/admin/PluginConfigView.vue'
@@ -69,7 +69,7 @@ const router = createRouter({
     {
       path: '/activity',
       name: 'activity',
-      component: AuditLogView,
+      component: ActivityView,
       meta: { requiresAuth: true },
     },
     {

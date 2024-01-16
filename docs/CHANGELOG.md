@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This helps to indicate which job types are actually in use and which can be deleted.
   It also shows which job types and infrastructures are provided by which plugins in a tree view.
   ([#392](https://github.com/TheRacetrack/racetrack/issues/392))
+-   *Activity* tab on Dashboard tracks more kinds of events:
+    
+    - Plugin installed
+    - Plugin uninstalled
+    - Deployment attempt failed
+    - Job moved (to other infrastructure)
+  
+    ([#382](https://github.com/TheRacetrack/racetrack/issues/382))
+
+### Changed
+- Dashboard's "Audit Log" tab is now called "Activity".
+
+### Fixed
+- Dashboard's auto-update feature works with multiple Lifecycle replicas.
+  Live updates can now be enabled on the jobs list. It is turned off by default.
+  ([#317](https://github.com/TheRacetrack/racetrack/issues/317))
 
 ### Changed
 - Job type plugins can now build job images from a single Dockerfile.

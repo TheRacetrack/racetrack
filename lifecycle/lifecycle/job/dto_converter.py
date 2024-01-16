@@ -73,7 +73,7 @@ def public_endpoint_request_model_to_dto(model: models.PublicEndpointRequest) ->
 
 
 def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
-    properties = json.loads(model.properties) if model.properties else None
+    properties = json.loads(model.properties) if model.properties else {}
     return AuditLogEventDto(
         id=model.id,
         version=model.version,

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { QTree } from 'quasar'
-import { io, Socket } from "socket.io-client"
 import { mdiDotsVertical } from '@quasar/extras/mdi-v7'
 import { outlinedInfo } from '@quasar/extras/material-icons-outlined'
 import { apiClient } from '@/services/ApiClient'
@@ -24,10 +23,8 @@ const jobsCount: Ref<number> = computed(() => jobsData.value?.length || 0)
 const selectedNodeKey: Ref<string | null> = ref(null)
 const jobOrder: Ref<JobOrder> = ref(JobOrder.ByName)
 const loadingTree = ref(true)
-const autoUpdateEnabled = ref(true)
+const autoUpdateEnabled = ref(false)
 const lastReloadTimestamp: Ref<number> = ref(0)
-
-const eventStreamFeatureEnabled = false
 
 function fetchJobs() {
     loadingTree.value = true
@@ -149,16 +146,10 @@ watch(autoUpdateEnabled, () => {
     setupEventStreamClient()
 })
 
-var autoReloadSocket: Socket | null = null
+let autoReloadSocket: WebSocket | null = null
 
 function setupEventStreamClient() {
-    if (!eventStreamFeatureEnabled) {
-        console.log(`Event stream feature is disabled`)
-        return
-    }
-
-    autoReloadSocket?.disconnect()
-    autoReloadSocket?.removeAllListeners()
+    autoReloadSocket?.close()
     autoReloadSocket = null
 
     if (!envInfo.lifecycle_url)
@@ -166,39 +157,44 @@ function setupEventStreamClient() {
     if (!autoUpdateEnabled.value)
         return
 
-    // Socket.io needs URL without the path
     const url = new URL(envInfo.lifecycle_url)
-    url.pathname = ''
-    const trimmedLifecycleUrl = url.toString()
-    // client options: https://socket.io/docs/v4/client-options/
-    const socket = io(trimmedLifecycleUrl, {
-        path: '/lifecycle/socketio/events',
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax : 5000,
-        reconnectionAttempts: 5,
-    })
-    autoReloadSocket = socket
+    url.pathname = '/lifecycle/websocket/events'
+    const websocketUrl = url.toString()
+        .replace('http://', 'ws://')
+        .replace('https://', 'wss://')
 
-    socket.once("connect", () => {
-        console.log(`connected to live events stream: ${socket.id}`)
-        socket.on("broadcast_event", (data) => {
-            console.log('Change detected, reloading jobs')
-            fetchJobs()
-        })
-    })
+    const ws: WebSocket = new WebSocket(websocketUrl)
+    autoReloadSocket = ws
 
-    socket.on("reconnect", () => {
-        console.log(`reconnected to live events stream: ${socket.id}`)
-    })
+    ws.onopen = (event) => {
+        console.log(`connected to live events stream`)
+    }
 
-    socket.on("disconnect", () => {
-        console.log('disconnected from live events stream')
-    })
+    ws.onmessage = (event) => {
+        if (typeof event.data === "string") {
+            const message_obj = JSON.parse(event.data)
+            const event_type = message_obj['event']
+            if (event_type) {
+                onWebsocketEvent(event_type, event)
+            }
+        }
+    }
 
-    socket.on("error", (err) => {
-        console.error(`events stream socket.io error: ${err}`)
-    })
+    ws.onerror = (err) => {
+        console.error(`events stream error: ${err}`)
+    }
+
+    ws.onclose = (event) => {
+        console.log(`disconnected from live events stream`)
+    }
+}
+
+function onWebsocketEvent(event_type: string, event: any) {
+    if (event_type == 'job_models_changed') {
+        console.log('Change detected, reloading jobs')
+        const intervalMs = Math.random() * 750
+        setTimeout(fetchJobs, intervalMs) // wait between 0 and 750 ms to avoid DDoS-ing a server
+    }
 }
 
 onMounted(() => {
@@ -225,7 +221,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-    autoReloadSocket?.disconnect()
+    autoReloadSocket?.close()
 })
 </script>
 <template>

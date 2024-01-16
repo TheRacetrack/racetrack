@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 from pydantic import BaseModel
 
@@ -94,7 +94,7 @@ class AuditLogEventDto(BaseModel):
     version: int
     timestamp: int
     event_type: str
-    properties: Optional[Dict] = None
+    properties: Dict[str, Any]
     username_executor: Optional[str] = None
     username_subject: Optional[str] = None
     job_name: Optional[str] = None
