@@ -21,13 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Dashboard's "Audit Log" tab is now called "Activity".
-
-### Fixed
-- Dashboard's auto-update feature works with multiple Lifecycle replicas.
-  Live updates can now be enabled on the jobs list. It is turned off by default.
-  ([#317](https://github.com/TheRacetrack/racetrack/issues/317))
-
-### Changed
 - Job type plugins can now build job images from a single Dockerfile.
   Base Dockerfile has been merged with a job template.
   It gives more flexibility by allowing to parameterize
@@ -40,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rather than from a source code of a job.
   Old style is still supported to keep backwards compatibility.
   ([#403](https://github.com/TheRacetrack/racetrack/issues/403))
+
+### Fixed
+- Dashboard's auto-update feature works with multiple Lifecycle replicas.
+  Live updates can now be enabled on the jobs list. It is turned off by default.
+  ([#317](https://github.com/TheRacetrack/racetrack/issues/317))
 
 ## [2.24.0] - 2023-12-14
 ### Added
