@@ -89,10 +89,11 @@ def register_error_handlers(api: FastAPI):
 def _upack_error_message(e: BaseException) -> tuple[str, str]:
     if not isinstance(e, ExceptionGroup):
         return str(e), type(e).__name__
+    eg: ExceptionGroup = e
 
     sub_messages: list[str] = []
     sub_types: list[str] = []
-    for suberror in e.exceptions:
+    for suberror in eg.exceptions:
         sub_message, sub_type = _upack_error_message(suberror)
         sub_messages.append(sub_message)
         sub_types.append(sub_type)

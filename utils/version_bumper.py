@@ -108,8 +108,8 @@ def parse_details(details: str, ver: Version):
 
 
 def replace_in_files(curr_ver: Version, new_ver: Version, files: List[Path]):
-    for path in files:
-        replace_in_file(path, curr_ver, new_ver)
+    for file in files:
+        replace_in_file(file, curr_ver, new_ver)
 
 
 def replace_in_file(filepath: Path, curr_ver: Version, new_ver: Version):
