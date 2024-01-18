@@ -19,7 +19,7 @@ class JobEntrypoint:
         templates = Jinja2Templates(directory="templates")
 
         @app.get('/')
-        async def _index(request: Request):
+        async def _index():
             return RedirectResponse(f"{base_url}/view")
 
         @app.get('/view')
@@ -38,7 +38,7 @@ class JobEntrypoint:
             })
 
         @app.post('/preview')
-        async def _render(request: Request, raw_docs: str = Form('')):
+        async def _render(raw_docs: str = Form('')):
             encoded_docs = encode_docs(raw_docs.replace('\r\n', '\n'))
             return RedirectResponse(f"{base_url}/view?data={encoded_docs}", status_code=HTTP_302_FOUND)
 

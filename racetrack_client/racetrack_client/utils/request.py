@@ -1,4 +1,4 @@
-import json
+import json as json_module
 import ssl
 from email.message import Message
 from http.client import HTTPResponse
@@ -71,7 +71,7 @@ class Response:
         response_data = self._content.decode('utf8')
         if not response_data:
             raise RuntimeError('no content in response to decode as JSON')
-        return json.loads(response_data)
+        return json_module.loads(response_data)
 
     @property
     def is_json(self) -> bool:
@@ -195,7 +195,7 @@ class Requests:
                     req.add_header(name, value)
 
         if jsondata is not None:
-            jsondataasbytes = json.dumps(jsondata).encode('utf-8')
+            jsondataasbytes = json_module.dumps(jsondata).encode('utf-8')
             req.add_header('Content-Type', 'application/json; charset=utf-8')
             req.add_header('Content-Length', str(len(jsondataasbytes)))
             kwargs['data'] = jsondataasbytes

@@ -108,7 +108,7 @@ def setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     setup_esc_endpoints(api)
     setup_user_endpoints(api)
     setup_info_endpoints(api, config)
-    setup_plugin_endpoints(api, config, plugin_engine)
+    setup_plugin_endpoints(api, plugin_engine)
     setup_audit_endpoints(api)
     setup_auth_endpoints(api, config)
 
