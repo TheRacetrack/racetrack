@@ -97,6 +97,7 @@ def _build_job_image(
 
     base_image: str = ''  # Base images are deprecated, to be removed
     if job_type.base_image_paths and job_type.base_image_paths[image_index] is not None:
+        logger.warning('Using deprecated base images. Please use a single job template instead.')
         with wrap_context(f'building base image {progress}'):
             base_image = _build_base_image(config, job_type, image_index, deployment_id)
 

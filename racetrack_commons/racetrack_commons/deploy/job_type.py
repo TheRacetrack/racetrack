@@ -5,11 +5,14 @@ from pathlib import Path
 import backoff
 
 from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.logs import get_logger
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.plugin.plugin_data import PluginData
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -100,6 +103,7 @@ def gather_job_types(
             base_image_paths: list[Path | None] = []  # Deprecated, kept for backwards compatibility
             if isinstance(job_type_value, list):
                 if all(isinstance(item, tuple) for item in job_type_value):
+                    logger.warning('Using deprecated base images. Please use a single job template instead.')
                     base_image_paths = [Path(item[0]) if item[0] else None
                                         for item in job_type_value]
                     template_paths = [Path(item[1]).as_posix() if item[1] else None
@@ -112,6 +116,7 @@ def gather_job_types(
             elif isinstance(job_type_value, str):
                 template_paths = [job_type_value]
             elif isinstance(job_type_value, tuple):
+                logger.warning('Using deprecated base images. Please use a single job template instead.')
                 base_image_paths = [Path(job_type_value[0])]
                 template_paths = [Path(job_type_value[1]).as_posix()]
             else:
