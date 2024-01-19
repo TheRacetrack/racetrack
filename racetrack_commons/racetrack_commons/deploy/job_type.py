@@ -19,6 +19,7 @@ class JobType:
     template_paths: list[str | None]  # relative path names to job template Dockerfiles (for each container)
     jobtype_dir: Path
     base_image_paths: list[Path | None]  # Deprecated
+    plugin_data: PluginData
 
     @property
     def full_name(self) -> str:
@@ -128,6 +129,7 @@ def gather_job_types(
                 template_paths=template_paths,
                 jobtype_dir=plugin_data.plugin_dir,
                 base_image_paths=base_image_paths,
+                plugin_data=plugin_data,
             )
             job_types[job_type_key] = job_type_version
 
