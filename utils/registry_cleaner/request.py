@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from urllib import request
 import json
 
@@ -36,7 +36,9 @@ def delete_request(url: str):
     return json.loads(response_data)
 
 
-def get_request(url: str, headers: Dict[str, str] = {}):
+def get_request(url: str, headers: Optional[Dict[str, str]] = None):
+    if not headers:
+        headers = {}
     logger.debug(f'API request: GET {url}')
     req = request.Request(url, method='GET')
     headers = headers or HEADERS

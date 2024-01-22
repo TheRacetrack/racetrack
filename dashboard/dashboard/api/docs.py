@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 import markdown
 
 from racetrack_client.plugin.plugin_manifest import PluginManifest
@@ -10,7 +10,7 @@ from racetrack_commons.entities.plugin_client import LifecyclePluginClient
 def setup_docs_endpoints(app: FastAPI):
 
     @app.get('/api/docs/index')
-    def _get_docs_index(request: Request) -> dict:
+    def _get_docs_index() -> dict:
         docs_path = _get_docs_root_dir()
         doc_pages = []
         for doc_file in sorted(docs_path.rglob('*.md')):
@@ -37,7 +37,7 @@ def setup_docs_endpoints(app: FastAPI):
         }
     
     @app.get('/api/docs/page/{doc_path:path}')
-    def _get_docs_page(request: Request, doc_path: str) -> dict:
+    def _get_docs_page(doc_path: str) -> dict:
         docs_path = _get_docs_root_dir()
         doc_file_path = docs_path / doc_path
         if not doc_file_path.absolute().as_posix().startswith(docs_path.as_posix()):
@@ -53,7 +53,7 @@ def setup_docs_endpoints(app: FastAPI):
         }
     
     @app.get('/api/docs/plugin/{plugin_name}')
-    def _get_docs_plugin_page(request: Request, plugin_name: str) -> dict:
+    def _get_docs_plugin_page(plugin_name: str) -> dict:
         plugin_client = LifecyclePluginClient()
         markdown_content = plugin_client.get_plugin_docs(plugin_name)
         if markdown_content is None:

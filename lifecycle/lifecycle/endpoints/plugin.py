@@ -53,7 +53,7 @@ class PluginsData(BaseModel):
     infrastructure_plugins_data: list[InfrastructurePluginData]
 
 
-def setup_plugin_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
+def setup_plugin_endpoints(api: APIRouter, plugin_engine: PluginEngine):
 
     @api.get('/plugin', response_model=List[PluginManifest])
     def _info_plugins() -> List[PluginManifest]:

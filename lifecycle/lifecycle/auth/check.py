@@ -37,7 +37,7 @@ def check_auth(
 
     if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
         scope_str = scope.value if scope else None
-        authorize_internal_token(token_payload, scope_str, job_name, job_version)
+        authorize_internal_token(token_payload, scope_str)
     else:
         if job_name:
             assert job_version, 'job_version is required when job_name is specified'

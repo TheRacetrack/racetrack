@@ -39,7 +39,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         try:
             token_payload, auth_subject = authenticate_token(request)
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
-                authorize_internal_token(token_payload, scope, job_name, job_version)
+                authorize_internal_token(token_payload, scope)
             else:
                 authorize_resource_access(auth_subject, job_name, job_version, scope)
 
@@ -57,7 +57,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         try:
             token_payload, auth_subject = authenticate_token(request)
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
-                authorize_internal_token(token_payload, scope, job_name, job_version, endpoint)
+                authorize_internal_token(token_payload, scope)
             else:
                 authorize_resource_access(auth_subject, job_name, job_version, scope, endpoint)
 
@@ -187,7 +187,7 @@ def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request
     token_payload, auth_subject = authenticate_token(request)
 
     if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
-        authorize_internal_token(token_payload, scope, job_model.name, job_model.version, endpoint)
+        authorize_internal_token(token_payload, scope)
     else:
         assert auth_subject is not None
         authorize_resource_access(auth_subject, job_model.name, job_model.version, scope, endpoint)
