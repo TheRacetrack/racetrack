@@ -85,22 +85,22 @@ class PluginEngine:
             logger.warning(f'Plugin {plugin_name} does not have hook {function_name}')
             return None
 
-    def invoke_associated_plugin_hook(self, function: Callable, *args, **kwargs) -> list[tuple[PluginManifest, Any]]:
+    def invoke_hook_with_origin(self, function: Callable, *args, **kwargs) -> list[tuple[PluginData, Any]]:
         """
-        Invoke a hook function in all plugins and associate the results with the plugins' manifests
+        Invoke a hook function in all plugins and associate the results with the plugins' data
         :param function: PluginCore function to invoke
         :param args: positional arguments to pass to the function
         :param kwargs: keyword arguments to pass to the function
-        :return: dict of plugins' manifests mapped to the return value from each plugin
+        :return: list of tuples: plugin's data and the return value for each plugin
         """
         function_name = function.__name__
-        results: list[tuple[PluginManifest, Any]] = []
+        results: list[tuple[PluginData, Any]] = []
         for plugin_data in self.plugins_data:
             if hasattr(plugin_data.plugin_instance, function_name):
                 with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
                                   log_debug=True):
                     result = getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
-                    results.append((plugin_data.plugin_manifest, result))
+                    results.append((plugin_data, result))
         return results
 
     def find_plugin(self, name: str, version: str | None = None) -> PluginData:

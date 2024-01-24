@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Tuple, Optional, List
 
 from image_builder.config import Config
 from racetrack_client.manifest import Manifest
@@ -16,10 +15,10 @@ class ImageBuilder(ABC):
             workspace: Path,
             tag: str,
             git_version: str,
-            env_vars: Dict[str, str],
+            env_vars: dict[str, str],
             deployment_id: str,
             plugin_engine: PluginEngine,
-    ) -> Tuple[List[str], str, Optional[str]]:
+    ) -> tuple[list[str], str, str | None]:
         """
         Build image from manifest file in a workspace directory.
         :param config: Image builder configuration
@@ -29,6 +28,7 @@ class ImageBuilder(ABC):
         :param git_version: version name from Job git history
         :param env_vars: environment variables that should be set during building
         :param deployment_id: unique deployment id (UUID4)
+        :param plugin_engine: plugins store for calling plugin-defined hooks
         :return: Full names of built images, build logs, error message
         """
         raise NotImplementedError()

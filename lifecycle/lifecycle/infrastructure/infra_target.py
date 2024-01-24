@@ -67,19 +67,19 @@ def get_infrastructure_target(infrastructure_name: str | None) -> Infrastructure
 
 def list_infrastructure_names_with_origins(plugin_engine: PluginEngine) -> dict[str, PluginManifest]:
     infra_names_with_origins: dict[str, PluginManifest] = {}
-    for plugin_manifest, result in plugin_engine.invoke_associated_plugin_hook(PluginCore.infrastructure_targets):
+    for plugin_data, result in plugin_engine.invoke_hook_with_origin(PluginCore.infrastructure_targets):
         if result:
             for infra_name in result.keys():
-                infra_names_with_origins[infra_name] = plugin_manifest
+                infra_names_with_origins[infra_name] = plugin_data.plugin_manifest
     return infra_names_with_origins
 
 
 def list_infrastructure_names_of_plugins(plugin_engine: PluginEngine) -> list[tuple[PluginManifest, str]]:
     entries: list[tuple[PluginManifest, str]] = []
-    for plugin_manifest, result in plugin_engine.invoke_associated_plugin_hook(PluginCore.infrastructure_targets):
+    for plugin_data, result in plugin_engine.invoke_hook_with_origin(PluginCore.infrastructure_targets):
         if result:
             for infra_name in result.keys():
-                entries.append((plugin_manifest, infra_name))
+                entries.append((plugin_data.plugin_manifest, infra_name))
     return entries
 
 

@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Job type plugins can now build job images from a single Dockerfile.
+  Base Dockerfile has been merged with a job template.
+  It gives more flexibility by allowing to parameterize
+  all build commands of a base image with a user-defined configuration.
+  See [Developing plugins](./development/developing-plugins.md#supported-hooks)
+  and [Job type plugins](./development/plugins-job-types.md) documents.
+  Old style is still supported to keep backwards compatibility.
+  ([#403](https://github.com/TheRacetrack/racetrack/issues/403))
 
 ## [2.25.0] - 2024-01-16
 ### Added

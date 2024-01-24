@@ -1,7 +1,6 @@
 from __future__ import annotations
 from abc import ABC
 from typing import Any
-from pathlib import Path
 
 from racetrack_client.manifest import Manifest
 from racetrack_commons.entities.dto import JobDto
@@ -26,6 +25,8 @@ class PluginCore(ABC):
     ):
         """
         Supplementary actions invoked after job is deployed
+        :param manifest: job's manifest
+        :param job: job's metadata
         :param image_name: full name of the job image
         :param deployer_username: username of the user who deployed the job
         """
@@ -35,10 +36,10 @@ class PluginCore(ABC):
         """Supplementary env vars dictionary added to runtime vars when deploying a Job"""
         return None
 
-    def job_types(self) -> dict[str, list[tuple[Path, Path]]]:
+    def job_types(self) -> dict[str, list[str]]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> list of images: (base image path, dockerfile template path)
+        :return dict of job type name (with version) -> list of images: dockerfile template path relative to a jobtype directory
         """
         return {}
 
@@ -52,7 +53,7 @@ class PluginCore(ABC):
 
     def markdown_docs(self) -> str | None:
         """
-        Return documentation for this plugin in markdown format
+        Return documentation for this plugin in Markdown format
         """
         return None
 
@@ -63,6 +64,7 @@ class PluginCore(ABC):
     def post_job_delete(self, job: JobDto, username_executor: str | None = None):
         """
         Supplementary actions invoked after job is deleted
+        :param job: job's metadata
         :param username_executor: username of the user who deleted the job
         """
         pass
