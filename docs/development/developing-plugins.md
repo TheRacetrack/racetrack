@@ -126,6 +126,17 @@ def run_action(self, **kwargs) -> Any:
     """Call a supplementary action of a plugin"""
 ```
 
+- `validate_job_manifest` - Validate job's manifest in terms of job type specific parts
+```python
+def validate_job_manifest(self, manifest: Manifest, job_type: str):
+    """
+    Validate job's manifest in terms of job type specific parts.
+    :param manifest: job's manifest
+    :param job_type: job type name with the version
+    :raise Exception in case of validation error
+    """
+```
+
 ### Infrastructure targets
 `infrastructure_targets` hook expects instances of `lifecycle.infrastructure.model.InfrastructureTarget`.
 Here's the overview of the most important classes: 
