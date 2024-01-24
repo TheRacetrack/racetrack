@@ -40,9 +40,10 @@ def get_caller_header_name() -> str:
 def log_request_exception_with_tracing(request: Request, e: BaseException):
     try:
         if isinstance(e, ExceptionGroup):
-            for suberror in e.exceptions:
+            eg: ExceptionGroup = e
+            for suberror in eg.exceptions:
                 log_request_exception_with_tracing(request, suberror)
-            if len(e.exceptions) == 1:
+            if len(eg.exceptions) == 1:
                 return
 
         ex_type, e, tb = (type(e), e, e.__traceback__)

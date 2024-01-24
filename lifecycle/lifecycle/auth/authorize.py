@@ -81,9 +81,6 @@ def authorize_scope_access(
 def authorize_internal_token(
     token_payload: AuthTokenPayload,
     scope: Optional[str] = None,
-    job_name: Optional[str] = None,
-    job_version: Optional[str] = None,
-    endpoint: Optional[str] = None,
 ):
     if token_payload.scopes:
         if AuthScope.FULL_ACCESS.value in token_payload.scopes:

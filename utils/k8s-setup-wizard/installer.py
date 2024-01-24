@@ -103,7 +103,7 @@ def template_file(src_file: Path, dst_file: Path, context_vars: Dict):
 def generate_password(length: int = 32) -> str:
     assert length >= 16, 'password should be at least 16 characters long'
     alphabet = string.ascii_letters + string.digits
-    return ''.join(secrets.choice(alphabet) for i in range(length))
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
 def ensure_has_config_var(context_vars: Dict, config_name: str, missing_prompt: str):
