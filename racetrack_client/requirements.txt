@@ -4,3 +4,4 @@ backoff >= 2.2
 python-socketio[client] >= 5.8
 typer[all] >= 0.7.0
 jsonschema >= 4.17.3
+loguru  >= 0.7

@@ -10,7 +10,7 @@ from racetrack_commons.socket import free_tcp_port
 
 def test_api_server_startup():
     async def test_async():
-        configure_logs(log_level='debug')
+        configure_logs()
         port = free_tcp_port()
         app = create_fastapi_app()
         with serve_asgi_in_background(app, port):

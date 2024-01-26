@@ -11,7 +11,7 @@ from utils import logger, SetupConfig, load_local_config, prompt_text_choice, pr
 
 
 def main():
-    configure_logs(log_level='debug')
+    configure_logs()
     logger.info('Welcome to the standalone Racetrack installer')
 
     if sys.version_info[:2] < (3, 8):

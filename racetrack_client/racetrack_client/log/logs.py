@@ -1,26 +1,21 @@
 import logging
+import os
 import sys
 from typing import Optional
+
+import loguru
 
 LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
 LOG_FORMAT_DEBUG = '\033[2m[%(asctime)s]\033[0m %(name)s %(filename)s %(lineno)s %(levelname)s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-
-def init_logs():
-    """Run logging initialization (before loading log level)"""
-    logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level=logging.INFO, datefmt=LOG_DATE_FORMAT)
+structured_logs_on: bool = os.environ.get('STRUCTURED_LOGGING', 'false').lower() in {'true', 't', 'yes', 'y', '1'}
 
 
-def configure_logs(verbosity: int = 0, log_level: Optional[str] = None):
+def configure_logs(log_level: Optional[str] = None):
     """Configure root logger with a log level"""
-    if log_level is None:
-        if verbosity > 0:
-            level = logging.DEBUG
-        else:
-            level = logging.INFO
-    else:
-        level = _get_logging_level(log_level)
+    log_level = log_level or os.environ.get('LOG_LEVEL', 'debug')
+    level = _get_logging_level(log_level)
     # Set root level to INFO to avoid printing a ton of garbage DEBUG logs from imported libraries
     # Proper log level is set on racetrack logger
     logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
@@ -28,16 +23,29 @@ def configure_logs(verbosity: int = 0, log_level: Optional[str] = None):
     for handler in logging.getLogger().handlers:
         handler.setFormatter(ColoredFormatter(handler.formatter))
 
-    logger = logging.getLogger('racetrack')
-    logger.setLevel(level)
+    root_logger = logging.getLogger('racetrack')
+    root_logger.setLevel(level)
+
+    loguru.logger.remove()
+    loguru_config = {
+        'colorize': None,
+        'level': log_level.upper(),
+        'format': "<dim>[{time:YYYY-MM-DD HH:mm:ss}]</dim> <lvl>{level}</lvl> {message}",
+    }
+    if structured_logs_on:
+        loguru_config['serialize'] = True
+    loguru.logger.add(sys.stdout, **loguru_config)
 
 
-def get_logger(logger_name: Optional[str] = None) -> logging.Logger:
+def get_logger(logger_name: str) -> logging.Logger:
     """Get configured racetrack logger"""
-    logger = logging.getLogger('racetrack')
-    if logger_name:
-        return logger.getChild(logger_name)
-    return logger
+    if structured_logs_on:
+        return loguru.logger
+    else:
+        return logging.getLogger('racetrack').getChild(logger_name)
+
+
+logger = get_logger(__name__)
 
 
 def _get_logging_level(str_level: str) -> int:
