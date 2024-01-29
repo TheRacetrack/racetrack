@@ -1,6 +1,8 @@
+import json
 import logging
 import os
 import sys
+from datetime import datetime, timezone
 from typing import Optional
 
 import loguru
@@ -11,13 +13,14 @@ LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 structured_logs_on: bool = os.environ.get('STRUCTURED_LOGGING', 'false').lower() in {'true', 't', 'yes', 'y', '1'}
 
+logger: loguru._logger.Logger = loguru.logger
+
 
 def configure_logs(log_level: Optional[str] = None):
     """Configure root logger with a log level"""
     log_level = log_level or os.environ.get('LOG_LEVEL', 'debug')
     level = _get_logging_level(log_level)
     # Set root level to INFO to avoid printing a ton of garbage DEBUG logs from imported libraries
-    # Proper log level is set on racetrack logger
     logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
 
     for handler in logging.getLogger().handlers:
@@ -26,26 +29,45 @@ def configure_logs(log_level: Optional[str] = None):
     root_logger = logging.getLogger('racetrack')
     root_logger.setLevel(level)
 
-    loguru.logger.remove()
+    def formatter(record):
+        if record['level'].name == 'INFO':
+            record['level'].name = 'INFO '
+        if record.get("extra"):
+            return "<dim>[{time:YYYY-MM-DD HH:mm:ss}]</dim> <lvl>{level}</lvl> {message} {extra}\n"
+        else:
+            return "<dim>[{time:YYYY-MM-DD HH:mm:ss}]</dim> <lvl>{level}</lvl> {message}\n"
+
+    logger.remove()
     loguru_config = {
         'colorize': None,
         'level': log_level.upper(),
-        'format': "<dim>[{time:YYYY-MM-DD HH:mm:ss}]</dim> <lvl>{level}</lvl> {message}",
+        'format': formatter,
     }
     if structured_logs_on:
+        def sink_serializer(message):
+            record = message.record
+            timestamp = datetime.fromtimestamp(record["time"].timestamp(), tz=timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            simplified = {
+                "timestamp": timestamp,
+                "level": record["level"].name,
+                "message": record["message"],
+                **record.get("extra", {}),
+            }
+            serialized = json.dumps(simplified)
+            print(serialized, file=sys.stdout)
+
         loguru_config['serialize'] = True
-    loguru.logger.add(sys.stdout, **loguru_config)
-
-
-def get_logger(logger_name: str) -> logging.Logger:
-    """Get configured racetrack logger"""
-    if structured_logs_on:
-        return loguru.logger
+        logger.add(sink_serializer, **loguru_config)
     else:
-        return logging.getLogger('racetrack').getChild(logger_name)
+        logger.add(sys.stdout, **loguru_config)
+
+    logger.level("INFO", color="<blue>")
+    logger.level("DEBUG", color="<green>")
 
 
-logger = get_logger(__name__)
+def get_logger(logger_name: Optional[str] = None) -> loguru._logger.Logger:
+    """Get configured racetrack logger"""
+    return logger
 
 
 def _get_logging_level(str_level: str) -> int:
