@@ -8,6 +8,7 @@ from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.template import template_dockerfile
 from image_builder.progress import update_deployment_phase
+from image_builder.validate import validate_jobtype_manifest
 from racetrack_commons.deploy.job_type import JobType, load_job_type
 from image_builder.metrics import (
     metric_images_built,
@@ -43,6 +44,8 @@ class DockerBuilder(ImageBuilder):
         _wait_for_docker_engine_ready()
 
         job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
+        validate_jobtype_manifest(job_type, manifest, plugin_engine)
+
         metric_labels = {
             'job_name': manifest.name,
             'job_version': manifest.version,
