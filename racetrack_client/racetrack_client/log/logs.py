@@ -57,20 +57,17 @@ def configure_logs(log_level: Optional[str] = None):
         def formatter(record):
             if record['level'].name == 'INFO':
                 record['level'].name = 'INFO '
-            extra = record.get('extra')
-            tracing_id = extra.get('tracing_id')
-            caller_name = extra.get('caller_name')
-            if 'tracing_id' in extra:
-                del extra['tracing_id']
-            if 'caller_name' in extra:
-                del extra['caller_name']
+            extra: Dict = record.get('extra')
 
-            if tracing_id and caller_name and log_caller_enabled:
-                record['message'] = f"[{tracing_id}] <{caller_name}> " + record['message']
-            elif tracing_id:
-                record['message'] = f"[{tracing_id}] " + record['message']
-            elif caller_name and log_caller_enabled:
-                record['message'] = f"<{caller_name}> " + record['message']
+            if 'tracing_id' in extra:
+                tracing_id = extra['tracing_id']
+                if not tracing_id:
+                    del extra['tracing_id']
+
+            if 'caller_name' in extra:
+                caller_name = extra['caller_name']
+                if not caller_name or not log_caller_enabled:
+                    del extra['caller_name']
 
             if extra:
                 extra_str = _format_extra_vars(extra)
