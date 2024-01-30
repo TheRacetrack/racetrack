@@ -379,3 +379,11 @@ https://github.com/prometheus-community/postgres_exporter
 These files are available under Apache License 2.0, which you can find at https://github.com/prometheus-community/postgres_exporter/blob/master/LICENSE
 
 ----------------------------------------------------------------------
+
+This project uses Loguru (unmodified)
+
+https://github.com/Delgan/loguru
+
+These files are available under MIT License, which you can find at https://github.com/Delgan/loguru/blob/master/LICENSE
+
+----------------------------------------------------------------------
