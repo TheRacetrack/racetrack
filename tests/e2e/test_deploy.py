@@ -1,7 +1,9 @@
+from racetrack_client.log.logs import configure_logs
 from e2e.utils import DOCKER_PLUGIN_VERSION, K8S_PLUGIN_VERSION, PYTHON_PLUGIN_VERSION, _configure_env, _create_esc, _delete_workload, _deploy_and_verify, _wait_for_components, _install_plugin
 
 
 def test_deploy_model():
+    configure_logs()
     environment = _configure_env()
     _wait_for_components()
 

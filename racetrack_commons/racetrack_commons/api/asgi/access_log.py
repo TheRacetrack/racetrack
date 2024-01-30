@@ -2,12 +2,10 @@ import time
 
 from fastapi import FastAPI, Request, Response
 
-from racetrack_client.log.logs import get_logger
+from racetrack_client.log.logs import logger
 from racetrack_commons.api.asgi.asgi_server import HIDDEN_ACCESS_LOGS
 from racetrack_commons.api.metrics import metric_request_duration, metric_requests_done, metric_requests_started
-from racetrack_commons.api.tracing import RequestTracingLogger, get_caller_header_name, get_tracing_header_name
-
-logger = get_logger(__name__)
+from racetrack_commons.api.tracing import get_caller_header_name, get_tracing_header_name
 
 # Don't print these access logs if occurred
 HIDDEN_REQUEST_LOGS = {
@@ -32,10 +30,7 @@ def enable_request_access_log(fastapi_app: FastAPI):
         tracing_id = request.headers.get(tracing_header)
         caller_name = request.headers.get(caller_header)
         uri = request.url.replace(scheme='', netloc='')
-        request_logger = RequestTracingLogger(logger, {
-            'tracing_id': tracing_id,
-            'caller_name': caller_name,
-        })
+        request_logger = logger.bind(tracing_id=tracing_id, caller_name=caller_name)
         message = f'{request.method} {uri}'
         if message not in HIDDEN_REQUEST_LOGS:
             request_logger.debug(f'Request: {message}')
@@ -76,10 +71,7 @@ def enable_response_access_log(fastapi_app: FastAPI):
         if log_line not in HIDDEN_ACCESS_LOGS:
             tracing_id = request.headers.get(tracing_header)
             caller_name = request.headers.get(caller_header)
-            request_logger = RequestTracingLogger(logger, {
-                'tracing_id': tracing_id,
-                'caller_name': caller_name,
-            })
+            request_logger = logger.bind(tracing_id=tracing_id, caller_name=caller_name)
             request_logger.info(log_line)
 
         return response

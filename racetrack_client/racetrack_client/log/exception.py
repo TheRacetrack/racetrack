@@ -6,6 +6,8 @@ from racetrack_client.log.logs import get_logger
 
 logger = get_logger(__name__)
 
+PRINT_FULL_TRACEBACK = False
+
 
 def short_exception_logger(exc_info, *_):
     """
@@ -16,6 +18,8 @@ def short_exception_logger(exc_info, *_):
         ex_type, e, tb = exc_info
         log_message = get_exc_info_details(ex_type, e, tb)
         logger.error(log_message)
+        if PRINT_FULL_TRACEBACK:
+            traceback.print_exception(e)
     except BaseException as e:
         logger.exception(e)
 

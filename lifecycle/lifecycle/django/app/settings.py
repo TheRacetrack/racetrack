@@ -5,16 +5,12 @@ import warnings
 from django.utils.deprecation import RemovedInDjango50Warning
 
 from racetrack_commons.database.database import populate_database_settings
+from racetrack_client.utils.env import is_env_flag_enabled
 
 warnings.filterwarnings(action='ignore', category=RemovedInDjango50Warning)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-def is_env_flag_enabled(flag_name: str, default: str) -> bool:
-    return os.environ.get(flag_name, default).lower() in {'true', 't', 'yes', 'y', '1'}
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
