@@ -28,7 +28,14 @@ func ConfigureLog(logLevel string, structuredLogging bool) {
 		panic(errors.Wrap(err, "parsing log level"))
 	}
 
-	handler := log.StreamHandler(colorable.NewColorableStdout(), sortedLogfmtFormat())
+	var format log.Format
+	if structuredLogging {
+		format = log.JsonFormat()
+	} else {
+		format = sortedLogfmtFormat()
+	}
+
+	handler := log.StreamHandler(colorable.NewColorableStdout(), format)
 	handler = log.LvlFilterHandler(lvl, handler)
 	log.Root().SetHandler(handler)
 }
