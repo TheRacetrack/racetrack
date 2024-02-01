@@ -1,6 +1,6 @@
 import os
 import traceback
-from typing import Collection, Iterable
+from typing import Collection, Iterable, Tuple
 
 from racetrack_client.log.logs import get_logger
 
@@ -21,7 +21,7 @@ def short_exception_logger(exc_info, *_):
         if PRINT_FULL_TRACEBACK:
             traceback.print_exception(e)
     except BaseException as e:
-        logger.exception(e)
+        logger.exception(str(e))
 
 
 def get_exc_info_details(ex_type, e, tb) -> str:

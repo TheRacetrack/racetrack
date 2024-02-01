@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Structure logging can be enabled by setting `STRUCTURED_LOGGING` environment variable to `true`.
+- Structure logging can be enabled by setting `LOG_STRUCTURED` environment variable to `true`.
   It will make the logs to be produced in JSON format.
 
 ### Changed

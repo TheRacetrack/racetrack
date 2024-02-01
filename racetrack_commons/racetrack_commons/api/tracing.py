@@ -40,4 +40,4 @@ def log_request_exception_with_tracing(request: Request, e: BaseException):
     except BaseException as e:
         root_logger = logging.getLogger('racetrack')
         root_logger.error("Handler failed to process an exception")
-        root_logger.exception(e)
+        root_logger.exception(str(e))
