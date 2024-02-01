@@ -4,8 +4,25 @@ import logging
 from fastapi import Request
 from exceptiongroup import ExceptionGroup
 
-from racetrack_client.log.exception import get_exc_info_details
+from racetrack_client.log.exception import exception_details
 from racetrack_client.log.logs import logger
+from racetrack_client.utils.env import is_env_flag_enabled
+
+
+class RequestTracingLogger(logging.LoggerAdapter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.caller_enabled = is_env_flag_enabled('LOG_CALLER_NAME')
+
+    """Logging adapter adding request tracing ID to log messages"""
+    def process(self, msg, kwargs):
+        tracing_id = self.extra['tracing_id']
+        caller_name = self.extra.get('caller_name')
+        if tracing_id:
+            kwargs['tracing_id'] = tracing_id
+        if caller_name and self.caller_enabled:
+            kwargs['caller_name'] = caller_name
+        return msg, kwargs
 
 
 def get_tracing_header_name() -> str:
@@ -27,15 +44,17 @@ def log_request_exception_with_tracing(request: Request, e: BaseException):
             if len(eg.exceptions) == 1:
                 return
 
-        ex_type, e, tb = (type(e), e, e.__traceback__)
-        log_message = get_exc_info_details(ex_type, e, tb)
+        log_message, cause, traceback = exception_details(e)
 
         tracing_header = get_tracing_header_name()
         caller_header = get_caller_header_name()
         tracing_id = request.headers.get(tracing_header)
         caller_name = request.headers.get(caller_header)
-        request_logger = logger.bind(tracing_id=tracing_id, caller_name=caller_name)
-        request_logger.error(log_message)
+        request_logger = RequestTracingLogger(logger, {
+            'tracing_id': tracing_id,
+            'caller_name': caller_name,
+        })
+        request_logger.error(log_message, extra={'cause': cause, 'traceback': traceback})
 
     except BaseException as e:
         root_logger = logging.getLogger('racetrack')

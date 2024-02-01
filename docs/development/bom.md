@@ -34,7 +34,6 @@ The columns are:
 | [kubectl](https://github.com/kubernetes/kubectl)                                                           | 1.26.2      | 1.26.2         | managing Kubernetes                             |
 | [Kubernetes Python Client](https://pypi.org/project/kubernetes/)                                           | 26.1.0      | 26.1.0         | managing Kubernetes                             |
 | [log15](https://github.com/inconshreveable/log15)                                                          | 3.0.0       | 3.0.0          | structured logging in Go                        | 
-| [Loguru](https://github.com/Delgan/loguru)                                                                 | 0.7.2       | 0.7.2          | structured logging in Python                    | 
 | [Node.js](https://github.com/nodejs/node)                                                                  | 18.16       | 20.1.0         | Dashboard's development environment             |
 | [nvm](https://github.com/nvm-sh/nvm)                                                                       | 0.39.3      | 0.39.3         | Management of Node versions                     |
 | [opentelemetry-exporter-otlp-proto-http](https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/) | 1.16.0      | 1.16.0         | sending traces to OpenTelemetry                 |

@@ -13,7 +13,7 @@ from racetrack_commons.plugin.loader import load_plugin_from_zip, load_plugins_f
 from racetrack_commons.plugin.plugin_data import PluginData
 from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.log.errors import EntityNotFound
-from racetrack_client.log.exception import log_exception, short_exception_logger
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_client.utils.time import now, datetime_to_timestamp
@@ -251,7 +251,8 @@ class PluginEngine:
         extracted_dir = self.plugins_path / EXTRACTED_PLUGINS_DIR
         if extracted_dir.is_dir():
             def onerror(func, path, exc_info):
-                short_exception_logger(exc_info)
+                _, e, _ = exc_info
+                log_exception(e)
 
             shutil.rmtree(extracted_dir, onerror=onerror)
 
