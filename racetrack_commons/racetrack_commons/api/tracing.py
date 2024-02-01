@@ -16,12 +16,16 @@ class RequestTracingLogger(logging.LoggerAdapter):
 
     """Logging adapter adding request tracing ID to log messages"""
     def process(self, msg, kwargs):
+        extra = kwargs.get('extra', {})
+
         tracing_id = self.extra['tracing_id']
         caller_name = self.extra.get('caller_name')
         if tracing_id:
-            kwargs['tracing_id'] = tracing_id
+            extra['tracing_id'] = tracing_id
         if caller_name and self.caller_enabled:
-            kwargs['caller_name'] = caller_name
+            extra['caller_name'] = caller_name
+
+        kwargs['extra'] = extra
         return msg, kwargs
 
 

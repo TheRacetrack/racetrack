@@ -22,7 +22,7 @@ const (
 	floatFormat = 'f'
 )
 
-func ConfigureLog(logLevel string) {
+func ConfigureLog(logLevel string, structuredLogging bool) {
 	lvl, err := log.LvlFromString(logLevel)
 	if err != nil {
 		panic(errors.Wrap(err, "parsing log level"))

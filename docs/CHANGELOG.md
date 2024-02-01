@@ -7,12 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Structure logging can be enabled by setting `LOG_STRUCTURED` environment variable to `true`.
-  It will make the logs to be produced in JSON format.
-
-### Changed
-- Racetrack components use [Loguru](https://loguru.readthedocs.io/en/stable/index.html) for logging.
-  The new `logger` object may accept additional keyword arguments to add an extra context to a log message.
-  For example: `logger.info('not great not terrible', radioactivity=3.6)`
+  It will make Racetrack services to produce logs in JSON format.
 
 ## [2.26.0] - 2024-01-24
 ### Changed

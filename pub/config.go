@@ -20,6 +20,7 @@ type Config struct {
 	RemoteGatewayMode     bool   `env:"REMOTE_GATEWAY_MODE" envDefault:"false"`
 	RemoteGatewayToken    string `env:"REMOTE_GATEWAY_TOKEN" envDefault:""`
 	ServiceName           string `env:"SERVICE_NAME" envDefault:"pub"`
+	StructuredLogging     bool `env:"LOG_STRUCTURED" envDefault:"false"`
 }
 
 func LoadConfig() (*Config, error) {
