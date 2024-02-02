@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See `validate_job_manifest` hook in [Developing plugins](./development/developing-plugins.md#supported-hooks)
 - Structure logging can be enabled by setting `LOG_STRUCTURED` environment variable to `true`.
   It will make Racetrack services to produce logs in JSON format.
+  Default logging formatter can be changed by jobs. See documentation of a particular job type plugin.
 
 ## [2.26.0] - 2024-01-24
 ### Changed

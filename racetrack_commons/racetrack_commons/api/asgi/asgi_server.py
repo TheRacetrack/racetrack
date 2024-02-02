@@ -12,6 +12,7 @@ from starlette.types import ASGIApp
 
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
+from racetrack_client.utils.env import is_env_flag_enabled
 from racetrack_commons.api.debug import is_deployment_local
 
 logger = get_logger(__name__)
@@ -114,6 +115,10 @@ def _setup_uvicorn_logs(access_log: bool):
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = 'CRITICAL'
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["handlers"] = []
 
+    if is_env_flag_enabled('LOG_STRUCTURED', 'false'):
+        LOGGING_CONFIG["formatters"]["default"]["()"] = "racetrack_client.log.logs.StructuredFormatter"
+        LOGGING_CONFIG["formatters"]["access"]["()"] = "racetrack_client.log.logs.StructuredFormatter"
+
 
 _log_level_templates = {
     'CRITICAL': '\033[1;31mCRIT \033[0m',
@@ -129,7 +134,7 @@ class ColoredDefaultFormatter(logging.Formatter):
         logging.Formatter.__init__(self)
         self.plain_formatter = DefaultFormatter(**kwargs)
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: logging.LogRecord) -> str:
         if record.levelname in _log_level_templates:
             record.levelname = _log_level_templates[record.levelname].format(record.levelname)
         return self.plain_formatter.format(record)
@@ -140,7 +145,7 @@ class ColoredAccessFormatter(logging.Formatter):
         logging.Formatter.__init__(self)
         self.plain_formatter = AccessFormatter(**kwargs)
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: logging.LogRecord) -> str:
         if record.levelname in _log_level_templates:
             record.levelname = _log_level_templates[record.levelname].format(record.levelname)
         return self.plain_formatter.format(record)
