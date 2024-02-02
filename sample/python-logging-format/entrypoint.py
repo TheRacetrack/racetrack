@@ -31,15 +31,20 @@ def set_logging_formatter(formatter: logging.Formatter):
 class JSONFormatter(logging.Formatter):
     def __init__(self, extra_logging: dict[str, Any] | None = None) -> None:
         super().__init__()
-        self._ignore_keys: set[str] = {"msg", "args", "created", "levelname"}
+        self._ignore_keys: set[str] = {'msg', 'args', 'created', 'levelname', 'exc_text', 'exc_info', 'stack_info'}
         self._extra_logging: dict[str, Any] = extra_logging
 
     def format(self, record: logging.LogRecord) -> str:
-        log_dict: dict[str, Any] = record.__dict__.copy()
-        log_dict["message"] = record.getMessage()
+        log_dict: dict[str, Any] = {
+            'time': datetime.fromtimestamp(record.created, tz=timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            'level': record.levelname,
+            'message': record.getMessage(),
+        }
 
-        for key in self._ignore_keys:
-            log_dict.pop(key, None)
+        rdict = record.__dict__.copy()
+        for key in rdict.keys():
+            if key not in self._ignore_keys:
+                log_dict[key] = rdict[key]
 
         if self._extra_logging:
             log_dict.update(self._extra_logging)
@@ -57,8 +62,5 @@ class JSONFormatter(logging.Formatter):
 
         if record.stack_info:
             log_dict["stack_info"] = self.formatStack(record.stack_info)
-
-        log_dict['time'] = datetime.fromtimestamp(record.created, tz=timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        log_dict['level'] = record.levelname
 
         return json.dumps(log_dict)
