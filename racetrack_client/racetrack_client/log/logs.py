@@ -117,8 +117,8 @@ class StructuredFormatter(logging.Formatter):
 
         log_rec = {
             "time": time,
-            "level": level,
-            "message": message,
+            "lvl": level,
+            "msg": message,
             **extra,
         }
 
