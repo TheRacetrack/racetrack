@@ -26,12 +26,12 @@ def configure_logs(log_level: Optional[str] = None):
     # Set root level to INFO to avoid printing a ton of garbage DEBUG logs from imported libraries
     logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
 
-    for handler in logging.getLogger().handlers:
-        if structured_logs_on:
-            formatter = StructuredFormatter()
-        else:
-            formatter = ColoredFormatter(handler.formatter)
-        handler.setFormatter(formatter)
+    original_formatter = logging.getLogger().handlers[0].formatter
+    if structured_logs_on:
+        formatter = StructuredFormatter()
+    else:
+        formatter = ColoredFormatter(original_formatter)
+    set_logging_formatter(formatter)
 
     root_logger = logging.getLogger('racetrack')
     root_logger.setLevel(level)
@@ -40,6 +40,11 @@ def configure_logs(log_level: Optional[str] = None):
 def get_logger(_logger_name: str) -> logging.Logger:
     """Get configured racetrack logger"""
     return logging.getLogger('racetrack').getChild(_logger_name)
+
+
+def set_logging_formatter(formatter: logging.Formatter):
+    for handler in logging.getLogger().handlers:
+        handler.setFormatter(formatter)
 
 
 def _format_extra_vars(extra: Dict[str, Any]) -> str:
