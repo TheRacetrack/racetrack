@@ -112,6 +112,9 @@ class ColoredFormatter(logging.Formatter):
 
 
 class StructuredFormatter(logging.Formatter):
+    def __init__(self, **kwargs):
+        logging.Formatter.__init__(self)
+
     def format(self, record: logging.LogRecord) -> str:
         time: str = timestamp_to_iso8601(record.created)
         level: str = record.levelname
