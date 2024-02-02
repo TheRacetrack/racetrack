@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Job type plugins can validate their part of the manifest.
+  See `validate_job_manifest` hook in [Developing plugins](./development/developing-plugins.md#supported-hooks)
 - Structure logging can be enabled by setting `LOG_STRUCTURED` environment variable to `true`.
   It will make Racetrack services to produce logs in JSON format.
 
