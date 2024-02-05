@@ -69,34 +69,9 @@ func handleProxyRequest(
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	authToken := getAuthFromHeaderOrCookie(c.Request)
-
-	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
+	job, jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, cfg, requestId, jobName, jobVersion, jobPath)
 	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	var job *JobDetails
-	var callerName string
-	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
-	if err == nil {
-		job = jobCall.Job
-		if jobCall.Caller != nil {
-			callerName = *jobCall.Caller
-		}
-		metricAuthSuccessful.Inc()
-	} else {
-		metricAuthFailed.Inc()
-		if errors.As(err, &AuthenticationFailure{}) {
-			if cfg.AuthDebug {
-				return http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
-			} else {
-				return http.StatusUnauthorized, errors.New("Unauthenticated")
-			}
-		} else if errors.As(err, &NotFoundError{}) {
-			return http.StatusNotFound, errors.Wrap(err, "Job was not found")
-		}
-		return http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
+		return statusCode, err
 	}
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
@@ -220,4 +195,46 @@ func getRequestTracingId(req *http.Request, headerName string) string {
 		return tracingId
 	}
 	return uuid.NewV4().String()
+}
+
+// Authorize Job call and get job's details
+func getAuthorizedJobDetails(
+	c *gin.Context,
+	cfg *Config,
+	requestId string,
+	jobName string,
+	jobVersion string,
+	jobPath string,
+) (*JobDetails, *JobCallAuthData, string, int, error) {
+	authToken := getAuthFromHeaderOrCookie(c.Request)
+
+	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
+	if err != nil {
+		return nil, nil, "", http.StatusInternalServerError, err
+	}
+
+	var job *JobDetails
+	var callerName string
+	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
+	if err == nil {
+		job = jobCall.Job
+		if jobCall.Caller != nil {
+			callerName = *jobCall.Caller
+		}
+		metricAuthSuccessful.Inc()
+	} else {
+		metricAuthFailed.Inc()
+		if errors.As(err, &AuthenticationFailure{}) {
+			if cfg.AuthDebug {
+				return nil, nil, "", http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+			} else {
+				return nil, nil, "", http.StatusUnauthorized, errors.New("Unauthenticated")
+			}
+		} else if errors.As(err, &NotFoundError{}) {
+			return nil, nil, "", http.StatusNotFound, errors.Wrap(err, "Job was not found")
+		}
+		return nil, nil, "", http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
+	}
+
+	return job, jobCall, callerName, http.StatusOK, nil
 }

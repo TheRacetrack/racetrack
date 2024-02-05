@@ -16,6 +16,8 @@ func ListenAndServe(cfg *Config) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
+	asyncTaskStore := NewAsyncTaskStore()
+
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")
 	// and at prefixed path (when accessed through ingress proxy)
 	baseUrls := []string{
@@ -36,6 +38,16 @@ func ListenAndServe(cfg *Config) error {
 		})
 		router.Any(baseUrl+"/job/:job/:version", func(c *gin.Context) {
 			proxyEndpoint(c, cfg, "")
+		})
+
+		router.Any(baseUrl+"/async/new/job/:job/:version/*path", func(c *gin.Context) {
+			AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
+		})
+		router.Any(baseUrl+"/async/new/job/:job/:version", func(c *gin.Context) {
+			AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "")
+		})
+		router.GET(baseUrl+"/async/task/:taskId", func(c *gin.Context) {
+			TaskStatusEndpoint(c, cfg, asyncTaskStore)
 		})
 
 		router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
