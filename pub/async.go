@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,7 @@ import (
 type AsyncTaskStore struct {
 	tasks      map[string]*AsyncTask
 	httpClient *http.Client
+	rwMutex    sync.RWMutex
 }
 
 type AsyncTask struct {
@@ -36,6 +38,7 @@ type AsyncTask struct {
 	resultStatusCode *int
 	result           interface{}
 	errorMessage     *string
+	doneChannel      chan string // channel to notify when task is done
 }
 
 type TaskStatus string
@@ -115,15 +118,18 @@ func handleAsyncJobCallRequest(
 	targetUrl := TargetURL(cfg, job, urlPath)
 
 	task := &AsyncTask{
-		id:         uuid.NewV4().String(),
-		startedAt:  time.Now(),
-		status:     Ongoing,
-		jobName:    job.Name,
-		jobVersion: job.Version,
-		jobPath:    jobPath,
-		httpMethod: c.Request.Method,
+		id:          uuid.NewV4().String(),
+		startedAt:   time.Now(),
+		status:      Ongoing,
+		jobName:     job.Name,
+		jobVersion:  job.Version,
+		jobPath:     jobPath,
+		httpMethod:  c.Request.Method,
+		doneChannel: make(chan string),
 	}
+	taskStore.rwMutex.Lock()
 	taskStore.tasks[task.id] = task
+	taskStore.rwMutex.Unlock()
 	logger.Info("Async Job Call task created", log.Ctx{
 		"taskId":     task.id,
 		"jobName":    job.Name,
@@ -165,6 +171,13 @@ func handleAsyncJobCallRequest(
 			})
 			metricAsyncJobCallsErros.Inc()
 		}
+
+		// Notify subscribed listeners without blocking
+		select {
+		case task.doneChannel <- task.id:
+		default:
+		}
+		close(task.doneChannel)
 	}()
 
 	return http.StatusOK, nil
@@ -264,7 +277,9 @@ func makeAsyncJobCall(
 func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 
+	taskStore.rwMutex.RLock()
 	task, ok := taskStore.tasks[taskId]
+	taskStore.rwMutex.RUnlock()
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":     fmt.Sprintf("Task with id %s not found", taskId),
@@ -274,12 +289,65 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		return
 	}
 
+	respondWithTask(c, task)
+
+	if task.status == Completed || task.status == Failed {
+		taskStore.rwMutex.Lock()
+		delete(taskStore.tasks, taskId)
+		taskStore.rwMutex.Unlock()
+		log.Info("Retrieved task has been deleted", log.Ctx{
+			"taskId": taskId,
+			"status": task.status,
+		})
+	}
+}
+
+// Wait using HTTP Long Polling until task is completed or timeout is reached
+func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
+	taskId := c.Param("taskId")
+
+	taskStore.rwMutex.RLock()
+	task, ok := taskStore.tasks[taskId]
+	taskStore.rwMutex.RUnlock()
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": fmt.Sprintf("Task with id %s not found", taskId),
+		})
+		return
+	}
+
+	if task.status != Ongoing {
+		respondWithTask(c, task)
+		return
+	}
+
+	select {
+	case _, ok := <-task.doneChannel:
+		if !ok { // channel closed
+			break
+		}
+		break
+	case <-c.Request.Context().Done():
+		c.String(http.StatusRequestTimeout, "Request canceled")
+		return
+	case <-time.After(30 * time.Second):
+		break
+	}
+
+	if task.status == Ongoing {
+		c.String(http.StatusRequestTimeout, "Time out")
+		return
+	} else {
+		respondWithTask(c, task)
+	}
+}
+
+func respondWithTask(c *gin.Context, task *AsyncTask) {
 	var durationStr *string
 	if task.endedAt != nil {
 		duration := task.endedAt.Sub(task.startedAt).String()
 		durationStr = &duration
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"task_id":            task.id,
 		"status":             task.status,
@@ -296,12 +364,4 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		"result":             task.result,
 		"error":              task.errorMessage,
 	})
-
-	if task.status == Completed || task.status == Failed {
-		log.Info("Retrieved task has been deleted", log.Ctx{
-			"taskId": taskId,
-			"status": task.status,
-		})
-		delete(taskStore.tasks, taskId)
-	}
 }
