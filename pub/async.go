@@ -19,9 +19,10 @@ import (
 )
 
 type AsyncTaskStore struct {
-	tasks      map[string]*AsyncTask
-	httpClient *http.Client
-	rwMutex    sync.RWMutex
+	tasks           map[string]*AsyncTask
+	httpClient      *http.Client
+	rwMutex         sync.RWMutex
+	longPollTimeout time.Duration
 }
 
 type AsyncTask struct {
@@ -55,6 +56,7 @@ func NewAsyncTaskStore() *AsyncTaskStore {
 		httpClient: &http.Client{
 			Timeout: 120 * time.Minute,
 		},
+		longPollTimeout: 30 * time.Second,
 	}
 }
 
@@ -289,17 +291,7 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		return
 	}
 
-	respondWithTask(c, task)
-
-	if task.status == Completed || task.status == Failed {
-		taskStore.rwMutex.Lock()
-		delete(taskStore.tasks, taskId)
-		taskStore.rwMutex.Unlock()
-		log.Info("Retrieved task has been deleted", log.Ctx{
-			"taskId": taskId,
-			"status": task.status,
-		})
-	}
+	respondWithTask(c, task, taskStore)
 }
 
 // Wait using HTTP Long Polling until task is completed or timeout is reached
@@ -317,32 +309,41 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	}
 
 	if task.status != Ongoing {
-		respondWithTask(c, task)
+		respondWithTask(c, task, taskStore)
 		return
 	}
 
 	select {
-	case _, ok := <-task.doneChannel:
-		if !ok { // channel closed
+	case _, ok := <-task.doneChannel: // channel notified or closed
+		if !ok {
 			break
 		}
 		break
 	case <-c.Request.Context().Done():
-		c.String(http.StatusRequestTimeout, "Request canceled")
+		c.String(http.StatusGatewayTimeout, "Request canceled")
 		return
-	case <-time.After(30 * time.Second):
+	case <-time.After(taskStore.longPollTimeout):
 		break
 	}
 
+	taskStore.rwMutex.RLock()
+	task, ok = taskStore.tasks[taskId]
+	taskStore.rwMutex.RUnlock()
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": fmt.Sprintf("Task with id %s not found", taskId),
+		})
+		return
+	}
 	if task.status == Ongoing {
 		c.String(http.StatusRequestTimeout, "Time out")
 		return
 	} else {
-		respondWithTask(c, task)
+		respondWithTask(c, task, taskStore)
 	}
 }
 
-func respondWithTask(c *gin.Context, task *AsyncTask) {
+func respondWithTask(c *gin.Context, task *AsyncTask, taskStore *AsyncTaskStore) {
 	var durationStr *string
 	if task.endedAt != nil {
 		duration := task.endedAt.Sub(task.startedAt).String()
@@ -364,4 +365,14 @@ func respondWithTask(c *gin.Context, task *AsyncTask) {
 		"result":             task.result,
 		"error":              task.errorMessage,
 	})
+
+	if task.status == Completed || task.status == Failed {
+		taskStore.rwMutex.Lock()
+		delete(taskStore.tasks, task.id)
+		taskStore.rwMutex.Unlock()
+		log.Info("Retrieved task has been deleted", log.Ctx{
+			"taskId": task.id,
+			"status": task.status,
+		})
+	}
 }
