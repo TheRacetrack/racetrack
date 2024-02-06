@@ -34,7 +34,7 @@ type AsyncTask struct {
 	httpMethod       string
 	startedAt        time.Time
 	endedAt          *time.Time
-	resultContent    *string
+	resultData       []byte
 	resultHeaders    map[string]string
 	resultStatusCode *int
 	result           interface{}
@@ -243,7 +243,7 @@ func makeAsyncJobCall(
 	if err != nil {
 		return errors.Wrap(err, "failed to read response body")
 	}
-	task.resultContent = ptr(string(bodyBytes))
+	task.resultData = bodyBytes
 
 	task.resultHeaders = make(map[string]string)
 	for k, v := range res.Header {
@@ -291,7 +291,7 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		return
 	}
 
-	respondWithTask(c, task, taskStore)
+	respondTaskResult(c, task, taskStore)
 }
 
 // Wait using HTTP Long Polling until task is completed or timeout is reached
@@ -309,7 +309,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	}
 
 	if task.status != Ongoing {
-		respondWithTask(c, task, taskStore)
+		respondTaskResult(c, task, taskStore)
 		return
 	}
 
@@ -339,32 +339,46 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 		c.String(http.StatusRequestTimeout, "Time out")
 		return
 	} else {
-		respondWithTask(c, task, taskStore)
+		respondTaskResult(c, task, taskStore)
 	}
 }
 
-func respondWithTask(c *gin.Context, task *AsyncTask, taskStore *AsyncTaskStore) {
-	var durationStr *string
-	if task.endedAt != nil {
-		duration := task.endedAt.Sub(task.startedAt).String()
-		durationStr = &duration
+func respondTaskResult(c *gin.Context, task *AsyncTask, taskStore *AsyncTaskStore) {
+	if task.status == Ongoing || task.status == Failed {
+		var durationStr *string
+		if task.endedAt != nil {
+			duration := task.endedAt.Sub(task.startedAt).String()
+			durationStr = &duration
+		}
+		var statusCode int = http.StatusOK
+		if task.status == Failed {
+			statusCode = http.StatusInternalServerError
+		} else if task.status == Ongoing {
+			statusCode = http.StatusTooEarly
+		}
+		c.JSON(statusCode, gin.H{
+			"task_id":     task.id,
+			"status":      task.status,
+			"job_name":    task.jobName,
+			"job_version": task.jobVersion,
+			"job_path":    task.jobPath,
+			"http_method": task.httpMethod,
+			"started_at":  task.startedAt,
+			"ended_at":    task.endedAt,
+			"duration":    durationStr,
+			"error":       task.errorMessage,
+		})
+	} else if task.status == Completed {
+		for k, v := range task.resultHeaders {
+			c.Writer.Header().Set(k, v)
+		}
+		contentType, ok := task.resultHeaders["Content-Type"]
+		if ok {
+			c.Data(*task.resultStatusCode, contentType, task.resultData)
+		} else {
+			c.Data(*task.resultStatusCode, "", task.resultData)
+		}
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"task_id":            task.id,
-		"status":             task.status,
-		"job_name":           task.jobName,
-		"job_version":        task.jobVersion,
-		"job_path":           task.jobPath,
-		"http_method":        task.httpMethod,
-		"started_at":         task.startedAt,
-		"ended_at":           task.endedAt,
-		"duration":           durationStr,
-		"result_content":     task.resultContent,
-		"result_headers":     task.resultHeaders,
-		"result_status_code": task.resultStatusCode,
-		"result":             task.result,
-		"error":              task.errorMessage,
-	})
 
 	if task.status == Completed || task.status == Failed {
 		taskStore.rwMutex.Lock()
