@@ -5,8 +5,10 @@ from fastapi import Request
 from exceptiongroup import ExceptionGroup
 
 from racetrack_client.log.exception import exception_details
-from racetrack_client.log.logs import logger
+from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.env import is_env_flag_enabled
+
+logger = get_logger(__name__)
 
 
 class RequestTracingLogger(logging.LoggerAdapter):
