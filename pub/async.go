@@ -354,7 +354,7 @@ func respondTaskResult(c *gin.Context, task *AsyncTask, taskStore *AsyncTaskStor
 		if task.status == Failed {
 			statusCode = http.StatusInternalServerError
 		} else if task.status == Ongoing {
-			statusCode = http.StatusTooEarly
+			statusCode = http.StatusAccepted
 		}
 		c.JSON(statusCode, gin.H{
 			"task_id":     task.id,
