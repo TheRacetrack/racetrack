@@ -26,7 +26,7 @@ The columns are:
 | [Grafana](https://github.com/grafana/grafana)                                                              | 10.1.4      | 10.1.4         | Metrics visualization                           |
 | [github-markdown-css](https://github.com/sindresorhus/github-markdown-css)                                 | 5.1.0       | 5.2.0          | rendering docs                                  |
 | [GitPython](https://pypi.org/project/GitPython/)                                                           | 3.1.31      | 3.1.31         | cloning job repositories                        |
-| [Go](https://go.dev/dl/)                                                                                   | 1.19        | 1.20.1         | PUB code                                        |
+| [Go](https://go.dev/dl/)                                                                                   | 1.21        | 1.21           | PUB code                                        |
 | [httpretty](https://pypi.org/project/httpretty/)                                                           | 1.1.4       | 1.1.4          | mocking HTTP requests                           |
 | [httpx](https://pypi.org/project/httpx/)                                                                   | 0.23.3      | 0.23.3         | making HTTP requests                            |
 | [Jinja2](https://pypi.org/project/Jinja2/)                                                                 | 3.1.2       | 3.1.2          | templating Dockerfiles                          |
