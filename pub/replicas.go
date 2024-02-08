@@ -28,7 +28,7 @@ func NewReplicaDiscovery(cfg *Config) *replicaDiscovery {
 				if err != nil {
 					log.Error("Failed to get replica IPs", log.Ctx{"error": err})
 				}
-				time.Sleep(60 * time.Second)
+				time.Sleep(30 * time.Second)
 			}
 		}()
 	}

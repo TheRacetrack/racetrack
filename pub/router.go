@@ -46,14 +46,11 @@ func ListenAndServe(cfg *Config) error {
 		router.Any(baseUrl+"/async/new/job/:job/:version", func(c *gin.Context) {
 			AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "")
 		})
-		router.GET(baseUrl+"/async/task/:taskId", func(c *gin.Context) {
-			TaskStatusEndpoint(c, cfg, asyncTaskStore)
-		})
 		router.GET(baseUrl+"/async/task/:taskId/poll", func(c *gin.Context) {
 			TaskPollEndpoint(c, cfg, asyncTaskStore)
 		})
-		router.GET(baseUrl+"/async/task/:taskId/poll/internal", func(c *gin.Context) {
-			InternalTaskPollEndpoint(c, cfg, asyncTaskStore)
+		router.GET(baseUrl+"/async/task/:taskId/poll/single", func(c *gin.Context) {
+			SingleTaskPollEndpoint(c, cfg, asyncTaskStore)
 		})
 		router.GET(baseUrl+"/async/task/:taskId/exist", func(c *gin.Context) {
 			TaskExistEndpoint(c, cfg, asyncTaskStore)
