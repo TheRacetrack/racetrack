@@ -306,7 +306,9 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskStore.rwMutex.RUnlock()
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": fmt.Sprintf("Task with id %s not found", taskId),
+			"error":     fmt.Sprintf("Task with id %s not found", taskId),
+			"status":    http.StatusText(http.StatusNotFound),
+			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
 		})
 		return
 	}
@@ -384,12 +386,16 @@ func respondTaskResult(c *gin.Context, task *AsyncTask, taskStore *AsyncTaskStor
 	}
 
 	if task.status == Completed || task.status == Failed {
-		taskStore.rwMutex.Lock()
-		delete(taskStore.tasks, task.id)
-		taskStore.rwMutex.Unlock()
-		log.Info("Retrieved task has been deleted", log.Ctx{
-			"taskId": task.id,
-			"status": task.status,
-		})
+		go func() {
+			// Delete task after short time in case of timeout occured while sending the result to the client
+			time.Sleep(5 * time.Second)
+			taskStore.rwMutex.Lock()
+			delete(taskStore.tasks, task.id)
+			taskStore.rwMutex.Unlock()
+			log.Info("Retrieved task has been deleted", log.Ctx{
+				"taskId": task.id,
+				"status": task.status,
+			})
+		}()
 	}
 }
