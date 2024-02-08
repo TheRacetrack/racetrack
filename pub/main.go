@@ -5,14 +5,14 @@ import (
 )
 
 func main() {
-	ConfigureLog("debug")
+	ConfigureLog("debug", false)
 	log.Info("Starting PUB")
 
 	cfg, err := LoadConfig()
 	if err != nil {
 		panic(err)
 	}
-	ConfigureLog(cfg.LogLevel)
+	ConfigureLog(cfg.LogLevel, cfg.StructuredLogging)
 
 	err = ListenAndServe(cfg)
 	if err != nil {

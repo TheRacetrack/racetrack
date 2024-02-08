@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, Response
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import HIDDEN_ACCESS_LOGS
 from racetrack_commons.api.metrics import metric_request_duration, metric_requests_done, metric_requests_started
-from racetrack_commons.api.tracing import RequestTracingLogger, get_caller_header_name, get_tracing_header_name
+from racetrack_commons.api.tracing import get_caller_header_name, get_tracing_header_name, RequestTracingLogger
 
 logger = get_logger(__name__)
 

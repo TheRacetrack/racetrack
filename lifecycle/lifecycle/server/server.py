@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from lifecycle.server.db_status import monitor_database_status
-from racetrack_client.log.logs import configure_logs, get_logger, init_logs
+from racetrack_client.log.logs import configure_logs, get_logger
 from racetrack_client.utils.config import load_config
 from racetrack_commons.plugin.engine import PluginEngine
 from lifecycle.config import Config
@@ -34,8 +34,7 @@ def run_lifecycle_supervisor():
 
 
 def _init_lifecycle() -> Tuple[Config, PluginEngine]:
-    init_logs()
+    configure_logs()
     config: Config = load_config(Config)
-    configure_logs(log_level=config.log_level)
     plugin_engine = PluginEngine(config.plugins_dir, on_reload=LifecycleCache.on_plugins_reload)
     return config, plugin_engine

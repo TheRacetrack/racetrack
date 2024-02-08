@@ -27,7 +27,7 @@ def anyio_backend():
 
 @pytest.mark.django_db(transaction=True)
 def test_websocket_stream():
-    configure_logs(log_level='debug')
+    configure_logs()
     unregister_metrics()
     port = free_tcp_port()
     config = Config(job_watcher_interval=0.5)

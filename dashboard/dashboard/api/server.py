@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 def run_server():
-    configure_logs(log_level='debug')
+    configure_logs()
 
     http_port = int(os.environ.get('DASHBOARD_PORT', 7203))
     app = create_fastapi_app()

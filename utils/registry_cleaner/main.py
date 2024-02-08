@@ -35,7 +35,7 @@ def main():
 
 def _list(args: argparse.Namespace):
     verbose = args.verbose > 0
-    configure_logs(verbosity=verbose)
+    configure_logs()
 
     response = get_request(f'{GITLAB_API_URL}/projects/{PROJECT_ID}')
     assert response['path'] == 'racetrack'

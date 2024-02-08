@@ -10,14 +10,13 @@ import yaml
 from jinja2 import Template, StrictUndefined
 
 from racetrack_client.utils.shell import shell_output
-from racetrack_client.log.logs import init_logs, configure_logs, get_logger
+from racetrack_client.log.logs import configure_logs, get_logger
 
 logger = get_logger(__name__)
 
 
 def main():
-    init_logs()
-    configure_logs(log_level='debug')
+    configure_logs()
 
     templates_path = Path('kustomize/external')
     assert templates_path.is_dir(), f"can't find directory: {templates_path}. Make sure you're in the root of the repository"
