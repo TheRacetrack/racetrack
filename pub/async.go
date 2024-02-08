@@ -70,9 +70,7 @@ func NewAsyncTaskStore(cfg *Config) *AsyncTaskStore {
 // Start a new async job call in background and return task ID
 func AsyncJobCallEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, jobPath string) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{
-		"requestId": requestId,
-	})
+	logger := log.New(log.Ctx{"requestId": requestId})
 	if strings.HasPrefix(jobPath, "//") {
 		jobPath = jobPath[1:]
 	}
@@ -277,6 +275,10 @@ func makeAsyncJobCall(
 
 func TaskExistEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
+	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
+	logger := log.New(log.Ctx{"requestId": requestId})
+	logger.Info("Request: Task existsence check", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+
 	taskStore.rwMutex.RLock()
 	task, ok := taskStore.tasks[taskId]
 	taskStore.rwMutex.RUnlock()
@@ -299,9 +301,7 @@ func TaskExistEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{
-		"requestId": requestId,
-	})
+	logger := log.New(log.Ctx{"requestId": requestId})
 	logger.Info("Request: Poll async task of this replica", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 
 	taskStore.rwMutex.RLock()
@@ -355,9 +355,7 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{
-		"requestId": requestId,
-	})
+	logger := log.New(log.Ctx{"requestId": requestId})
 	logger.Info("Request: Poll async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 
 	taskStore.rwMutex.RLock()
@@ -415,12 +413,6 @@ func taskExistsInReplica(
 	replicaIp string,
 	taskId string,
 ) (bool, error) {
-	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{
-		"requestId": requestId,
-	})
-	logger.Info("Request: Task existsence check", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-
 	url := fmt.Sprintf("http://%s:%s/pub/async/task/%s/exist", replicaIp, cfg.ListenPort, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
