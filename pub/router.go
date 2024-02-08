@@ -16,7 +16,7 @@ func ListenAndServe(cfg *Config) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
-	asyncTaskStore := NewAsyncTaskStore()
+	asyncTaskStore := NewAsyncTaskStore(cfg)
 
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")
 	// and at prefixed path (when accessed through ingress proxy)

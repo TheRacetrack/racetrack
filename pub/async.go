@@ -19,10 +19,11 @@ import (
 )
 
 type AsyncTaskStore struct {
-	tasks           map[string]*AsyncTask
-	httpClient      *http.Client
-	rwMutex         sync.RWMutex
-	longPollTimeout time.Duration
+	tasks            map[string]*AsyncTask
+	httpClient       *http.Client
+	rwMutex          sync.RWMutex
+	longPollTimeout  time.Duration
+	replicaDiscovery *replicaDiscovery
 }
 
 type AsyncTask struct {
@@ -50,13 +51,15 @@ const (
 	Failed    TaskStatus = "failed"
 )
 
-func NewAsyncTaskStore() *AsyncTaskStore {
+func NewAsyncTaskStore(cfg *Config) *AsyncTaskStore {
+	replicaDiscovery := NewReplicaDiscovery(cfg)
 	return &AsyncTaskStore{
 		tasks: make(map[string]*AsyncTask),
 		httpClient: &http.Client{
 			Timeout: 120 * time.Minute,
 		},
-		longPollTimeout: 30 * time.Second,
+		longPollTimeout:  30 * time.Second,
+		replicaDiscovery: replicaDiscovery,
 	}
 }
 
