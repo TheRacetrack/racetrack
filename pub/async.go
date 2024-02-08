@@ -24,6 +24,7 @@ type AsyncTaskStore struct {
 	rwMutex          sync.RWMutex
 	longPollTimeout  time.Duration
 	replicaDiscovery *replicaDiscovery
+	cleanUpTimeout   time.Duration
 }
 
 type AsyncTask struct {
@@ -53,14 +54,17 @@ const (
 
 func NewAsyncTaskStore(cfg *Config) *AsyncTaskStore {
 	replicaDiscovery := NewReplicaDiscovery(cfg)
-	return &AsyncTaskStore{
+	store := &AsyncTaskStore{
 		tasks: make(map[string]*AsyncTask),
 		httpClient: &http.Client{
 			Timeout: 120 * time.Minute,
 		},
 		longPollTimeout:  30 * time.Second,
+		cleanUpTimeout:   125 * time.Minute,
 		replicaDiscovery: replicaDiscovery,
 	}
+	go store.cleanUpRoutine()
+	return store
 }
 
 // Start a new async job call in background and return task ID
@@ -540,5 +544,22 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 				"status": task.status,
 			})
 		}()
+	}
+}
+
+func (s *AsyncTaskStore) cleanUpRoutine() {
+	for {
+		time.Sleep(5 * time.Minute)
+		s.rwMutex.Lock()
+		for taskId, task := range s.tasks {
+			if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
+				log.Info("Cleaning up obsolete async call task", log.Ctx{
+					"taskId":     task.id,
+					"started_at": task.startedAt,
+				})
+				delete(s.tasks, taskId)
+			}
+		}
+		s.rwMutex.Unlock()
 	}
 }
