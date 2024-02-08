@@ -7,7 +7,7 @@ def datetime_to_timestamp(dt: datetime) -> int:
     return int(dt.timestamp())
 
 
-def timestamp_to_datetime(timestamp: int) -> datetime:
+def timestamp_to_datetime(timestamp: float) -> datetime:
     """Convert integer timestamp in seconds to datetime.datetime"""
     return datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
@@ -15,6 +15,10 @@ def timestamp_to_datetime(timestamp: int) -> datetime:
 def datetime_to_str(dt: datetime) -> str:
     """Convert datetime to ISO 8601 format"""
     return dt.strftime('%Y-%m-%dT%H:%M:%S%z')
+
+
+def timestamp_to_iso8601(timestamp: float) -> str:
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 def now() -> datetime:

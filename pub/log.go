@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
@@ -22,13 +23,20 @@ const (
 	floatFormat = 'f'
 )
 
-func ConfigureLog(logLevel string) {
+func ConfigureLog(logLevel string, structuredLogging bool) {
 	lvl, err := log.LvlFromString(logLevel)
 	if err != nil {
 		panic(errors.Wrap(err, "parsing log level"))
 	}
 
-	handler := log.StreamHandler(colorable.NewColorableStdout(), sortedLogfmtFormat())
+	var format log.Format
+	if structuredLogging {
+		format = JsonFormat()
+	} else {
+		format = sortedLogfmtFormat()
+	}
+
+	handler := log.StreamHandler(colorable.NewColorableStdout(), format)
 	handler = log.LvlFilterHandler(lvl, handler)
 	log.Root().SetHandler(handler)
 }
@@ -229,4 +237,94 @@ func escapeString(s string) string {
 	e.Reset()
 	stringBufPool.Put(e)
 	return ret
+}
+
+func JsonFormat() log.Format {
+	return JsonFormatEx(false, true)
+}
+
+const (
+	keyTime = "time"
+	keyLvl  = "lvl"
+	keyMsg  = "msg"
+)
+
+type OrderedMap struct {
+	keys []string
+	data map[string]interface{}
+}
+
+func (o *OrderedMap) MarshalJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+	for _, k := range o.keys {
+		m[k] = o.data[k]
+	}
+	return json.Marshal(m)
+}
+
+func JsonFormatEx(pretty, lineSeparated bool) log.Format {
+	jsonMarshal := json.Marshal
+	if pretty {
+		jsonMarshal = func(v interface{}) ([]byte, error) {
+			return json.MarshalIndent(v, "", "    ")
+		}
+	}
+
+	return FormatFunc(func(r *log.Record) []byte {
+		props := &OrderedMap{
+			keys: []string{keyTime, keyLvl, keyMsg},
+			data: map[string]interface{}{
+				keyTime: r.Time,
+				keyLvl:  r.Lvl.String(),
+				keyMsg:  r.Msg,
+			},
+		}
+
+		for i := 0; i < len(r.Ctx); i += 2 {
+			k, ok := r.Ctx[i].(string)
+			if !ok {
+				props.data[errorKey] = fmt.Sprintf("%+v is not a string key", r.Ctx[i])
+				props.keys = append(props.keys, errorKey)
+			}
+			props.data[k] = formatJSONValue(r.Ctx[i+1])
+			props.keys = append(props.keys, k)
+		}
+
+		b, err := props.MarshalJSON()
+		if err != nil {
+			b, _ = jsonMarshal(map[string]string{
+				errorKey: err.Error(),
+			})
+			return b
+		}
+
+		if lineSeparated {
+			b = append(b, '\n')
+		}
+
+		return b
+	})
+}
+
+func FormatFunc(f func(*log.Record) []byte) log.Format {
+	return formatFunc(f)
+}
+
+type formatFunc func(*log.Record) []byte
+
+func (f formatFunc) Format(r *log.Record) []byte {
+	return f(r)
+}
+
+func formatJSONValue(value interface{}) interface{} {
+	value = formatShared(value)
+
+	switch value.(type) {
+	case int, int8, int16, int32, int64, float32, float64, uint, uint8, uint16, uint32, uint64, string:
+		return value
+	case interface{}, map[string]interface{}, []interface{}:
+		return value
+	default:
+		return fmt.Sprintf("%+v", value)
+	}
 }

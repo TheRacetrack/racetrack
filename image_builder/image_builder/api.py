@@ -9,7 +9,7 @@ from image_builder.build import build_job_image
 from image_builder.health import health_response
 from image_builder.scheduler import schedule_tasks_async
 from racetrack_client.client_config.io import load_credentials_from_dict
-from racetrack_client.log.logs import init_logs, configure_logs
+from racetrack_client.log.logs import configure_logs
 from racetrack_client.manifest.load import load_manifest_from_dict
 from racetrack_client.utils.config import load_config
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
@@ -20,9 +20,8 @@ from racetrack_commons.plugin.engine import PluginEngine
 
 def run_api_server():
     """Serve API for building images from workspaces on demand"""
-    init_logs()
+    configure_logs()
     config: Config = load_config(Config)
-    configure_logs(log_level=config.log_level)
 
     schedule_tasks_async(config)
 
