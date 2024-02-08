@@ -298,61 +298,6 @@ func TaskExistEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 }
 
 // Wait using HTTP Long Polling until task is completed or timeout is reached
-// Internal endpoint for communication between Pub replicas
-// Ask single replica for task status without forwarding to other replicas
-func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
-	taskId := c.Param("taskId")
-	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
-	logger.Info("Request: Poll async task of this replica", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-
-	taskStore.rwMutex.RLock()
-	task, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":     fmt.Sprintf("Task with id %s not found", taskId),
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
-		return
-	}
-
-	if task.status != Ongoing {
-		respondTaskResult(c, logger, task, taskStore)
-		return
-	}
-
-	select {
-	case _, ok := <-task.doneChannel: // channel notified or closed
-		if !ok {
-			break
-		}
-		break
-	case <-c.Request.Context().Done():
-		c.String(http.StatusGatewayTimeout, "Request canceled")
-		return
-	case <-time.After(taskStore.longPollTimeout):
-		break
-	}
-
-	taskStore.rwMutex.RLock()
-	task, ok = taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": fmt.Sprintf("Task with id %s not found", taskId),
-		})
-		return
-	}
-	if task.status == Ongoing {
-		c.String(http.StatusRequestTimeout, "Time out")
-		return
-	} else {
-		respondTaskResult(c, logger, task, taskStore)
-	}
-}
-
-// Wait using HTTP Long Polling until task is completed or timeout is reached
 // If task is unrecognized, check it in other Pub replicas and forward the request to the one that has it
 func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
@@ -364,7 +309,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	_, ok := taskStore.tasks[taskId]
 	taskStore.rwMutex.RUnlock()
 	if ok {
-		SingleTaskPollEndpoint(c, cfg, taskStore)
+		SingleTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
 		if len(taskStore.replicaDiscovery.otherReplicaIPs) > 0 {
 			logger.Info("Checking unknown task in other replicas", log.Ctx{
@@ -405,6 +350,62 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 			"error":     fmt.Sprintf("Task with id %s not found", taskId),
 			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
 		})
+	}
+}
+
+// Wait using HTTP Long Polling until task is completed or timeout is reached
+// Internal endpoint for communication between Pub replicas
+// Ask single replica for task status without forwarding to other replicas
+func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
+	taskId := c.Param("taskId")
+	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
+	logger := log.New(log.Ctx{"requestId": requestId})
+	if accessLog {
+		logger.Info("Request: Poll async task of this replica", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+	}
+
+	taskStore.rwMutex.RLock()
+	task, ok := taskStore.tasks[taskId]
+	taskStore.rwMutex.RUnlock()
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":     fmt.Sprintf("Task with id %s not found", taskId),
+			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+		})
+		return
+	}
+	if task.status != Ongoing {
+		respondTaskResult(c, logger, task, taskStore)
+		return
+	}
+
+	select {
+	case _, ok := <-task.doneChannel: // channel notified or closed
+		if !ok {
+			break
+		}
+		break
+	case <-c.Request.Context().Done():
+		c.String(http.StatusGatewayTimeout, "Request canceled")
+		return
+	case <-time.After(taskStore.longPollTimeout):
+		break
+	}
+
+	taskStore.rwMutex.RLock()
+	task, ok = taskStore.tasks[taskId]
+	taskStore.rwMutex.RUnlock()
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": fmt.Sprintf("Task with id %s not found", taskId),
+		})
+		return
+	}
+	if task.status == Ongoing {
+		c.String(http.StatusRequestTimeout, "Time out")
+		return
+	} else {
+		respondTaskResult(c, logger, task, taskStore)
 	}
 }
 

@@ -50,7 +50,7 @@ func ListenAndServe(cfg *Config) error {
 			TaskPollEndpoint(c, cfg, asyncTaskStore)
 		})
 		router.GET(baseUrl+"/async/task/:taskId/poll/single", func(c *gin.Context) {
-			SingleTaskPollEndpoint(c, cfg, asyncTaskStore)
+			SingleTaskPollEndpoint(c, cfg, asyncTaskStore, true)
 		})
 		router.GET(baseUrl+"/async/task/:taskId/exist", func(c *gin.Context) {
 			TaskExistEndpoint(c, cfg, asyncTaskStore)
