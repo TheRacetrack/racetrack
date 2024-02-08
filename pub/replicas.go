@@ -23,6 +23,7 @@ func NewReplicaDiscovery(cfg *Config) *replicaDiscovery {
 	}
 	if cfg.ReplicaDiscoveryHostname != "" {
 		go func() {
+			time.Sleep(1 * time.Second)
 			for !discovery.ShouldExit {
 				err := discovery.refreshIPs()
 				if err != nil {

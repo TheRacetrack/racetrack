@@ -161,6 +161,16 @@ func handleAsyncJobCallRequest(
 		if err == nil {
 			task.status = Completed
 			metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
+			duration := task.endedAt.Sub(task.startedAt).String()
+			logger.Info("Async Job Call task has ended", log.Ctx{
+				"taskId":     task.id,
+				"jobName":    job.Name,
+				"jobVersion": job.Version,
+				"jobPath":    targetUrl.Path,
+				"caller":     callerName,
+				"statusCode": *task.resultStatusCode,
+				"duration":   duration,
+			})
 		} else {
 			task.status = Failed
 			errorStr := err.Error()
@@ -256,14 +266,6 @@ func makeAsyncJobCall(
 		}
 	}
 
-	logger.Info("Async Job Call done", log.Ctx{
-		"taskId":     task.id,
-		"jobName":    job.Name,
-		"jobVersion": job.Version,
-		"jobPath":    target.Path,
-		"caller":     callerName,
-		"status":     res.StatusCode,
-	})
 	statusCode := strconv.Itoa(res.StatusCode)
 	metricJobProxyResponseCodes.WithLabelValues(job.Name, job.Version, statusCode).Inc()
 	jobCallTime := time.Since(jobCallStartTime).Seconds()
