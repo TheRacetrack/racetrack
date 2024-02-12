@@ -530,7 +530,7 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 	if task.status == Completed || task.status == Failed {
 		go func() {
 			// Delete task after short time in case of timeout occured while sending the result to the client
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 			taskStore.rwMutex.Lock()
 			delete(taskStore.tasks, task.id)
 			taskStore.rwMutex.Unlock()
