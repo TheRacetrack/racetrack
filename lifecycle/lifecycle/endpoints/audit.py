@@ -63,7 +63,7 @@ def _build_job_activity_data(username: str | None, job_name: str, job_version: s
     events: list[AuditLogEventDto] = read_audit_log_user_events(username, job_name, job_version)
     event_dicts = []
     for event in events:
-        event_dict = event.dict()
+        event_dict = event.model_dump()
         event_dict['explanation'] = explain_audit_log_event(event)
         event_dict['time_ago'] = timestamp_pretty_ago(event.timestamp)
         event_dicts.append(event_dict)

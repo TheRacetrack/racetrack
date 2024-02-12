@@ -15,7 +15,7 @@ class ResponseJSONEncoder(json.JSONEncoder):
         if dataclasses.is_dataclass(o):
             return convert_to_json_serializable(dataclasses.asdict(o))
         if isinstance(o, BaseModel):
-            return convert_to_json_serializable(o.dict())
+            return convert_to_json_serializable(o.model_dump())
         if isinstance(o, PosixPath):
             return str(o)
         if isinstance(o, (date, datetime)):
@@ -27,7 +27,7 @@ class ResponseJSONEncoder(json.JSONEncoder):
 
 def register_response_json_encoder():
 
-    ENCODERS_BY_TYPE[BaseModel] = lambda o: convert_to_json_serializable(o.dict())
+    ENCODERS_BY_TYPE[BaseModel] = lambda o: convert_to_json_serializable(o.model_dump())
     ENCODERS_BY_TYPE[PosixPath] = lambda o: str(o)
     ENCODERS_BY_TYPE[date] = lambda o: o.isoformat()
     ENCODERS_BY_TYPE[datetime] = lambda o: o.isoformat()

@@ -30,7 +30,7 @@ def load_config(clazz: Type[T]) -> T:
     try:
         with path.open() as file:
             config_dict = yaml.load(file, Loader=yaml.FullLoader)
-            config = clazz.parse_obj(config_dict)
+            config = clazz.model_validate(config_dict)
 
             logger.info(f'config loaded from {config_file_path}: {config}')
             return config

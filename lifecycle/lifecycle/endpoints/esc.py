@@ -32,5 +32,5 @@ def setup_esc_endpoints(api: APIRouter):
     def _create_esc(payload: EscPayloadModel, request: Request):
         """Create new ESC"""
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
-        esc = parse_dict_datamodel(payload.dict(), EscDto)
+        esc = parse_dict_datamodel(payload.model_dump(), EscDto)
         return create_esc(esc)

@@ -43,7 +43,7 @@ def setup_user_endpoints(api: APIRouter):
             token=auth_subject.token,
             is_staff=user.is_staff,
         )
-        response = JSONResponse(user_profile.dict())
+        response = JSONResponse(user_profile.model_dump())
         set_auth_token_cookie(user_profile.token, response)
         return response
 
