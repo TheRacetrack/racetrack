@@ -1,9 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
 
-class Config(BaseModel, extra=Extra.forbid):
+class Config(BaseModel, extra='forbid'):
     """Configuration for Image Builder instance"""
 
     # Log level: debug, info, warn, error

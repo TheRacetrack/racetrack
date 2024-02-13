@@ -1,9 +1,9 @@
 from typing import Optional, List
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
 
-class PluginManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
+class PluginManifest(BaseModel, extra='forbid', arbitrary_types_allowed=True):
     """Details of the contents of the plugin"""
 
     name: str

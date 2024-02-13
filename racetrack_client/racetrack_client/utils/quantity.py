@@ -1,5 +1,9 @@
 from functools import total_ordering
 import re
+from typing import Any
+
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import CoreSchema, core_schema
 
 
 @total_ordering
@@ -83,20 +87,13 @@ class Quantity:
         return self.base_number * self._suffix_multipliers[self.suffix]
 
     @classmethod
-    def __get_validators__(cls):
-        # Needed to make it compatible with pydantic's Custom Data Types
-        # https://docs.pydantic.dev/usage/types/#custom-data-types
-        yield cls.validate
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls.validate, handler(source_type))
 
     @classmethod
     def validate(cls, v):
         if v is None:
             return None
         return Quantity(str(v))
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        # Needed to make it compatible with pydantic's Custom Data Types
-        field_schema.update(
-            examples=["128974848", "129M", "128974848000m", "123Mi", "0.129G"],
-        )

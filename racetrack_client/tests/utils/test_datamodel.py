@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Extra, ValidationError, validator
+from pydantic import BaseModel, ValidationError, field_validator
 import pytest
 
 from racetrack_client.utils.datamodel import parse_dict_datamodel
@@ -13,15 +13,16 @@ class DeployerType(Enum):
     KUBERNETES = 'kubernetes'
 
 
-class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
+class Config(BaseModel, extra='forbid', arbitrary_types_allowed=True):
     log_level: str = 'info'
     http_port: int = 7202
     deployer: DeployerType = DeployerType.DOCKER
     memory_min: Optional[Quantity] = None
     memory_max: Optional[Quantity] = None
 
-    @validator('memory_min', 'memory_max', pre=True)
-    def _validate_quantity(cls, v):
+    @field_validator('memory_min', 'memory_max', mode='before')
+    @classmethod
+    def _memory_min_must_be_valid_quantity(cls, v: str) -> Optional[Quantity]:
         if v is None:
             return None
         return Quantity(str(v))
