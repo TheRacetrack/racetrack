@@ -14,12 +14,12 @@ def setup_esc_endpoints(api: APIRouter):
     class EscPayloadModel(BaseModel):
         name: str = Field(
             description='name of ESC',
-            example='alice',
+            examples=['alice'],
         )
         id: Optional[str] = Field(
             default=None,
             description='ESC Identity ID',
-            example='b13f4ae8-6be7-4907-9951-4be79d9d684c',
+            examples=['b13f4ae8-6be7-4907-9951-4be79d9d684c'],
         )
 
     @api.get('/escs')

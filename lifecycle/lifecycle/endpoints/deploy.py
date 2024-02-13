@@ -18,13 +18,13 @@ from racetrack_client.manifest.load import load_manifest_from_dict
 
 def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
     class CredentialsModel(BaseModel):
-        username: str = Field(example="admin")
-        password: str = Field(example="hunter2")
+        username: str = Field(examples=["admin"])
+        password: str = Field(examples=["hunter2"])
 
     class DeployPayloadModel(BaseModel, arbitrary_types_allowed=True):
         manifest: Dict[str, Any] = Field(
             description='Manifest - build recipe for a Job',
-            example={
+            examples=[{
                 'name': 'adder',
                 'jobtype': 'python3',
                 'owner_email': 'nobody@example.com',
@@ -36,7 +36,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
                     'requirements_path': 'requirements.txt',
                     'entrypoint_path': 'adder.py',
                 },
-            },
+            }],
         )
         git_credentials: Optional[CredentialsModel] = Field(
             default=None,
@@ -45,24 +45,24 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         secret_vars: Optional[Dict[str, Any]] = Field(
             default=None,
             description='secret environment vars',
-            example={
+            examples=[{
                 'build_env': {
                     'GIT_PASS': '5ecr3t',
                 },
                 'runtime_env': {
                     'PGPASSWORD': '5ecr3t',
                 },
-            },
+            }],
         )
         build_context: Optional[str] = Field(
             default=None,
             description='encoded build context',
-            example='',
+            examples=[''],
         )
         force: Optional[bool] = Field(
             default=None,
             description='overwrite existing job',
-            example=False,
+            examples=[False],
         )
 
     @api.post('/deploy')
