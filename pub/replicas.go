@@ -76,6 +76,7 @@ func getMyLocalIPs() ([]string, error) {
 				"interface": i.Name,
 				"error":     err,
 			})
+			continue
 		}
 		for _, addr := range addrs {
 			switch v := addr.(type) {
