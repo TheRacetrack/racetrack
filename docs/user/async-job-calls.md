@@ -1,11 +1,12 @@
 # Asynchronous calls to jobs
 
 Classic calls to the jobs are made synchronously.
-While it's fine for short requests, it's not suitable for the very long requests, which may end with the timeout errors.
+While it's fine for short requests, it's not suitable for the very long requests,
+which may end with the timeout errors, imposed by the proxy in-between.
 
-This approach is recommended for short requests (up to 30 seconds),
+Synchronous calls are still recommended for short requests (up to 30 seconds),
 especially for serving static resources or webview pages. 
-For long requests, it's better to use the asynchronous approach described below.
+For long requests, it might be better to use the asynchronous approach described below.
 
 ## Asynchronous call to a job
 
