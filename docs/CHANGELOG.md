@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   For more details, refer to the documentation of the specifc job type plugin.
   Take a look at the [python-logging-format sample](../sample/python-logging-format/entrypoint.py)
   to see how to configure your own logging formatter in jobs.
+- Introduced asynchronous calls to jobs. This feature lets you avoid timeouts on very long requests
+  by switching to a two-step process: request a task and then check on the result.
+  See [Asynchronous calls to jobs](./user/async-job-calls.md) guide for more details.
 
 ## [2.26.0] - 2024-01-24
 ### Changed
