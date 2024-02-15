@@ -1,8 +1,8 @@
 import os
 import logging
+import sys
 
 from fastapi import Request
-from exceptiongroup import ExceptionGroup
 
 from racetrack_client.log.exception import exception_details
 from racetrack_client.log.logs import get_logger
@@ -43,7 +43,7 @@ def get_caller_header_name() -> str:
 
 def log_request_exception_with_tracing(request: Request, e: BaseException):
     try:
-        if isinstance(e, ExceptionGroup):
+        if sys.version_info[:2] >= (3, 11) and isinstance(e, ExceptionGroup):
             eg: ExceptionGroup = e
             for suberror in eg.exceptions:
                 log_request_exception_with_tracing(request, suberror)
