@@ -38,7 +38,7 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 		fmt.Sprintf("http://%v/pub/async/new/job/adder/latest/api/v1/perform", addrs[0]),
 		`{"numbers": [40, 2]}`,
 	)
-	assert.Equal(t, response.StatusCode, http.StatusCreated, "async job call task should be created") // 201
+	assert.Equal(t, response.StatusCode, http.StatusCreated, "async job call task should be created")
 	responsePayload := readJsonResponse(response)
 	assert.Equal(t, responsePayload["status"], "ongoing", "new task should have ongoing status")
 	taskId := responsePayload["task_id"].(string)
@@ -47,8 +47,8 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 	for i := 0; i < replicaNum; i++ {
 		wgPollingRequests.Add(1)
 		go func(i int) {
-			wgResultRequested.Done()
 			defer wgPollingRequests.Done()
+			wgResultRequested.Done()
 			statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[i], taskId))
 			assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
 			assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
@@ -59,29 +59,6 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 	for i := 0; i < replicaNum; i++ {
 		servers[i].Close()
 	}
-}
-
-func activateMockHttpResponses(wgResultRequested *sync.WaitGroup) {
-	defaultLifecycleTransport = httpmock.DefaultTransport
-	defaultAsyncJobTransport = httpmock.DefaultTransport
-	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/auth/can-call-job/adder/latest/api/v1/perform",
-		httpmock.NewStringResponder(200,
-			`{"job": {"id": "0", "name": "adder", "version": "0.0.1", "status": "running", "create_time": 1, "update_time": 1, "manifest": null, "internal_name": "adder-v-0-0-1"}, "caller": "bob"}`))
-	httpmock.RegisterResponder("POST", "http://adder-v-0-0-1/pub/job/adder/0.0.1/api/v1/perform",
-		func(req *http.Request) (*http.Response, error) {
-			wgResultRequested.Wait() // finish job task only after all replicas subscribed for a result
-			status := 200
-			body := `{"result": 42}`
-			resp := http.Response{
-				Status:        strconv.Itoa(status),
-				StatusCode:    status,
-				Body:          httpmock.NewRespBodyFromString(body),
-				Header:        http.Header{},
-				ContentLength: -1,
-				Request:       req,
-			}
-			return &resp, nil
-		})
 }
 
 func generateReplicaAddresses(num int) []string {
@@ -109,6 +86,29 @@ func getFreePorts(num int) []int {
 		listener.Close()
 	}
 	return ports
+}
+
+func activateMockHttpResponses(wgResultRequested *sync.WaitGroup) {
+	defaultLifecycleTransport = httpmock.DefaultTransport
+	defaultAsyncJobTransport = httpmock.DefaultTransport
+	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/auth/can-call-job/adder/latest/api/v1/perform",
+		httpmock.NewStringResponder(200,
+			`{"job": {"id": "0", "name": "adder", "version": "0.0.1", "status": "running", "create_time": 1, "update_time": 1, "manifest": null, "internal_name": "adder-v-0-0-1"}, "caller": "bob"}`))
+	httpmock.RegisterResponder("POST", "http://adder-v-0-0-1/pub/job/adder/0.0.1/api/v1/perform",
+		func(req *http.Request) (*http.Response, error) {
+			wgResultRequested.Wait() // finish job task only after all replicas subscribed for a result
+			status := 200
+			body := `{"result": 42}`
+			resp := http.Response{
+				Status:        strconv.Itoa(status),
+				StatusCode:    status,
+				Body:          httpmock.NewRespBodyFromString(body),
+				Header:        http.Header{},
+				ContentLength: -1,
+				Request:       req,
+			}
+			return &resp, nil
+		})
 }
 
 func setupReplicaServer(addr string, cfg *Config, store *AsyncTaskStore) *http.Server {
