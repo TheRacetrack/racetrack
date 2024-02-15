@@ -18,13 +18,17 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var defaultAsyncJobTransport http.RoundTripper = defaultHttpTransport()
+var defaultAsyncReplicaTransport http.RoundTripper = defaultHttpTransport()
+
 type AsyncTaskStore struct {
-	tasks            map[string]*AsyncTask
-	httpClient       *http.Client
-	rwMutex          sync.RWMutex
-	longPollTimeout  time.Duration
-	replicaDiscovery *replicaDiscovery
-	cleanUpTimeout   time.Duration
+	tasks             map[string]*AsyncTask
+	jobHttpClient     *http.Client
+	replicaHttpClient *http.Client
+	rwMutex           sync.RWMutex
+	longPollTimeout   time.Duration
+	replicaDiscovery  *replicaDiscovery
+	cleanUpTimeout    time.Duration
 }
 
 type AsyncTask struct {
@@ -52,12 +56,16 @@ const (
 	Failed    TaskStatus = "failed"
 )
 
-func NewAsyncTaskStore(cfg *Config) *AsyncTaskStore {
-	replicaDiscovery := NewReplicaDiscovery(cfg)
+func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery) *AsyncTaskStore {
 	store := &AsyncTaskStore{
 		tasks: make(map[string]*AsyncTask),
-		httpClient: &http.Client{
-			Timeout: 120 * time.Minute,
+		jobHttpClient: &http.Client{
+			Timeout:   120 * time.Minute,
+			Transport: defaultAsyncJobTransport,
+		},
+		replicaHttpClient: &http.Client{
+			Timeout:   120 * time.Minute,
+			Transport: defaultAsyncReplicaTransport,
 		},
 		longPollTimeout:  30 * time.Second,
 		cleanUpTimeout:   125 * time.Minute,
@@ -155,7 +163,7 @@ func handleAsyncJobCallRequest(
 	}
 
 	go func() {
-		err := makeAsyncJobCall(targetUrl, c, requestBody, job, cfg, logger, taskStore, task, requestId, callerName)
+		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, logger, taskStore, task, requestId, callerName)
 
 		task.endedAt = ptr(time.Now())
 		if err == nil {
@@ -175,7 +183,7 @@ func handleAsyncJobCallRequest(
 			task.status = Failed
 			errorStr := err.Error()
 			task.errorMessage = &errorStr
-			logger.Error("Async Job Call request error", log.Ctx{
+			logger.Error("Background Job Call request error", log.Ctx{
 				"taskId":     task.id,
 				"jobName":    job.Name,
 				"jobVersion": job.Version,
@@ -199,7 +207,7 @@ func handleAsyncJobCallRequest(
 	return http.StatusOK, nil
 }
 
-func makeAsyncJobCall(
+func makeBackgroundJobCall(
 	target url.URL,
 	c *gin.Context,
 	requestBody []byte,
@@ -229,7 +237,7 @@ func makeAsyncJobCall(
 		req.Header.Set(cfg.CallerNameHeader, callerName)
 	}
 	req.RequestURI = ""
-	res, err := taskStore.httpClient.Do(req)
+	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "making request to a job")
 	}
@@ -311,36 +319,36 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	if ok {
 		SingleTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
-		if len(taskStore.replicaDiscovery.otherReplicaIPs) > 0 {
+		if len(taskStore.replicaDiscovery.otherReplicaAddrs) > 0 {
 			logger.Info("Checking unknown task in other replicas", log.Ctx{
-				"taskId":          taskId,
-				"otherReplicaIPs": taskStore.replicaDiscovery.otherReplicaIPs,
+				"taskId":            taskId,
+				"otherReplicaAddrs": taskStore.replicaDiscovery.otherReplicaAddrs,
 			})
-			otherReplicaIPs := taskStore.replicaDiscovery.otherReplicaIPs
+			otherReplicaAddrs := taskStore.replicaDiscovery.otherReplicaAddrs
 			foundOnReplicas := make(chan string)
-			for _, replicaIp := range otherReplicaIPs {
-				go func(replicaIp string) {
-					exists, err := taskExistsInReplica(c, cfg, taskStore, replicaIp, taskId)
+			for _, replicaAddr := range otherReplicaAddrs {
+				go func(replicaAddr string) {
+					exists, err := taskExistsInReplica(c, cfg, taskStore, replicaAddr, taskId)
 					if err != nil {
 						logger.Error("Failed to check task on other Pub replica", log.Ctx{
-							"error":     err,
-							"taskId":    taskId,
-							"replicaIp": replicaIp,
+							"error":       err,
+							"taskId":      taskId,
+							"replicaAddr": replicaAddr,
 						})
 						foundOnReplicas <- ""
 						return
 					}
 					if exists {
-						foundOnReplicas <- replicaIp
+						foundOnReplicas <- replicaAddr
 					} else {
 						foundOnReplicas <- ""
 					}
-				}(replicaIp)
+				}(replicaAddr)
 			}
-			for range otherReplicaIPs {
-				replicaIp := <-foundOnReplicas
-				if replicaIp != "" {
-					forwardTaskPollToReplica(c, cfg, logger, taskStore, replicaIp, taskId)
+			for range otherReplicaAddrs {
+				replicaAddr := <-foundOnReplicas
+				if replicaAddr != "" {
+					forwardTaskPollToReplica(c, cfg, logger, taskStore, replicaAddr, taskId)
 					return
 				}
 			}
@@ -413,10 +421,10 @@ func taskExistsInReplica(
 	c *gin.Context,
 	cfg *Config,
 	taskStore *AsyncTaskStore,
-	replicaIp string,
+	replicaAddr string,
 	taskId string,
 ) (bool, error) {
-	url := fmt.Sprintf("http://%s:%s/pub/async/task/%s/exist", replicaIp, cfg.ListenPort, taskId)
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/exist", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create request to Pub replica")
@@ -438,14 +446,14 @@ func forwardTaskPollToReplica(
 	cfg *Config,
 	logger log.Logger,
 	taskStore *AsyncTaskStore,
-	replicaIp string,
+	replicaAddr string,
 	taskId string,
 ) {
 	logger.Info("Forwarding async task poll to other replica", log.Ctx{
-		"taskId":    taskId,
-		"replicaIp": replicaIp,
+		"taskId":      taskId,
+		"replicaAddr": replicaAddr,
 	})
-	url := fmt.Sprintf("http://%s:%s/pub/async/task/%s/poll/single", replicaIp, cfg.ListenPort, taskId)
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/poll/single", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		logger.Error("Failed to make request to Pub replica", log.Ctx{
@@ -458,7 +466,7 @@ func forwardTaskPollToReplica(
 		})
 		return
 	}
-	res, err := taskStore.httpClient.Do(req)
+	res, err := taskStore.replicaHttpClient.Do(req)
 	if err != nil {
 		logger.Error("Failed to make request to Pub replica", log.Ctx{
 			"error": err,

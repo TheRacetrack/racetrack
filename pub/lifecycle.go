@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var defaultLifecycleTransport http.RoundTripper = defaultHttpTransport()
+
 type JobCallAuthData struct {
 	Job                *JobDetails `json:"job"`
 	Caller             *string     `json:"caller"`
@@ -73,7 +75,8 @@ func NewMasterLifecycleClient(
 		authToken:     authToken,
 		internalToken: internalToken,
 		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout:   10 * time.Second,
+			Transport: defaultLifecycleTransport,
 		},
 		requestTracingHeader: requestTracingHeader,
 		requestId:            requestId,

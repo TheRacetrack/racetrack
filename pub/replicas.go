@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"slices"
 	"time"
@@ -12,20 +13,22 @@ import (
 type replicaDiscovery struct {
 	ReplicaDiscoveryHostname string
 	ShouldExit               bool
-	otherReplicaIPs          []string
+	otherReplicaAddrs        []string
+	listenPort               string
 }
 
 func NewReplicaDiscovery(cfg *Config) *replicaDiscovery {
 	discovery := &replicaDiscovery{
 		ReplicaDiscoveryHostname: cfg.ReplicaDiscoveryHostname,
 		ShouldExit:               false,
-		otherReplicaIPs:          []string{},
+		otherReplicaAddrs:        []string{},
+		listenPort:               cfg.ListenPort,
 	}
 	if cfg.ReplicaDiscoveryHostname != "" {
 		go func() {
 			time.Sleep(1 * time.Second)
 			for !discovery.ShouldExit {
-				err := discovery.refreshIPs()
+				err := discovery.refreshAddrs()
 				if err != nil {
 					log.Error("Failed to get replica IPs", log.Ctx{"error": err})
 				}
@@ -36,12 +39,20 @@ func NewReplicaDiscovery(cfg *Config) *replicaDiscovery {
 	return discovery
 }
 
-func (s *replicaDiscovery) refreshIPs() error {
+func NewStaticReplicaDiscovery(addrs []string) *replicaDiscovery {
+	return &replicaDiscovery{
+		otherReplicaAddrs: addrs,
+	}
+}
+
+func (s *replicaDiscovery) refreshAddrs() error {
 	otherReplicaIPs, err := s.getOtherReplicaIPs()
 	if err != nil {
 		return err
 	}
-	s.otherReplicaIPs = otherReplicaIPs
+	s.otherReplicaAddrs = MapSlice(otherReplicaIPs, func(ip string) string {
+		return fmt.Sprintf("%s:%v", ip, s.listenPort)
+	})
 	return nil
 }
 

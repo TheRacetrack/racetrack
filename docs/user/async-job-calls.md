@@ -55,8 +55,10 @@ Body (**application/json**):
 - input parameters to the job (the same as for the classic synchronous call)
 
 #### Response
-Response payload is the JSON with the following fields:
-- `task_id` (**string**) - a unique UUID identifier of the task
+- `201 Created` - if task has been created successfully. Response is the JSON payload with the following fields:
+    - `task_id` (**string**) - a unique UUID identifier of the task
+- `500 Internal Server Error` -
+  the task has failed. Details of an error will be included in the HTTP body.
 
 #### Request / Response Sample
 ```sh

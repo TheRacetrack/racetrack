@@ -14,6 +14,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var defaultJobProxyTransport http.RoundTripper = defaultHttpTransport()
+
 func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	startTime := time.Now()
 
@@ -176,6 +178,7 @@ func ServeReverseProxy(
 		Director:       director,
 		ModifyResponse: modifyResponse,
 		ErrorHandler:   errorHandler,
+		Transport:      defaultJobProxyTransport,
 	}
 
 	metricJobProxyRequestsStarted.WithLabelValues(job.Name, job.Version).Inc()
