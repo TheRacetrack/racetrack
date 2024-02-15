@@ -1,11 +1,13 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Extra, validator, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from racetrack_client.utils.quantity import Quantity
 
 
-class GitManifest(BaseModel, extra=Extra.forbid):
+class GitManifest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     # URL of git remote: HTTPS, SSH or directory path to a remote repository
     remote: str
     branch: Optional[str] = None
@@ -13,11 +15,15 @@ class GitManifest(BaseModel, extra=Extra.forbid):
     directory: str = '.'
 
 
-class DockerManifest(BaseModel, extra=Extra.forbid):
+class DockerManifest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     dockerfile_path: Optional[str] = None
 
 
-class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
+class ResourcesManifest(BaseModel):
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
+
     # minimum memory amount in bytes, eg. 256Mi
     memory_min: Optional[Quantity] = None
     # maximum memory amount in bytes, eg. 1Gi
@@ -27,20 +33,17 @@ class ResourcesManifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=T
     # maximum CPU consumption in cores, eg. 1000m
     cpu_max: Optional[Quantity] = None
 
-    @validator(
-        'memory_min',
-        'memory_max',
-        'cpu_min',
-        'cpu_max',
-        pre=True)
-    def _validate_quantity(cls, v):
+    @field_validator('memory_min', 'memory_max', 'cpu_min', 'cpu_max', mode='before')
+    @classmethod
+    def _quantity_field_must_be_valid(cls, v: str) -> Optional[Quantity]:
         if v is None:
             return None
         return Quantity(str(v))
 
 
-class Manifest(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True, allow_population_by_field_name=True):
+class Manifest(BaseModel):
     """Job Manifest file - build recipe to get deployable image from source code workspace"""
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True, populate_by_name=True)
 
     # name of the Job Workload
     name: str

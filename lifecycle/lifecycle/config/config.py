@@ -1,11 +1,12 @@
 from typing import Optional
-from pydantic import BaseModel, Extra, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from racetrack_client.utils.quantity import Quantity
 
 
-class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
+class Config(BaseModel):
     """Configuration for Lifecycle server instance"""
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
 
     # Log level: debug, info, warn, error
     log_level: str = 'info'
@@ -64,14 +65,15 @@ class Config(BaseModel, extra=Extra.forbid, arbitrary_types_allowed=True):
     # Whether to allow overwriting existing jobs by deploying the same version once again
     allow_job_overwrite: bool = False
 
-    @validator(
+    @field_validator(
         'max_job_memory_limit',
         'default_job_memory_min',
         'default_job_memory_max',
         'default_job_cpu_min',
         'default_job_cpu_max',
-        pre=True)
-    def _validate_quantity(cls, v):
+        mode='before')
+    @classmethod
+    def _quantity_field_must_be_valid(cls, v: str) -> Optional[Quantity]:
         if v is None:
             return None
         return Quantity(str(v))

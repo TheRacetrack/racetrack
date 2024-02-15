@@ -77,7 +77,7 @@ def _build_image_request_payload(
 ) -> Dict:
     return {
         "manifest": datamodel_to_dict(manifest),
-        "git_credentials": git_credentials.dict() if git_credentials is not None else None,
+        "git_credentials": git_credentials.model_dump() if git_credentials is not None else None,
         "secret_build_env": secret_build_env,
         "tag": tag,
         "build_context": build_context,

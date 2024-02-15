@@ -107,8 +107,8 @@ def get_deploy_request_payload(
 ) -> Dict:
     return {
         "manifest": manifest_dict,
-        "git_credentials": git_credentials.dict() if git_credentials is not None else None,
-        "secret_vars": secret_vars.dict(),
+        "git_credentials": git_credentials.model_dump() if git_credentials is not None else None,
+        "secret_vars": secret_vars.model_dump(),
         "build_context": build_context,
         "force": force,
     }

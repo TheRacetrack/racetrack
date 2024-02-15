@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, Optional, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from racetrack_client.manifest import Manifest
 
@@ -19,7 +19,9 @@ class JobFamilyDto(BaseModel):
     id: str | None = None
 
 
-class JobDto(BaseModel, arbitrary_types_allowed=True):
+class JobDto(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     name: str
     version: str
     status: str
@@ -55,7 +57,9 @@ class DeploymentStatus(Enum):
     FAILED = 'failed'  # deployment failed with an error
 
 
-class DeploymentDto(BaseModel, arbitrary_types_allowed=True):
+class DeploymentDto(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     id: str
     status: str
     create_time: int

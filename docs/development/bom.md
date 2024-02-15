@@ -54,7 +54,7 @@ The columns are:
 | [Python markdown](https://pypi.org/project/Markdown/)                                                      | 3.4.1       | 3.4.1          | rendering docs in Dashboard                     |
 | [python-multipart](https://pypi.org/project/python-multipart/)                                             | 0.0.6       | 0.0.6          | handling uploaded plugins                       |
 | [python-socketio](https://pypi.org/project/python-socketio/)                                               | 5.7.2       | 5.7.2          | Streaming logs of the job in follow mode        |
-| [Python](https://www.python.org/downloads/)                                                                | 3.10        | 3.11           | Racetrack client, Lifecycle, Image builder code |
+| [Python](https://www.python.org/downloads/)                                                                | 3.11        | 3.12           | Racetrack client, Lifecycle, Image builder code |
 | [PyYAML](https://pypi.org/project/PyYAML/)                                                                 | 6.0         | 6.0            | parsing YAML config files                       |
 | [Quasar Framework](https://github.com/quasarframework/quasar)                                              | 2.11.10     | 2.11.10        | UI components on Dashboard                      |
 | [schedule](https://pypi.org/project/schedule/)                                                             | 1.1.0       | 1.1.0          | running periodic tasks                          |

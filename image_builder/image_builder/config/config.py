@@ -1,10 +1,11 @@
 from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 
-class Config(BaseModel, extra=Extra.forbid):
+class Config(BaseModel):
     """Configuration for Image Builder instance"""
+    model_config = ConfigDict(extra='forbid')
 
     # Log level: debug, info, warn, error
     log_level: str = 'info'

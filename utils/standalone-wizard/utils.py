@@ -146,7 +146,7 @@ def load_local_config() -> SetupConfig:
     if local_file.is_file():
         logger.info(f'Using local setup config found at {local_file.absolute()}')
         config_dict = json.loads(local_file.read_text())
-        return SetupConfig.parse_obj(config_dict)
+        return SetupConfig.model_validate(config_dict)
     else:
         config = SetupConfig()
         save_local_config(config)
@@ -155,7 +155,7 @@ def load_local_config() -> SetupConfig:
 
 
 def save_local_config(config: SetupConfig):
-    config_json: str = json.dumps(config.dict(), indent=4)
+    config_json: str = json.dumps(config.model_dump(), indent=4)
     local_file = Path(LOCAL_CONFIG_FILE)
     local_file.write_text(config_json)
 

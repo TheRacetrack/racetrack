@@ -3,7 +3,7 @@ from typing import List, Optional
 import uuid
 
 import jwt
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from racetrack_client.utils.datamodel import datamodel_to_dict, parse_dict_datamodel
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
@@ -15,7 +15,9 @@ from racetrack_client.log.exception import log_exception
 logger = get_logger(__name__)
 
 
-class AuthTokenPayload(BaseModel, extra=Extra.forbid):
+class AuthTokenPayload(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     # unique token ID used to generate a token
     seed: str
     # whom the token refers to
