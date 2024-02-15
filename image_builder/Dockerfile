@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
