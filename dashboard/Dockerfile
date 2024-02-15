@@ -17,7 +17,7 @@ COPY dashboard/dashboard-front/src /build/src
 RUN npm install && npm run build
 
 
-FROM python:3.10-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 WORKDIR /src/dashboard
 
