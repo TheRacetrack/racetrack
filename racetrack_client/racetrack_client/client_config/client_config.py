@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Credentials(BaseModel):
@@ -8,8 +8,9 @@ class Credentials(BaseModel):
     password: str
 
 
-class ClientConfig(BaseModel, arbitrary_types_allowed=True):
+class ClientConfig(BaseModel):
     """Global options for a local client"""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     # default URL of Racetrack API server (Lifecycle URL)
     lifecycle_url: str = 'http://127.0.0.1:7002'

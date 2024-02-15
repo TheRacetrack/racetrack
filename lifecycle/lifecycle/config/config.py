@@ -1,11 +1,12 @@
 from typing import Optional
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from racetrack_client.utils.quantity import Quantity
 
 
-class Config(BaseModel, extra='forbid', arbitrary_types_allowed=True):
+class Config(BaseModel):
     """Configuration for Lifecycle server instance"""
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
 
     # Log level: debug, info, warn, error
     log_level: str = 'info'

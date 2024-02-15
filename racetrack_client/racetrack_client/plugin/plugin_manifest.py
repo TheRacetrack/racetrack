@@ -1,10 +1,11 @@
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class PluginManifest(BaseModel, extra='forbid', arbitrary_types_allowed=True):
+class PluginManifest(BaseModel):
     """Details of the contents of the plugin"""
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
 
     name: str
 

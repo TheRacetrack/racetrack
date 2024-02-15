@@ -1,11 +1,13 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from racetrack_client.utils.quantity import Quantity
 
 
-class GitManifest(BaseModel, extra='forbid'):
+class GitManifest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     # URL of git remote: HTTPS, SSH or directory path to a remote repository
     remote: str
     branch: Optional[str] = None
@@ -13,11 +15,15 @@ class GitManifest(BaseModel, extra='forbid'):
     directory: str = '.'
 
 
-class DockerManifest(BaseModel, extra='forbid'):
+class DockerManifest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     dockerfile_path: Optional[str] = None
 
 
-class ResourcesManifest(BaseModel, extra='forbid', arbitrary_types_allowed=True):
+class ResourcesManifest(BaseModel):
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
+
     # minimum memory amount in bytes, eg. 256Mi
     memory_min: Optional[Quantity] = None
     # maximum memory amount in bytes, eg. 1Gi
@@ -35,8 +41,9 @@ class ResourcesManifest(BaseModel, extra='forbid', arbitrary_types_allowed=True)
         return Quantity(str(v))
 
 
-class Manifest(BaseModel, extra='forbid', arbitrary_types_allowed=True, populate_by_name=True):
+class Manifest(BaseModel):
     """Job Manifest file - build recipe to get deployable image from source code workspace"""
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True, populate_by_name=True)
 
     # name of the Job Workload
     name: str

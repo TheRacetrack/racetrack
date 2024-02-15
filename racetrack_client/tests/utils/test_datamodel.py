@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 import pytest
 
 from racetrack_client.utils.datamodel import parse_dict_datamodel
@@ -13,7 +13,9 @@ class DeployerType(Enum):
     KUBERNETES = 'kubernetes'
 
 
-class Config(BaseModel, extra='forbid', arbitrary_types_allowed=True):
+class Config(BaseModel):
+    model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
+
     log_level: str = 'info'
     http_port: int = 7202
     deployer: DeployerType = DeployerType.DOCKER

@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from image_builder.config import Config
 from image_builder.build import build_job_image
@@ -66,7 +66,9 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         username: str = Field(examples=["admin"])
         password: str = Field(examples=["hunter2"])
 
-    class BuildPayloadModel(BaseModel, arbitrary_types_allowed=True):
+    class BuildPayloadModel(BaseModel):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+
         manifest: Dict[str, Any] = Field(
             description='Manifest - build recipe for a Job',
             examples=[{

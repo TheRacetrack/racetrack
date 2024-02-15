@@ -1,6 +1,8 @@
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Request
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from lifecycle.auth.check import check_auth
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.config import Config
@@ -9,7 +11,6 @@ from lifecycle.deployer.builder import build_job_in_background
 from lifecycle.deployer.deploy import deploy_job_in_background
 from lifecycle.job.deployment import check_deployment_result, save_deployment_phase, list_recent_deployments
 from lifecycle.server.metrics import metric_requested_job_deployments
-from pydantic import BaseModel, Field
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.client.env import load_secret_vars_from_dict
 from racetrack_client.client_config.io import load_credentials_from_dict
@@ -21,7 +22,9 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         username: str = Field(examples=["admin"])
         password: str = Field(examples=["hunter2"])
 
-    class DeployPayloadModel(BaseModel, arbitrary_types_allowed=True):
+    class DeployPayloadModel(BaseModel):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+
         manifest: Dict[str, Any] = Field(
             description='Manifest - build recipe for a Job',
             examples=[{
