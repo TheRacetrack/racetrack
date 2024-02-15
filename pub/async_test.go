@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jarcoal/httpmock"
@@ -19,81 +18,70 @@ import (
 
 func TestMultiReplicasAsyncStore(t *testing.T) {
 	replicaNum := 3
-
-	var wgRequestsStarted sync.WaitGroup
-	wgRequestsStarted.Add(replicaNum)
-
-	defaultLifecycleTransport = httpmock.DefaultTransport
-	defaultJobProxyTransport = httpmock.DefaultTransport
-	defaultAsyncJobTransport = httpmock.DefaultTransport
-
-	defer httpmock.DeactivateAndReset()
-	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/auth/can-call-job/adder/latest/api/v1/perform",
-		httpmock.NewStringResponder(200,
-			`{"job": {"id": "000", "name": "adder", "version": "0.0.1", "status": "running", "create_time": 1, "update_time": 1, "manifest": null, "internal_name": "adder-v-0-0-1"}, "caller": "bob"}`))
-	httpmock.RegisterResponder("POST", "http://adder-v-0-0-1/pub/job/adder/0.0.1/api/v1/perform",
-		func(req *http.Request) (*http.Response, error) {
-			status := 200
-			body := `{"result": 42}`
-
-			// wait until all replicas asked for a result
-			wgRequestsStarted.Wait()
-
-			resp := http.Response{
-				Status:        strconv.Itoa(status),
-				StatusCode:    status,
-				Body:          httpmock.NewRespBodyFromString(body),
-				Header:        http.Header{},
-				ContentLength: -1,
-			}
-
-			resp.Request = req
-			return &resp, nil
-		})
+	var wgResultRequested sync.WaitGroup
+	wgResultRequested.Add(replicaNum)
 
 	addrs := generateReplicaAddresses(replicaNum)
-	stores := make([]*AsyncTaskStore, replicaNum)
 	servers := make([]*http.Server, replicaNum)
-
-	cfg, err := LoadConfig()
+	cfg, _ := LoadConfig()
 	cfg.LifecycleUrl = "http://127.0.0.1:7202/lifecycle"
-	if err != nil {
-		panic(err)
-	}
+	activateMockHttpResponses(&wgResultRequested)
+	defer httpmock.DeactivateAndReset()
 
 	for i := 0; i < replicaNum; i++ {
 		replicaDiscovery := NewStaticReplicaDiscovery(addrs)
-		stores[i] = NewAsyncTaskStore(replicaDiscovery)
-		servers[i] = setupServer(addrs[i], cfg, stores[i])
+		store := NewAsyncTaskStore(replicaDiscovery)
+		servers[i] = setupReplicaServer(addrs[i], cfg, store)
 	}
 
 	response := postJsonRequest(
 		fmt.Sprintf("http://%v/pub/async/new/job/adder/latest/api/v1/perform", addrs[0]),
 		`{"numbers": [40, 2]}`,
 	)
-	assert.Equal(t, response.StatusCode, http.StatusCreated) // 201
-
+	assert.Equal(t, response.StatusCode, http.StatusCreated, "async job call task should be created") // 201
 	responsePayload := readJsonResponse(response)
-	assert.Equal(t, responsePayload["status"], "ongoing")
-	assert.NotEqual(t, responsePayload["task_id"], "")
+	assert.Equal(t, responsePayload["status"], "ongoing", "new task should have ongoing status")
 	taskId := responsePayload["task_id"].(string)
 
-	var wgActiveRequests sync.WaitGroup
+	var wgPollingRequests sync.WaitGroup
 	for i := 0; i < replicaNum; i++ {
-		wgActiveRequests.Add(1)
+		wgPollingRequests.Add(1)
 		go func(i int) {
-			wgRequestsStarted.Done()
-			defer wgActiveRequests.Done()
+			wgResultRequested.Done()
+			defer wgPollingRequests.Done()
 			statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[i], taskId))
-			assert.Equal(t, statusCode, http.StatusOK)
-			assert.EqualValues(t, responsePayload["result"], 42)
+			assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
+			assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
 		}(i)
 	}
-	wgActiveRequests.Wait()
+	wgPollingRequests.Wait()
 
 	for i := 0; i < replicaNum; i++ {
 		servers[i].Close()
 	}
+}
+
+func activateMockHttpResponses(wgResultRequested *sync.WaitGroup) {
+	defaultLifecycleTransport = httpmock.DefaultTransport
+	defaultAsyncJobTransport = httpmock.DefaultTransport
+	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/auth/can-call-job/adder/latest/api/v1/perform",
+		httpmock.NewStringResponder(200,
+			`{"job": {"id": "0", "name": "adder", "version": "0.0.1", "status": "running", "create_time": 1, "update_time": 1, "manifest": null, "internal_name": "adder-v-0-0-1"}, "caller": "bob"}`))
+	httpmock.RegisterResponder("POST", "http://adder-v-0-0-1/pub/job/adder/0.0.1/api/v1/perform",
+		func(req *http.Request) (*http.Response, error) {
+			wgResultRequested.Wait() // finish job task only after all replicas subscribed for a result
+			status := 200
+			body := `{"result": 42}`
+			resp := http.Response{
+				Status:        strconv.Itoa(status),
+				StatusCode:    status,
+				Body:          httpmock.NewRespBodyFromString(body),
+				Header:        http.Header{},
+				ContentLength: -1,
+				Request:       req,
+			}
+			return &resp, nil
+		})
 }
 
 func generateReplicaAddresses(num int) []string {
@@ -123,10 +111,9 @@ func getFreePorts(num int) []int {
 	return ports
 }
 
-func setupServer(addr string, cfg *Config, store *AsyncTaskStore) *http.Server {
+func setupReplicaServer(addr string, cfg *Config, store *AsyncTaskStore) *http.Server {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
 	router := gin.New()
-
 	SetupEndpoints(router, cfg, "/pub", store)
 
 	server := &http.Server{
@@ -156,7 +143,6 @@ func postJsonRequest(url string, content string) *http.Response {
 		panic(err)
 	}
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
-
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
@@ -188,22 +174,4 @@ func getJsonRequest(url string) (int, map[string]interface{}) {
 		panic(err)
 	}
 	return response.StatusCode, readJsonResponse(response)
-}
-
-func getHttpClient() *http.Client {
-	dialer := &net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
-	}
-	return &http.Client{
-		Transport: &http.Transport{
-			Proxy:                 http.ProxyFromEnvironment,
-			DialContext:           dialer.DialContext,
-			ForceAttemptHTTP2:     true,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-	}
 }
