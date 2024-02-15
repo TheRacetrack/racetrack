@@ -22,12 +22,12 @@ def set_current_remote(remote: str):
 
 def set_config_setting(setting_name: str, setting_value: str):
     client_config = load_client_config()
-    config_dict = client_config.dict()
+    config_dict = client_config.model_dump()
 
     assert setting_name in config_dict, f'client config doesn\'t have setting named {setting_name}'
     config_dict[setting_name] = setting_value
     with wrap_context('converting setting to target data type'):
-        client_config = ClientConfig.parse_obj(config_dict)
+        client_config = ClientConfig.model_validate(config_dict)
 
     save_client_config(client_config)
 

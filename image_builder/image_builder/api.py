@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from image_builder.config import Config
 from image_builder.build import build_job_image
@@ -63,13 +63,15 @@ def _setup_health_endpoint(api: FastAPI):
 def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEngine):
 
     class CredentialsModel(BaseModel):
-        username: str = Field(example="admin")
-        password: str = Field(example="hunter2")
+        username: str = Field(examples=["admin"])
+        password: str = Field(examples=["hunter2"])
 
-    class BuildPayloadModel(BaseModel, arbitrary_types_allowed=True):
+    class BuildPayloadModel(BaseModel):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+
         manifest: Dict[str, Any] = Field(
             description='Manifest - build recipe for a Job',
-            example={
+            examples=[{
                 'name': 'adder',
                 'jobtype': 'python3',
                 'owner_email': 'nobody@example.com',
@@ -81,7 +83,7 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
                     'requirements_path': 'requirements.txt',
                     'entrypoint_path': 'adder.py',
                 },
-            },
+            }],
         )
         git_credentials: Optional[CredentialsModel] = Field(
             default=None,
@@ -90,34 +92,34 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         secret_build_env: Optional[Dict[str, Any]] = Field(
             default=None,
             description='secret environment vars applied on build',
-            example={
+            examples=[{
                 'GIT_PASSWD': '5ecr3t',
-            },
+            }],
         )
-        tag: str = Field(description='image tag', example='2021-08-12T094058')
+        tag: str = Field(description='image tag', examples=['2021-08-12T094058'])
         build_context: Optional[str] = Field(
             default=None,
             description='encoded build context',
-            example='',
+            examples=[''],
         )
         deployment_id: str = Field(
             description='unique ID of a deployment',
-            example='681d0416-c95d-4cb8-bbd0-bb81d3a46044',
+            examples=['681d0416-c95d-4cb8-bbd0-bb81d3a46044'],
         )
 
     class BuildingResultModel(BaseModel):
         image_names: List[str] = Field(
             description='List of full names of built images',
-            example=['ghcr.io/racetrack/job-entrypoint/adder:latest'],
+            examples=[['ghcr.io/racetrack/job-entrypoint/adder:latest']],
         )
         logs: str = Field(
             description='build logs output',
-            example='#1 DONE 1.0s',
+            examples=['#1 DONE 1.0s'],
         )
         error: Optional[str] = Field(
             default=None,
             description='error message',
-            example='docker command not found',
+            examples=['docker command not found'],
         )
 
     @api.post('/build', response_model=BuildingResultModel)

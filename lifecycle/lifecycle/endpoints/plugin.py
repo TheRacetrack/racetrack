@@ -15,7 +15,6 @@ from lifecycle.job import models_registry
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.job.audit import AuditLogger
 from lifecycle.server.cache import LifecycleCache
-from lifecycle.config import Config
 from lifecycle.infrastructure.infra_target import list_infrastructure_names_with_origins, \
     list_infrastructure_names_of_plugins
 from lifecycle.auth.check import check_staff_user

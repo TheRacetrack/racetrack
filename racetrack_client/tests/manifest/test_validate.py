@@ -66,7 +66,7 @@ owner_email: nobody@example.com
 lang: golang:latest
 git: its-a-string-you-moron
 """)
-    assert "value is not a valid dict" in str(excinfo.value)
+    assert "input should be a valid dictionary" in str(excinfo.value).lower()
 
 
 def test_missing_required_field():
@@ -77,7 +77,7 @@ git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 """)
-    assert "name\n  field required" in str(excinfo.value)
+    assert "name\n  field required" in str(excinfo.value).lower()
 
 
 def test_superfluous_fields():
@@ -92,7 +92,7 @@ git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/golang-function
 """)
-    assert 'surname\n  extra fields not permitted' in str(excinfo.value)
+    assert 'surname\n  extra inputs are not permitted' in str(excinfo.value).lower()
 
 
 def test_invalid_owner_email():

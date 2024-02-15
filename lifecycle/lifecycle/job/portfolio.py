@@ -8,7 +8,7 @@ def enrich_jobs_purge_info(jobs: list[JobDto]) -> list[dict]:
     job_dicts = []
     for job in jobs:
         score, reasons = assess_job_usability(job, jobs)
-        job_dict = job.dict()
+        job_dict = job.model_dump()
         job_dict['purge_score'] = -score
         job_dict['purge_reasons'] = '\n'.join(reasons)
         job_dict['purge_newer_versions'] = _count_job_newer_versions(job, jobs)

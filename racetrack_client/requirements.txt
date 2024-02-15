@@ -1,5 +1,5 @@
 PyYAML >= 6.0
-pydantic >= 1.10, < 2
+pydantic >= 2.0
 backoff >= 2.2
 python-socketio[client] >= 5.8
 typer[all] >= 0.7.0

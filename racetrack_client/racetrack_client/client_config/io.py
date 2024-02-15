@@ -22,7 +22,7 @@ def load_client_config() -> ClientConfig:
     try:
         with path.open() as file:
             config_dict = yaml.load(file, Loader=yaml.FullLoader)
-            config = ClientConfig.parse_obj(config_dict)
+            config = ClientConfig.model_validate(config_dict)
 
             logger.debug(f'client config loaded from {path}')
             return config
@@ -35,11 +35,11 @@ def load_credentials_from_dict(credentials_dict: Optional[Dict]) -> Optional[Cre
         return None
 
     with wrap_context('parsing credentials'):
-        return Credentials.parse_obj(credentials_dict)
+        return Credentials.model_validate(credentials_dict)
 
 
 def save_client_config(config: ClientConfig):
-    data_dict = config.dict()
+    data_dict = config.model_dump()
 
     dir_path = Path.home() / '.racetrack'
     dir_path.mkdir(parents=True, exist_ok=True)

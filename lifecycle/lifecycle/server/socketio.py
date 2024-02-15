@@ -4,7 +4,7 @@ from abc import ABC
 
 import socketio
 from werkzeug.serving import make_server
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from lifecycle.config import Config
 from lifecycle.infrastructure.infra_target import get_infrastructure_target
@@ -17,7 +17,9 @@ from racetrack_commons.entities.dto import JobDto
 logger = get_logger(__name__)
 
 
-class LogSessionDetails(BaseModel, arbitrary_types_allowed=True):
+class LogSessionDetails(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     client_id: str
     job_name: str
     job_version: str

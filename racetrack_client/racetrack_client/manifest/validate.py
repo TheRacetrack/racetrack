@@ -37,7 +37,7 @@ def load_validated_manifest(
 
 def validate_manifest(manifest: Manifest):
     """Check whether manifest is valid. Raise exception in case of error"""
-    serialized_manifest = manifest.dict(exclude_none=True)
+    serialized_manifest = manifest.model_dump(exclude_none=True)
     path = Path(__file__).with_name('schema.json')
     with path.open('r') as f:
         schema = json.load(f)
