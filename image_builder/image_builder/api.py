@@ -126,7 +126,7 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
     def _build(payload: BuildPayloadModel):
         """Build Job image from a manifest"""
         manifest = load_manifest_from_dict(payload.manifest)
-        git_credentials = load_credentials_from_dict(payload.git_credentials)
+        git_credentials = load_credentials_from_dict(payload.git_credentials.model_dump() if payload.git_credentials else None)
         tag = payload.tag
         secret_build_env = payload.secret_build_env or {}
         build_context = payload.build_context

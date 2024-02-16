@@ -76,7 +76,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         metric_requested_job_deployments.inc()
 
         manifest = load_manifest_from_dict(payload.manifest)
-        git_credentials = load_credentials_from_dict(payload.git_credentials)
+        git_credentials = load_credentials_from_dict(payload.git_credentials.model_dump() if payload.git_credentials else None)
         secret_vars = load_secret_vars_from_dict(payload.secret_vars)
         build_context = payload.build_context
         force = payload.force if payload.force is not None else False
@@ -98,7 +98,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         """Build Job image"""
         check_auth(request)
         manifest = load_manifest_from_dict(payload.manifest)
-        git_credentials = load_credentials_from_dict(payload.git_credentials)
+        git_credentials = load_credentials_from_dict(payload.git_credentials.model_dump() if payload.git_credentials else None)
         secret_vars = load_secret_vars_from_dict(payload.secret_vars)
         build_context = payload.build_context
         username = get_username_from_token(request)

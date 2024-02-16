@@ -16,8 +16,6 @@ def log_exception(e: BaseException):
     try:
         error_message, cause, tb = exception_details(e)
         logger.error(error_message, extra={'cause': cause, 'traceback': tb})
-        if PRINT_FULL_TRACEBACK:
-            traceback.print_exception(e)
     except BaseException as e:
         logger.exception(str(e))
 
@@ -33,6 +31,8 @@ def exception_details(e: BaseException) -> Tuple[str, str, str]:
     traceback_str = ', '.join(traceback_lines)
     cause = _root_cause_type(e)
     error_msg = str(e).strip()
+    if PRINT_FULL_TRACEBACK:
+        traceback_str += '\n' + '\n'.join(traceback.format_exception(e))
     return error_msg, cause, traceback_str
 
 
