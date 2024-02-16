@@ -98,7 +98,10 @@ class ColoredFormatter(logging.Formatter):
 
         line = self.plain_formatter.format(record)
         if extra:
-            return line + ', ' + _format_extra_vars(extra)
+            line += ', ' + _format_extra_vars(extra)
+
+        if not sys.stdout.isatty():
+            line = strip_ansi_colors(line)
 
         return line
 
