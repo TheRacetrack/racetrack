@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, field_serializer
 
 from racetrack_client.utils.quantity import Quantity
 
@@ -39,6 +39,12 @@ class ResourcesManifest(BaseModel):
         if v is None:
             return None
         return Quantity(str(v))
+
+    @field_serializer('memory_min', 'memory_max', 'cpu_min', 'cpu_max')
+    def serialize_quantity(self, q: Optional[Quantity]):
+        if q is None:
+            return None
+        return str(q)
 
 
 class Manifest(BaseModel):
