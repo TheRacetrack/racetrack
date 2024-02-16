@@ -1,5 +1,6 @@
 import contextlib
 import signal
+import sys
 import threading
 import time
 from typing import Union, Callable, Optional
@@ -11,7 +12,7 @@ from uvicorn.logging import DefaultFormatter, AccessFormatter
 from starlette.types import ASGIApp
 
 from racetrack_client.log.exception import log_exception
-from racetrack_client.log.logs import get_logger
+from racetrack_client.log.logs import get_logger, ColoredFormatter
 from racetrack_client.utils.env import is_env_flag_enabled
 from racetrack_commons.api.debug import is_deployment_local
 
@@ -29,7 +30,7 @@ HIDDEN_ACCESS_LOGS = {
     'GET /metrics/ 200',
 }
 
-UVICORN_ERROR_LOGS = True
+UVICORN_DEBUG_LOGS = False
 
 
 def serve_asgi_app(
@@ -88,16 +89,24 @@ def serve_asgi_in_background(
 
 
 def _setup_uvicorn_logs(access_log: bool):
-    LOGGING_CONFIG["formatters"]["default"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s"
+    if sys.stdout.isatty():
+        LOGGING_CONFIG["formatters"]["default"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(name)s: %(message)s"
+    else:
+        LOGGING_CONFIG["formatters"]["default"]["fmt"] = "[%(asctime)s] %(levelname)s %(message)s"
     LOGGING_CONFIG["formatters"]["default"]["datefmt"] = "%Y-%m-%d %H:%M:%S"
     LOGGING_CONFIG["formatters"]["default"]["()"] = "racetrack_commons.api.asgi.asgi_server.ColoredDefaultFormatter"
 
-    LOGGING_CONFIG["formatters"]["access"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(request_line)s %(status_code)s"
+    if sys.stdout.isatty():
+        LOGGING_CONFIG["formatters"]["access"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(name)s: %(request_line)s %(status_code)s"
+    else:
+        LOGGING_CONFIG["formatters"]["access"]["fmt"] = "[%(asctime)s] %(levelname)s %(request_line)s %(status_code)s"
     LOGGING_CONFIG["formatters"]["access"]["datefmt"] = "%Y-%m-%d %H:%M:%S"
     LOGGING_CONFIG["formatters"]["access"]["()"] = "racetrack_commons.api.asgi.asgi_server.ColoredAccessFormatter"
 
     LOGGING_CONFIG["handlers"]["default"]["stream"] = 'ext://sys.stdout'
+    LOGGING_CONFIG["handlers"]["default"]["level"] = 'INFO'
     LOGGING_CONFIG["handlers"]["access"]["stream"] = 'ext://sys.stdout'
+    LOGGING_CONFIG["handlers"]["access"]["level"] = 'INFO'
     LOGGING_CONFIG["handlers"]["access"]["filters"] = ['needless_requests']
 
     LOGGING_CONFIG["filters"] = {
@@ -107,9 +116,16 @@ def _setup_uvicorn_logs(access_log: bool):
     }
 
     LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
-    if not UVICORN_ERROR_LOGS:
-        LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'INFO'
-        LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
+    LOGGING_CONFIG["loggers"]["uvicorn"]["level"] = 'INFO'
+    LOGGING_CONFIG["loggers"]["uvicorn"]["handlers"] = ['default']
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'ERROR'
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["handlers"] = ['default']
+    if UVICORN_DEBUG_LOGS:
+        LOGGING_CONFIG["loggers"]["uvicorn"]["level"] = 'DEBUG'
+        LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'DEBUG'
+        LOGGING_CONFIG["handlers"]["default"]["level"] = 'DEBUG'
+        LOGGING_CONFIG["handlers"]["access"]["level"] = 'DEBUG'
 
     if not access_log:
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = 'CRITICAL'
@@ -120,35 +136,22 @@ def _setup_uvicorn_logs(access_log: bool):
         LOGGING_CONFIG["formatters"]["access"]["()"] = "racetrack_client.log.logs.StructuredFormatter"
 
 
-_log_level_templates = {
-    'CRITICAL': '\033[1;31mCRIT \033[0m',
-    'ERROR': '\033[1;31mERROR\033[0m',
-    'WARNING': '\033[0;33mWARN \033[0m',
-    'INFO': '\033[0;34mINFO \033[0m',
-    'DEBUG': '\033[0;32mDEBUG\033[0m',
-}
-
-
 class ColoredDefaultFormatter(logging.Formatter):
     def __init__(self, **kwargs):
         logging.Formatter.__init__(self)
-        self.plain_formatter = DefaultFormatter(**kwargs)
+        self.colored_formatter = ColoredFormatter(DefaultFormatter(**kwargs))
 
-    def format(self, record: logging.LogRecord) -> str:
-        if record.levelname in _log_level_templates:
-            record.levelname = _log_level_templates[record.levelname].format(record.levelname)
-        return self.plain_formatter.format(record)
+    def format(self, record: logging.LogRecord):
+        return self.colored_formatter.format(record)
 
 
 class ColoredAccessFormatter(logging.Formatter):
     def __init__(self, **kwargs):
         logging.Formatter.__init__(self)
-        self.plain_formatter = AccessFormatter(**kwargs)
+        self.colored_formatter = ColoredFormatter(AccessFormatter(**kwargs))
 
-    def format(self, record: logging.LogRecord) -> str:
-        if record.levelname in _log_level_templates:
-            record.levelname = _log_level_templates[record.levelname].format(record.levelname)
-        return self.plain_formatter.format(record)
+    def format(self, record: logging.LogRecord):
+        return self.colored_formatter.format(record)
 
 
 class NeedlessRequestsFilter(logging.Filter):
