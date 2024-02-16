@@ -30,7 +30,7 @@ HIDDEN_ACCESS_LOGS = {
     'GET /metrics/ 200',
 }
 
-UVICORN_ERROR_LOGS = True
+UVICORN_DEBUG_LOGS = False
 
 
 def serve_asgi_app(
@@ -90,21 +90,23 @@ def serve_asgi_in_background(
 
 def _setup_uvicorn_logs(access_log: bool):
     if sys.stdout.isatty():
-        LOGGING_CONFIG["formatters"]["default"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s"
+        LOGGING_CONFIG["formatters"]["default"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(name)s: %(message)s"
     else:
         LOGGING_CONFIG["formatters"]["default"]["fmt"] = "[%(asctime)s] %(levelname)s %(message)s"
     LOGGING_CONFIG["formatters"]["default"]["datefmt"] = "%Y-%m-%d %H:%M:%S"
     LOGGING_CONFIG["formatters"]["default"]["()"] = "racetrack_commons.api.asgi.asgi_server.ColoredDefaultFormatter"
 
     if sys.stdout.isatty():
-        LOGGING_CONFIG["formatters"]["access"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(request_line)s %(status_code)s"
+        LOGGING_CONFIG["formatters"]["access"]["fmt"] = "\033[2m[%(asctime)s]\033[0m %(levelname)s %(name)s: %(request_line)s %(status_code)s"
     else:
         LOGGING_CONFIG["formatters"]["access"]["fmt"] = "[%(asctime)s] %(levelname)s %(request_line)s %(status_code)s"
     LOGGING_CONFIG["formatters"]["access"]["datefmt"] = "%Y-%m-%d %H:%M:%S"
     LOGGING_CONFIG["formatters"]["access"]["()"] = "racetrack_commons.api.asgi.asgi_server.ColoredAccessFormatter"
 
     LOGGING_CONFIG["handlers"]["default"]["stream"] = 'ext://sys.stdout'
+    LOGGING_CONFIG["handlers"]["default"]["level"] = 'INFO'
     LOGGING_CONFIG["handlers"]["access"]["stream"] = 'ext://sys.stdout'
+    LOGGING_CONFIG["handlers"]["access"]["level"] = 'INFO'
     LOGGING_CONFIG["handlers"]["access"]["filters"] = ['needless_requests']
 
     LOGGING_CONFIG["filters"] = {
@@ -114,9 +116,16 @@ def _setup_uvicorn_logs(access_log: bool):
     }
 
     LOGGING_CONFIG["loggers"]["uvicorn"]["propagate"] = False
-    if not UVICORN_ERROR_LOGS:
-        LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'INFO'
-        LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
+    LOGGING_CONFIG["loggers"]["uvicorn"]["level"] = 'INFO'
+    LOGGING_CONFIG["loggers"]["uvicorn"]["handlers"] = ['default']
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["propagate"] = False
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'ERROR'
+    LOGGING_CONFIG["loggers"]["uvicorn.error"]["handlers"] = ['default']
+    if UVICORN_DEBUG_LOGS:
+        LOGGING_CONFIG["loggers"]["uvicorn"]["level"] = 'DEBUG'
+        LOGGING_CONFIG["loggers"]["uvicorn.error"]["level"] = 'DEBUG'
+        LOGGING_CONFIG["handlers"]["default"]["level"] = 'DEBUG'
+        LOGGING_CONFIG["handlers"]["access"]["level"] = 'DEBUG'
 
     if not access_log:
         LOGGING_CONFIG["loggers"]["uvicorn.access"]["level"] = 'CRITICAL'
