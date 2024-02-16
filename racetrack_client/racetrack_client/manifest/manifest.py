@@ -1,8 +1,8 @@
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, field_serializer
+from pydantic import BaseModel, ConfigDict, Field
 
-from racetrack_client.utils.quantity import Quantity
+from racetrack_client.utils.quantity import AnnotatedQuantity
 
 
 class GitManifest(BaseModel):
@@ -25,26 +25,13 @@ class ResourcesManifest(BaseModel):
     model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
 
     # minimum memory amount in bytes, eg. 256Mi
-    memory_min: Optional[Quantity] = None
+    memory_min: Optional[AnnotatedQuantity] = None
     # maximum memory amount in bytes, eg. 1Gi
-    memory_max: Optional[Quantity] = None
+    memory_max: Optional[AnnotatedQuantity] = None
     # minimum CPU consumption in cores, eg. 10m
-    cpu_min: Optional[Quantity] = None
+    cpu_min: Optional[AnnotatedQuantity] = None
     # maximum CPU consumption in cores, eg. 1000m
-    cpu_max: Optional[Quantity] = None
-
-    @field_validator('memory_min', 'memory_max', 'cpu_min', 'cpu_max', mode='before')
-    @classmethod
-    def _quantity_field_must_be_valid(cls, v: str) -> Optional[Quantity]:
-        if v is None:
-            return None
-        return Quantity(str(v))
-
-    @field_serializer('memory_min', 'memory_max', 'cpu_min', 'cpu_max')
-    def serialize_quantity(self, q: Optional[Quantity]):
-        if q is None:
-            return None
-        return str(q)
+    cpu_max: Optional[AnnotatedQuantity] = None
 
 
 class Manifest(BaseModel):

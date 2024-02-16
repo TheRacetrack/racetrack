@@ -40,3 +40,7 @@ def test_serialize_manifest_to_json():
     }
     encoded_json: str = manifest.model_dump_json()
     assert json.loads(encoded_json) == manifest.model_dump()
+
+
+def test_generate_json_schema_manifest():
+    assert Manifest.model_json_schema()
