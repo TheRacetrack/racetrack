@@ -1412,14 +1412,14 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "process_virtual_memory_bytes{job_name=~\"$job_name\",job_version=~\"$job_version\"}",
+          "expr": "process_resident_memory_bytes{job_name=~\"$job_name\",job_version=~\"$job_version\"}",
           "interval": "",
           "legendFormat": "{{job_name}} {{job_version}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Virtual memory (approximate)",
+      "title": "Resident memory (approximate)",
       "type": "timeseries"
     },
     {
