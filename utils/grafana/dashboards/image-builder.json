@@ -391,14 +391,14 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "process_virtual_memory_bytes{job=\"image-builder\"}",
+          "expr": "process_resident_memory_bytes{job=\"image-builder\"}",
           "interval": "",
           "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Virtual memory",
+      "title": "Resident memory",
       "type": "timeseries"
     },
     {

@@ -1110,7 +1110,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "process_virtual_memory_bytes{job=~\"lifecycle.*\"}",
+          "expr": "process_resident_memory_bytes{job=~\"lifecycle.*\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "{{instance}}",
@@ -1118,7 +1118,7 @@
           "refId": "B"
         }
       ],
-      "title": "Virtual memory (approximate)",
+      "title": "Resident memory (approximate)",
       "type": "timeseries"
     },
     {
