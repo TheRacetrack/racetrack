@@ -56,6 +56,9 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 	}
 	wgPollingRequests.Wait()
 
+	statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[0], "no-such-task"))
+	assert.Equal(t, statusCode, http.StatusNotFound, "should return status 404 for not existing task")
+
 	for i := 0; i < replicaNum; i++ {
 		servers[i].Close()
 	}
