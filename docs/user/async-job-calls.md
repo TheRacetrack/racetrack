@@ -69,7 +69,7 @@ curl --request POST \
   --data '{ "numbers": [40, 2] }'
 ```
 ```
-HTTP/1.1 200 OK
+HTTP/1.1 201 Created
 Content-Type: application/json
 
 {
@@ -95,7 +95,9 @@ Path parameters:
 - `202 Accepted`, `408 Request Timeout` or `504 Gateway Timeout` -
   the task is still in progress, the client should repeat the request
 - `404 Not Found` -
-  the task ID is invalid or the task is not found, the client should start a new task
+  This error indicates that the task ID provided is invalid or the task is not found.
+  It's also possible that the server may have been restarted while the task was in progress.
+  The client should initiate a new task.
 - `500 Internal Server Error` -
   the task has failed. Details of an error will be included in the HTTP body.
 
@@ -152,11 +154,23 @@ result = response.json()
 ```
 
 ## Details
-- To provide the result of the task to the client, Racetrack has to keep the result in memory for a certain period of time.
+- To provide the result of the task to the client,
+  Racetrack has to keep the result in memory for a certain period of time.
 - The result are removed from the memory right after the client retrieves the result.
   So that **it can't be retrieved again**.
+  To accommodate any potential timeouts during the retrieval process,
+  we allow a grace period of 10 seconds post-retrieval before the result is eventually removed.
 - Results aren't stored in the database, but in the ephemeral memory only.
-- The task's result will be removed from the memory after a certain period of time, even if the client didn't retrieve it. This timeout is set to **120 minutes**.
-- Racetrack doesn't keep the ongoing tasks that stuck forever on the job's end. There is a hard timeout for the task, set to **120 minutes**.
-- Multiple replicas of the Pub component (Racetrack's gateway) communicate with each other to share the tasks and the results, so the result can be retrieved from any of them.
-- The timeout for long polling is configured to **30 seconds**. This implies that the server will terminate the request after 30 seconds of no activity. Consequently, the client will renew the request every 30 seconds in a loop, until the task is completed.
+- The task's result will be removed from the memory after a certain period of time,
+  even if the client didn't retrieve it. This timeout is set to **120 minutes**.
+- Racetrack doesn't keep the ongoing tasks that stuck forever on the job's end.
+  There is a hard timeout for the task, set to **120 minutes**.
+- If the Racetrack servers are restarted (for instance, during an upgrade),
+  it will clear the information about ongoing tasks.
+  This will result in a 404 error for the task that was in progress.
+  In such scenarios, the client can resubmit the task.
+- Multiple replicas of the Pub component (Racetrack's gateway)
+  communicate with each other to share the tasks and the results, so the result can be retrieved from any of them.
+- The timeout for long polling is configured to **30 seconds**.
+  This implies that the server will terminate the request after 30 seconds of no activity.
+  Consequently, the client will renew the request every 30 seconds in a loop, until the task is completed.
