@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 from typing import List, Optional, Dict
 
 import typer
@@ -63,9 +64,23 @@ def _deploy(
     extra_vars: Optional[List[str]] = typer.Option(None, '-e', '--extra-vars', help='key=value pairs overriding manifest values'),
 ):
     """Send request deploying a Job to the Racetrack cluster"""
+    # Catch if something was piped to `deploy`. Works best when the build_context is git
+    # Since most of send_deploy_request assumes a directory and a manifest file, we create one from the piped data
+    piped_data = ""
+    file_path = ""
+    if not sys.stdin.isatty() and (piped_data := sys.stdin.read()):
+        current_workdir = os.getcwd()
+        with tempfile.NamedTemporaryFile(mode='w+', dir=current_workdir, delete=False) as tmp_file:
+            tmp_file.write(piped_data)
+            file_path = tmp_file.name
+        workdir = file_path
+
     send_deploy_request(workdir, lifecycle_url=remote or _remote, force=force, build_context_method=build_context,
                         extra_vars=_parse_key_value_pairs(extra_vars))
 
+    if piped_data and file_path:
+        # Does not remove file if deploy fails.
+        os.remove(file_path)
 
 @cli.command('validate')
 def _validate(
