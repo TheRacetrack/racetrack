@@ -59,6 +59,7 @@ nav:
     - Job Manifest File Schema: docs/manifest-schema.md
     - Permission model: docs/permissions.md
     - CLI client: racetrack_client/README.md
+    - Asynchronous calls to jobs: docs/user/async-job-calls.md
     - Glossary: docs/glossary.md
     - Changelog: docs/CHANGELOG.md
   - For Administrators:
