@@ -28,7 +28,8 @@ def exception_details(e: BaseException) -> Tuple[str, str, str]:
     """
     traceback_ex = traceback.TracebackException(type(e), e, e.__traceback__, limit=None)
     traceback_lines = list(_get_traceback_lines(traceback_ex))
-    traceback_str = ', '.join(traceback_lines)
+    traceback_lines = ['\n' + tbl for tbl in traceback_lines]
+    traceback_str = ','.join(traceback_lines)
     cause = _root_cause_type(e)
     error_msg = str(e).strip()
     if PRINT_FULL_TRACEBACK:
