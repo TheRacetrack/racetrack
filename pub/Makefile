@@ -26,3 +26,6 @@ send-payload-post-auth:
 
 test:
 	go test .
+
+test-verbose:
+	go test -v .

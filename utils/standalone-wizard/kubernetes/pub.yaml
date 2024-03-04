@@ -52,6 +52,8 @@ spec:
               value: 'true'
             - name: LIFECYCLE_AUTH_TOKEN
               value: '${PUB_TOKEN}'
+            - name: REPLICA_DISCOVERY_HOSTNAME
+              value: 'pub.pub.racetrack.svc'
           livenessProbe:
             httpGet:
               path: /live

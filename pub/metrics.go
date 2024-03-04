@@ -66,4 +66,17 @@ var (
 		Name: "pub_auth_failed",
 		Help: "Total number of failed authentication attempts",
 	})
+
+	metricAsyncJobCallsStarted = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "pub_async_job_calls_started",
+		Help: "Total number of started async Job calls (may be unfinished yet or successful)",
+	}, []string{"job_name", "job_version"})
+	metricAsyncJobCallsDone = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "pub_async_job_calls_done",
+		Help: "Total number of finished async Job calls (done and successful)",
+	}, []string{"job_name", "job_version"})
+	metricAsyncJobCallsErros = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_async_job_calls_errors",
+		Help: "Total number of failed async Job calls",
+	})
 )

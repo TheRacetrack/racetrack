@@ -16,43 +16,14 @@ func ListenAndServe(cfg *Config) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
+	replicaDiscovery := NewReplicaDiscovery(cfg)
+	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery)
+
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")
 	// and at prefixed path (when accessed through ingress proxy)
-	baseUrls := []string{
-		"",
-		fmt.Sprintf("/%s", cfg.ServiceName),
-	}
+	baseUrls := []string{"", fmt.Sprintf("/%s", cfg.ServiceName)}
 	for _, baseUrl := range baseUrls {
-		// Backwards compatability endpoints
-		router.Any(baseUrl+"/fatman/:job/:version/*path", func(c *gin.Context) {
-			proxyEndpoint(c, cfg, "/"+c.Param("path"))
-		})
-		router.Any(baseUrl+"/fatman/:job/:version", func(c *gin.Context) {
-			proxyEndpoint(c, cfg, "")
-		})
-
-		router.Any(baseUrl+"/job/:job/:version/*path", func(c *gin.Context) {
-			proxyEndpoint(c, cfg, "/"+c.Param("path"))
-		})
-		router.Any(baseUrl+"/job/:job/:version", func(c *gin.Context) {
-			proxyEndpoint(c, cfg, "")
-		})
-
-		router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
-			remoteForwardEndpoint(c, cfg, "/"+c.Param("path"))
-		})
-		router.Any(baseUrl+"/remote/forward/:job/:version", func(c *gin.Context) {
-			remoteForwardEndpoint(c, cfg, "")
-		})
-		router.POST(baseUrl+"/remote/command", func(c *gin.Context) {
-			remoteCommandEndpoint(c, cfg)
-		})
-
-		router.GET(baseUrl+"/live", liveEndpoint)
-		router.GET(baseUrl+"/ready", readyEndpoint)
-		router.GET(baseUrl+"/health", handlerWithConfig(healthEndpoint, cfg))
-
-		router.GET(baseUrl+"/metrics", wrapHandler(promhttp.Handler()))
+		SetupEndpoints(router, cfg, baseUrl, asyncTaskStore)
 	}
 
 	if cfg.RemoteGatewayMode {
@@ -78,6 +49,60 @@ func ListenAndServe(cfg *Config) error {
 		return errors.Wrap(err, "Failed to serve")
 	}
 	return nil
+}
+
+func SetupEndpoints(
+	router *gin.Engine,
+	cfg *Config,
+	baseUrl string,
+	asyncTaskStore *AsyncTaskStore,
+) {
+	// Backwards compatability endpoints
+	router.Any(baseUrl+"/fatman/:job/:version/*path", func(c *gin.Context) {
+		proxyEndpoint(c, cfg, "/"+c.Param("path"))
+	})
+	router.Any(baseUrl+"/fatman/:job/:version", func(c *gin.Context) {
+		proxyEndpoint(c, cfg, "")
+	})
+
+	router.Any(baseUrl+"/job/:job/:version/*path", func(c *gin.Context) {
+		proxyEndpoint(c, cfg, "/"+c.Param("path"))
+	})
+	router.Any(baseUrl+"/job/:job/:version", func(c *gin.Context) {
+		proxyEndpoint(c, cfg, "")
+	})
+
+	router.Any(baseUrl+"/async/new/job/:job/:version/*path", func(c *gin.Context) {
+		AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
+	})
+	router.Any(baseUrl+"/async/new/job/:job/:version", func(c *gin.Context) {
+		AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "")
+	})
+	router.GET(baseUrl+"/async/task/:taskId/poll", func(c *gin.Context) {
+		TaskPollEndpoint(c, cfg, asyncTaskStore)
+	})
+	router.GET(baseUrl+"/async/task/:taskId/poll/single", func(c *gin.Context) {
+		SingleTaskPollEndpoint(c, cfg, asyncTaskStore, true)
+	})
+	router.GET(baseUrl+"/async/task/:taskId/exist", func(c *gin.Context) {
+		TaskExistEndpoint(c, cfg, asyncTaskStore)
+	})
+
+	router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
+		remoteForwardEndpoint(c, cfg, "/"+c.Param("path"))
+	})
+	router.Any(baseUrl+"/remote/forward/:job/:version", func(c *gin.Context) {
+		remoteForwardEndpoint(c, cfg, "")
+	})
+	router.POST(baseUrl+"/remote/command", func(c *gin.Context) {
+		remoteCommandEndpoint(c, cfg)
+	})
+
+	router.GET(baseUrl+"/live", liveEndpoint)
+	router.GET(baseUrl+"/ready", readyEndpoint)
+	router.GET(baseUrl+"/health", handlerWithConfig(healthEndpoint, cfg))
+
+	router.GET(baseUrl+"/metrics", wrapHandler(promhttp.Handler()))
 }
 
 func handlerWithConfig(fn func(http.ResponseWriter, *http.Request, *Config), cfg *Config) gin.HandlerFunc {
