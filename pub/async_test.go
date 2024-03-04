@@ -114,10 +114,10 @@ func activateMockHttpResponses(wgResultRequested *sync.WaitGroup) {
 		})
 }
 
-func setupReplicaServer(addr string, cfg *Config, store *AsyncTaskStore) *http.Server {
+func setupReplicaServer(addr string, cfg *Config, taskStore *AsyncTaskStore) *http.Server {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
 	router := gin.New()
-	SetupEndpoints(router, cfg, "/pub", store)
+	SetupEndpoints(router, cfg, "/pub", taskStore)
 
 	server := &http.Server{
 		Addr:    addr,
