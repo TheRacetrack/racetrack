@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import select
 import selectors
 import sys
 import tempfile
@@ -102,6 +101,7 @@ def send_deploy_request(
     # Creates a tmp file to store the piped input. Have to try/finally to ensure it gets deleted
     try:
         # If piped input is available, use it as the workdir
+        tmp_file = None
         tmp_file = catch_piped_input()
         workdir = tmp_file or workdir
 
