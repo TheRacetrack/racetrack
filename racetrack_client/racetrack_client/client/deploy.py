@@ -11,7 +11,6 @@ from base64 import b64encode
 from enum import Enum
 
 import backoff
-import pip
 
 from racetrack_client.client.env import read_secret_vars, SecretVars
 from racetrack_client.client_config.alias import resolve_lifecycle_url
