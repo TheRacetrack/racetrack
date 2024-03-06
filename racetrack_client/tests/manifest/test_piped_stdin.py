@@ -1,7 +1,7 @@
 from racetrack_client.main import cli
 import typer.testing
 
-job_yaml_text = """
+vaild_job_yaml_text = """
 name: job
 owner_email: sample@example.com
 lang: python3:latest
@@ -17,8 +17,30 @@ jobtype_extra:
   entrypoint_class: 'AdderModel'
 """
 
-def test_direct_pipe_to_deploy():
+def test_valid_manifest_direct_pipe_to_deploy():
     # Test if piping input works
     runner = typer.testing.CliRunner()
-    result = runner.invoke(cli, ['deploy', '--build-context=git'], input=job_yaml_text)
-    assert result.exit_code == 0, "Command execution failed"
+    result = runner.invoke(cli, ['deploy'], input=vaild_job_yaml_text)
+    assert result.exit_code != 0, "Command should fail since there's no real workdir"
+    assert "deployment error" in str(result.exception).lower(), "Unexpected error type"
+
+
+invaild_job_yaml_text = r"""
+ __________________
+< invalid manifest >
+ ------------------
+        \\   ^__^
+         \\  (oo)\\_______
+             (__)\\       )\\/\\
+                ||----w |
+                ||     ||
+"""
+
+def test_invalid_manifest_direct_pipe_to_deploy():
+    # Test if piping input works
+    runner = typer.testing.CliRunner()
+    result = runner.invoke(cli, ['deploy'], input=invaild_job_yaml_text)
+    print( str(result.exception))
+    assert result.exit_code != 0, "Command should fail since the manifest is invalid"
+    assert "'str' object has no attribute 'get'" in str(result.exception).lower(), "Unexpected error type"
+
