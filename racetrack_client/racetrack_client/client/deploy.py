@@ -48,31 +48,15 @@ class BuildContextMethod(str, Enum):
     default = "default"
 
 
-def read_stdin_non_blocking(timeout: float = 0.5) -> Optional[str]:
-    sel = selectors.DefaultSelector()
-    sel.register(sys.stdin, selectors.EVENT_READ)
-    data = None
-
-    for key, _ in sel.select(timeout=timeout):
-        if key.fileobj is sys.stdin:
-            data = sys.stdin.read()
-            break
-
-    sel.unregister(sys.stdin)
-    return data
-
-
 def catch_piped_input():
     """Check for piped input and read it if available, avoiding indefinite blocking."""
     piped_data, file_path= None, None
-    if not sys.stdin.isatty():
-        piped_data = read_stdin_non_blocking()
-        if piped_data:
-            current_workdir = os.getcwd() # Hopefulle we have permission to write here
-            with tempfile.NamedTemporaryFile(mode='w+', dir=current_workdir, delete=False) as tmp_file:
-                tmp_file.write(piped_data)
-                tmp_file.flush()
-                file_path = tmp_file.name
+    if not sys.stdin.isatty() and (piped_data := sys.stdin.read()):
+        current_workdir = os.getcwd()
+        with tempfile.NamedTemporaryFile(mode='w+', dir=current_workdir, delete=False) as tmp_file:
+            tmp_file.write(piped_data)
+            tmp_file.flush()
+            file_path = tmp_file.name
     return file_path
 
 
@@ -100,7 +84,6 @@ def send_deploy_request(
     # Creates a tmp file to store the piped input. Have to try/finally to ensure it gets deleted
     try:
         # If piped input is available, use it as the workdir
-        tmp_file = None
         tmp_file = catch_piped_input()
         workdir = tmp_file or workdir
 
@@ -135,8 +118,6 @@ def send_deploy_request(
             raise DeploymentError(e)
 
         logger.info(f'Job "{manifest.name}" has been deployed. Check out {job_url} to access your Job')
-    except Exception as e:
-        raise e
     finally:
         if tmp_file is not None and os.path.exists(tmp_file) and os.path.isfile(tmp_file):
             os.remove(tmp_file)
