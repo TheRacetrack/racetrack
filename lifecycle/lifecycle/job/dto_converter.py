@@ -1,4 +1,5 @@
 import json
+
 from lifecycle.config import Config
 from lifecycle.django.registry import models
 from lifecycle.job.pub import get_job_pub_url

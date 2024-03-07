@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,60 +19,6 @@ import (
 
 var defaultAsyncJobTransport http.RoundTripper = defaultHttpTransport()
 var defaultAsyncReplicaTransport http.RoundTripper = defaultHttpTransport()
-
-type AsyncTaskStore struct {
-	tasks             map[string]*AsyncTask
-	jobHttpClient     *http.Client
-	replicaHttpClient *http.Client
-	rwMutex           sync.RWMutex
-	longPollTimeout   time.Duration
-	replicaDiscovery  *replicaDiscovery
-	cleanUpTimeout    time.Duration
-}
-
-type AsyncTask struct {
-	id               string
-	status           TaskStatus
-	jobName          string
-	jobVersion       string
-	jobPath          string
-	httpMethod       string
-	startedAt        time.Time
-	endedAt          *time.Time
-	resultData       []byte
-	resultHeaders    map[string]string
-	resultStatusCode *int
-	result           interface{}
-	errorMessage     *string
-	doneChannel      chan string // channel to notify when task is done
-}
-
-type TaskStatus string
-
-const (
-	Ongoing   TaskStatus = "ongoing"
-	Completed TaskStatus = "completed"
-	Failed    TaskStatus = "failed"
-)
-
-func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery) *AsyncTaskStore {
-	store := &AsyncTaskStore{
-		tasks: make(map[string]*AsyncTask),
-		jobHttpClient: &http.Client{
-			Timeout:   120 * time.Minute,
-			Transport: defaultAsyncJobTransport,
-		},
-		replicaHttpClient: &http.Client{
-			Timeout:   120 * time.Minute,
-			Transport: defaultAsyncReplicaTransport,
-		},
-		longPollTimeout:  30 * time.Second,
-		cleanUpTimeout:   125 * time.Minute,
-		replicaDiscovery: replicaDiscovery,
-	}
-	go store.cleanUpRoutine()
-	return store
-}
 
 // Start a new async job call in background and return task ID
 func AsyncJobCallEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, jobPath string) {
@@ -131,7 +76,7 @@ func handleAsyncJobCallRequest(
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
 
-	task := &AsyncTask{
+	task := taskStore.SaveTask(&AsyncTask{
 		id:          uuid.NewV4().String(),
 		startedAt:   time.Now(),
 		status:      Ongoing,
@@ -140,10 +85,7 @@ func handleAsyncJobCallRequest(
 		jobPath:     jobPath,
 		httpMethod:  c.Request.Method,
 		doneChannel: make(chan string),
-	}
-	taskStore.rwMutex.Lock()
-	taskStore.tasks[task.id] = task
-	taskStore.rwMutex.Unlock()
+	})
 	logger.Info("Async Job Call task created", log.Ctx{
 		"taskId":     task.id,
 		"jobName":    job.Name,
@@ -288,9 +230,7 @@ func TaskExistEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	logger := log.New(log.Ctx{"requestId": requestId})
 	logger.Info("Request: Task existsence check", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 
-	taskStore.rwMutex.RLock()
-	task, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	task, ok := taskStore.GetTask(taskId)
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
 			"task_id": task.id,
@@ -312,9 +252,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	logger := log.New(log.Ctx{"requestId": requestId})
 	logger.Info("Request: Poll async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 
-	taskStore.rwMutex.RLock()
-	_, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	_, ok := taskStore.GetTask(taskId)
 	if ok {
 		SingleTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
@@ -371,9 +309,7 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 		logger.Info("Request: Poll async task of this replica", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	}
 
-	taskStore.rwMutex.RLock()
-	task, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	task, ok := taskStore.GetTask(taskId)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":     fmt.Sprintf("Task with id %s not found", taskId),
@@ -399,9 +335,7 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 		break
 	}
 
-	taskStore.rwMutex.RLock()
-	task, ok = taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	task, ok = taskStore.GetTask(taskId)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": fmt.Sprintf("Task with id %s not found", taskId),
@@ -535,30 +469,11 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 		go func() {
 			// Delete task after short time in case of timeout occured while sending the result to the client
 			time.Sleep(30 * time.Second)
-			taskStore.rwMutex.Lock()
-			delete(taskStore.tasks, task.id)
-			taskStore.rwMutex.Unlock()
+			taskStore.DeleteTask(task.id)
 			logger.Info("Retrieved task has been deleted", log.Ctx{
 				"taskId": task.id,
 				"status": task.status,
 			})
 		}()
-	}
-}
-
-func (s *AsyncTaskStore) cleanUpRoutine() {
-	for {
-		time.Sleep(5 * time.Minute)
-		s.rwMutex.Lock()
-		for taskId, task := range s.tasks {
-			if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
-				log.Info("Cleaning up obsolete async call task", log.Ctx{
-					"taskId":     task.id,
-					"started_at": task.startedAt,
-				})
-				delete(s.tasks, taskId)
-			}
-		}
-		s.rwMutex.Unlock()
 	}
 }

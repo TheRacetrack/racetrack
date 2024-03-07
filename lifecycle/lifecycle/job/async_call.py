@@ -60,3 +60,8 @@ def save_async_job_call(dto: AsyncJobCallDto) -> models.AsyncJobCall:
         except models.AsyncJobCall.DoesNotExist:
             raise EntityNotFound(f'Async job call model has gone before updating: {model}')
     return model
+
+
+def delete_async_job_call(call_id: str):
+    model = get_async_job_call(call_id)
+    model.delete()
