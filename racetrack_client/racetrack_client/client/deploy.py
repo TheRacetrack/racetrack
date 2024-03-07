@@ -1,4 +1,8 @@
+import os
 from pathlib import Path
+import selectors
+import sys
+import tempfile
 from typing import List, Optional, Dict
 from urllib.parse import urlsplit
 import tarfile
@@ -44,6 +48,18 @@ class BuildContextMethod(str, Enum):
     default = "default"
 
 
+def catch_piped_input():
+    """Check for piped input and read it if available, avoiding indefinite blocking."""
+    piped_data, file_path= None, None
+    if not sys.stdin.isatty() and (piped_data := sys.stdin.read()):
+        current_workdir = os.getcwd()
+        with tempfile.NamedTemporaryFile(mode='w+', dir=current_workdir, delete=False) as tmp_file:
+            tmp_file.write(piped_data)
+            tmp_file.flush()
+            file_path = tmp_file.name
+    return file_path
+
+
 def send_deploy_request(
     workdir: str,
     client_config: Optional[ClientConfig] = None,
@@ -65,37 +81,46 @@ def send_deploy_request(
             if working on local dev, local build context gets activated, otherwise git
     :param extra_vars: key-value pairs overriding manifest values
     """
-    if client_config is None:
-        client_config = load_client_config()
-    manifest: Manifest = load_validated_manifest(workdir, extra_vars)
-    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
-    logger.debug(f'Manifest loaded: {manifest}')
-
-    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
-    user_auth = get_user_auth(client_config, lifecycle_url)
-
-    logger.info(f'deploying workspace "{workdir}" (job {manifest.name} v{manifest.version}) to {lifecycle_url}')
-
-    build_context = get_build_context(lifecycle_url, workdir, manifest, build_context_method)
-    git_credentials = get_git_credentials(manifest, client_config)
-    secret_vars = read_secret_vars(workdir, manifest)
-
-    # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::DeployEndpoint` for server-side implementation
-    r = Requests.post(
-        f'{lifecycle_url}/api/v1/deploy',
-        json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, force),
-        headers=get_auth_request_headers(user_auth),
-    )
-    response = parse_response_object(r, 'Lifecycle deploying error')
-    deploy_id = response["id"]
-    logger.info(f'job deployment requested: {deploy_id}')
-
+    # Creates a tmp file to store the piped input. Have to try/finally to ensure it gets deleted
     try:
-        job_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth, [])
-    except Exception as e:
-        raise DeploymentError(e)
+        # If piped input is available, use it as the workdir
+        tmp_file = catch_piped_input()
+        workdir = tmp_file or workdir
 
-    logger.info(f'Job "{manifest.name}" has been deployed. Check out {job_url} to access your Job')
+        if client_config is None:
+            client_config = load_client_config()
+        manifest: Manifest = load_validated_manifest(workdir, extra_vars)
+        manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
+        logger.debug(f'Manifest loaded: {manifest}')
+
+        lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+        user_auth = get_user_auth(client_config, lifecycle_url)
+
+        logger.info(f'deploying workspace "{workdir}" (job {manifest.name} v{manifest.version}) to {lifecycle_url}')
+
+        build_context = get_build_context(lifecycle_url, workdir, manifest, build_context_method)
+        git_credentials = get_git_credentials(manifest, client_config)
+        secret_vars = read_secret_vars(workdir, manifest)
+
+        # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::DeployEndpoint` for server-side implementation
+        r = Requests.post(
+            f'{lifecycle_url}/api/v1/deploy',
+            json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, force),
+            headers=get_auth_request_headers(user_auth),
+        )
+        response = parse_response_object(r, 'Lifecycle deploying error')
+        deploy_id = response["id"]
+        logger.info(f'job deployment requested: {deploy_id}')
+
+        try:
+            job_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth, [])
+        except Exception as e:
+            raise DeploymentError(e)
+
+        logger.info(f'Job "{manifest.name}" has been deployed. Check out {job_url} to access your Job')
+    finally:
+        if tmp_file is not None and os.path.exists(tmp_file) and os.path.isfile(tmp_file):
+            os.remove(tmp_file)
 
 
 def get_deploy_request_payload(
