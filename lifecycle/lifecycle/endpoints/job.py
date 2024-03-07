@@ -3,6 +3,9 @@ from typing import List
 from fastapi import APIRouter, Request, Response
 from pydantic import BaseModel, Field
 
+from job.async_job_call import save_async_job_call
+from job.async_call import get_async_job_call
+from job.dto_converter import async_job_call_to_dto
 from lifecycle.auth.check import check_auth
 from lifecycle.config import Config
 from lifecycle.config.maintenance import ensure_no_maintenance
@@ -21,7 +24,7 @@ from lifecycle.job.public_endpoints import read_active_job_public_endpoints
 from lifecycle.job.logs import read_build_logs, read_runtime_logs
 from lifecycle.auth.authenticate import get_username_from_token
 from racetrack_client.utils.time import days_ago
-from racetrack_commons.entities.dto import JobDto, JobFamilyDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto, AsyncJobCallDto
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_commons.auth.scope import AuthScope
 
@@ -141,3 +144,26 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         ensure_no_maintenance()
         check_auth(request, job_name=job_name, job_version=job_version, scope=AuthScope.DEPLOY_JOB)
         return update_job_manifest(job_name, job_version, payload.manifest_yaml)
+
+    # Async Job Calls
+    @api.post('/job/async/call')
+    def _create_async_job_call(payload: AsyncJobCallDto, request: Request):
+        """Create new async job call record"""
+        ensure_no_maintenance()
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        save_async_job_call(payload)
+
+    @api.get('/job/async/call/{call_id}')
+    def _get_async_job_call(call_id: str, request: Request) -> AsyncJobCallDto:
+        """Get async job call record by ID"""
+        ensure_no_maintenance()
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        model = get_async_job_call(call_id)
+        return async_job_call_to_dto(model)
+
+    @api.put('/job/async/call')
+    def _update_async_job_call(payload: AsyncJobCallDto, request: Request):
+        """Update async job call record"""
+        ensure_no_maintenance()
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        save_async_job_call(payload)

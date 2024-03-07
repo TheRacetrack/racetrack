@@ -163,7 +163,7 @@ func handleAsyncJobCallRequest(
 	}
 
 	go func() {
-		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, logger, taskStore, task, requestId, callerName)
+		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
 
 		task.endedAt = ptr(time.Now())
 		if err == nil {
@@ -213,7 +213,6 @@ func makeBackgroundJobCall(
 	requestBody []byte,
 	job *JobDetails,
 	cfg *Config,
-	logger log.Logger,
 	taskStore *AsyncTaskStore,
 	task *AsyncTask,
 	requestId string,
@@ -328,7 +327,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 			foundOnReplicas := make(chan string)
 			for _, replicaAddr := range otherReplicaAddrs {
 				go func(replicaAddr string) {
-					exists, err := taskExistsInReplica(c, cfg, taskStore, replicaAddr, taskId)
+					exists, err := taskExistsInReplica(replicaAddr, taskId)
 					if err != nil {
 						logger.Error("Failed to check task on other Pub replica", log.Ctx{
 							"error":       err,
@@ -418,9 +417,6 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 }
 
 func taskExistsInReplica(
-	c *gin.Context,
-	cfg *Config,
-	taskStore *AsyncTaskStore,
 	replicaAddr string,
 	taskId string,
 ) (bool, error) {

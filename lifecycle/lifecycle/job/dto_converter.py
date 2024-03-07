@@ -4,7 +4,7 @@ from lifecycle.django.registry import models
 from lifecycle.job.pub import get_job_pub_url
 from racetrack_client.manifest.load import parse_manifest_or_empty
 from racetrack_client.utils.time import datetime_to_timestamp
-from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointRequestDto, EscDto
+from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointRequestDto, EscDto, AsyncJobCallDto
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, DeploymentDto
 
 
@@ -84,4 +84,25 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
         username_subject=model.username_subject,
         job_name=model.job_name,
         job_version=model.job_version,
+    )
+
+
+def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
+    return AsyncJobCallDto(
+        id=model.id,
+        status=model.status,
+        started_at=model.started_at,
+        ended_at=model.ended_at,
+        error=model.error,
+        job_name=model.job_name,
+        job_version=model.job_version,
+        job_path=model.job_path,
+        url=model.url,
+        method=model.method,
+        request_data=model.request_data,
+        response_data=model.response_data,
+        response_json=model.response_json,
+        response_status_code=model.response_status_code,
+        attempts=model.attempts,
+        pub_instance=model.pub_instance,
     )
