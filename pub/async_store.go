@@ -47,6 +47,8 @@ const (
 	Failed    TaskStatus = "failed"
 )
 
+var ErrAsyncTaskNotFound = errors.New("Async task not found")
+
 func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStorage) *AsyncTaskStore {
 	store := &AsyncTaskStore{
 		localTasks: make(map[string]*AsyncTask),
@@ -83,11 +85,16 @@ func (s *AsyncTaskStore) UpdateTask(task *AsyncTask) *AsyncTask {
 	return task
 }
 
-func (s *AsyncTaskStore) GetTask(taskId string) (*AsyncTask, bool) {
+func (s *AsyncTaskStore) GetLocalTask(taskId string) (*AsyncTask, bool) {
 	s.rwMutex.RLock()
 	task, ok := s.localTasks[taskId]
 	s.rwMutex.RUnlock()
 	return task, ok
+}
+
+func (s *AsyncTaskStore) GetStoredTask(taskId string) (*AsyncTask, error) {
+	task, err := s.taskStorage.Read(taskId)
+	return task, err
 }
 
 func (s *AsyncTaskStore) DeleteTask(taskId string) {
@@ -142,7 +149,7 @@ func NewMemoryTaskStorage() TaskStorage {
 func (s *memoryTaskStorage) Read(taskId string) (*AsyncTask, error) {
 	task, ok := s.tasks[taskId]
 	if !ok {
-		return nil, errors.New("Task not found")
+		return nil, ErrAsyncTaskNotFound
 	}
 	return task, nil
 }
