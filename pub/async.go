@@ -76,7 +76,7 @@ func handleAsyncJobCallRequest(
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
 
-	task := taskStore.SaveTask(&AsyncTask{
+	task := taskStore.CreateTask(&AsyncTask{
 		id:          uuid.NewV4().String(),
 		startedAt:   time.Now(),
 		status:      Ongoing,
@@ -137,6 +137,7 @@ func handleAsyncJobCallRequest(
 			})
 			metricAsyncJobCallsErros.Inc()
 		}
+		taskStore.UpdateTask(task)
 
 		// Notify subscribed listeners without blocking
 		select {

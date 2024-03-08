@@ -121,7 +121,7 @@ class AsyncJobCallDto(BaseModel):
     job_version: str
     job_path: str
     url: str
-    method: str
+    method: str  # HTTP method of a request
     request_data: bytes
     response_data: bytes | None
     response_json: object | None

@@ -40,9 +40,10 @@ func NewReplicaDiscovery(cfg *Config) *replicaDiscovery {
 	return discovery
 }
 
-func NewStaticReplicaDiscovery(addrs []string) *replicaDiscovery {
+func NewStaticReplicaDiscovery(addrs []string, myAddr string) *replicaDiscovery {
 	return &replicaDiscovery{
 		otherReplicaAddrs: addrs,
+		MyAddr:            myAddr,
 	}
 }
 

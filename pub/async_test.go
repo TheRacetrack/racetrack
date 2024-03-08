@@ -27,10 +27,11 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 	cfg.LifecycleUrl = "http://127.0.0.1:7202/lifecycle"
 	activateMockHttpResponses(&wgResultRequested)
 	defer httpmock.DeactivateAndReset()
+	taskStorage := NewMemoryTaskStorage()
 
 	for i := 0; i < replicaNum; i++ {
-		replicaDiscovery := NewStaticReplicaDiscovery(addrs)
-		store := NewAsyncTaskStore(replicaDiscovery)
+		replicaDiscovery := NewStaticReplicaDiscovery(addrs, addrs[i])
+		store := NewAsyncTaskStore(replicaDiscovery, taskStorage)
 		servers[i] = setupReplicaServer(addrs[i], cfg, store)
 	}
 
