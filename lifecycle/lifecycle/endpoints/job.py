@@ -146,29 +146,30 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
 
     # Async Job Calls
     @api.post('/job/async/call')
-    def _create_async_job_call(payload: AsyncJobCallDto, request: Request):
+    def _create_async_job_call(request: Request, payload: AsyncJobCallDto):
         """Create new async job call record"""
         ensure_no_maintenance()
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         save_async_job_call(payload)
 
     @api.get('/job/async/call/{call_id}')
-    def _get_async_job_call(call_id: str, request: Request) -> AsyncJobCallDto:
+    def _get_async_job_call(request: Request, call_id: str) -> AsyncJobCallDto:
         """Get async job call record by ID"""
         ensure_no_maintenance()
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         model = get_async_job_call(call_id)
         return async_job_call_to_dto(model)
 
-    @api.put('/job/async/call')
-    def _update_async_job_call(payload: AsyncJobCallDto, request: Request):
+    @api.put('/job/async/call/{call_id}')
+    def _update_async_job_call(request: Request, call_id: str, payload: AsyncJobCallDto):
         """Update async job call record"""
+        assert call_id == payload.id, 'invalid Call ID'
         ensure_no_maintenance()
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         save_async_job_call(payload)
 
     @api.delete('/job/async/call/{call_id}')
-    def _delete_async_job_call(call_id: str, request: Request):
+    def _delete_async_job_call(request: Request, call_id: str):
         """Delete async job call record"""
         ensure_no_maintenance()
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)

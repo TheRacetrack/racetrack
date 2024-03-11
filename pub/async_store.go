@@ -38,7 +38,7 @@ type AsyncTask struct {
 	ResponseHeaders    map[string]string `json:"response_headers"`
 	ResponseBody       string            `json:"response_body"`
 	Attempts           int               `json:"attempts"`
-	PubInstanceAddr    string            `json:"pub_instance"`
+	PubInstanceAddr    string            `json:"pub_instance_addr"`
 	startedAt          time.Time
 	endedAt            *time.Time
 	doneChannel        chan string // channel to notify when task is done

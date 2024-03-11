@@ -231,7 +231,7 @@ class AsyncJobCall(models.Model):
     response_headers = models.JSONField(null=True, blank=True)
     response_body = models.BinaryField(max_length=None, blank=True)
     attempts = models.IntegerField(default=0)
-    pub_instance_addr = models.CharField(max_length=256)
+    pub_instance_addr = models.CharField(max_length=256, blank=True)
 
     def __str__(self):
         return self.id

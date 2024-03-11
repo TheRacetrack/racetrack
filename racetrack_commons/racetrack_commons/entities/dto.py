@@ -122,10 +122,10 @@ class AsyncJobCallDto(BaseModel):
     job_path: str
     request_method: str
     request_url: str
-    request_headers: Dict[str, str] = {}
+    request_headers: dict[str, str]
     request_body: str
     response_status_code: int | None
-    response_headers: Dict[str, str] = {}
+    response_headers: dict[str, str] | None
     response_body: str
     attempts: int = 0
     pub_instance_addr: str
