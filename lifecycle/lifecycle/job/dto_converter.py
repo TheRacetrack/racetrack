@@ -101,7 +101,7 @@ def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
         url=model.url,
         method=model.method,
         request_data=model.request_data,
-        response_data=model.response_data,
+        response_data=model.response_data or b'',
         response_json=model.response_json,
         response_status_code=model.response_status_code,
         attempts=model.attempts,

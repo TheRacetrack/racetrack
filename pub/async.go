@@ -77,27 +77,28 @@ func handleAsyncJobCallRequest(
 	targetUrl := TargetURL(cfg, job, urlPath)
 
 	task := taskStore.CreateTask(&AsyncTask{
-		id:              uuid.NewV4().String(),
-		startedAt:       time.Now(),
-		status:          Ongoing,
-		jobName:         job.Name,
-		jobVersion:      job.Version,
-		jobPath:         jobPath,
-		httpMethod:      c.Request.Method,
-		doneChannel:     make(chan string),
-		pubInstanceAddr: taskStore.replicaDiscovery.MyAddr,
-		attempts:        0,
+		Id:                 uuid.NewV4().String(),
+		startedAt:          time.Now(),
+		StartedAtTimestamp: time.Now().Unix(),
+		Status:             Ongoing,
+		JobName:            job.Name,
+		JobVersion:         job.Version,
+		JobPath:            jobPath,
+		HttpMethod:         c.Request.Method,
+		doneChannel:        make(chan string),
+		PubInstanceAddr:    taskStore.replicaDiscovery.MyAddr,
+		Attempts:           0,
 	})
 	logger.Info("Async Job Call task created", log.Ctx{
-		"taskId":     task.id,
+		"taskId":     task.Id,
 		"jobName":    job.Name,
 		"jobVersion": job.Version,
 		"jobPath":    jobPath,
 	})
 
 	c.JSON(http.StatusCreated, gin.H{ // 201 Created
-		"task_id": task.id,
-		"status":  task.status,
+		"task_id": task.Id,
+		"status":  task.Status,
 	})
 
 	defer c.Request.Body.Close()
@@ -111,24 +112,24 @@ func handleAsyncJobCallRequest(
 
 		task.endedAt = ptr(time.Now())
 		if err == nil {
-			task.status = Completed
+			task.Status = Completed
 			metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
 			duration := task.endedAt.Sub(task.startedAt).String()
 			logger.Info("Async Job Call task has ended", log.Ctx{
-				"taskId":     task.id,
+				"taskId":     task.Id,
 				"jobName":    job.Name,
 				"jobVersion": job.Version,
 				"jobPath":    targetUrl.Path,
 				"caller":     callerName,
-				"statusCode": *task.resultStatusCode,
+				"statusCode": *task.ResponseStatusCode,
 				"duration":   duration,
 			})
 		} else {
-			task.status = Failed
+			task.Status = Failed
 			errorStr := err.Error()
-			task.errorMessage = &errorStr
+			task.ErrorMessage = &errorStr
 			logger.Error("Background Job Call request error", log.Ctx{
-				"taskId":     task.id,
+				"taskId":     task.Id,
 				"jobName":    job.Name,
 				"jobVersion": job.Version,
 				"jobStatus":  job.Status,
@@ -143,7 +144,7 @@ func handleAsyncJobCallRequest(
 
 		// Notify subscribed listeners without blocking
 		select {
-		case task.doneChannel <- task.id:
+		case task.doneChannel <- task.Id:
 		default:
 		}
 		close(task.doneChannel)
@@ -199,20 +200,20 @@ func makeBackgroundJobCall(
 	}
 	res.Header.Set(cfg.RequestTracingHeader, requestId)
 
-	task.resultStatusCode = ptr(res.StatusCode)
+	task.ResponseStatusCode = ptr(res.StatusCode)
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return errors.Wrap(err, "failed to read response body")
 	}
-	task.resultData = bodyBytes
+	task.ResponseData = bodyBytes
 	task.resultHeaders = make(map[string]string)
 	for k, v := range res.Header {
 		task.resultHeaders[k] = strings.Join(v, ",")
 	}
 	contentType := res.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
-		err := json.Unmarshal(bodyBytes, &task.result)
+		err := json.Unmarshal(bodyBytes, &task.ResponseJson)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse response body as JSON")
 		}
@@ -236,8 +237,8 @@ func TaskExistEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	task, ok := taskStore.GetLocalTask(taskId)
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
-			"task_id": task.id,
-			"status":  task.status,
+			"task_id": task.Id,
+			"status":  task.Status,
 		})
 	} else {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -259,7 +260,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	if ok {
 		SingleTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
-		task, err := taskStore.GetStoredTask(taskId)
+		storedTask, err := taskStore.GetStoredTask(taskId)
 
 		if errors.Is(err, ErrAsyncTaskNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -282,7 +283,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 			return
 		}
 
-		replicaAddr := task.pubInstanceAddr
+		replicaAddr := storedTask.PubInstanceAddr
 		forwardTaskPollToReplica(c, cfg, logger, taskStore, replicaAddr, taskId)
 	}
 }
@@ -306,7 +307,7 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 		})
 		return
 	}
-	if task.status != Ongoing {
+	if task.Status != Ongoing {
 		respondTaskResult(c, logger, task, taskStore)
 		return
 	}
@@ -331,7 +332,7 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 		})
 		return
 	}
-	if task.status == Ongoing {
+	if task.Status == Ongoing {
 		c.String(http.StatusRequestTimeout, "Time out")
 		return
 	} else {
@@ -397,50 +398,50 @@ func forwardTaskPollToReplica(
 }
 
 func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskStore *AsyncTaskStore) {
-	if task.status == Ongoing || task.status == Failed {
+	if task.Status == Ongoing || task.Status == Failed {
 		var durationStr *string
 		if task.endedAt != nil {
 			duration := task.endedAt.Sub(task.startedAt).String()
 			durationStr = &duration
 		}
 		var statusCode int = http.StatusOK
-		if task.status == Failed {
+		if task.Status == Failed {
 			statusCode = http.StatusInternalServerError
-		} else if task.status == Ongoing {
+		} else if task.Status == Ongoing {
 			statusCode = http.StatusAccepted
 		}
 		c.JSON(statusCode, gin.H{
-			"task_id":     task.id,
-			"status":      task.status,
-			"job_name":    task.jobName,
-			"job_version": task.jobVersion,
-			"job_path":    task.jobPath,
-			"http_method": task.httpMethod,
+			"task_id":     task.Id,
+			"status":      task.Status,
+			"job_name":    task.JobName,
+			"job_version": task.JobVersion,
+			"job_path":    task.JobPath,
+			"http_method": task.HttpMethod,
 			"started_at":  task.startedAt,
 			"ended_at":    task.endedAt,
 			"duration":    durationStr,
-			"error":       task.errorMessage,
+			"error":       task.ErrorMessage,
 		})
-	} else if task.status == Completed {
+	} else if task.Status == Completed {
 		for k, v := range task.resultHeaders {
 			c.Writer.Header().Set(k, v)
 		}
 		contentType, ok := task.resultHeaders["Content-Type"]
 		if ok {
-			c.Data(*task.resultStatusCode, contentType, task.resultData)
+			c.Data(*task.ResponseStatusCode, contentType, task.ResponseData)
 		} else {
-			c.Data(*task.resultStatusCode, "", task.resultData)
+			c.Data(*task.ResponseStatusCode, "", task.ResponseData)
 		}
 	}
 
-	if task.status == Completed || task.status == Failed {
+	if task.Status == Completed || task.Status == Failed {
 		go func() {
 			// Delete task after short time in case of timeout occured while sending the result to the client
 			time.Sleep(30 * time.Second)
-			taskStore.DeleteTask(task.id)
+			taskStore.DeleteTask(task.Id)
 			logger.Info("Retrieved task has been deleted", log.Ctx{
-				"taskId": task.id,
-				"status": task.status,
+				"taskId": task.Id,
+				"status": task.Status,
 			})
 		}()
 	}

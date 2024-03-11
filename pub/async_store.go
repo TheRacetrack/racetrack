@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
@@ -21,22 +23,26 @@ type AsyncTaskStore struct {
 }
 
 type AsyncTask struct {
-	id               string
-	status           TaskStatus
-	jobName          string
-	jobVersion       string
-	jobPath          string
-	httpMethod       string
-	startedAt        time.Time
-	endedAt          *time.Time
-	resultData       []byte
-	resultHeaders    map[string]string
-	resultStatusCode *int
-	result           interface{}
-	errorMessage     *string
-	attempts         int
-	pubInstanceAddr  string
-	doneChannel      chan string // channel to notify when task is done
+	Id                 string      `json:"id"`
+	Status             TaskStatus  `json:"status"`
+	StartedAtTimestamp int64       `json:"started_at"`
+	EndedAtTimestamp   *int64      `json:"ended_at"`
+	ErrorMessage       *string     `json:"error"`
+	JobName            string      `json:"job_name"`
+	JobVersion         string      `json:"job_version"`
+	JobPath            string      `json:"job_path"`
+	Url                string      `json:"url"`
+	HttpMethod         string      `json:"method"`
+	RequestData        []byte      `json:"request_data"`
+	ResponseData       []byte      `json:"response_data"`
+	ResponseJson       interface{} `json:"response_json"`
+	ResponseStatusCode *int        `json:"response_status_code"`
+	Attempts           int         `json:"attempts"`
+	PubInstanceAddr    string      `json:"pub_instance"`
+	startedAt          time.Time
+	endedAt            *time.Time
+	resultHeaders      map[string]string
+	doneChannel        chan string // channel to notify when task is done
 }
 
 type TaskStatus string
@@ -71,7 +77,7 @@ func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStora
 
 func (s *AsyncTaskStore) CreateTask(task *AsyncTask) *AsyncTask {
 	s.rwMutex.Lock()
-	s.localTasks[task.id] = task
+	s.localTasks[task.Id] = task
 	s.taskStorage.Create(task)
 	s.rwMutex.Unlock()
 	return task
@@ -79,7 +85,7 @@ func (s *AsyncTaskStore) CreateTask(task *AsyncTask) *AsyncTask {
 
 func (s *AsyncTaskStore) UpdateTask(task *AsyncTask) *AsyncTask {
 	s.rwMutex.Lock()
-	s.localTasks[task.id] = task
+	s.localTasks[task.Id] = task
 	s.taskStorage.Update(task)
 	s.rwMutex.Unlock()
 	return task
@@ -111,7 +117,7 @@ func (s *AsyncTaskStore) cleanUpRoutine() {
 		for taskId, task := range s.localTasks {
 			if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
 				log.Info("Cleaning up obsolete async call task", log.Ctx{
-					"taskId":     task.id,
+					"taskId":     task.Id,
 					"started_at": task.startedAt,
 				})
 				delete(s.localTasks, taskId)
@@ -121,19 +127,12 @@ func (s *AsyncTaskStore) cleanUpRoutine() {
 	}
 }
 
-// Persistent storage for async tasks
+// Persistent storage keeping all async tasks in one place
 type TaskStorage interface {
 	Create(task *AsyncTask) error
 	Read(taskId string) (*AsyncTask, error)
 	Update(task *AsyncTask) error
 	Delete(taskId string) error
-}
-
-type lifecycleTaskStorage struct {
-}
-
-func NewLifecycleTaskStorage() *lifecycleTaskStorage {
-	return &lifecycleTaskStorage{}
 }
 
 type memoryTaskStorage struct {
@@ -155,16 +154,69 @@ func (s *memoryTaskStorage) Read(taskId string) (*AsyncTask, error) {
 }
 
 func (s *memoryTaskStorage) Create(task *AsyncTask) error {
-	s.tasks[task.id] = task
+	s.tasks[task.Id] = task
 	return nil
 }
 
 func (s *memoryTaskStorage) Update(task *AsyncTask) error {
-	s.tasks[task.id] = task
+	s.tasks[task.Id] = task
 	return nil
 }
 
 func (s *memoryTaskStorage) Delete(taskId string) error {
 	delete(s.tasks, taskId)
 	return nil
+}
+
+type lifecycleTaskStorage struct {
+	lcClient *lifecycleClient
+}
+
+func NewLifecycleTaskStorage(
+	lifecycleUrl string,
+	internalToken string,
+) TaskStorage {
+	return &lifecycleTaskStorage{
+		lcClient: &lifecycleClient{
+			lifecycleUrl:  lifecycleUrl,
+			internalToken: internalToken,
+			httpClient: &http.Client{
+				Timeout:   10 * time.Second,
+				Transport: defaultLifecycleTransport,
+			},
+		},
+	}
+}
+
+func (s *lifecycleTaskStorage) Read(taskId string) (*AsyncTask, error) {
+	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call/", taskId)
+	task := &AsyncTask{}
+	err := s.lcClient.getRequest(url, true, "getting async task", true, task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+func (s *lifecycleTaskStorage) Create(task *AsyncTask) error {
+	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call")
+	bodyBytes, err := json.Marshal(task)
+	if err != nil {
+		return errors.Wrap(err, "marshalling async task to JSON")
+	}
+	return s.lcClient.makeRequest("POST", url, true, "creating async task", false, nil, bytes.NewBuffer(bodyBytes))
+}
+
+func (s *lifecycleTaskStorage) Update(task *AsyncTask) error {
+	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call/", task.Id)
+	bodyBytes, err := json.Marshal(task)
+	if err != nil {
+		return errors.Wrap(err, "marshalling async task to JSON")
+	}
+	return s.lcClient.makeRequest("PUT", url, true, "updating async task", false, nil, bytes.NewBuffer(bodyBytes))
+}
+
+func (s *lifecycleTaskStorage) Delete(taskId string) error {
+	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call/", taskId)
+	return s.lcClient.makeRequest("DELETE", url, true, "deleting async task", false, nil, nil)
 }

@@ -17,7 +17,7 @@ func ListenAndServe(cfg *Config) error {
 	router.Use(gin.Recovery())
 
 	replicaDiscovery := NewReplicaDiscovery(cfg)
-	taskStorage := NewMemoryTaskStorage()
+	taskStorage := NewLifecycleTaskStorage(cfg.LifecycleUrl, cfg.LifecycleToken)
 	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery, taskStorage)
 
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")

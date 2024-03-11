@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"time"
 
@@ -130,6 +131,65 @@ func (l *lifecycleClient) getRequest(
 	r, err := l.httpClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "GET request to Lifecycle")
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode >= 400 {
+		errorResp := &lifecycleErrorResponse{}
+		_ = json.NewDecoder(r.Body).Decode(errorResp)
+		explanation := errorResp.Error
+		if errorResp.Status != "" {
+			explanation += ": " + errorResp.Status
+		}
+
+		err := errors.Errorf("%s: %s", operationType, explanation)
+		if r.StatusCode == http.StatusUnauthorized {
+			return AuthenticationFailure{err}
+		} else if r.StatusCode == http.StatusNotFound {
+			return NotFoundError{err}
+		}
+		return err
+	}
+
+	if decodeResponse {
+		err = json.NewDecoder(r.Body).Decode(response)
+		if err != nil {
+			return errors.Wrap(err, "JSON decoding error")
+		}
+	}
+	metricLifecycleCallTime.Add(time.Since(startTime).Seconds())
+	return nil
+}
+
+func (l *lifecycleClient) makeRequest(
+	method string,
+	url string,
+	internalAuth bool,
+	operationType string,
+	decodeResponse bool,
+	response interface{},
+	bodyReader io.Reader,
+) error {
+	startTime := time.Now()
+	metricLifecycleCalls.Inc()
+
+	req, err := http.NewRequest(method, url, bodyReader)
+	if err != nil {
+		return errors.Wrapf(err, "creating %s request to Lifecycle", method)
+	}
+
+	if l.requestTracingHeader != "" {
+		req.Header.Set(l.requestTracingHeader, l.requestId)
+	}
+	if internalAuth {
+		req.Header.Set(AuthHeader, l.internalToken)
+	} else {
+		req.Header.Set(AuthHeader, l.authToken)
+	}
+
+	r, err := l.httpClient.Do(req)
+	if err != nil {
+		return errors.Wrapf(err, "%s request to Lifecycle", method)
 	}
 	defer r.Body.Close()
 
