@@ -89,6 +89,8 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
 
 
 def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
+    request_body: str = model.request_body.decode()
+    response_data: str = model.response_data.decode()
     return AsyncJobCallDto(
         id=model.id,
         status=model.status,
@@ -98,12 +100,13 @@ def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
         job_name=model.job_name,
         job_version=model.job_version,
         job_path=model.job_path,
-        url=model.url,
-        method=model.method,
-        request_data=model.request_data,
-        response_data=model.response_data or b'',
-        response_json=model.response_json,
+        request_method=model.request_method,
+        request_url=model.request_url,
+        request_headers=model.request_headers,
+        request_body=request_body,
         response_status_code=model.response_status_code,
+        response_headers=model.response_headers,
+        response_data=response_data,
         attempts=model.attempts,
-        pub_instance=model.pub_instance,
+        pub_instance_addr=model.pub_instance_addr,
     )

@@ -223,14 +223,15 @@ class AsyncJobCall(models.Model):
     job_name = models.CharField(max_length=512)
     job_version = models.CharField(max_length=256)
     job_path = models.CharField(max_length=512, blank=True)
-    url = models.CharField(max_length=512)
-    method = models.CharField(max_length=32)
-    request_data = models.BinaryField(max_length=None)
-    response_data = models.BinaryField(max_length=None, null=True)
-    response_json = models.JSONField(null=True, blank=True)
+    request_method = models.CharField(max_length=32)
+    request_url = models.CharField(max_length=512)
+    request_headers = models.JSONField(null=True, blank=True)
+    request_body = models.BinaryField(max_length=None, blank=True)
     response_status_code = models.IntegerField(null=True)
+    response_headers = models.JSONField(null=True, blank=True)
+    response_body = models.BinaryField(max_length=None, blank=True)
     attempts = models.IntegerField(default=0)
-    pub_instance = models.CharField(max_length=256)
+    pub_instance_addr = models.CharField(max_length=256)
 
     def __str__(self):
         return self.id

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -166,16 +168,23 @@ func (l *lifecycleClient) makeRequest(
 	url string,
 	internalAuth bool,
 	operationType string,
+	jsonBody []byte,
 	decodeResponse bool,
 	response interface{},
-	bodyReader io.Reader,
 ) error {
 	startTime := time.Now()
 	metricLifecycleCalls.Inc()
 
+	var bodyReader io.Reader = nil
+	if jsonBody != nil {
+		bodyReader = bytes.NewBuffer(jsonBody)
+	}
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
 		return errors.Wrapf(err, "creating %s request to Lifecycle", method)
+	}
+	if jsonBody != nil {
+		req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	}
 
 	if l.requestTracingHeader != "" {
@@ -195,13 +204,21 @@ func (l *lifecycleClient) makeRequest(
 
 	if r.StatusCode >= 400 {
 		errorResp := &lifecycleErrorResponse{}
-		_ = json.NewDecoder(r.Body).Decode(errorResp)
-		explanation := errorResp.Error
-		if errorResp.Status != "" {
-			explanation += ": " + errorResp.Status
+		var errorCause string
+		body, _ := io.ReadAll(r.Body)
+		decodeErr := json.Unmarshal(body, errorResp)
+		if decodeErr == nil && errorResp.Error != "" {
+			errorCause := fmt.Sprintf("HTTP error %d for url %s %s: %s", r.StatusCode, method, url, errorResp.Error)
+			if errorResp.Status != "" {
+				errorCause += ": " + errorResp.Status
+			}
+		} else if len(body) > 0 {
+			errorCause = fmt.Sprintf("HTTP error %d for url %s %s: %s", r.StatusCode, method, url, string(body))
+		} else {
+			errorCause = fmt.Sprintf("HTTP error %d for url %s %s", r.StatusCode, method, url)
 		}
 
-		err := errors.Errorf("%s: %s", operationType, explanation)
+		err := errors.Errorf("%s: %s", operationType, errorCause)
 		if r.StatusCode == http.StatusUnauthorized {
 			return AuthenticationFailure{err}
 		} else if r.StatusCode == http.StatusNotFound {

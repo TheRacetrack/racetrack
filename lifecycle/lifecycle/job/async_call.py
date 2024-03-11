@@ -21,6 +21,8 @@ def save_async_job_call(dto: AsyncJobCallDto) -> models.AsyncJobCall:
 
     new_started_at = timestamp_to_datetime(dto.started_at)
     new_ended_at = timestamp_to_datetime(dto.ended_at) if dto.ended_at is not None else None
+    new_request_body: bytes = dto.request_body.encode()
+    new_response_body: bytes = dto.response_body.encode()
 
     if model.status != dto.status \
             or model.started_at != new_started_at \
@@ -29,14 +31,15 @@ def save_async_job_call(dto: AsyncJobCallDto) -> models.AsyncJobCall:
             or model.job_name != dto.job_name \
             or model.job_version != dto.job_version \
             or model.job_path != dto.job_path \
-            or model.url != dto.url \
-            or model.method != dto.method \
-            or model.request_data != dto.request_data \
-            or model.response_data != dto.response_data \
-            or model.response_json != dto.response_json \
+            or model.request_method != dto.request_method \
+            or model.request_url != dto.request_url \
+            or model.request_headers != dto.request_headers \
+            or model.request_body != new_request_body \
             or model.response_status_code != dto.response_status_code \
-            or model.pub_instance != dto.pub_instance \
-            or model.attempts != dto.attempts:
+            or model.response_headers != dto.response_headers \
+            or model.response_body != new_response_body \
+            or model.attempts != dto.attempts \
+            or model.pub_instance_addr != dto.pub_instance_addr:
         changed = True
     model.status = dto.status
     model.started_at = new_started_at
@@ -45,14 +48,15 @@ def save_async_job_call(dto: AsyncJobCallDto) -> models.AsyncJobCall:
     model.job_name = dto.job_name
     model.job_version = dto.job_version
     model.job_path = dto.job_path
-    model.url = dto.url
-    model.method = dto.method
-    model.request_data = dto.request_data
-    model.response_data = dto.response_data
-    model.response_json = dto.response_json
+    model.request_method = dto.request_method
+    model.request_url = dto.request_url
+    model.request_headers = dto.request_headers
+    model.request_body = new_request_body
     model.response_status_code = dto.response_status_code
-    model.pub_instance = dto.pub_instance
+    model.response_headers = dto.response_headers
+    model.response_body = new_response_body
     model.attempts = dto.attempts
+    model.pub_instance_addr = dto.pub_instance_addr
 
     if changed:
         try:

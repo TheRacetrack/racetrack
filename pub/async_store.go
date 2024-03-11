@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"sync"
@@ -23,25 +22,25 @@ type AsyncTaskStore struct {
 }
 
 type AsyncTask struct {
-	Id                 string      `json:"id"`
-	Status             TaskStatus  `json:"status"`
-	StartedAtTimestamp int64       `json:"started_at"`
-	EndedAtTimestamp   *int64      `json:"ended_at"`
-	ErrorMessage       *string     `json:"error"`
-	JobName            string      `json:"job_name"`
-	JobVersion         string      `json:"job_version"`
-	JobPath            string      `json:"job_path"`
-	Url                string      `json:"url"`
-	HttpMethod         string      `json:"method"`
-	RequestData        []byte      `json:"request_data"`
-	ResponseData       []byte      `json:"response_data"`
-	ResponseJson       interface{} `json:"response_json"`
-	ResponseStatusCode *int        `json:"response_status_code"`
-	Attempts           int         `json:"attempts"`
-	PubInstanceAddr    string      `json:"pub_instance"`
+	Id                 string            `json:"id"`
+	Status             TaskStatus        `json:"status"`
+	StartedAtTimestamp int64             `json:"started_at"`
+	EndedAtTimestamp   *int64            `json:"ended_at"`
+	ErrorMessage       *string           `json:"error"`
+	JobName            string            `json:"job_name"`
+	JobVersion         string            `json:"job_version"`
+	JobPath            string            `json:"job_path"`
+	RequestMethod      string            `json:"request_method"`
+	RequestUrl         string            `json:"request_url"`
+	RequestHeaders     map[string]string `json:"request_headers"`
+	RequestBody        string            `json:"request_body"`
+	ResponseStatusCode *int              `json:"response_status_code"`
+	ResponseHeaders    map[string]string `json:"response_headers"`
+	ResponseBody       string            `json:"response_body"`
+	Attempts           int               `json:"attempts"`
+	PubInstanceAddr    string            `json:"pub_instance"`
 	startedAt          time.Time
 	endedAt            *time.Time
-	resultHeaders      map[string]string
 	doneChannel        chan string // channel to notify when task is done
 }
 
@@ -75,26 +74,29 @@ func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStora
 	return store
 }
 
-func (s *AsyncTaskStore) CreateTask(task *AsyncTask) *AsyncTask {
+func (s *AsyncTaskStore) CreateTask(task *AsyncTask) (*AsyncTask, error) {
 	s.rwMutex.Lock()
+	defer s.rwMutex.Unlock()
 	s.localTasks[task.Id] = task
-	s.taskStorage.Create(task)
-	s.rwMutex.Unlock()
-	return task
+	err := s.taskStorage.Create(task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }
 
-func (s *AsyncTaskStore) UpdateTask(task *AsyncTask) *AsyncTask {
+func (s *AsyncTaskStore) UpdateTask(task *AsyncTask) error {
 	s.rwMutex.Lock()
+	defer s.rwMutex.Unlock()
 	s.localTasks[task.Id] = task
-	s.taskStorage.Update(task)
-	s.rwMutex.Unlock()
-	return task
+	err := s.taskStorage.Update(task)
+	return err
 }
 
 func (s *AsyncTaskStore) GetLocalTask(taskId string) (*AsyncTask, bool) {
 	s.rwMutex.RLock()
+	defer s.rwMutex.RUnlock()
 	task, ok := s.localTasks[taskId]
-	s.rwMutex.RUnlock()
 	return task, ok
 }
 
@@ -103,11 +105,12 @@ func (s *AsyncTaskStore) GetStoredTask(taskId string) (*AsyncTask, error) {
 	return task, err
 }
 
-func (s *AsyncTaskStore) DeleteTask(taskId string) {
+func (s *AsyncTaskStore) DeleteTask(taskId string) error {
 	s.rwMutex.Lock()
+	defer s.rwMutex.Unlock()
 	delete(s.localTasks, taskId)
-	s.taskStorage.Delete(taskId)
-	s.rwMutex.Unlock()
+	err := s.taskStorage.Delete(taskId)
+	return err
 }
 
 func (s *AsyncTaskStore) cleanUpRoutine() {
@@ -191,8 +194,11 @@ func NewLifecycleTaskStorage(
 func (s *lifecycleTaskStorage) Read(taskId string) (*AsyncTask, error) {
 	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call/", taskId)
 	task := &AsyncTask{}
-	err := s.lcClient.getRequest(url, true, "getting async task", true, task)
+	err := s.lcClient.makeRequest("GET", url, true, "getting async task", nil, true, task)
 	if err != nil {
+		if errors.As(err, &NotFoundError{}) {
+			return nil, ErrAsyncTaskNotFound
+		}
 		return nil, err
 	}
 	return task, nil
@@ -200,23 +206,23 @@ func (s *lifecycleTaskStorage) Read(taskId string) (*AsyncTask, error) {
 
 func (s *lifecycleTaskStorage) Create(task *AsyncTask) error {
 	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call")
-	bodyBytes, err := json.Marshal(task)
+	jsonBody, err := json.Marshal(task)
 	if err != nil {
 		return errors.Wrap(err, "marshalling async task to JSON")
 	}
-	return s.lcClient.makeRequest("POST", url, true, "creating async task", false, nil, bytes.NewBuffer(bodyBytes))
+	return s.lcClient.makeRequest("POST", url, true, "creating async task", jsonBody, false, nil)
 }
 
 func (s *lifecycleTaskStorage) Update(task *AsyncTask) error {
 	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call/", task.Id)
-	bodyBytes, err := json.Marshal(task)
+	jsonBody, err := json.Marshal(task)
 	if err != nil {
 		return errors.Wrap(err, "marshalling async task to JSON")
 	}
-	return s.lcClient.makeRequest("PUT", url, true, "updating async task", false, nil, bytes.NewBuffer(bodyBytes))
+	return s.lcClient.makeRequest("PUT", url, true, "updating async task", jsonBody, false, nil)
 }
 
 func (s *lifecycleTaskStorage) Delete(taskId string) error {
 	url := JoinURL(s.lcClient.lifecycleUrl, "/api/v1/job/async/call/", taskId)
-	return s.lcClient.makeRequest("DELETE", url, true, "deleting async task", false, nil, nil)
+	return s.lcClient.makeRequest("DELETE", url, true, "deleting async task", nil, false, nil)
 }

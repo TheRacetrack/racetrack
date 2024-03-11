@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -75,42 +74,51 @@ func handleAsyncJobCallRequest(
 
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
-
-	task := taskStore.CreateTask(&AsyncTask{
-		Id:                 uuid.NewV4().String(),
-		startedAt:          time.Now(),
-		StartedAtTimestamp: time.Now().Unix(),
-		Status:             Ongoing,
-		JobName:            job.Name,
-		JobVersion:         job.Version,
-		JobPath:            jobPath,
-		HttpMethod:         c.Request.Method,
-		doneChannel:        make(chan string),
-		PubInstanceAddr:    taskStore.replicaDiscovery.MyAddr,
-		Attempts:           0,
-	})
-	logger.Info("Async Job Call task created", log.Ctx{
-		"taskId":     task.Id,
-		"jobName":    job.Name,
-		"jobVersion": job.Version,
-		"jobPath":    jobPath,
-	})
-
-	c.JSON(http.StatusCreated, gin.H{ // 201 Created
-		"task_id": task.Id,
-		"status":  task.Status,
-	})
-
+	requestHeaders := make(map[string]string)
+	for k, v := range c.Request.Header {
+		requestHeaders[k] = strings.Join(v, ",")
+	}
 	defer c.Request.Body.Close()
 	requestBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		return http.StatusBadRequest, errors.Wrap(err, "failed to read request body")
 	}
 
+	task, err := taskStore.CreateTask(&AsyncTask{
+		Id:                 uuid.NewV4().String(),
+		Status:             Ongoing,
+		StartedAtTimestamp: time.Now().Unix(),
+		startedAt:          time.Now(),
+		JobName:            job.Name,
+		JobVersion:         job.Version,
+		JobPath:            jobPath,
+		RequestMethod:      c.Request.Method,
+		RequestUrl:         c.Request.URL.String(),
+		RequestHeaders:     requestHeaders,
+		RequestBody:        string(requestBody),
+		Attempts:           0,
+		PubInstanceAddr:    taskStore.replicaDiscovery.MyAddr,
+		doneChannel:        make(chan string),
+	})
+	if err != nil {
+		return http.StatusInternalServerError, errors.Wrap(err, "failed to create async task")
+	}
+	logger.Info("Async Job Call task created", log.Ctx{
+		"taskId":     task.Id,
+		"jobName":    job.Name,
+		"jobVersion": job.Version,
+		"jobPath":    jobPath,
+	})
+	c.JSON(http.StatusCreated, gin.H{ // 201 Created
+		"task_id": task.Id,
+		"status":  task.Status,
+	})
+
 	go func() {
 		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
 
 		task.endedAt = ptr(time.Now())
+		task.EndedAtTimestamp = ptr(time.Now().Unix())
 		if err == nil {
 			task.Status = Completed
 			metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
@@ -140,7 +148,13 @@ func handleAsyncJobCallRequest(
 			})
 			metricAsyncJobCallsErros.Inc()
 		}
-		taskStore.UpdateTask(task)
+		err = taskStore.UpdateTask(task)
+		if err != nil {
+			logger.Error("Failed to update async task", log.Ctx{
+				"taskId": task.Id,
+				"error":  err.Error(),
+			})
+		}
 
 		// Notify subscribed listeners without blocking
 		select {
@@ -206,17 +220,10 @@ func makeBackgroundJobCall(
 	if err != nil {
 		return errors.Wrap(err, "failed to read response body")
 	}
-	task.ResponseData = bodyBytes
-	task.resultHeaders = make(map[string]string)
+	task.ResponseBody = string(bodyBytes)
+	task.ResponseHeaders = make(map[string]string)
 	for k, v := range res.Header {
-		task.resultHeaders[k] = strings.Join(v, ",")
-	}
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		err := json.Unmarshal(bodyBytes, &task.ResponseJson)
-		if err != nil {
-			return errors.Wrap(err, "failed to parse response body as JSON")
-		}
+		task.ResponseHeaders[k] = strings.Join(v, ",")
 	}
 
 	statusCode := strconv.Itoa(res.StatusCode)
@@ -416,21 +423,21 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 			"job_name":    task.JobName,
 			"job_version": task.JobVersion,
 			"job_path":    task.JobPath,
-			"http_method": task.HttpMethod,
+			"http_method": task.RequestMethod,
 			"started_at":  task.startedAt,
 			"ended_at":    task.endedAt,
 			"duration":    durationStr,
 			"error":       task.ErrorMessage,
 		})
 	} else if task.Status == Completed {
-		for k, v := range task.resultHeaders {
+		for k, v := range task.ResponseHeaders {
 			c.Writer.Header().Set(k, v)
 		}
-		contentType, ok := task.resultHeaders["Content-Type"]
+		contentType, ok := task.ResponseHeaders["Content-Type"]
 		if ok {
-			c.Data(*task.ResponseStatusCode, contentType, task.ResponseData)
+			c.Data(*task.ResponseStatusCode, contentType, []byte(task.ResponseBody))
 		} else {
-			c.Data(*task.ResponseStatusCode, "", task.ResponseData)
+			c.Data(*task.ResponseStatusCode, "", []byte(task.ResponseBody))
 		}
 	}
 
@@ -438,7 +445,14 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 		go func() {
 			// Delete task after short time in case of timeout occured while sending the result to the client
 			time.Sleep(30 * time.Second)
-			taskStore.DeleteTask(task.Id)
+			err := taskStore.DeleteTask(task.Id)
+			if err != nil {
+				logger.Error("Failed to delete async task", log.Ctx{
+					"taskId": task.Id,
+					"error":  err.Error(),
+				})
+				return
+			}
 			logger.Info("Retrieved task has been deleted", log.Ctx{
 				"taskId": task.Id,
 				"status": task.Status,
