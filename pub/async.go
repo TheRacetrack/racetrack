@@ -235,26 +235,6 @@ func makeBackgroundJobCall(
 	return nil
 }
 
-func TaskExistEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
-	taskId := c.Param("taskId")
-	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
-	logger.Info("Request: Task existsence check", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-
-	task, ok := taskStore.GetLocalTask(taskId)
-	if ok {
-		c.JSON(http.StatusOK, gin.H{
-			"task_id": task.Id,
-			"status":  task.Status,
-		})
-	} else {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":     fmt.Sprintf("Task with id %s not found", taskId),
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
-	}
-}
-
 // Wait using HTTP Long Polling until task is completed or timeout is reached
 // If task is unrecognized, check it in other Pub replicas and forward the request to the one that has it
 func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
@@ -265,7 +245,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 
 	_, ok := taskStore.GetLocalTask(taskId)
 	if ok {
-		SingleTaskPollEndpoint(c, cfg, taskStore, false)
+		LocalTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
 		storedTask, err := taskStore.GetStoredTask(taskId)
 
@@ -299,7 +279,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 			return
 		}
 
-		exists, err := taskExistsInReplica(replicaAddr, taskId)
+		exists, err := checkTaskExistsInReplica(replicaAddr, taskId)
 		if err != nil {
 			logger.Error("Failed to check async task in other Pub replica", log.Ctx{
 				"error":       err,
@@ -325,10 +305,80 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	}
 }
 
+func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
+	taskId := c.Param("taskId")
+	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
+	logger := log.New(log.Ctx{"requestId": requestId})
+	logger.Info("Request: async task status", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+
+	task, ok := taskStore.GetLocalTask(taskId)
+	if ok {
+		c.JSON(http.StatusOK, gin.H{
+			"task_id": task.Id,
+			"status":  task.Status,
+		})
+
+	} else {
+		storedTask, err := taskStore.GetStoredTask(taskId)
+
+		if errors.Is(err, ErrAsyncTaskNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":     fmt.Sprintf("Task with id %s not found", taskId),
+				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+			})
+			return
+		}
+
+		if err != nil {
+			logger.Error("Failed to check async task in task storage", log.Ctx{
+				"error":  err,
+				"taskId": taskId,
+			})
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":     errors.Wrap(err, "Failed to check async task in task storage").Error(),
+				"taskId":    taskId,
+				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+			})
+			return
+		}
+
+		replicaAddr := storedTask.PubInstanceAddr
+		if replicaAddr == "" || replicaAddr == taskStore.replicaDiscovery.MyAddr {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":     fmt.Sprintf("Task with id %s cannot be located on any replica", taskId),
+				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+			})
+			return
+		}
+
+		forwardTaskStatusToReplica(c, cfg, logger, taskStore, replicaAddr, taskId)
+	}
+}
+
+func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
+	taskId := c.Param("taskId")
+	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
+	logger := log.New(log.Ctx{"requestId": requestId})
+	logger.Info("Request: local task status", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+
+	task, ok := taskStore.GetLocalTask(taskId)
+	if ok {
+		c.JSON(http.StatusOK, gin.H{
+			"task_id": task.Id,
+			"status":  task.Status,
+		})
+	} else {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":     fmt.Sprintf("Task with id %s not found", taskId),
+			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+		})
+	}
+}
+
 // Wait using HTTP Long Polling until task is completed or timeout is reached
 // Internal endpoint for communication between Pub replicas
 // Ask single replica for task status without forwarding to other replicas
-func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
+func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{"requestId": requestId})
@@ -377,11 +427,11 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 	}
 }
 
-func taskExistsInReplica(
+func checkTaskExistsInReplica(
 	replicaAddr string,
 	taskId string,
 ) (bool, error) {
-	url := fmt.Sprintf("http://%s/pub/async/task/%s/exist", replicaAddr, taskId)
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/status/local", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create request to Pub replica")
@@ -398,6 +448,63 @@ func taskExistsInReplica(
 	}
 }
 
+func forwardTaskStatusToReplica(
+	c *gin.Context,
+	cfg *Config,
+	logger log.Logger,
+	taskStore *AsyncTaskStore,
+	replicaAddr string,
+	taskId string,
+) {
+	logger.Info("Forwarding async task status to other replica", log.Ctx{
+		"taskId":      taskId,
+		"replicaAddr": replicaAddr,
+	})
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/status/local", replicaAddr, taskId)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		logger.Error("Failed to make request to Pub replica", log.Ctx{
+			"error": err,
+			"url":   url,
+		})
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error":     "Failed to make request to Pub replica",
+			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+		})
+		return
+	}
+	res, err := taskStore.replicaHttpClient.Do(req)
+	if err != nil {
+		logger.Error("Failed to make request to Pub replica", log.Ctx{
+			"error": err,
+			"url":   url,
+		})
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error":     "Failed to make request to Pub replica",
+			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+		})
+		return
+	}
+
+	for k, v := range res.Header {
+		c.Writer.Header()[k] = v
+	}
+
+	defer res.Body.Close()
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		logger.Error("Failed to read response body", log.Ctx{
+			"error": err,
+		})
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"error":     errors.Wrap(err, "failed to read response body").Error(),
+			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+		})
+	}
+
+	c.Data(res.StatusCode, res.Header.Get("Content-Type"), bodyBytes)
+}
+
 func forwardTaskPollToReplica(
 	c *gin.Context,
 	cfg *Config,
@@ -410,7 +517,7 @@ func forwardTaskPollToReplica(
 		"taskId":      taskId,
 		"replicaAddr": replicaAddr,
 	})
-	url := fmt.Sprintf("http://%s/pub/async/task/%s/poll/single", replicaAddr, taskId)
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/poll/local", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		logger.Error("Failed to make request to Pub replica", log.Ctx{
