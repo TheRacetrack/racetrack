@@ -49,8 +49,11 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 		wgPollingRequests.Add(1)
 		go func(i int) {
 			defer wgPollingRequests.Done()
+			statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/status", addrs[i], taskId))
+			assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
+			assert.EqualValues(t, responsePayload["status"], "ongoing", "task should report ongoing status")
 			wgResultRequested.Done()
-			statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[i], taskId))
+			statusCode, responsePayload = getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[i], taskId))
 			assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
 			assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
 		}(i)
