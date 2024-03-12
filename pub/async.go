@@ -291,6 +291,36 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 		}
 
 		replicaAddr := storedTask.PubInstanceAddr
+		if replicaAddr == "" {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":     fmt.Sprintf("Task with id %s cannot be located on any replica", taskId),
+				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+			})
+			return
+		}
+
+		exists, err := taskExistsInReplica(replicaAddr, taskId)
+		if err != nil {
+			logger.Error("Failed to check async task in other Pub replica", log.Ctx{
+				"error":       err,
+				"replicaAddr": replicaAddr,
+				"taskId":      taskId,
+			})
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":     errors.Wrap(err, "Failed to check async task in other Pub replica").Error(),
+				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+			})
+			return
+		}
+
+		if !exists {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":     fmt.Sprintf("Task with id %s not found in a replica", taskId),
+				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+			})
+			return
+		}
+
 		forwardTaskPollToReplica(c, cfg, logger, taskStore, replicaAddr, taskId)
 	}
 }
@@ -344,6 +374,27 @@ func SingleTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSto
 		return
 	} else {
 		respondTaskResult(c, logger, task, taskStore)
+	}
+}
+
+func taskExistsInReplica(
+	replicaAddr string,
+	taskId string,
+) (bool, error) {
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/exist", replicaAddr, taskId)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to create request to Pub replica")
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to make request to Pub replica")
+	} else if res.StatusCode == http.StatusNotFound {
+		return false, nil
+	} else if res.StatusCode == http.StatusOK {
+		return true, nil
+	} else {
+		return false, errors.Errorf("Response error when checking task on other Pub replica: %s", res.Status)
 	}
 }
 
