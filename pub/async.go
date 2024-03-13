@@ -456,7 +456,7 @@ func forwardTaskStatusToReplica(
 	}
 	res, err := taskStore.replicaHttpClient.Do(req)
 	if err != nil {
-		respondError(c, cfg, logger, http.StatusServiceUnavailable,
+		respondError(c, cfg, logger, http.StatusNotFound,
 			"Failed to make request to Pub replica", err, map[string]any{
 				"taskId": taskId,
 				"url":    url,
@@ -467,7 +467,6 @@ func forwardTaskStatusToReplica(
 	for k, v := range res.Header {
 		c.Writer.Header()[k] = v
 	}
-
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -477,7 +476,6 @@ func forwardTaskStatusToReplica(
 			})
 		return
 	}
-
 	c.Data(res.StatusCode, res.Header.Get("Content-Type"), bodyBytes)
 }
 
@@ -516,7 +514,6 @@ func forwardTaskPollToReplica(
 	for k, v := range res.Header {
 		c.Writer.Header()[k] = v
 	}
-
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -526,7 +523,6 @@ func forwardTaskPollToReplica(
 			})
 		return
 	}
-
 	c.Data(res.StatusCode, res.Header.Get("Content-Type"), bodyBytes)
 }
 
