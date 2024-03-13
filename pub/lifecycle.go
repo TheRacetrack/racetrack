@@ -208,7 +208,7 @@ func (l *lifecycleClient) makeRequest(
 		body, _ := io.ReadAll(r.Body)
 		decodeErr := json.Unmarshal(body, errorResp)
 		if decodeErr == nil && errorResp.Error != "" {
-			errorCause := fmt.Sprintf("HTTP error %d for url %s %s: %s", r.StatusCode, method, url, errorResp.Error)
+			errorCause = fmt.Sprintf("HTTP error %d for url %s %s: %s", r.StatusCode, method, url, errorResp.Error)
 			if errorResp.Status != "" {
 				errorCause += ": " + errorResp.Status
 			}
