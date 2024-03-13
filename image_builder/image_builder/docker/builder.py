@@ -39,6 +39,7 @@ class DockerBuilder(ImageBuilder):
         env_vars: dict[str, str],
         deployment_id: str,
         plugin_engine: PluginEngine,
+        build_flags: list[str]
     ) -> tuple[list[str], str, str | None]:
         """Build images from manifest file in a workspace directory and return built image name"""
         _wait_for_docker_engine_ready()
@@ -62,7 +63,7 @@ class DockerBuilder(ImageBuilder):
             try:
                 _build_job_image(
                     config, manifest, workspace, tag, git_version, env_vars, deployment_id, job_type,
-                    metric_labels, image_index, images_num, logs_filename, logs, built_images,
+                    metric_labels, image_index, images_num, logs_filename, logs, built_images, build_flags
                 )
                 metric_images_built.inc()
 
@@ -94,6 +95,7 @@ def _build_job_image(
     logs_filename: str,
     logs: list[str],
     built_images: list[str],
+    build_flags: list[str],
 ):
     progress = f'({image_index+1}/{images_num})'
     update_deployment_phase(config, deployment_id, f'building image {progress}')
@@ -123,7 +125,7 @@ def _build_job_image(
         logger.info(f'building Job image {progress}: {image_name}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
         build_logs = build_container_image(
             config, image_name, dockerfile_path, job_workspace, job_type.jobtype_dir, metric_labels,
-            logs_filename, deployment_id, progress,
+            logs_filename, deployment_id, progress, build_flags,
         )
         logs.append(build_logs)
         logger.info(f'Job image {progress} has been built and pushed: {image_name}')
@@ -141,13 +143,18 @@ def build_container_image(
     logs_filename: str,
     deployment_id: str,
     progress: str,
+    build_flags: list[str],
 ) -> str:
     """Build OCI container image from Dockerfile and push it to registry. Return build logs output"""
     # Build with host network to propagate DNS settings (network is still isolated within an image-builder pod).
     # Job workspace is the default build context
+
+    build_flags_str: str = ' '.join(build_flags)
+
     logs = shell_output(
         f'DOCKER_BUILDKIT=1 docker build -t {image_name} -f {dockerfile_path} --network=host '
-        f'--build-context {JOBTYPE_BUILD_CONTEXT}="{jobtype_dir}" {job_workspace}',
+        f'--build-context {JOBTYPE_BUILD_CONTEXT}="{jobtype_dir}" {job_workspace} '
+        f'{build_flags_str} ',
         print_stdout=False,
         output_filename=logs_filename,
     )
