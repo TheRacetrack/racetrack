@@ -151,10 +151,9 @@ def build_container_image(
     # Job workspace is the default build context
 
     # Ensure bad flags did not sneak in
-    build_flags_set = set(build_flags)
-    approved_flags = {'--no-cache'}
-    build_flags_set = build_flags_set - approved_flags
-    assert build_flags_set == set()
+    approved_flags = ['--no-cache']
+    for flag in build_flags:
+        assert flag in approved_flags
     build_flags_str = ' '.join(build_flags)
 
     logs = shell_output(
