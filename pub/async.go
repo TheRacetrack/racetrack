@@ -279,7 +279,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 			return
 		}
 
-		exists, err := checkTaskExistsInReplica(replicaAddr, taskId)
+		exists, err := checkTaskExistsInReplica(taskStore, replicaAddr, taskId)
 		if err != nil {
 			logger.Error("Failed to check async task in other Pub replica", log.Ctx{
 				"error":       err,
@@ -359,7 +359,10 @@ func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSt
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{"requestId": requestId})
-	logger.Info("Request: local task status", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+	logger.Info("Request: local async task status", log.Ctx{
+		"method": c.Request.Method,
+		"path":   c.Request.URL.Path,
+	})
 
 	task, ok := taskStore.GetLocalTask(taskId)
 	if ok {
@@ -428,6 +431,7 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 }
 
 func checkTaskExistsInReplica(
+	taskStore *AsyncTaskStore,
 	replicaAddr string,
 	taskId string,
 ) (bool, error) {
@@ -436,7 +440,7 @@ func checkTaskExistsInReplica(
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create request to Pub replica")
 	}
-	res, err := http.DefaultClient.Do(req)
+	res, err := taskStore.replicaHttpClient.Do(req)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to make request to Pub replica")
 	} else if res.StatusCode == http.StatusNotFound {
@@ -530,7 +534,7 @@ func forwardTaskPollToReplica(
 		})
 		return
 	}
-	res, err := taskStore.replicaHttpClient.Do(req)
+	res, err := taskStore.replicaPollHttpClient.Do(req)
 	if err != nil {
 		logger.Error("Failed to make request to Pub replica", log.Ctx{
 			"error": err,

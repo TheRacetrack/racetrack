@@ -91,7 +91,7 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
 def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
     request_body: str = model.request_body.decode()
     response_body: str = model.response_body.decode()
-    ended_at: int | None = datetime_to_timestamp(model.ended_at)
+    ended_at: int | None = datetime_to_timestamp(model.ended_at) if model.ended_at is not None else None
     return AsyncJobCallDto(
         id=model.id,
         status=model.status,

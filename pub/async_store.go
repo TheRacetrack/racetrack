@@ -11,14 +11,15 @@ import (
 )
 
 type AsyncTaskStore struct {
-	localTasks        map[string]*AsyncTask
-	jobHttpClient     *http.Client
-	replicaHttpClient *http.Client
-	rwMutex           sync.RWMutex
-	longPollTimeout   time.Duration
-	replicaDiscovery  *replicaDiscovery
-	cleanUpTimeout    time.Duration
-	taskStorage       TaskStorage
+	localTasks            map[string]*AsyncTask
+	jobHttpClient         *http.Client
+	replicaPollHttpClient *http.Client
+	replicaHttpClient     *http.Client
+	rwMutex               sync.RWMutex
+	longPollTimeout       time.Duration
+	replicaDiscovery      *replicaDiscovery
+	cleanUpTimeout        time.Duration
+	taskStorage           TaskStorage
 }
 
 type AsyncTask struct {
@@ -61,8 +62,12 @@ func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStora
 			Timeout:   120 * time.Minute,
 			Transport: defaultAsyncJobTransport,
 		},
-		replicaHttpClient: &http.Client{
+		replicaPollHttpClient: &http.Client{
 			Timeout:   120 * time.Minute,
+			Transport: defaultAsyncReplicaTransport,
+		},
+		replicaHttpClient: &http.Client{
+			Timeout:   5 * time.Second,
 			Transport: defaultAsyncReplicaTransport,
 		},
 		longPollTimeout:  30 * time.Second,
