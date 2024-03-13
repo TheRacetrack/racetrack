@@ -67,7 +67,13 @@ func (s *replicaDiscovery) refreshAddrs() error {
 	if err != nil {
 		return err
 	}
-	s.MyAddr = fmt.Sprintf("%s:%v", myReplicaIP, s.listenPort)
+	myNewAddr := fmt.Sprintf("%s:%v", myReplicaIP, s.listenPort)
+	if s.MyAddr != myNewAddr {
+		s.MyAddr = myNewAddr
+		log.Info("Assigned Pub instance Address", log.Ctx{
+			"myAddr": myNewAddr,
+		})
+	}
 	return nil
 }
 

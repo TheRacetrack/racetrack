@@ -91,11 +91,12 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
 def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
     request_body: str = model.request_body.decode()
     response_body: str = model.response_body.decode()
+    ended_at: int | None = datetime_to_timestamp(model.ended_at)
     return AsyncJobCallDto(
         id=model.id,
         status=model.status,
-        started_at=model.started_at,
-        ended_at=model.ended_at,
+        started_at=datetime_to_timestamp(model.started_at),
+        ended_at=ended_at,
         error=model.error,
         job_name=model.job_name,
         job_version=model.job_version,
