@@ -4,6 +4,7 @@ import time
 
 import backoff
 
+from distutils.command import build
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.template import template_dockerfile
@@ -149,7 +150,12 @@ def build_container_image(
     # Build with host network to propagate DNS settings (network is still isolated within an image-builder pod).
     # Job workspace is the default build context
 
-    build_flags_str: str = ' '.join(build_flags)
+    # Ensure bad flags did not sneak in
+    build_flags_set = set(build_flags)
+    approved_flags = {'--no-cache'}
+    build_flags_set = build_flags_set - approved_flags
+    assert build_flags_set == set()
+    build_flags_str = ' '.join(build_flags)
 
     logs = shell_output(
         f'DOCKER_BUILDKIT=1 docker build -t {image_name} -f {dockerfile_path} --network=host '
