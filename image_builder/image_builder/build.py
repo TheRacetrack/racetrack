@@ -40,6 +40,7 @@ def build_job_image(
         build_context: Optional[str],
         deployment_id: str,
         plugin_engine: PluginEngine,
+        build_flags: list[str],
 ) -> Tuple[List[str], str, Optional[str]]:
     """Build image from given manifest and return built image name"""
     metric_labels = {
@@ -71,7 +72,7 @@ def build_job_image(
         logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
                     f'deployment ID: {deployment_id}, git version: {git_version}')
         image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
-                                                       build_env_vars, deployment_id, plugin_engine)
+                                                       build_env_vars, deployment_id, plugin_engine, build_flags)
 
         if config.clean_up_workspaces:
             with wrap_context('cleaning up the workspace'):

@@ -22,6 +22,7 @@ def redeploy_job(
     plugin_engine: PluginEngine,
     deployer_username: str,
     auth_subject: Optional[models.AuthSubject],
+    build_flags: list[str] = [], # Setting a default here let's us ignore build_flags when redeploying
 ):
     """Deploy (rebuild and reprovision) Job once again without knowing secrets"""
     job = read_job(job_name, job_version, config)
@@ -40,6 +41,7 @@ def redeploy_job(
                 auth_subject=auth_subject,
                 previous_job=job,
                 plugin_engine=plugin_engine,
+                build_flags=build_flags,
             )
 
         save_deployment_result(deployment.id, DeploymentStatus.DONE)
