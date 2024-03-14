@@ -81,11 +81,14 @@ func SetupEndpoints(
 	router.GET(baseUrl+"/async/task/:taskId/poll", func(c *gin.Context) {
 		TaskPollEndpoint(c, cfg, asyncTaskStore)
 	})
-	router.GET(baseUrl+"/async/task/:taskId/poll/single", func(c *gin.Context) {
-		SingleTaskPollEndpoint(c, cfg, asyncTaskStore, true)
+	router.GET(baseUrl+"/async/task/:taskId/poll/local", func(c *gin.Context) {
+		LocalTaskPollEndpoint(c, cfg, asyncTaskStore, true)
 	})
-	router.GET(baseUrl+"/async/task/:taskId/exist", func(c *gin.Context) {
-		TaskExistEndpoint(c, cfg, asyncTaskStore)
+	router.GET(baseUrl+"/async/task/:taskId/status", func(c *gin.Context) {
+		TaskStatusEndpoint(c, cfg, asyncTaskStore)
+	})
+	router.GET(baseUrl+"/async/task/:taskId/status/local", func(c *gin.Context) {
+		LocalTaskStatusEndpoint(c, cfg, asyncTaskStore)
 	})
 
 	router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
