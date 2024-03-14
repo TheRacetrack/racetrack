@@ -153,7 +153,8 @@ def build_container_image(
     # Ensure bad flags did not sneak in
     approved_flags = ['--no-cache']
     for flag in build_flags:
-        assert flag in approved_flags
+        if flag not in approved_flags:
+            raise ValueError(f"Flag '{flag}' is not approved for use.")
     build_flags_str = ' '.join(build_flags)
 
     logs = shell_output(
