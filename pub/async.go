@@ -50,7 +50,7 @@ type AsyncTask struct {
 }
 
 type AsyncTaskStatusDto struct {
-	Id     string     `json:"id"`
+	Id     string     `json:"task_id"`
 	Status TaskStatus `json:"status"`
 }
 
@@ -300,8 +300,8 @@ func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSt
 	taskStore.rwMutex.RUnlock()
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
-			"id":     task.id,
-			"status": task.status,
+			"task_id": task.id,
+			"status":  task.status,
 		})
 	} else {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -322,8 +322,8 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 	taskStore.rwMutex.RUnlock()
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
-			"id":     task.id,
-			"status": task.status,
+			"task_id": task.id,
+			"status":  task.status,
 		})
 
 	} else {
@@ -361,8 +361,8 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 						"replicaAddr": replicaAddr,
 					})
 					c.JSON(http.StatusOK, gin.H{
-						"id":     taskId,
-						"status": status,
+						"task_id": taskId,
+						"status":  status,
 					})
 					return
 				}
