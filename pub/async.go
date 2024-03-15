@@ -333,7 +333,7 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 				"otherReplicaAddrs": taskStore.replicaDiscovery.otherReplicaAddrs,
 			})
 			otherReplicaAddrs := taskStore.replicaDiscovery.otherReplicaAddrs
-			foundStatusCh := make(chan string)
+			foundStatusCh := make(chan Pair[string, string])
 			for _, replicaAddr := range otherReplicaAddrs {
 				go func(replicaAddr string) {
 					exists, status, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
@@ -343,19 +343,23 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 							"taskId":      taskId,
 							"replicaAddr": replicaAddr,
 						})
-						foundStatusCh <- ""
-						return
-					}
-					if exists {
-						foundStatusCh <- status
+						foundStatusCh <- Pair[string, string]{replicaAddr, ""}
+					} else if exists {
+						foundStatusCh <- Pair[string, string]{replicaAddr, status}
 					} else {
-						foundStatusCh <- ""
+						foundStatusCh <- Pair[string, string]{replicaAddr, ""}
 					}
 				}(replicaAddr)
 			}
 			for range otherReplicaAddrs {
-				status := <-foundStatusCh
+				pair := <-foundStatusCh
+				replicaAddr := pair.First
+				status := pair.Second
 				if status != "" {
+					logger.Debug("Task found in other replica", log.Ctx{
+						"taskId":      taskId,
+						"replicaAddr": replicaAddr,
+					})
 					c.JSON(http.StatusOK, gin.H{
 						"id":     taskId,
 						"status": status,
@@ -365,6 +369,10 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 			}
 		}
 
+		logger.Info("Task not found in any replica", log.Ctx{
+			"taskId":            taskId,
+			"otherReplicaAddrs": taskStore.replicaDiscovery.otherReplicaAddrs,
+		})
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":     fmt.Sprintf("Task with id %s not found", taskId),
 			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
@@ -489,7 +497,7 @@ func checkTaskStatusInReplica(
 	replicaAddr string,
 	taskId string,
 ) (bool, string, error) {
-	url := fmt.Sprintf("http://%s/pub/async/task/%s/exist", replicaAddr, taskId)
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/status/local", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, "", errors.Wrap(err, "failed to create request to Pub replica")

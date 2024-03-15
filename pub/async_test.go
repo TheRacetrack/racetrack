@@ -48,15 +48,19 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 		wgPollingRequests.Add(1)
 		go func(i int) {
 			defer wgPollingRequests.Done()
+			statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/status", addrs[i], taskId))
+			assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
+			assert.EqualValues(t, responsePayload["status"], "ongoing", "task should report ongoing status")
+
 			wgResultRequested.Done()
-			statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[i], taskId))
+			statusCode, responsePayload = getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[i], taskId))
 			assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
 			assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
 		}(i)
 	}
 	wgPollingRequests.Wait()
 
-	statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[0], "no-such-task"))
+	statusCode, _ := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[0], "no-such-task"))
 	assert.Equal(t, statusCode, http.StatusNotFound, "should return status 404 for not existing task")
 
 	for i := 0; i < replicaNum; i++ {
@@ -175,6 +179,11 @@ func getJsonRequest(url string) (int, map[string]interface{}) {
 	response, err := client.Do(request)
 	if err != nil {
 		panic(err)
+	}
+	if response.StatusCode != 200 {
+		defer response.Body.Close()
+		bodyBytes, _ := io.ReadAll(response.Body)
+		fmt.Printf("Response %d: %s\n", response.StatusCode, bodyBytes)
 	}
 	return response.StatusCode, readJsonResponse(response)
 }

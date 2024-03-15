@@ -13,3 +13,8 @@ func MapSlice[T any, R any](input []T, mapper func(T) R) []R {
 	}
 	return s2
 }
+
+type Pair[T, U any] struct {
+	First  T
+	Second U
+}
