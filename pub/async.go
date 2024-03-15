@@ -23,9 +23,9 @@ var defaultAsyncReplicaTransport http.RoundTripper = defaultHttpTransport()
 
 type AsyncTaskStore struct {
 	tasks                 map[string]*AsyncTask
-	jobHttpClient         *http.Client
-	replicaPollHttpClient *http.Client
-	replicaHttpClient     *http.Client
+	jobHttpClient         *http.Client // HTTP client to make requests to jobs
+	replicaPollHttpClient *http.Client // HTTP client to poll result from other replica
+	replicaHttpClient     *http.Client // HTTP client to check task status in other replica
 	rwMutex               sync.RWMutex
 	longPollTimeout       time.Duration
 	replicaDiscovery      *replicaDiscovery
@@ -285,6 +285,7 @@ func makeBackgroundJobCall(
 	return nil
 }
 
+// Get status of a task in this local replica instance
 func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
@@ -310,6 +311,8 @@ func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSt
 	}
 }
 
+// Get status of an async task in all Pub instances.
+// If a task is not found, check it in other Pub replicas
 func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
@@ -435,9 +438,9 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	}
 }
 
-// Wait using HTTP Long Polling until task is completed or timeout is reached
-// Internal endpoint for communication between Pub replicas
-// Ask single replica for task status without forwarding to other replicas
+// Wait using HTTP Long Polling until task is completed or timeout is reached.
+// It's and internal endpoint used for communication between Pub replicas.
+// It checks the result locally and does not search in other replicas.
 func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
