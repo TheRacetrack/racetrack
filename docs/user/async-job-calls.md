@@ -89,9 +89,9 @@ Path parameters:
 #### Response
 
 - `200 OK` -
-  the task is completed, the response payload contains the result of the job call
+  the task has completed successfully, the response payload contains the result of the job call
   in the JSON format (in the same format returned by the classic synchronous call)
-  with the original HTTP status code and the headers
+  with the original HTTP status code and the headers.
 - `202 Accepted`, `408 Request Timeout` or `504 Gateway Timeout` -
   the task is still in progress, the client should repeat the request
 - `404 Not Found` -
@@ -99,7 +99,9 @@ Path parameters:
   It's also possible that the server may have been restarted while the task was in progress.
   The client should initiate a new task.
 - `500 Internal Server Error` -
-  the task has failed. Details of an error will be included in the HTTP body.
+  the task has failed.
+  Details of an error will be included in the HTTP body in the JSON format with the following fields:
+    - `error` (**string**) - description of the error cause
 
 #### Request / Response Sample
 ```sh
@@ -112,6 +114,42 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 42
+```
+
+### 3. Checking status of the task
+This is an optional endpoint for checking the current status of the task.
+This endpoint should return immediately, without waiting for the task to complete.
+
+#### Request
+`GET` `/pub/async/task/{task_id}/status`
+
+Path parameters:
+- `task_id` (**string**) - the unique UUID identifier of the task
+
+#### Response
+- `200 OK` - if task exists. Response is the JSON payload with the following fields:
+    - `task_id` (**string**) - a unique UUID identifier of the task
+    - `status` (**string**) - current status of a task. Can be one of the following:
+        - `ongoing` - the task is still in progress
+        - `completed` - the task has successfully completed and it's ready to retrieve the result
+        - `failed` - the task has failed. Error details can be checked at the polling endpoint.
+- `404 Not Found` -
+  This indicates that the task ID provided is invalid or the task is not found.
+
+#### Request / Response Sample
+```sh
+curl --request GET \
+  --url http://127.0.0.1:7005/pub/async/task/16b472ec-77c7-464a-932c-1cb2efc3e728/status \
+  --header 'X-Racetrack-Auth: eyJhbGciOiJIUz'
+```
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "task_id": "16b472ec-77c7-464a-932c-1cb2efc3e728",
+    "status": "ongoing"
+}
 ```
 
 ## Sample client implementation in Python
