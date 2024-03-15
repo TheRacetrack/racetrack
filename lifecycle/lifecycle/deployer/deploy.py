@@ -37,6 +37,7 @@ def deploy_new_job(
     force: bool,
     auth_subject: models.AuthSubject,
     plugin_engine: PluginEngine,
+    build_flags: list[str],
 ):
     """Deploy (build and provision) new Job instance, providing secrets"""
     if not config.allow_job_overwrite:
@@ -57,7 +58,7 @@ def deploy_new_job(
 
     build_and_provision(
         config, manifest, job_secrets, deployment, build_context,
-        auth_subject, None, plugin_engine,
+        auth_subject, None, plugin_engine, build_flags
     )
 
 
@@ -70,10 +71,11 @@ def build_and_provision(
     auth_subject: Optional[models.AuthSubject],
     previous_job: Optional[JobDto],
     plugin_engine: PluginEngine,
+    build_flags: list[str],
 ):
     """Build a Job image from a manifest file and provision it (deploy to a cluster)"""
     tag = now().strftime(r'%Y-%m-%dT%H%M%S')
-    build_job(config, manifest, job_secrets, deployment, build_context, tag)
+    build_job(config, manifest, job_secrets, deployment, build_context, tag, build_flags)
     provision_job(
         config, manifest, tag, job_secrets.secret_build_env,
         job_secrets.secret_runtime_env, deployment,
@@ -91,6 +93,7 @@ def deploy_job_in_background(
     plugin_engine: PluginEngine,
     username: str,
     auth_subject: models.AuthSubject,
+    build_flags: list[str],
 ) -> str:
     """
     Schedule deployment of a job in background
@@ -100,7 +103,7 @@ def deploy_job_in_background(
     deployment = create_deployment(manifest, username, infra_target)
     logger.info(f'starting deployment {deployment.id} in background')
     args = (config, manifest, git_credentials, secret_vars, deployment,
-            build_context, force, plugin_engine, auth_subject)
+            build_context, force, plugin_engine, auth_subject, build_flags)
     thread = threading.Thread(target=deploy_job_saving_result, args=args, daemon=True)
     thread.start()
     return deployment.id
@@ -116,13 +119,14 @@ def deploy_job_saving_result(
     force: bool,
     plugin_engine: PluginEngine,
     auth_subject: models.AuthSubject,
+    build_flags: list[str],
 ):
     """Deploy a Job storing its faulty or successful result in DB"""
     try:
         wait_for_image_builder_ready(config)
         deploy_new_job(
             config, manifest, git_credentials, secret_vars, deployment,
-            build_context, force, auth_subject, plugin_engine,
+            build_context, force, auth_subject, plugin_engine, build_flags,
         )
         save_deployment_result(deployment.id, DeploymentStatus.DONE)
     except BaseException as e:
