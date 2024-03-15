@@ -439,7 +439,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 }
 
 // Wait using HTTP Long Polling until task is completed or timeout is reached.
-// It's and internal endpoint used for communication between Pub replicas.
+// Its an internal endpoint used for communication between Pub replicas.
 // It checks the result locally and does not search in other replicas.
 func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
 	taskId := c.Param("taskId")
