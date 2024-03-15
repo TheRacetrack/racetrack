@@ -166,7 +166,7 @@ func handleAsyncJobCallRequest(
 	}
 
 	go func() {
-		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, logger, taskStore, task, requestId, callerName)
+		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
 
 		task.endedAt = ptr(time.Now())
 		if err == nil {
@@ -216,7 +216,6 @@ func makeBackgroundJobCall(
 	requestBody []byte,
 	job *JobDetails,
 	cfg *Config,
-	logger log.Logger,
 	taskStore *AsyncTaskStore,
 	task *AsyncTask,
 	requestId string,
