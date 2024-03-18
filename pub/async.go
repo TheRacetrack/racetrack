@@ -89,6 +89,7 @@ func handleAsyncJobCallRequest(
 		Attempts:           0,
 		PubInstanceAddr:    taskStore.replicaDiscovery.MyAddr,
 		doneChannel:        make(chan string),
+		quitChannel:        make(chan bool, 1),
 	})
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "failed to create async task")
@@ -276,7 +277,6 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 			"task_id": task.Id,
 			"status":  task.Status,
 		})
-
 	} else {
 		storedTask, err := taskStore.GetStoredTask(taskId)
 
@@ -287,7 +287,6 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 			})
 			return
 		}
-
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
 				"Failed to check async task in task storage", err, map[string]any{
@@ -295,7 +294,6 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 				})
 			return
 		}
-
 		replicaAddr := storedTask.PubInstanceAddr
 		if replicaAddr == "" || replicaAddr == taskStore.replicaDiscovery.MyAddr {
 			respondError(c, cfg, logger, http.StatusNotFound,
@@ -308,27 +306,22 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		exists, status, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusNotFound,
-				"Failed to check task on other Pub replica", err, map[string]any{
+				"Failed to check async task in a supposed Pub replica", err, map[string]any{
 					"taskId":      taskId,
 					"replicaAddr": replicaAddr,
 				})
-		} else if exists {
-			logger.Debug("Task found in other replica", log.Ctx{
-				"taskId":      taskId,
-				"replicaAddr": replicaAddr,
-			})
+		} else if !exists {
+			respondError(c, cfg, logger, http.StatusNotFound,
+				"Task doesn't exist in a supposed Pub replica", err, map[string]any{
+					"taskId":      taskId,
+					"replicaAddr": replicaAddr,
+				})
+		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"task_id": taskId,
 				"status":  status,
 			})
-		} else {
-			respondError(c, cfg, logger, http.StatusNotFound,
-				"Task doesn't really exist on other Pub replica", err, map[string]any{
-					"taskId":      taskId,
-					"replicaAddr": replicaAddr,
-				})
 		}
-
 	}
 }
 
@@ -349,11 +342,10 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 		if errors.Is(err, ErrAsyncTaskNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
 				"error":     fmt.Sprintf("Task with id %s not found", taskId),
-				"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
+				"requestId": requestId,
 			})
 			return
 		}
-
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
 				"Failed to check async task in task storage", err, map[string]any{
@@ -361,11 +353,10 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 				})
 			return
 		}
-
 		replicaAddr := storedTask.PubInstanceAddr
 		if replicaAddr == "" {
 			respondError(c, cfg, logger, http.StatusNotFound,
-				"Task with cannot be located on any replica", nil, map[string]any{
+				"Task cannot be located on any replica", nil, map[string]any{
 					"taskId": taskId,
 				})
 			return
@@ -374,16 +365,15 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 		exists, _, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
-				"Failed to check async task in other Pub replica", err, map[string]any{
+				"Failed to check async task in a supposed Pub replica", err, map[string]any{
 					"replicaAddr": replicaAddr,
 					"taskId":      taskId,
 				})
 			return
 		}
-
 		if !exists {
 			respondError(c, cfg, logger, http.StatusNotFound,
-				"Task not found in a replica", nil, map[string]any{
+				"Task not found in a supposed replica", nil, map[string]any{
 					"replicaAddr": replicaAddr,
 					"taskId":      taskId,
 				})
@@ -426,6 +416,9 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 		break
 	case <-c.Request.Context().Done():
 		c.String(http.StatusGatewayTimeout, "Request canceled")
+		return
+	case <-task.quitChannel:
+		c.String(http.StatusRequestTimeout, "Request time-out due to termination signal")
 		return
 	case <-time.After(taskStore.longPollTimeout):
 		break

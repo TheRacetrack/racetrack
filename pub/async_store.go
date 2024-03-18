@@ -46,6 +46,7 @@ type AsyncTask struct {
 	startedAt          time.Time
 	endedAt            *time.Time
 	doneChannel        chan string // channel to notify when task is done
+	quitChannel        chan bool   // channel to notify about program termination
 }
 
 type AsyncTaskStatusDto struct {
@@ -89,8 +90,8 @@ func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStora
 
 func (s *AsyncTaskStore) CreateTask(task *AsyncTask) (*AsyncTask, error) {
 	s.rwMutex.Lock()
-	defer s.rwMutex.Unlock()
 	s.localTasks[task.Id] = task
+	s.rwMutex.Unlock()
 	err := s.taskStorage.Create(task)
 	if err != nil {
 		return nil, err
@@ -100,10 +101,9 @@ func (s *AsyncTaskStore) CreateTask(task *AsyncTask) (*AsyncTask, error) {
 
 func (s *AsyncTaskStore) UpdateTask(task *AsyncTask) error {
 	s.rwMutex.Lock()
-	defer s.rwMutex.Unlock()
 	s.localTasks[task.Id] = task
-	err := s.taskStorage.Update(task)
-	return err
+	s.rwMutex.Unlock()
+	return s.taskStorage.Update(task)
 }
 
 func (s *AsyncTaskStore) GetLocalTask(taskId string) (*AsyncTask, bool) {
@@ -120,10 +120,9 @@ func (s *AsyncTaskStore) GetStoredTask(taskId string) (*AsyncTask, error) {
 
 func (s *AsyncTaskStore) DeleteTask(taskId string) error {
 	s.rwMutex.Lock()
-	defer s.rwMutex.Unlock()
 	delete(s.localTasks, taskId)
-	err := s.taskStorage.Delete(taskId)
-	return err
+	s.rwMutex.Unlock()
+	return s.taskStorage.Delete(taskId)
 }
 
 func (s *AsyncTaskStore) cleanUpRoutine() {
@@ -138,23 +137,31 @@ func (s *AsyncTaskStore) cleanUpRoutine() {
 				})
 				delete(s.localTasks, taskId)
 
-				go func(taskId string) {
+				go func(task *AsyncTask) {
 					err := s.DeleteTask(task.Id)
 					if err != nil {
 						log.Error("Failed to delete obsolete async task", log.Ctx{
 							"taskId": task.Id,
 							"error":  err.Error(),
 						})
-						return
 					}
-					log.Info("Obsolete task has been deleted", log.Ctx{
-						"taskId": task.Id,
-						"status": task.Status,
-					})
-				}(taskId)
+				}(task)
 			}
 		}
 		s.rwMutex.Unlock()
+	}
+}
+
+func (s *AsyncTaskStore) CancelOngoingRequests() {
+	if len(s.localTasks) == 0 {
+		return
+	}
+	log.Info("Cancelling async task requests", log.Ctx{"count": len(s.localTasks)})
+	for _, task := range s.localTasks {
+		select {
+		case task.quitChannel <- true:
+		default:
+		}
 	}
 }
 
