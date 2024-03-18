@@ -180,5 +180,10 @@ func getJsonRequest(url string) (int, map[string]interface{}) {
 	if err != nil {
 		panic(err)
 	}
+	if response.StatusCode != 200 {
+		defer response.Body.Close()
+		bodyBytes, _ := io.ReadAll(response.Body)
+		fmt.Printf("Response %d: %s\n", response.StatusCode, bodyBytes)
+	}
 	return response.StatusCode, readJsonResponse(response)
 }

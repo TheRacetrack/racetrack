@@ -31,11 +31,13 @@ def build_job(
     deployment: DeploymentDto,
     build_context: Optional[str],
     tag: str,
+    build_flags: list[str],
 ):
     with wrap_context('building an image'):
         save_deployment_phase(deployment.id, 'building image')
         _send_image_build_request(config, manifest, job_secrets.git_credentials,
-                                  job_secrets.secret_build_env, tag, deployment, build_context)
+                                  job_secrets.secret_build_env, tag, deployment, build_context,
+                                  build_flags)
 
 
 def _send_image_build_request(
@@ -46,6 +48,7 @@ def _send_image_build_request(
     tag: str,
     deployment: DeploymentDto,
     build_context: Optional[str],
+    build_flags: list[str],
 ):
     """
     Send request to Image Builder API in order to build image at given workspace
@@ -54,7 +57,7 @@ def _send_image_build_request(
     # see `image_builder.api._setup_api_endpoints`
     r = Requests.post(
         f'{config.image_builder_url}/api/v1/build',
-        json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment),
+        json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment, build_flags),
     )
     response = parse_response_object(r, 'Image builder API error')
     build_logs: str = response['logs']
@@ -74,6 +77,7 @@ def _build_image_request_payload(
     tag: str,
     build_context: Optional[str],
     deployment: DeploymentDto,
+    build_flags: list[str],
 ) -> Dict:
     return {
         "manifest": datamodel_to_dict(manifest),
@@ -82,6 +86,7 @@ def _build_image_request_payload(
         "tag": tag,
         "build_context": build_context,
         "deployment_id": deployment.id,
+        "build_flags": build_flags,
     }
 
 
@@ -97,7 +102,7 @@ def build_job_in_background(
 ) -> str:
     infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
     deployment = create_deployment(manifest, username, infra_target)
-    
+
     logger.info(f'started building job {deployment.id} in background')
     args = (config, manifest, git_credentials, secret_vars, deployment, build_context)
     thread = threading.Thread(target=_build_job_saving_result, args=args, daemon=True)
@@ -113,6 +118,7 @@ def _build_job_saving_result(
     secret_vars: SecretVars,
     deployment: DeploymentDto,
     build_context: Optional[str],
+    build_flags: list[str],
 ):
     """Deploy a Job storing its faulty or successful result in DB"""
     try:
@@ -125,7 +131,7 @@ def _build_job_saving_result(
             secret_runtime_env=secret_vars.runtime_env,
         )
 
-        build_job(config, manifest, job_secrets, deployment, build_context, tag)
+        build_job(config, manifest, job_secrets, deployment, build_context, tag, build_flags)
         save_deployment_result(deployment.id, DeploymentStatus.DONE)
     except BaseException as e:
         log_exception(e)
