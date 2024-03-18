@@ -12,9 +12,9 @@ import (
 
 type AsyncTaskStore struct {
 	localTasks            map[string]*AsyncTask
-	jobHttpClient         *http.Client
-	replicaPollHttpClient *http.Client
-	replicaHttpClient     *http.Client
+	jobHttpClient         *http.Client // HTTP client to make requests to jobs
+	replicaPollHttpClient *http.Client // HTTP client to poll result from other replica
+	replicaHttpClient     *http.Client // HTTP client to check task status in other replica
 	rwMutex               sync.RWMutex
 	longPollTimeout       time.Duration
 	replicaDiscovery      *replicaDiscovery
@@ -43,6 +43,11 @@ type AsyncTask struct {
 	startedAt          time.Time
 	endedAt            *time.Time
 	doneChannel        chan string // channel to notify when task is done
+}
+
+type AsyncTaskStatusDto struct {
+	Id     string     `json:"task_id"`
+	Status TaskStatus `json:"status"`
 }
 
 type TaskStatus string
@@ -129,6 +134,21 @@ func (s *AsyncTaskStore) cleanUpRoutine() {
 					"started_at": task.startedAt,
 				})
 				delete(s.localTasks, taskId)
+
+				go func(taskId string) {
+					err := s.DeleteTask(task.Id)
+					if err != nil {
+						log.Error("Failed to delete obsolete async task", log.Ctx{
+							"taskId": task.Id,
+							"error":  err.Error(),
+						})
+						return
+					}
+					log.Info("Obsolete task has been deleted", log.Ctx{
+						"taskId": task.Id,
+						"status": task.Status,
+					})
+				}(taskId)
 			}
 		}
 		s.rwMutex.Unlock()

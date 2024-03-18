@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -299,7 +300,7 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusNotFound,
 				"Failed to check task on other Pub replica", err, map[string]any{
-					"taskId": taskId,
+					"taskId":      taskId,
 					"replicaAddr": replicaAddr,
 				})
 		} else if exists {
@@ -314,7 +315,7 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		} else {
 			respondError(c, cfg, logger, http.StatusNotFound,
 				"Task doesn't really exist on other Pub replica", err, map[string]any{
-					"taskId": taskId,
+					"taskId":      taskId,
 					"replicaAddr": replicaAddr,
 				})
 		}
@@ -361,7 +362,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 			return
 		}
 
-		exists, err := checkTaskExistsInReplica(taskStore, replicaAddr, taskId)
+		exists, _, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
 				"Failed to check async task in other Pub replica", err, map[string]any{
@@ -436,7 +437,7 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 	}
 }
 
-func checkTaskExistsInReplica(
+func checkTaskStatusInReplica(
 	taskStore *AsyncTaskStore,
 	replicaAddr string,
 	taskId string,
@@ -565,24 +566,6 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 				"status": task.Status,
 			})
 		}()
-	}
-}
-
-func (s *AsyncTaskStore) cleanUpRoutine() {
-	for {
-		time.Sleep(5 * time.Minute)
-		s.rwMutex.Lock()
-		for taskId, task := range s.tasks {
-			if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
-				log.Info("Cleaning up obsolete async call task", log.Ctx{
-					"taskId":     task.id,
-					"started_at": task.startedAt,
-				})
-				// TODO task store
-				delete(s.tasks, taskId)
-			}
-		}
-		s.rwMutex.Unlock()
 	}
 }
 
