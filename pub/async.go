@@ -17,9 +17,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-var defaultAsyncJobTransport http.RoundTripper = defaultHttpTransport()
-var defaultAsyncReplicaTransport http.RoundTripper = defaultHttpTransport()
-
 // Start a new async job call in background and return task ID
 func AsyncJobCallEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, jobPath string) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
@@ -65,7 +62,6 @@ func handleAsyncJobCallRequest(
 	}
 
 	metricAsyncJobCallsStarted.WithLabelValues(job.Name, job.Version).Inc()
-
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
 	requestHeaders := make(map[string]string)
@@ -108,60 +104,73 @@ func handleAsyncJobCallRequest(
 		"status":  task.Status,
 	})
 
-	go func() {
-		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
-
-		task.endedAt = ptr(time.Now())
-		task.EndedAtTimestamp = ptr(time.Now().Unix())
-		if err == nil {
-			task.Status = Completed
-			metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
-			duration := task.endedAt.Sub(task.startedAt).String()
-			logger.Info("Async Job Call task has ended", log.Ctx{
-				"taskId":     task.Id,
-				"jobName":    job.Name,
-				"jobVersion": job.Version,
-				"jobPath":    targetUrl.Path,
-				"caller":     callerName,
-				"statusCode": *task.ResponseStatusCode,
-				"duration":   duration,
-			})
-		} else {
-			task.Status = Failed
-			errorStr := err.Error()
-			task.ErrorMessage = &errorStr
-			logger.Error("Background Job Call request error", log.Ctx{
-				"taskId":     task.Id,
-				"jobName":    job.Name,
-				"jobVersion": job.Version,
-				"jobStatus":  job.Status,
-				"caller":     callerName,
-				"host":       targetUrl.Host,
-				"path":       targetUrl.Path,
-				"error":      errorStr,
-			})
-			metricAsyncJobCallsErros.Inc()
-		}
-		err = taskStore.UpdateTask(task)
-		if err != nil {
-			logger.Error("Failed to update async task", log.Ctx{
-				"taskId": task.Id,
-				"error":  err.Error(),
-			})
-		}
-
-		// Notify subscribed listeners without blocking
-		select {
-		case task.doneChannel <- task.Id:
-		default:
-		}
-		close(task.doneChannel)
-	}()
-
+	go handleBackgroundJobCall(c, cfg, taskStore, logger, job, task, targetUrl, requestBody, requestId, callerName)
 	return http.StatusOK, nil
 }
 
-func makeBackgroundJobCall(
+func handleBackgroundJobCall(
+	c *gin.Context,
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	logger log.Logger,
+	job *JobDetails,
+	task *AsyncTask,
+	targetUrl url.URL,
+	requestBody []byte,
+	requestId string,
+	callerName string,
+) {
+	err := forwardJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
+
+	task.endedAt = ptr(time.Now())
+	task.EndedAtTimestamp = ptr(time.Now().Unix())
+	if err == nil {
+		task.Status = Completed
+		metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
+		duration := task.endedAt.Sub(task.startedAt).String()
+		logger.Info("Async Job Call task has ended", log.Ctx{
+			"taskId":     task.Id,
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"jobPath":    targetUrl.Path,
+			"caller":     callerName,
+			"statusCode": *task.ResponseStatusCode,
+			"duration":   duration,
+		})
+	} else {
+		task.Status = Failed
+		errorStr := err.Error()
+		task.ErrorMessage = &errorStr
+		logger.Error("Background Job Call request error", log.Ctx{
+			"taskId":     task.Id,
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"jobStatus":  job.Status,
+			"caller":     callerName,
+			"host":       targetUrl.Host,
+			"path":       targetUrl.Path,
+			"error":      errorStr,
+		})
+		metricAsyncJobCallsErros.Inc()
+	}
+	err = taskStore.UpdateTask(task)
+	if err != nil {
+		logger.Error("Failed to update async task", log.Ctx{
+			"taskId": task.Id,
+			"error":  err.Error(),
+		})
+	}
+
+	// Notify subscribed listeners without blocking
+	select {
+	case task.doneChannel <- task.Id:
+	default:
+	}
+	close(task.doneChannel)
+}
+
+// Forward an async job call to the target Job and store the result of the task
+func forwardJobCall(
 	target url.URL,
 	c *gin.Context,
 	requestBody []byte,

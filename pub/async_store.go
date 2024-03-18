@@ -10,6 +10,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+var defaultAsyncJobTransport http.RoundTripper = defaultHttpTransport()
+var defaultAsyncReplicaTransport http.RoundTripper = defaultHttpTransport()
+
 type AsyncTaskStore struct {
 	localTasks            map[string]*AsyncTask
 	jobHttpClient         *http.Client // HTTP client to make requests to jobs
