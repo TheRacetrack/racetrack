@@ -72,7 +72,7 @@ func NewMasterLifecycleClient(
 	internalToken string,
 	requestTracingHeader string,
 	requestId string,
-) LifecycleClient {
+) *lifecycleClient {
 	return &lifecycleClient{
 		lifecycleUrl:  lifecycleUrl,
 		authToken:     authToken,
@@ -235,4 +235,27 @@ func (l *lifecycleClient) makeRequest(
 	}
 	metricLifecycleCallTime.Add(time.Since(startTime).Seconds())
 	return nil
+}
+
+func getJobDetails(
+	cfg *Config,
+	jobName string,
+	jobVersion string,
+) (*JobDetails, error) {
+	lifecycleClient := NewMasterLifecycleClient(cfg.LifecycleUrl, "",
+		cfg.LifecycleToken, cfg.RequestTracingHeader, "")
+	job, err := lifecycleClient.GetJobDetails(jobName, jobVersion)
+	if err != nil {
+		if errors.As(err, &AuthenticationFailure{}) {
+			if cfg.AuthDebug {
+				return nil, errors.Wrap(err, "Unauthenticated")
+			} else {
+				return nil, errors.New("Unauthenticated")
+			}
+		} else if errors.As(err, &NotFoundError{}) {
+			return nil, errors.Wrap(err, "Job was not found")
+		}
+		return nil, errors.Wrap(err, "Getting job details")
+	}
+	return job, nil
 }

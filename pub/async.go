@@ -68,6 +68,8 @@ func handleAsyncJobCallRequest(
 	for k, v := range c.Request.Header {
 		requestHeaders[k] = strings.Join(v, ",")
 	}
+	requestHeaders[cfg.RequestTracingHeader] = requestId
+	requestHeaders[cfg.CallerNameHeader] = callerName
 	defer c.Request.Body.Close()
 	requestBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
@@ -105,12 +107,11 @@ func handleAsyncJobCallRequest(
 		"status":  task.Status,
 	})
 
-	go handleBackgroundJobCall(c, cfg, taskStore, logger, job, task, targetUrl, requestBody, requestId, callerName)
+	go handleBackgroundJobCall(cfg, taskStore, logger, job, task, targetUrl, requestBody, requestId, callerName)
 	return http.StatusOK, nil
 }
 
 func handleBackgroundJobCall(
-	c *gin.Context,
 	cfg *Config,
 	taskStore *AsyncTaskStore,
 	logger log.Logger,
@@ -121,7 +122,7 @@ func handleBackgroundJobCall(
 	requestId string,
 	callerName string,
 ) {
-	err := forwardJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
+	err := forwardJobCall(targetUrl, requestBody, cfg, taskStore, task, requestId, callerName)
 
 	task.endedAt = ptr(time.Now())
 	task.EndedAtTimestamp = ptr(time.Now().Unix())
@@ -146,7 +147,6 @@ func handleBackgroundJobCall(
 			"taskId":     task.Id,
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
-			"jobStatus":  job.Status,
 			"caller":     callerName,
 			"host":       targetUrl.Host,
 			"path":       targetUrl.Path,
@@ -173,20 +173,18 @@ func handleBackgroundJobCall(
 // Forward an async job call to the target Job and store the result of the task
 func forwardJobCall(
 	target url.URL,
-	c *gin.Context,
 	requestBody []byte,
-	job *JobDetails,
 	cfg *Config,
 	taskStore *AsyncTaskStore,
 	task *AsyncTask,
 	requestId string,
 	callerName string,
 ) error {
-	metricJobProxyRequestsStarted.WithLabelValues(job.Name, job.Version).Inc()
+	metricJobProxyRequestsStarted.WithLabelValues(task.JobName, task.JobVersion).Inc()
 	jobCallStartTime := time.Now()
 
 	requestBodyReader := bytes.NewReader(requestBody)
-	req, err := http.NewRequest(c.Request.Method, target.String(), requestBodyReader)
+	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
 	if err != nil {
 		return errors.Wrap(err, "creating job request")
 	}
@@ -231,11 +229,11 @@ func forwardJobCall(
 	}
 
 	statusCode := strconv.Itoa(res.StatusCode)
-	metricJobProxyResponseCodes.WithLabelValues(job.Name, job.Version, statusCode).Inc()
+	metricJobProxyResponseCodes.WithLabelValues(task.JobName, task.JobVersion, statusCode).Inc()
 	jobCallTime := time.Since(jobCallStartTime).Seconds()
-	metricJobCallResponseTimeHistogram.WithLabelValues(job.Name, job.Version).Observe(jobCallTime)
-	metricJobCallResponseTime.WithLabelValues(job.Name, job.Version).Add(jobCallTime)
-	metricJobProxyRequestsDone.WithLabelValues(job.Name, job.Version).Inc()
+	metricJobCallResponseTimeHistogram.WithLabelValues(task.JobName, task.JobVersion).Observe(jobCallTime)
+	metricJobCallResponseTime.WithLabelValues(task.JobName, task.JobVersion).Add(jobCallTime)
+	metricJobProxyRequestsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
 	return nil
 }
 
@@ -304,18 +302,24 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 		}
 
 		exists, status, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
-		if err != nil {
-			respondError(c, cfg, logger, http.StatusNotFound,
-				"Failed to check async task in a supposed Pub replica", err, map[string]any{
-					"taskId":      taskId,
-					"replicaAddr": replicaAddr,
-				})
-		} else if !exists {
-			respondError(c, cfg, logger, http.StatusNotFound,
-				"Task doesn't exist in a supposed Pub replica", err, map[string]any{
-					"taskId":      taskId,
-					"replicaAddr": replicaAddr,
-				})
+		if err != nil || !exists {
+			log.Error("Task can't be found in a supposed Pub replica", log.Ctx{
+				"error":       err,
+				"taskId":      taskId,
+				"replicaAddr": replicaAddr,
+			})
+			err = retryJobCall(cfg, taskStore, storedTask, taskId)
+			if err != nil {
+				respondError(c, cfg, logger, http.StatusServiceUnavailable,
+					"Failed to retry async task call", err, map[string]any{
+						"taskId": taskId,
+					})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"task_id": taskId,
+				"status":  storedTask.Status,
+			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"task_id": taskId,
@@ -512,6 +516,154 @@ func forwardTaskPollToReplica(
 		return
 	}
 	c.Data(res.StatusCode, res.Header.Get("Content-Type"), bodyBytes)
+}
+
+func retryJobCall(
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	task *AsyncTask,
+	taskId string,
+) error {
+	if task.Attempts >= 1 {
+		return errors.New("Maximum number of attempts has been exceeded")
+	}
+
+	task.Attempts++
+	task.PubInstanceAddr = taskStore.replicaDiscovery.MyAddr
+	task.Status = Ongoing
+	task.doneChannel = make(chan string)
+	log.Info("Retrying attempt of async job call", log.Ctx{
+		"taskId":      taskId,
+		"jobName":     task.JobName,
+		"jobVersion":  task.JobVersion,
+		"jobPath":     task.JobPath,
+		"attempts":    task.Attempts,
+		"replicaAddr": task.PubInstanceAddr,
+	})
+
+	requestBody := []byte(task.RequestBody)
+	urlPath := JoinURL("/pub/job/", task.JobName, task.JobVersion, task.JobPath)
+	job, err := getJobDetails(cfg, task.JobName, task.JobVersion)
+	if err != nil {
+		return errors.Wrap(err, "failed to get job details")
+	}
+	targetUrl := TargetURL(cfg, job, urlPath)
+
+	err = taskStore.UpdateTask(task)
+	if err != nil {
+		return errors.Wrap(err, "failed to update async task")
+	}
+
+	go func() {
+		err := makeRetriedJobCall(targetUrl, requestBody, cfg, taskStore, task)
+
+		task.endedAt = ptr(time.Now())
+		task.EndedAtTimestamp = ptr(time.Now().Unix())
+		if err == nil {
+			task.Status = Completed
+			metricAsyncJobCallsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
+			duration := task.endedAt.Sub(task.startedAt).String()
+			log.Info("Async Job Call task has ended", log.Ctx{
+				"taskId":     task.Id,
+				"jobName":    task.JobName,
+				"jobVersion": task.JobVersion,
+				"jobPath":    task.JobPath,
+				"statusCode": *task.ResponseStatusCode,
+				"duration":   duration,
+			})
+		} else {
+			task.Status = Failed
+			errorStr := err.Error()
+			task.ErrorMessage = &errorStr
+			log.Error("Background Job Call request error", log.Ctx{
+				"taskId":     task.Id,
+				"jobName":    task.JobName,
+				"jobVersion": task.JobVersion,
+				"host":       targetUrl.Host,
+				"path":       targetUrl.Path,
+				"error":      errorStr,
+			})
+			metricAsyncJobCallsErros.Inc()
+		}
+		err = taskStore.UpdateTask(task)
+		if err != nil {
+			log.Error("Failed to update async task", log.Ctx{
+				"taskId": task.Id,
+				"error":  err.Error(),
+			})
+		}
+
+		select { // Notify subscribed listeners without blocking
+		case task.doneChannel <- task.Id:
+		default:
+		}
+		close(task.doneChannel)
+	}()
+	return nil
+}
+
+func makeRetriedJobCall(
+	target url.URL,
+	requestBody []byte,
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	task *AsyncTask,
+) error {
+	metricJobProxyRequestsStarted.WithLabelValues(task.JobName, task.JobVersion).Inc()
+	jobCallStartTime := time.Now()
+
+	requestId := task.RequestHeaders[cfg.RequestTracingHeader]
+	requestBodyReader := bytes.NewReader(requestBody)
+	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
+	if err != nil {
+		return errors.Wrap(err, "creating job request")
+	}
+	for k, v := range task.RequestHeaders {
+		req.Header.Set(k, v)
+	}
+	req.URL.Scheme = target.Scheme
+	req.URL.Host = target.Host
+	req.URL.Path = target.Path
+	req.Header.Add("X-Forwarded-Host", req.Host)
+	req.Host = target.Host
+	req.RequestURI = ""
+	res, err := taskStore.jobHttpClient.Do(req)
+	if err != nil {
+		return errors.Wrap(err, "making request to a job")
+	}
+
+	// Transform redirect links to relative (without hostname).
+	// Target server doesn't know it's being proxied so it tries to redirect to internal URL.
+	location := res.Header.Get("Location")
+	if location != "" {
+		redirectUrl, err := url.Parse(location)
+		if err == nil {
+			redirectUrl.Host = ""
+			redirectUrl.Scheme = ""
+			res.Header.Set("Location", redirectUrl.String())
+		}
+	}
+	res.Header.Set(cfg.RequestTracingHeader, requestId)
+
+	task.ResponseStatusCode = ptr(res.StatusCode)
+	defer res.Body.Close()
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return errors.Wrap(err, "failed to read response body")
+	}
+	task.ResponseBody = string(bodyBytes)
+	task.ResponseHeaders = make(map[string]string)
+	for k, v := range res.Header {
+		task.ResponseHeaders[k] = strings.Join(v, ",")
+	}
+
+	statusCode := strconv.Itoa(res.StatusCode)
+	metricJobProxyResponseCodes.WithLabelValues(task.JobName, task.JobVersion, statusCode).Inc()
+	jobCallTime := time.Since(jobCallStartTime).Seconds()
+	metricJobCallResponseTimeHistogram.WithLabelValues(task.JobName, task.JobVersion).Observe(jobCallTime)
+	metricJobCallResponseTime.WithLabelValues(task.JobName, task.JobVersion).Add(jobCallTime)
+	metricJobProxyRequestsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
+	return nil
 }
 
 func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskStore *AsyncTaskStore) {
