@@ -18,3 +18,11 @@ type Pair[T, U any] struct {
 	First  T
 	Second U
 }
+
+// one-line if-else statement
+func IfThenElse[T any](condition bool, a T, b T) T {
+	if condition {
+		return a
+	}
+	return b
+}
