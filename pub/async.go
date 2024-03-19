@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -45,15 +45,15 @@ func handleAsyncJobCallRequest(
 ) (int, error) {
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
 		c.Writer.Header().Set("Allow", "GET, POST")
-		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
+		return http.StatusMethodNotAllowed, errors.New("method not allowed")
 	}
 	jobName := c.Param("job")
 	if jobName == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job name")
+		return http.StatusBadRequest, errors.New("couldn't extract job name")
 	}
 	jobVersion := c.Param("version")
 	if jobVersion == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job version")
+		return http.StatusBadRequest, errors.New("couldn't extract job version")
 	}
 
 	job, _, callerName, statusCode, err := getAuthorizedJobDetails(c, cfg, requestId, jobName, jobVersion, jobPath)
@@ -73,7 +73,7 @@ func handleAsyncJobCallRequest(
 	defer c.Request.Body.Close()
 	requestBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		return http.StatusBadRequest, errors.Wrap(err, "failed to read request body")
+		return http.StatusBadRequest, WrapError("failed to read request body", err)
 	}
 
 	task, err := taskStore.CreateTask(&AsyncTask{
@@ -94,7 +94,7 @@ func handleAsyncJobCallRequest(
 		quitChannel:        make(chan bool, 1),
 	})
 	if err != nil {
-		return http.StatusInternalServerError, errors.Wrap(err, "failed to create async task")
+		return http.StatusInternalServerError, WrapError("failed to create async task", err)
 	}
 	logger.Info("Async Job Call task created", log.Ctx{
 		"taskId":     task.Id,
@@ -186,7 +186,7 @@ func forwardJobCall(
 	requestBodyReader := bytes.NewReader(requestBody)
 	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
 	if err != nil {
-		return errors.Wrap(err, "creating job request")
+		return WrapError("creating job request", err)
 	}
 	req.URL.Scheme = target.Scheme
 	req.URL.Host = target.Host
@@ -198,9 +198,13 @@ func forwardJobCall(
 		req.Header.Set(cfg.CallerNameHeader, callerName)
 	}
 	req.RequestURI = ""
+	req.Close = true
 	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "making request to a job")
+		if errors.Is(err, io.EOF) {
+			return errors.New("connection closed by target Job")
+		}
+		return WrapError("making request to a job", err)
 	}
 
 	// Transform redirect links to relative (without hostname).
@@ -220,7 +224,7 @@ func forwardJobCall(
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return errors.Wrap(err, "failed to read response body")
+		return WrapError("failed to read response body", err)
 	}
 	task.ResponseBody = string(bodyBytes)
 	task.ResponseHeaders = make(map[string]string)
@@ -396,7 +400,7 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{"requestId": requestId})
 	if accessLog {
-		logger.Info("Request: Poll async task of this replica", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+		logger.Info("Request: Polling local async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	}
 
 	task, ok := taskStore.GetLocalTask(taskId)
@@ -451,11 +455,11 @@ func checkTaskStatusInReplica(
 	url := fmt.Sprintf("http://%s/pub/async/task/%s/status/local", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return false, "", errors.Wrap(err, "failed to create request to Pub replica")
+		return false, "", WrapError("failed to create request to Pub replica", err)
 	}
 	res, err := taskStore.replicaHttpClient.Do(req)
 	if err != nil {
-		return false, "", errors.Wrap(err, "failed to make request to Pub replica")
+		return false, "", WrapError("failed to make request to Pub replica", err)
 	} else if res.StatusCode == http.StatusNotFound {
 		return false, "", nil
 	} else if res.StatusCode == http.StatusOK {
@@ -463,11 +467,11 @@ func checkTaskStatusInReplica(
 		defer res.Body.Close()
 		err = json.NewDecoder(res.Body).Decode(dto)
 		if err != nil {
-			return false, "", errors.Wrap(err, "failed to parse response body as JSON")
+			return false, "", WrapError("failed to parse response body as JSON", err)
 		}
 		return true, string(dto.Status), nil
 	} else {
-		return false, "", errors.Errorf("Response error when checking task on other Pub replica: %s", res.Status)
+		return false, "", fmt.Errorf("response error when checking task on other Pub replica: %s", res.Status)
 	}
 }
 
@@ -525,7 +529,7 @@ func retryJobCall(
 	taskId string,
 ) error {
 	if task.Attempts >= 1 {
-		return errors.New("Maximum number of attempts has been exceeded")
+		return errors.New("maximum number of attempts has been exceeded")
 	}
 
 	task.Attempts++
@@ -545,13 +549,13 @@ func retryJobCall(
 	urlPath := JoinURL("/pub/job/", task.JobName, task.JobVersion, task.JobPath)
 	job, err := getJobDetails(cfg, task.JobName, task.JobVersion)
 	if err != nil {
-		return errors.Wrap(err, "failed to get job details")
+		return WrapError("failed to get job details", err)
 	}
 	targetUrl := TargetURL(cfg, job, urlPath)
 
 	err = taskStore.UpdateTask(task)
 	if err != nil {
-		return errors.Wrap(err, "failed to update async task")
+		return WrapError("failed to update async task", err)
 	}
 
 	go func() {
@@ -616,7 +620,7 @@ func makeRetriedJobCall(
 	requestBodyReader := bytes.NewReader(requestBody)
 	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
 	if err != nil {
-		return errors.Wrap(err, "creating job request")
+		return WrapError("creating job request", err)
 	}
 	for k, v := range task.RequestHeaders {
 		req.Header.Set(k, v)
@@ -629,7 +633,7 @@ func makeRetriedJobCall(
 	req.RequestURI = ""
 	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "making request to a job")
+		return WrapError("making request to a job", err)
 	}
 
 	// Transform redirect links to relative (without hostname).
@@ -649,7 +653,7 @@ func makeRetriedJobCall(
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return errors.Wrap(err, "failed to read response body")
+		return WrapError("failed to read response body", err)
 	}
 	task.ResponseBody = string(bodyBytes)
 	task.ResponseHeaders = make(map[string]string)
@@ -738,14 +742,14 @@ func respondError(
 		"requestId": requestId,
 	}
 	ginCtxMap := gin.H{
-		"error":     errors.Wrap(err, errorName).Error(),
+		"error":     WrapError(errorName, err).Error(),
 		"requestId": requestId,
 	}
 	if err == nil {
 		ginCtxMap["error"] = errorName
 	} else {
 		logCtxMap["error"] = err.Error()
-		ginCtxMap["error"] = errors.Wrap(err, errorName).Error()
+		ginCtxMap["error"] = WrapError(errorName, err).Error()
 	}
 	for k, v := range errorContext {
 		logCtxMap[k] = v
