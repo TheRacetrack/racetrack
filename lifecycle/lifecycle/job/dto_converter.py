@@ -110,4 +110,5 @@ def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
         response_body=response_body,
         attempts=model.attempts,
         pub_instance_addr=model.pub_instance_addr,
+        retriable_error=model.retriable_error,
     )

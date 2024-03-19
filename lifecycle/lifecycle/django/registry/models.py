@@ -232,6 +232,7 @@ class AsyncJobCall(models.Model):
     response_body = models.BinaryField(max_length=None, blank=True)
     attempts = models.IntegerField(default=0)
     pub_instance_addr = models.CharField(max_length=256, blank=True)
+    retriable_error = models.BooleanField()
 
     def __str__(self):
         return self.id

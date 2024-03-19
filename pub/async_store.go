@@ -43,6 +43,7 @@ type AsyncTask struct {
 	ResponseBody       string            `json:"response_body"`
 	Attempts           int               `json:"attempts"`
 	PubInstanceAddr    string            `json:"pub_instance_addr"`
+	RetriableError     bool              `json:"retriable_error"`
 	startedAt          time.Time
 	endedAt            *time.Time
 	doneChannel        chan string // channel to notify when task is done
@@ -119,10 +120,14 @@ func (s *AsyncTaskStore) GetStoredTask(taskId string) (*AsyncTask, error) {
 }
 
 func (s *AsyncTaskStore) DeleteTask(taskId string) error {
+	s.DeleteLocalTask(taskId)
+	return s.taskStorage.Delete(taskId)
+}
+
+func (s *AsyncTaskStore) DeleteLocalTask(taskId string) {
 	s.rwMutex.Lock()
 	delete(s.localTasks, taskId)
 	s.rwMutex.Unlock()
-	return s.taskStorage.Delete(taskId)
 }
 
 func (s *AsyncTaskStore) cleanUpRoutine() {

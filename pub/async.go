@@ -122,12 +122,14 @@ func handleBackgroundJobCall(
 	requestId string,
 	callerName string,
 ) {
-	err := forwardJobCall(targetUrl, requestBody, cfg, taskStore, task, requestId, callerName)
+	err, retriable := forwardJobCall(targetUrl, requestBody, cfg, taskStore, task, requestId, callerName)
 
 	task.endedAt = ptr(time.Now())
 	task.EndedAtTimestamp = ptr(time.Now().Unix())
+	task.RetriableError = retriable
 	if err == nil {
 		task.Status = Completed
+		task.ErrorMessage = nil
 		metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
 		duration := task.endedAt.Sub(task.startedAt).String()
 		logger.Info("Async Job Call task has ended", log.Ctx{
@@ -141,8 +143,7 @@ func handleBackgroundJobCall(
 		})
 	} else {
 		task.Status = Failed
-		errorStr := err.Error()
-		task.ErrorMessage = &errorStr
+		task.ErrorMessage = ptr(err.Error())
 		logger.Error("Background Job Call request error", log.Ctx{
 			"taskId":     task.Id,
 			"jobName":    job.Name,
@@ -150,7 +151,7 @@ func handleBackgroundJobCall(
 			"caller":     callerName,
 			"host":       targetUrl.Host,
 			"path":       targetUrl.Path,
-			"error":      errorStr,
+			"error":      err.Error(),
 		})
 		metricAsyncJobCallsErros.Inc()
 	}
@@ -160,6 +161,12 @@ func handleBackgroundJobCall(
 			"taskId": task.Id,
 			"error":  err.Error(),
 		})
+	}
+
+	if task.Status == Failed && task.RetriableError {
+		// delete locally, so it can be retried by other replicas
+		taskStore.DeleteLocalTask(task.Id)
+		return
 	}
 
 	// Notify subscribed listeners without blocking
@@ -179,14 +186,14 @@ func forwardJobCall(
 	task *AsyncTask,
 	requestId string,
 	callerName string,
-) error {
+) (error, bool) {
 	metricJobProxyRequestsStarted.WithLabelValues(task.JobName, task.JobVersion).Inc()
 	jobCallStartTime := time.Now()
 
 	requestBodyReader := bytes.NewReader(requestBody)
 	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
 	if err != nil {
-		return WrapError("creating job request", err)
+		return WrapError("creating job request", err), false
 	}
 	req.URL.Scheme = target.Scheme
 	req.URL.Host = target.Host
@@ -202,9 +209,9 @@ func forwardJobCall(
 	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			return errors.New("connection closed by target Job")
+			return WrapError("connection broken to a target job", err), true
 		}
-		return WrapError("making request to a job", err)
+		return WrapError("making request to a job", err), false
 	}
 
 	// Transform redirect links to relative (without hostname).
@@ -224,7 +231,7 @@ func forwardJobCall(
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return WrapError("failed to read response body", err)
+		return WrapError("failed to read response body", err), false
 	}
 	task.ResponseBody = string(bodyBytes)
 	task.ResponseHeaders = make(map[string]string)
@@ -238,7 +245,7 @@ func forwardJobCall(
 	metricJobCallResponseTimeHistogram.WithLabelValues(task.JobName, task.JobVersion).Observe(jobCallTime)
 	metricJobCallResponseTime.WithLabelValues(task.JobName, task.JobVersion).Add(jobCallTime)
 	metricJobProxyRequestsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
-	return nil
+	return nil, false
 }
 
 // Get status of a task in this local replica instance
@@ -531,6 +538,9 @@ func retryJobCall(
 	if task.Attempts >= 1 {
 		return errors.New("maximum number of attempts has been exceeded")
 	}
+	if task.Status == Failed && !task.RetriableError {
+		return errors.New("task has failed with non-retriable error")
+	}
 
 	task.Attempts++
 	task.PubInstanceAddr = taskStore.replicaDiscovery.MyAddr
@@ -559,12 +569,14 @@ func retryJobCall(
 	}
 
 	go func() {
-		err := makeRetriedJobCall(targetUrl, requestBody, cfg, taskStore, task)
+		err, retriable := makeRetriedJobCall(targetUrl, requestBody, cfg, taskStore, task)
 
 		task.endedAt = ptr(time.Now())
 		task.EndedAtTimestamp = ptr(time.Now().Unix())
+		task.RetriableError = retriable
 		if err == nil {
 			task.Status = Completed
+			task.ErrorMessage = nil
 			metricAsyncJobCallsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
 			duration := task.endedAt.Sub(task.startedAt).String()
 			log.Info("Async Job Call task has ended", log.Ctx{
@@ -577,15 +589,14 @@ func retryJobCall(
 			})
 		} else {
 			task.Status = Failed
-			errorStr := err.Error()
-			task.ErrorMessage = &errorStr
+			task.ErrorMessage = ptr(err.Error())
 			log.Error("Background Job Call request error", log.Ctx{
 				"taskId":     task.Id,
 				"jobName":    task.JobName,
 				"jobVersion": task.JobVersion,
 				"host":       targetUrl.Host,
 				"path":       targetUrl.Path,
-				"error":      errorStr,
+				"error":      err.Error(),
 			})
 			metricAsyncJobCallsErros.Inc()
 		}
@@ -612,7 +623,7 @@ func makeRetriedJobCall(
 	cfg *Config,
 	taskStore *AsyncTaskStore,
 	task *AsyncTask,
-) error {
+) (error, bool) {
 	metricJobProxyRequestsStarted.WithLabelValues(task.JobName, task.JobVersion).Inc()
 	jobCallStartTime := time.Now()
 
@@ -620,7 +631,7 @@ func makeRetriedJobCall(
 	requestBodyReader := bytes.NewReader(requestBody)
 	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
 	if err != nil {
-		return WrapError("creating job request", err)
+		return WrapError("creating job request", err), false
 	}
 	for k, v := range task.RequestHeaders {
 		req.Header.Set(k, v)
@@ -633,7 +644,7 @@ func makeRetriedJobCall(
 	req.RequestURI = ""
 	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
-		return WrapError("making request to a job", err)
+		return WrapError("making request to a job", err), false
 	}
 
 	// Transform redirect links to relative (without hostname).
@@ -653,7 +664,7 @@ func makeRetriedJobCall(
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return WrapError("failed to read response body", err)
+		return WrapError("failed to read response body", err), false
 	}
 	task.ResponseBody = string(bodyBytes)
 	task.ResponseHeaders = make(map[string]string)
@@ -667,7 +678,7 @@ func makeRetriedJobCall(
 	metricJobCallResponseTimeHistogram.WithLabelValues(task.JobName, task.JobVersion).Observe(jobCallTime)
 	metricJobCallResponseTime.WithLabelValues(task.JobName, task.JobVersion).Add(jobCallTime)
 	metricJobProxyRequestsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
-	return nil
+	return nil, false
 }
 
 func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskStore *AsyncTaskStore) {

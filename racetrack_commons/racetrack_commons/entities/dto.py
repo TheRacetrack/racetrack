@@ -129,3 +129,4 @@ class AsyncJobCallDto(BaseModel):
     response_body: str
     attempts: int = 0
     pub_instance_addr: str
+    retriable_error: bool
