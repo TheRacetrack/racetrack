@@ -97,10 +97,10 @@ func SetupEndpoints(
 	})
 
 	router.Any(baseUrl+"/async/new/job/:job/:version/*path", func(c *gin.Context) {
-		AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
+		TaskStartEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
 	})
 	router.Any(baseUrl+"/async/new/job/:job/:version", func(c *gin.Context) {
-		AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "")
+		TaskStartEndpoint(c, cfg, asyncTaskStore, "")
 	})
 	router.GET(baseUrl+"/async/task/:taskId/poll", func(c *gin.Context) {
 		TaskPollEndpoint(c, cfg, asyncTaskStore)

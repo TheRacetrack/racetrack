@@ -39,7 +39,8 @@ def save_async_job_call(dto: AsyncJobCallDto) -> models.AsyncJobCall:
             or model.response_headers != dto.response_headers \
             or model.response_body != new_response_body \
             or model.attempts != dto.attempts \
-            or model.pub_instance_addr != dto.pub_instance_addr:
+            or model.pub_instance_addr != dto.pub_instance_addr \
+            or model.retriable_error != dto.retriable_error:
         changed = True
     model.status = dto.status
     model.started_at = new_started_at
@@ -57,6 +58,7 @@ def save_async_job_call(dto: AsyncJobCallDto) -> models.AsyncJobCall:
     model.response_body = new_response_body
     model.attempts = dto.attempts
     model.pub_instance_addr = dto.pub_instance_addr
+    model.retriable_error = dto.retriable_error
 
     if changed:
         try:
