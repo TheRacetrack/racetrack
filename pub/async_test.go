@@ -183,7 +183,7 @@ func getJsonRequest(url string) (int, map[string]interface{}) {
 	if response.StatusCode != 200 {
 		defer response.Body.Close()
 		bodyBytes, _ := io.ReadAll(response.Body)
-		fmt.Printf("Response %d: %s\n", response.StatusCode, bodyBytes)
+		fmt.Printf("Response %d for %s: %s\n", response.StatusCode, url, bodyBytes)
 	}
 	return response.StatusCode, readJsonResponse(response)
 }

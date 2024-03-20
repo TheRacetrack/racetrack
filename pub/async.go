@@ -382,56 +382,6 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	}
 }
 
-// Ensure task is retried if it's supposed to be running but is missing
-func retryTaskIfMissing(
-	cfg *Config,
-	taskStore *AsyncTaskStore,
-	logger log.Logger,
-	task *AsyncTask,
-	requestId string,
-) error {
-	if task.Status != Ongoing {
-		return errors.New("task is already completed")
-	}
-	if !isTaskMissing(cfg, taskStore, logger, task) {
-		return nil
-	}
-	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
-		"pubInstance": task.PubInstanceAddr,
-	})
-	metricAsyncRetriedMissingTask.Inc()
-	err := retryJobCall(cfg, taskStore, logger, task, requestId)
-	if err != nil {
-		return WrapError("failed to retry a job call", err)
-	}
-	return nil
-}
-
-func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, logger log.Logger, task *AsyncTask) bool {
-	if task.PubInstanceAddr != "" && task.PubInstanceAddr == taskStore.replicaDiscovery.MyAddr {
-		return true
-	}
-	if task.PubInstanceAddr == "" {
-		task.PubInstanceAddr = fmt.Sprintf("127.0.0.1:%s", cfg.ListenPort)
-	}
-	exists, status, err := checkTaskStatusInReplica(taskStore, task.PubInstanceAddr, task.Id)
-	if err != nil {
-		logger.Warn("Failed to check async task in a supposed Pub replica", log.Ctx{
-			"pubInstance": task.PubInstanceAddr,
-			"error":       err,
-		})
-		return true
-	}
-	if !exists {
-		logger.Warn("Task not found in a supposed replica", log.Ctx{
-			"pubInstance": task.PubInstanceAddr,
-		})
-		return true
-	}
-	task.Status = TaskStatus(status)
-	return false
-}
-
 // Wait using HTTP Long Polling until task is completed or timeout is reached.
 // It's an internal endpoint used for communication between Pub replicas.
 // It checks the result locally and does not search in other replicas.
@@ -472,12 +422,12 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 
 	task, ok = taskStore.GetLocalTask(taskId)
 	if !ok {
-		logger.Info("Task not found locally after time-out")
-		c.String(http.StatusRequestTimeout, "Time out")
+		logger.Warn("Task not found locally after time-out")
+		c.String(http.StatusRequestTimeout, "Time-out")
 		return
 	}
 	if task.Status == Ongoing {
-		c.String(http.StatusRequestTimeout, "Time out")
+		c.String(http.StatusRequestTimeout, "Time-out")
 		return
 	} else {
 		respondTaskResult(c, logger, task, taskStore)
@@ -566,6 +516,56 @@ func retryJobCall(
 
 	go handleBackgroundJobCall(cfg, taskStore, logger, job, task, targetUrl, requestBody, requestId)
 	return nil
+}
+
+// Ensure task is retried if it's supposed to be running but is missing
+func retryTaskIfMissing(
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	logger log.Logger,
+	task *AsyncTask,
+	requestId string,
+) error {
+	if task.Status != Ongoing {
+		return nil
+	}
+	if !isTaskMissing(cfg, taskStore, logger, task) {
+		return nil
+	}
+	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
+		"pubInstance": task.PubInstanceAddr,
+	})
+	metricAsyncRetriedMissingTask.Inc()
+	err := retryJobCall(cfg, taskStore, logger, task, requestId)
+	if err != nil {
+		return WrapError("failed to retry a job call", err)
+	}
+	return nil
+}
+
+func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, logger log.Logger, task *AsyncTask) bool {
+	if task.PubInstanceAddr != "" && task.PubInstanceAddr == taskStore.replicaDiscovery.MyAddr {
+		return true
+	}
+	if task.PubInstanceAddr == "" {
+		task.PubInstanceAddr = fmt.Sprintf("127.0.0.1:%s", cfg.ListenPort)
+	}
+	exists, status, err := checkTaskStatusInReplica(taskStore, task.PubInstanceAddr, task.Id)
+	if err != nil {
+		logger.Warn("Failed to check async task in a supposed Pub replica", log.Ctx{
+			"pubInstance": task.PubInstanceAddr,
+			"error":       err,
+		})
+		return true
+	}
+	if !exists {
+		logger.Warn("Task not found in a supposed replica", log.Ctx{
+			"pubInstance": task.PubInstanceAddr,
+		})
+		return true
+	}
+	task.Status = TaskStatus(status)
+	return false
 }
 
 func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskStore *AsyncTaskStore) {
