@@ -139,10 +139,11 @@ def _run_local(
     port: int = typer.Option(default=None, show_default=False, help='HTTP port to run the server on'),
     build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building job from local files ("local") or from git repository ("git")'),
     extra_vars: Optional[List[str]] = typer.Option(None, '-e', '--extra-vars', help='key=value pairs overriding manifest values'),
+    cmd: Optional[str] = typer.Option(default=None, show_default=False, help='Job\'s command to overwrite'),
 ):
     """Run job locally"""
     run_job_locally(workdir, remote, build_context_method=build_context, port=port,
-                    extra_vars=_parse_key_value_pairs(extra_vars))
+                    extra_vars=_parse_key_value_pairs(extra_vars), cmd=cmd)
 
 
 @cli.command('version')

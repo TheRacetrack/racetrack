@@ -29,6 +29,7 @@ def run_job_locally(
     port: Optional[int] = None,
     extra_vars: Dict[str, str] = None,
     build_flags: list[str] = [],
+    cmd: Optional[str] = None,
 ):
     client_config = load_client_config()
     manifest: Manifest = load_validated_manifest(workdir, extra_vars)
@@ -87,6 +88,7 @@ def run_job_locally(
     env_vars_cmd = ' '.join([f'--env {env_name}="{env_val}"' for env_name, env_val in runtime_env_vars.items()])
 
     job_url = f'http://127.0.0.1:{port}/pub/job/{manifest.name}/{manifest.version}/'
+    cmd = cmd or ''
     logger.info(f'Running job "{manifest.name}" v{manifest.version} locally. '
                 f'Check out {job_url} to access your job. CTRL-C to stop.')
     try:
@@ -98,6 +100,7 @@ def run_job_locally(
             f' --label job-name={manifest.name}'
             f' --label job-version={manifest.version}'
             f' {job_image_name}'
+            f' {cmd}'
         )
     except CommandError as e:
         if e.returncode == 130:  # Container terminated by Control-C
