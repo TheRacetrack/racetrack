@@ -22,6 +22,7 @@ type Config struct {
 	ServiceName              string `env:"SERVICE_NAME" envDefault:"pub"`
 	StructuredLogging        bool   `env:"LOG_STRUCTURED" envDefault:"false"`
 	ReplicaDiscoveryHostname string `env:"REPLICA_DISCOVERY_HOSTNAME" envDefault:""`
+	AsyncMaxAttempts         int    `env:"ASYNC_MAX_ATTEMPTS" envDefault:"2"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -88,7 +88,7 @@ func handleTaskStartRequest(
 		RequestUrl:         c.Request.URL.String(),
 		RequestHeaders:     requestHeaders,
 		RequestBody:        string(requestBody),
-		Attempts:           0,
+		Attempts:           1,
 		PubInstanceAddr:    taskStore.replicaDiscovery.MyAddr,
 		doneChannel:        make(chan string),
 		quitChannel:        make(chan bool, 1),
@@ -154,7 +154,7 @@ func handleBackgroundJobCall(
 	}
 	taskStore.rwMutex.Unlock()
 
-	if task.canBeRetried() {
+	if task.canBeRetried(cfg) {
 		logger.Info("Retrying async job call")
 		time.Sleep(5 * time.Second)
 		err = retryJobCall(cfg, taskStore, logger, task, requestId)
@@ -300,40 +300,19 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 			"Failed to check async task in task storage", err, nil)
 		return
 	}
-	replicaAddr := task.PubInstanceAddr
-	if replicaAddr != "" && replicaAddr == taskStore.replicaDiscovery.MyAddr {
-		respondError(c, cfg, logger, http.StatusNotFound,
-			"Task cannot be located on any replica", nil, map[string]any{
-				"replicaAddr": replicaAddr,
+
+	err = retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
+	if err != nil {
+		respondError(c, cfg, logger, http.StatusInternalServerError,
+			"Failed to retry a missing async task", err, map[string]any{
+				"pubInstance": task.PubInstanceAddr,
 			})
 		return
 	}
-	if replicaAddr == "" {
-		replicaAddr = fmt.Sprintf("127.0.0.1:%s", cfg.ListenPort)
-	}
 
-	exists, status, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
-	if err != nil || !exists {
-		// Task is gone due to Pub instance restart
-		logger.Error("Task is gone in a supposed Pub replica, retrying", log.Ctx{
-			"error":       err,
-			"replicaAddr": replicaAddr,
-		})
-		err = retryJobCall(cfg, taskStore, logger, task, requestId)
-		if err != nil {
-			respondError(c, cfg, logger, http.StatusServiceUnavailable,
-				"Failed to retry async task call", err, nil)
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"task_id": taskId,
-			"status":  task.Status,
-		})
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{
-		"task_id": taskId,
-		"status":  status,
+		"task_id": task.Id,
+		"status":  task.Status,
 	})
 }
 
@@ -388,37 +367,67 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 				"Failed to check async task in task storage", err, nil)
 			return
 		}
-		replicaAddr := task.PubInstanceAddr
-		if replicaAddr != "" && replicaAddr == taskStore.replicaDiscovery.MyAddr {
-			respondError(c, cfg, logger, http.StatusNotFound,
-				"Task cannot be located on any replica", nil, map[string]any{
-					"replicaAddr": replicaAddr,
-				})
-			return
-		}
-		if replicaAddr == "" {
-			replicaAddr = fmt.Sprintf("127.0.0.1:%s", cfg.ListenPort)
-		}
 
-		exists, _, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
-		// TODO Ensure task is retried in case of going missing
+		err = retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
-				"Failed to check async task in a supposed Pub replica", err, map[string]any{
-					"replicaAddr": replicaAddr,
-				})
-			return
-		}
-		if !exists {
-			respondError(c, cfg, logger, http.StatusNotFound,
-				"Task not found in a supposed replica", nil, map[string]any{
-					"replicaAddr": replicaAddr,
+				"Failed to retry a missing async task", err, map[string]any{
+					"pubInstance": task.PubInstanceAddr,
 				})
 			return
 		}
 
-		forwardTaskPollToReplica(c, cfg, logger, taskStore, replicaAddr, taskId)
+		forwardTaskPollToReplica(c, cfg, logger, taskStore, task.PubInstanceAddr, taskId)
 	}
+}
+
+// Ensure task is retried if it's supposed to be running but is missing
+func retryTaskIfMissing(
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	logger log.Logger,
+	task *AsyncTask,
+	requestId string,
+) error {
+	if task.Status != Ongoing {
+		return errors.New("task is already completed")
+	}
+	if !isTaskMissing(cfg, taskStore, logger, task) {
+		return nil
+	}
+	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
+		"pubInstance": task.PubInstanceAddr,
+	})
+	err := retryJobCall(cfg, taskStore, logger, task, requestId)
+	if err != nil {
+		return WrapError("failed to retry a job call", err)
+	}
+	return nil
+}
+
+func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, logger log.Logger, task *AsyncTask) bool {
+	if task.PubInstanceAddr != "" && task.PubInstanceAddr == taskStore.replicaDiscovery.MyAddr {
+		return true
+	}
+	if task.PubInstanceAddr == "" {
+		task.PubInstanceAddr = fmt.Sprintf("127.0.0.1:%s", cfg.ListenPort)
+	}
+	exists, status, err := checkTaskStatusInReplica(taskStore, task.PubInstanceAddr, task.Id)
+	if err != nil {
+		logger.Warn("Failed to check async task in a supposed Pub replica", log.Ctx{
+			"pubInstance": task.PubInstanceAddr,
+			"error":       err,
+		})
+		return true
+	}
+	if !exists {
+		logger.Warn("Task not found in a supposed replica", log.Ctx{
+			"pubInstance": task.PubInstanceAddr,
+		})
+		return true
+	}
+	task.Status = TaskStatus(status)
+	return false
 }
 
 // Wait using HTTP Long Polling until task is completed or timeout is reached.
@@ -427,7 +436,7 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
+	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
 	if accessLog {
 		logger.Info("Request: Polling local async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	}
@@ -435,9 +444,7 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 	task, ok := taskStore.GetLocalTask(taskId)
 	if !ok {
 		respondError(c, cfg, logger, http.StatusNotFound,
-			"Task not found locally", nil, map[string]any{
-				"taskId": taskId,
-			})
+			"Task not found locally", nil, nil)
 		return
 	}
 	if task.Status != Ongoing {
@@ -463,9 +470,7 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 
 	task, ok = taskStore.GetLocalTask(taskId)
 	if !ok {
-		log.Info("Task not found locally after time-out", log.Ctx{
-			"taskId": taskId,
-		})
+		logger.Info("Task not found locally after time-out")
 		c.String(http.StatusRequestTimeout, "Time out")
 		return
 	}
@@ -486,7 +491,6 @@ func forwardTaskPollToReplica(
 	taskId string,
 ) {
 	logger.Info("Forwarding async task poll to other replica", log.Ctx{
-		"taskId":      taskId,
 		"replicaAddr": replicaAddr,
 	})
 	url := fmt.Sprintf("http://%s/pub/async/task/%s/poll/local", replicaAddr, taskId)
@@ -494,8 +498,7 @@ func forwardTaskPollToReplica(
 	if err != nil {
 		respondError(c, cfg, logger, http.StatusServiceUnavailable,
 			"Failed to make request to Pub replica", err, map[string]any{
-				"taskId": taskId,
-				"url":    url,
+				"url": url,
 			})
 		return
 	}
@@ -503,8 +506,7 @@ func forwardTaskPollToReplica(
 	if err != nil {
 		respondError(c, cfg, logger, http.StatusServiceUnavailable,
 			"Failed to make request to Pub replica", err, map[string]any{
-				"taskId": taskId,
-				"url":    url,
+				"url": url,
 			})
 		return
 	}
@@ -516,16 +518,14 @@ func forwardTaskPollToReplica(
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		respondError(c, cfg, logger, http.StatusServiceUnavailable,
-			"Failed to read response body", err, map[string]any{
-				"taskId": taskId,
-			})
+			"Failed to read response body", err, nil)
 		return
 	}
 	c.Data(res.StatusCode, res.Header.Get("Content-Type"), bodyBytes)
 }
 
-func (task *AsyncTask) canBeRetried() bool {
-	return task.Attempts < 1 && task.Status == Failed && task.RetriableError
+func (task *AsyncTask) canBeRetried(cfg *Config) bool {
+	return task.Attempts < cfg.AsyncMaxAttempts && task.Status == Failed && task.RetriableError
 }
 
 func retryJobCall(
@@ -535,13 +535,6 @@ func retryJobCall(
 	task *AsyncTask,
 	requestId string,
 ) error {
-	if task.Attempts >= 1 {
-		return errors.New("maximum number of attempts has been exceeded")
-	}
-	if task.Status == Failed && !task.RetriableError {
-		return errors.New("task has failed with non-retriable error")
-	}
-
 	task.Attempts++
 	task.PubInstanceAddr = taskStore.replicaDiscovery.MyAddr
 	task.Status = Ongoing
@@ -616,13 +609,11 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 			err := taskStore.DeleteTask(task.Id)
 			if err != nil {
 				logger.Error("Failed to delete async task", log.Ctx{
-					"taskId": task.Id,
-					"error":  err.Error(),
+					"error": err.Error(),
 				})
 				return
 			}
 			logger.Info("Retrieved task has been deleted", log.Ctx{
-				"taskId": task.Id,
 				"status": task.Status,
 			})
 		}()

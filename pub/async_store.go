@@ -41,7 +41,7 @@ type AsyncTask struct {
 	ResponseStatusCode *int              `json:"response_status_code"`
 	ResponseHeaders    map[string]string `json:"response_headers"`
 	ResponseBody       string            `json:"response_body"`
-	Attempts           int               `json:"attempts"`
+	Attempts           int               `json:"attempts"` // attempted calls (starts from 1)
 	PubInstanceAddr    string            `json:"pub_instance_addr"`
 	RetriableError     bool              `json:"retriable_error"`
 	startedAt          time.Time
