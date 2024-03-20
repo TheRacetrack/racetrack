@@ -61,10 +61,13 @@ def _deploy(
     force: bool = typer.Option(False, '--force', help='overwrite existing job'),
     build_context: BuildContextMethod = typer.Option(BuildContextMethod.default, show_default=False, help='Force building job from local files ("local") or from git repository ("git")'),
     extra_vars: Optional[List[str]] = typer.Option(None, '-e', '--extra-vars', help='key=value pairs overriding manifest values'),
+    no_cache: bool = typer.Option(False, '--no-cache', help='build without cache'),
+
 ):
     """Send request deploying a Job to the Racetrack cluster"""
+    build_flags = ['--no-cache'] if no_cache else []
     send_deploy_request(workdir, lifecycle_url=remote or _remote, force=force, build_context_method=build_context,
-                        extra_vars=_parse_key_value_pairs(extra_vars))
+                        extra_vars=_parse_key_value_pairs(extra_vars), build_flags=build_flags)
 
 
 @cli.command('validate')

@@ -67,6 +67,11 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
             description='overwrite existing job',
             examples=[False],
         )
+        build_flags: Optional[list[str]] = Field(
+            default=[],
+            description='list of build flags',
+            examples=['--no-cache'],
+        )
 
     @api.post('/deploy')
     def _deploy(payload: DeployPayloadModel, request: Request):
@@ -80,10 +85,11 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         secret_vars = load_secret_vars_from_dict(payload.secret_vars)
         build_context = payload.build_context
         force = payload.force if payload.force is not None else False
+        build_flags = payload.build_flags if payload.build_flags else []
         username = get_username_from_token(request)
         deployment_id = deploy_job_in_background(
             config, manifest, git_credentials, secret_vars, build_context,
-            force, plugin_engine, username, auth_subject,
+            force, plugin_engine, username, auth_subject, build_flags
         )
         return {"id": deployment_id}
 

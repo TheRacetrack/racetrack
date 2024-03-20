@@ -23,11 +23,12 @@ JOB_INTERNAL_PORT = 7000  # Job listening port seen from inside the container
 
 
 def run_job_locally(
-    workdir: str, 
-    lifecycle_url: str, 
+    workdir: str,
+    lifecycle_url: str,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
     port: Optional[int] = None,
     extra_vars: Dict[str, str] = None,
+    build_flags: list[str] = [],
     cmd: Optional[str] = None,
 ):
     client_config = load_client_config()
@@ -46,7 +47,7 @@ def run_job_locally(
     # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::BuildEndpoint` for server-side implementation
     r = Requests.post(
         f'{lifecycle_url}/api/v1/build',
-        json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, False),
+        json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, False, build_flags),
         headers=get_auth_request_headers(user_auth),
     )
     response = parse_response_object(r, 'Lifecycle building error')

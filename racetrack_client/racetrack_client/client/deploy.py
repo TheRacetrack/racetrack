@@ -67,6 +67,7 @@ def send_deploy_request(
     force: bool = False,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
     extra_vars: Dict[str, str] = None,
+    build_flags: list[str] = [],
 ):
     """
     Send request deploying a new Job to running Lifecycle instance
@@ -105,7 +106,7 @@ def send_deploy_request(
         # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::DeployEndpoint` for server-side implementation
         r = Requests.post(
             f'{lifecycle_url}/api/v1/deploy',
-            json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, force),
+            json=get_deploy_request_payload(manifest_dict, git_credentials, secret_vars, build_context, force, build_flags),
             headers=get_auth_request_headers(user_auth),
         )
         response = parse_response_object(r, 'Lifecycle deploying error')
@@ -129,6 +130,7 @@ def get_deploy_request_payload(
     secret_vars: SecretVars,
     build_context: Optional[str],
     force: bool,
+    build_flags: List[str],
 ) -> Dict:
     return {
         "manifest": manifest_dict,
@@ -136,6 +138,7 @@ def get_deploy_request_payload(
         "secret_vars": secret_vars.model_dump(),
         "build_context": build_context,
         "force": force,
+        "build_flags": build_flags,
     }
 
 

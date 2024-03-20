@@ -106,6 +106,11 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
             description='unique ID of a deployment',
             examples=['681d0416-c95d-4cb8-bbd0-bb81d3a46044'],
         )
+        build_flags: List[str] = Field(
+            default=[],
+            description='list of build flags',
+            examples=['--no-cache'],
+        )
 
     class BuildingResultModel(BaseModel):
         image_names: List[str] = Field(
@@ -131,9 +136,10 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         secret_build_env = payload.secret_build_env or {}
         build_context = payload.build_context
         deployment_id = payload.deployment_id
+        build_flags = payload.build_flags
         image_names, logs, error = build_job_image(
             config, manifest, git_credentials, secret_build_env, tag,
-            build_context, deployment_id, plugin_engine,
+            build_context, deployment_id, plugin_engine, build_flags,
         )
         return {
             'image_names': image_names,
