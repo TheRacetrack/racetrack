@@ -65,6 +65,9 @@ class Config(BaseModel):
     # Whether to allow overwriting existing jobs by deploying the same version once again
     allow_job_overwrite: bool = False
 
+    # Retention in seconds of Async job call models
+    async_job_call_lifetime: int = 4 * 3600
+
     @field_validator(
         'max_job_memory_limit',
         'default_job_memory_min',
