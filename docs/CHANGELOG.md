@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Status of an async job call can be checked at endpoint: `/pub/async/task/{ID}/status`.
   See [Asynchronous calls to jobs](./user/async-job-calls.md) guide for more details.
 
+### Changed
+- Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
+  The restart could be either due to an upgrade in Racetrack services
+  or a job crash (like an Out of Memory kill).
+  Regardless of the reason, the job call will keep retrying
+  until it hits the maximum number of attempts.
+  ([#424](https://github.com/TheRacetrack/racetrack/issues/424))
+
 ## [2.27.0] - 2024-03-04
 ### Added
 - Job type plugins can validate their part of the manifest.
