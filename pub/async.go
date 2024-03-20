@@ -28,7 +28,7 @@ func TaskStartEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, j
 	logger.Info("Request: new Async Job Call", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	statusCode, err := handleTaskStartRequest(c, cfg, taskStore, logger, requestId, jobPath)
 	if err != nil {
-		metricAsyncJobCallsErros.Inc()
+		metricAsyncJobCallsErrors.Inc()
 		respondError(c, cfg, logger, statusCode, "Async Job Call request error", err, map[string]any{
 			"path": c.Request.URL.Path,
 		})
@@ -150,13 +150,14 @@ func handleBackgroundJobCall(
 			"path":       targetUrl.Path,
 			"error":      err.Error(),
 		})
-		metricAsyncJobCallsErros.Inc()
+		metricAsyncJobCallsErrors.Inc()
 	}
 	taskStore.rwMutex.Unlock()
 
 	if task.canBeRetried(cfg) {
-		logger.Info("Retrying async job call")
+		logger.Info("Retrying crashed async job call")
 		time.Sleep(5 * time.Second)
+		metricAsyncRetriedCrashedTask.Inc()
 		err = retryJobCall(cfg, taskStore, logger, task, requestId)
 		if err != nil {
 			logger.Error("Failed to retry async task call", log.Ctx{
@@ -398,6 +399,7 @@ func retryTaskIfMissing(
 	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
 		"pubInstance": task.PubInstanceAddr,
 	})
+	metricAsyncRetriedMissingTask.Inc()
 	err := retryJobCall(cfg, taskStore, logger, task, requestId)
 	if err != nil {
 		return WrapError("failed to retry a job call", err)
@@ -539,6 +541,7 @@ func retryJobCall(
 	task.PubInstanceAddr = taskStore.replicaDiscovery.MyAddr
 	task.Status = Ongoing
 	task.doneChannel = make(chan string)
+	metricAsyncRetriedTask.Inc()
 	logger.Info("Retrying attempt of async job call", log.Ctx{
 		"jobName":      task.JobName,
 		"jobVersion":   task.JobVersion,
