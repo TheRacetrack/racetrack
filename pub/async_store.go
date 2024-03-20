@@ -89,6 +89,17 @@ func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStora
 	return store
 }
 
+func NewLocalTask(storedTask *AsyncTask) *AsyncTask {
+	task := *storedTask
+	task.startedAt = time.Unix(storedTask.StartedAtTimestamp, 0)
+	if storedTask.EndedAtTimestamp != nil {
+		task.endedAt = ptr(time.Unix(*storedTask.EndedAtTimestamp, 0))
+	}
+	task.doneChannel = make(chan string)
+	task.quitChannel = make(chan bool, 1)
+	return &task
+}
+
 func (s *AsyncTaskStore) CreateTask(task *AsyncTask) (*AsyncTask, error) {
 	s.rwMutex.Lock()
 	s.localTasks[task.Id] = task

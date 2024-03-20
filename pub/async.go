@@ -155,7 +155,7 @@ func handleBackgroundJobCall(
 	taskStore.rwMutex.Unlock()
 
 	if task.canBeRetried(cfg) {
-		logger.Info("Retrying crashed async job call")
+		logger.Info("Async job call crashed, retrying...")
 		time.Sleep(5 * time.Second)
 		metricAsyncRetriedCrashedTask.Inc()
 		err = retryJobCall(cfg, taskStore, logger, task, requestId)
@@ -281,16 +281,16 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
 	logger.Info("Request: async task status")
 
-	task, ok := taskStore.GetLocalTask(taskId)
+	storedTask, ok := taskStore.GetLocalTask(taskId)
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
-			"task_id": task.Id,
-			"status":  task.Status,
+			"task_id": storedTask.Id,
+			"status":  storedTask.Status,
 		})
 		return
 	}
 
-	task, err := taskStore.GetStoredTask(taskId)
+	storedTask, err := taskStore.GetStoredTask(taskId)
 	if errors.Is(err, ErrAsyncTaskNotFound) {
 		respondError(c, cfg, logger, http.StatusNotFound,
 			"Task not found in Lifecycle", err, nil)
@@ -301,8 +301,9 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 			"Failed to check async task in task storage", err, nil)
 		return
 	}
+	task := NewLocalTask(storedTask)
 
-	err = retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
+	_, err = retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
 	if err != nil {
 		respondError(c, cfg, logger, http.StatusInternalServerError,
 			"Failed to retry a missing async task", err, map[string]any{
@@ -329,7 +330,7 @@ func checkTaskStatusInReplica(
 	}
 	res, err := taskStore.replicaHttpClient.Do(req)
 	if err != nil {
-		return false, "", WrapError("failed to make request to Pub replica", err)
+		return false, "", WrapError("failed to make status request to Pub replica", err)
 	} else if res.StatusCode == http.StatusNotFound {
 		return false, "", nil
 	} else if res.StatusCode == http.StatusOK {
@@ -350,14 +351,14 @@ func checkTaskStatusInReplica(
 func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
+	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
 	logger.Info("Request: Poll async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 
 	_, ok := taskStore.GetLocalTask(taskId)
 	if ok {
 		LocalTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
-		task, err := taskStore.GetStoredTask(taskId)
+		storedTask, err := taskStore.GetStoredTask(taskId)
 		if errors.Is(err, ErrAsyncTaskNotFound) {
 			respondError(c, cfg, logger, http.StatusNotFound,
 				"Task not found in Lifecycle", err, nil)
@@ -365,16 +366,26 @@ func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 		}
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
-				"Failed to check async task in task storage", err, nil)
+				"Failed to look up the async task in Lifecycle", err, nil)
+			return
+		}
+		task := NewLocalTask(storedTask)
+
+		if task.Status != Ongoing {
+			respondTaskResult(c, logger, task, taskStore)
 			return
 		}
 
-		err = retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
+		retried, err := retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
 		if err != nil {
 			respondError(c, cfg, logger, http.StatusInternalServerError,
 				"Failed to retry a missing async task", err, map[string]any{
 					"pubInstance": task.PubInstanceAddr,
 				})
+			return
+		}
+		if retried {
+			LocalTaskPollEndpoint(c, cfg, taskStore, false)
 			return
 		}
 
@@ -457,7 +468,7 @@ func forwardTaskPollToReplica(
 	res, err := taskStore.replicaPollHttpClient.Do(req)
 	if err != nil {
 		respondError(c, cfg, logger, http.StatusServiceUnavailable,
-			"Failed to make request to Pub replica", err, map[string]any{
+			"Failed to forward task poll request to Pub replica", err, map[string]any{
 				"url": url,
 			})
 		return
@@ -492,13 +503,17 @@ func retryJobCall(
 	task.Status = Ongoing
 	task.doneChannel = make(chan string)
 	metricAsyncRetriedTask.Inc()
-	logger.Info("Retrying attempt of async job call", log.Ctx{
+	errorMessage := ""
+	if task.ErrorMessage != nil {
+		errorMessage = *task.ErrorMessage
+	}
+	logger.Info("Retrying async job call", log.Ctx{
 		"jobName":      task.JobName,
 		"jobVersion":   task.JobVersion,
 		"jobPath":      task.JobPath,
 		"attempts":     task.Attempts,
 		"replicaAddr":  task.PubInstanceAddr,
-		"errorMessage": IfThenElse(task.ErrorMessage != nil, *task.ErrorMessage, ""),
+		"errorMessage": errorMessage,
 	})
 
 	err := taskStore.UpdateTask(task)
@@ -525,12 +540,12 @@ func retryTaskIfMissing(
 	logger log.Logger,
 	task *AsyncTask,
 	requestId string,
-) error {
+) (bool, error) {
 	if task.Status != Ongoing {
-		return nil
+		return false, nil // completed or failed task doesn't need to be retried
 	}
-	if !isTaskMissing(cfg, taskStore, logger, task) {
-		return nil
+	if !isTaskMissing(cfg, taskStore, task) {
+		return false, nil
 	}
 	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
 		"pubInstance": task.PubInstanceAddr,
@@ -538,12 +553,12 @@ func retryTaskIfMissing(
 	metricAsyncRetriedMissingTask.Inc()
 	err := retryJobCall(cfg, taskStore, logger, task, requestId)
 	if err != nil {
-		return WrapError("failed to retry a job call", err)
+		return false, WrapError("failed to retry a job call", err)
 	}
-	return nil
+	return true, nil
 }
 
-func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, logger log.Logger, task *AsyncTask) bool {
+func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, task *AsyncTask) bool {
 	if task.PubInstanceAddr != "" && task.PubInstanceAddr == taskStore.replicaDiscovery.MyAddr {
 		return true
 	}
@@ -552,17 +567,10 @@ func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, logger log.Logger, ta
 	}
 	exists, status, err := checkTaskStatusInReplica(taskStore, task.PubInstanceAddr, task.Id)
 	if err != nil {
-		logger.Warn("Failed to check async task in a supposed Pub replica", log.Ctx{
-			"pubInstance": task.PubInstanceAddr,
-			"error":       err,
-		})
-		return true
+		return true // Failed to check async task in a supposed Pub replica
 	}
 	if !exists {
-		logger.Warn("Task not found in a supposed replica", log.Ctx{
-			"pubInstance": task.PubInstanceAddr,
-		})
-		return true
+		return true // Task not found in a supposed replica
 	}
 	task.Status = TaskStatus(status)
 	return false
