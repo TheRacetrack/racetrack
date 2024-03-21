@@ -137,8 +137,6 @@ func TestResumeMissingTask(t *testing.T) {
 	assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
 	assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
 
-	wgResultRequested.Wait()
-
 	task, err := store.GetStoredTask(taskId)
 	assert.Nil(t, err, "task should be found in the store")
 	assert.EqualValues(t, task.Attempts, 2, "task has been tried twice")
