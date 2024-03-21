@@ -101,6 +101,7 @@ func handleTaskStartRequest(
 		"jobName":    job.Name,
 		"jobVersion": job.Version,
 		"jobPath":    jobPath,
+		"caller":     callerName,
 	})
 	c.JSON(http.StatusCreated, gin.H{ // 201 Created
 		"task_id": task.Id,
@@ -132,7 +133,7 @@ func handleBackgroundJobCall(
 		task.RetriableError = false
 		metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
 		duration := task.endedAt.Sub(task.startedAt).String()
-		logger.Info("Async Job Call task has ended", log.Ctx{
+		logger.Info("Async Job Call task has ended successfully", log.Ctx{
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobPath":    targetUrl.Path,
@@ -143,7 +144,7 @@ func handleBackgroundJobCall(
 		task.Status = Failed
 		task.ErrorMessage = ptr(err.Error())
 		task.RetriableError = retriable
-		logger.Error("Background Job Call request error", log.Ctx{
+		logger.Error("Async Job Call request error", log.Ctx{
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"host":       targetUrl.Host,
@@ -213,7 +214,7 @@ func makeJobCall(
 	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			return WrapError("connection broken to a target job", err), true
+			return WrapError("connection broken to a target job (job may have died)", err), true
 		}
 		return WrapError("making request to a job", err), false
 	}
@@ -600,6 +601,7 @@ func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskS
 			"ended_at":    task.endedAt,
 			"duration":    durationStr,
 			"error":       task.ErrorMessage,
+			"attempts":    task.Attempts,
 		})
 	} else if task.Status == Completed {
 		for k, v := range task.ResponseHeaders {

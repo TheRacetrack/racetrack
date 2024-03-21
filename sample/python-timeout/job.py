@@ -1,3 +1,4 @@
+import sys
 import time
 import logging
 
@@ -7,6 +8,7 @@ from timeout import timeout
 class TimeoutJob:
     def __init__(self):
         """job to either crash or timeout for testing purposes"""
+        self.mem: list[int] = []
 
     def perform(self, mode: str = "timeout", t: int = 250) -> dict:
         """perform for timeouts or crashing
@@ -35,6 +37,14 @@ class TimeoutJob:
 
         elif mode == "crash":
             raise Exception("Windows12 has stopped working")
+
+        elif mode == "exit":
+            sys.exit()
+
+        elif mode == "oom":
+            for x in range(10 * 1024 * 1024):
+                self.mem.append(x)
+            return {'mem': len(self.mem)}
 
         elif mode == "cpu":
             start = time.time()
