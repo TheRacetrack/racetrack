@@ -22,7 +22,8 @@ type Config struct {
 	ServiceName              string `env:"SERVICE_NAME" envDefault:"pub"`
 	StructuredLogging        bool   `env:"LOG_STRUCTURED" envDefault:"false"`
 	ReplicaDiscoveryHostname string `env:"REPLICA_DISCOVERY_HOSTNAME" envDefault:""`
-	AsyncMaxAttempts         int    `env:"ASYNC_MAX_ATTEMPTS" envDefault:"2"`
+	AsyncMaxAttempts         int    `env:"ASYNC_MAX_ATTEMPTS" envDefault:"2"`         // Maximum number of attempts to make a job call (1 is no retry)
+	AsyncTaskRetryInterval   int    `env:"ASYNC_TASK_RETRY_INTERVAL" envDefault:"10"` // Interval in seconds to wait before retrying a crashed job call
 }
 
 func LoadConfig() (*Config, error) {

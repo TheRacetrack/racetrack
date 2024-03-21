@@ -156,7 +156,7 @@ func handleBackgroundJobCall(
 
 	if task.canBeRetried(cfg) {
 		logger.Info("Async job call crashed, retrying...")
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Duration(cfg.AsyncTaskRetryInterval) * time.Second)
 		metricAsyncRetriedCrashedTask.Inc()
 		err = retryJobCall(cfg, taskStore, logger, task, requestId)
 		if err != nil {

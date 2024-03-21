@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,7 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 	servers := make([]*http.Server, replicaNum)
 	cfg, _ := LoadConfig()
 	cfg.LifecycleUrl = "http://127.0.0.1:7202/lifecycle"
-	activateMockHttpResponses(&wgResultRequested)
+	activateMockResponsesWithDelay(&wgResultRequested)
 	defer httpmock.DeactivateAndReset()
 	taskStorage := NewMemoryTaskStorage()
 
@@ -68,6 +69,35 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 	}
 }
 
+func TestRetryCrashedJobCall(t *testing.T) {
+	addrs := generateReplicaAddresses(1)
+	cfg, _ := LoadConfig()
+	cfg.AsyncTaskRetryInterval = 0
+	cfg.LifecycleUrl = "http://127.0.0.1:7202/lifecycle"
+	jobCallCounter := activateMockJobCrash()
+	defer httpmock.DeactivateAndReset()
+	taskStorage := NewMemoryTaskStorage()
+	replicaDiscovery := NewStaticReplicaDiscovery(addrs, addrs[0])
+	store := NewAsyncTaskStore(replicaDiscovery, taskStorage)
+	server := setupReplicaServer(addrs[0], cfg, store)
+	defer server.Close()
+
+	response := postJsonRequest(
+		fmt.Sprintf("http://%v/pub/async/new/job/windows12/latest/api/v1/perform", addrs[0]),
+		`{"numbers": [40, 2]}`)
+	assert.Equal(t, response.StatusCode, http.StatusCreated, "async job call task should be created")
+	taskId := readJsonResponse(response)["task_id"].(string)
+
+	statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[0], taskId))
+	assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
+	assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
+
+	task, err := store.GetStoredTask(taskId)
+	assert.Nil(t, err, "task should be found in the store")
+	assert.EqualValues(t, task.Attempts, 2, "task has been tried twice")
+	assert.EqualValues(t, jobCallCounter.Load(), 2, "job has been called twice")
+}
+
 func generateReplicaAddresses(num int) []string {
 	return MapSlice(getFreePorts(num), func(port int) string {
 		return fmt.Sprintf("127.0.0.1:%v", port)
@@ -95,7 +125,7 @@ func getFreePorts(num int) []int {
 	return ports
 }
 
-func activateMockHttpResponses(wgResultRequested *sync.WaitGroup) {
+func activateMockResponsesWithDelay(wgResultRequested *sync.WaitGroup) {
 	defaultLifecycleTransport = httpmock.DefaultTransport
 	defaultAsyncJobTransport = httpmock.DefaultTransport
 	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/auth/can-call-job/adder/latest/api/v1/perform",
@@ -105,11 +135,10 @@ func activateMockHttpResponses(wgResultRequested *sync.WaitGroup) {
 		func(req *http.Request) (*http.Response, error) {
 			wgResultRequested.Wait() // finish job task only after all replicas subscribed for a result
 			status := 200
-			body := `{"result": 42}`
 			resp := http.Response{
 				Status:        strconv.Itoa(status),
 				StatusCode:    status,
-				Body:          httpmock.NewRespBodyFromString(body),
+				Body:          httpmock.NewRespBodyFromString(`{"result": 42}`),
 				Header:        http.Header{},
 				ContentLength: -1,
 				Request:       req,
@@ -186,4 +215,37 @@ func getJsonRequest(url string) (int, map[string]interface{}) {
 		fmt.Printf("Response %d for %s: %s\n", response.StatusCode, url, bodyBytes)
 	}
 	return response.StatusCode, readJsonResponse(response)
+}
+
+func activateMockJobCrash() *atomic.Uint64 {
+	defaultLifecycleTransport = httpmock.DefaultTransport
+	defaultAsyncJobTransport = httpmock.DefaultTransport
+	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/auth/can-call-job/windows12/latest/api/v1/perform",
+		httpmock.NewStringResponder(200, `{"job": 
+		{"id": "0", "name": "windows12", "version": "0.0.1", "status": "running",
+		"create_time": 1, "update_time": 1, "manifest": null, "internal_name": "windows12-v-0-0-1"},
+		"caller": "bob"}`))
+	httpmock.RegisterResponder("GET", "http://127.0.0.1:7202/lifecycle/api/v1/job/windows12/0.0.1",
+		httpmock.NewStringResponder(200, `{"id": "0", "name": "windows12", "version": "0.0.1",
+		"status": "running", "create_time": 1, "update_time": 1, "manifest": null, "internal_name": "windows12-v-0-0-1"}`))
+	var jobCallCounter atomic.Uint64
+	httpmock.RegisterResponder("POST", "http://windows12-v-0-0-1/pub/job/windows12/0.0.1/api/v1/perform",
+		func(req *http.Request) (*http.Response, error) {
+			jobCallCounter.Add(1)
+			var resp http.Response
+			if jobCallCounter.Load() == 1 {
+				return nil, io.EOF
+			} else {
+				resp = http.Response{
+					Status:        strconv.Itoa(200),
+					StatusCode:    200,
+					Body:          httpmock.NewRespBodyFromString(`{"result": 42}`),
+					Header:        http.Header{},
+					ContentLength: -1,
+					Request:       req,
+				}
+			}
+			return &resp, nil
+		})
+	return &jobCallCounter
 }
