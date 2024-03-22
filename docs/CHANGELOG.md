@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or a job crash (like an Out of Memory kill).
   Regardless of the reason, the job call will keep retrying
   until it hits the maximum number of attempts.
+  Async job calls are stored in a database for a short period.
   ([#424](https://github.com/TheRacetrack/racetrack/issues/424))
 
 ## [2.27.0] - 2024-03-04
