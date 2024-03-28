@@ -2,7 +2,7 @@
 
 setup:
 		pip install -r requirements.txt
-		python setup.py develop
+		pip install -e .
 
 test:
 		cd tests && python -m pytest -vv --tb=short -ra $(test)
