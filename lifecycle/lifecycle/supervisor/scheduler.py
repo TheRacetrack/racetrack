@@ -7,6 +7,7 @@ from lifecycle.config import Config
 from lifecycle.job.registry import sync_registry_jobs
 from lifecycle.job.reconcile import reconcile_jobs
 from lifecycle.supervisor.metrics import populate_metrics_jobs
+from lifecycle.supervisor.cleanup import clean_up_async_job_calls
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
@@ -25,6 +26,7 @@ def _schedule_tasks(config: Config, plugin_engine: PluginEngine):
     schedule.every(1).minutes.do(sync_registry_jobs, config=config, plugin_engine=plugin_engine)
     schedule.every(10).minutes.do(reconcile_jobs, config=config, plugin_engine=plugin_engine)
     schedule.every(1).minutes.do(populate_metrics_jobs, config=config)
+    schedule.every(1).hours.do(clean_up_async_job_calls, config=config)
 
 
 def _scheduler_worker():

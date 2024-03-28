@@ -99,6 +99,9 @@ test-dashboard:
 test-pub:
 	cd pub && make test
 
+test-pub-1: # Run single unit test of Pub
+	cd pub && go test -v -run $(test) .
+
 test-utils:
 	cd utils && python -m pytest -v --tb=short -ra
 

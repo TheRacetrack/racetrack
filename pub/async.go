@@ -3,90 +3,22 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
-var defaultAsyncJobTransport http.RoundTripper = defaultHttpTransport()
-var defaultAsyncReplicaTransport http.RoundTripper = defaultHttpTransport()
-
-type AsyncTaskStore struct {
-	tasks                 map[string]*AsyncTask
-	jobHttpClient         *http.Client // HTTP client to make requests to jobs
-	replicaPollHttpClient *http.Client // HTTP client to poll result from other replica
-	replicaHttpClient     *http.Client // HTTP client to check task status in other replica
-	rwMutex               sync.RWMutex
-	longPollTimeout       time.Duration
-	replicaDiscovery      *replicaDiscovery
-	cleanUpTimeout        time.Duration
-}
-
-type AsyncTask struct {
-	id               string
-	status           TaskStatus
-	jobName          string
-	jobVersion       string
-	jobPath          string
-	httpMethod       string
-	startedAt        time.Time
-	endedAt          *time.Time
-	resultData       []byte
-	resultHeaders    map[string]string
-	resultStatusCode *int
-	result           interface{}
-	errorMessage     *string
-	doneChannel      chan string // channel to notify when task is done
-}
-
-type AsyncTaskStatusDto struct {
-	Id     string     `json:"task_id"`
-	Status TaskStatus `json:"status"`
-}
-
-type TaskStatus string
-
-const (
-	Ongoing   TaskStatus = "ongoing"
-	Completed TaskStatus = "completed"
-	Failed    TaskStatus = "failed"
-)
-
-func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery) *AsyncTaskStore {
-	store := &AsyncTaskStore{
-		tasks: make(map[string]*AsyncTask),
-		jobHttpClient: &http.Client{
-			Timeout:   120 * time.Minute,
-			Transport: defaultAsyncJobTransport,
-		},
-		replicaPollHttpClient: &http.Client{
-			Timeout:   120 * time.Minute,
-			Transport: defaultAsyncReplicaTransport,
-		},
-		replicaHttpClient: &http.Client{
-			Timeout:   5 * time.Second,
-			Transport: defaultAsyncReplicaTransport,
-		},
-		longPollTimeout:  30 * time.Second,
-		cleanUpTimeout:   125 * time.Minute,
-		replicaDiscovery: replicaDiscovery,
-	}
-	go store.cleanUpRoutine()
-	return store
-}
-
 // Start a new async job call in background and return task ID
-func AsyncJobCallEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, jobPath string) {
+func TaskStartEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, jobPath string) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{"requestId": requestId})
 	if strings.HasPrefix(jobPath, "//") {
@@ -94,16 +26,16 @@ func AsyncJobCallEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore
 	}
 
 	logger.Info("Request: new Async Job Call", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleAsyncJobCallRequest(c, cfg, taskStore, logger, requestId, jobPath)
+	statusCode, err := handleTaskStartRequest(c, cfg, taskStore, logger, requestId, jobPath)
 	if err != nil {
-		metricAsyncJobCallsErros.Inc()
+		metricAsyncJobCallsErrors.Inc()
 		respondError(c, cfg, logger, statusCode, "Async Job Call request error", err, map[string]any{
 			"path": c.Request.URL.Path,
 		})
 	}
 }
 
-func handleAsyncJobCallRequest(
+func handleTaskStartRequest(
 	c *gin.Context,
 	cfg *Config,
 	taskStore *AsyncTaskStore,
@@ -113,15 +45,15 @@ func handleAsyncJobCallRequest(
 ) (int, error) {
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
 		c.Writer.Header().Set("Allow", "GET, POST")
-		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
+		return http.StatusMethodNotAllowed, errors.New("method not allowed")
 	}
 	jobName := c.Param("job")
 	if jobName == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job name")
+		return http.StatusBadRequest, errors.New("couldn't extract job name")
 	}
 	jobVersion := c.Param("version")
 	if jobVersion == "" {
-		return http.StatusBadRequest, errors.New("Couldn't extract job version")
+		return http.StatusBadRequest, errors.New("couldn't extract job version")
 	}
 
 	job, _, callerName, statusCode, err := getAuthorizedJobDetails(c, cfg, requestId, jobName, jobVersion, jobPath)
@@ -130,118 +62,161 @@ func handleAsyncJobCallRequest(
 	}
 
 	metricAsyncJobCallsStarted.WithLabelValues(job.Name, job.Version).Inc()
-
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
-
-	task := &AsyncTask{
-		id:          uuid.NewV4().String(),
-		startedAt:   time.Now(),
-		status:      Ongoing,
-		jobName:     job.Name,
-		jobVersion:  job.Version,
-		jobPath:     jobPath,
-		httpMethod:  c.Request.Method,
-		doneChannel: make(chan string),
+	requestHeaders := make(map[string]string)
+	for k, v := range c.Request.Header {
+		requestHeaders[k] = strings.Join(v, ",")
 	}
-	taskStore.rwMutex.Lock()
-	taskStore.tasks[task.id] = task
-	taskStore.rwMutex.Unlock()
-	logger.Info("Async Job Call task created", log.Ctx{
-		"taskId":     task.id,
-		"jobName":    job.Name,
-		"jobVersion": job.Version,
-		"jobPath":    jobPath,
-	})
-
-	c.JSON(http.StatusCreated, gin.H{ // 201 Created
-		"task_id": task.id,
-		"status":  task.status,
-	})
-
+	requestHeaders[cfg.RequestTracingHeader] = requestId
+	requestHeaders[cfg.CallerNameHeader] = callerName
 	defer c.Request.Body.Close()
 	requestBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		return http.StatusBadRequest, errors.Wrap(err, "failed to read request body")
+		return http.StatusBadRequest, WrapError("failed to read request body", err)
 	}
 
-	go func() {
-		err := makeBackgroundJobCall(targetUrl, c, requestBody, job, cfg, taskStore, task, requestId, callerName)
+	task, err := taskStore.CreateTask(&AsyncTask{
+		Id:                 uuid.NewV4().String(),
+		Status:             Ongoing,
+		StartedAtTimestamp: time.Now().Unix(),
+		startedAt:          time.Now(),
+		JobName:            job.Name,
+		JobVersion:         job.Version,
+		JobPath:            jobPath,
+		RequestMethod:      c.Request.Method,
+		RequestUrl:         c.Request.URL.String(),
+		RequestHeaders:     requestHeaders,
+		RequestBody:        string(requestBody),
+		Attempts:           1,
+		PubInstanceAddr:    taskStore.replicaDiscovery.MyAddr,
+		doneChannel:        make(chan string),
+		quitChannel:        make(chan bool, 1),
+	})
+	logger = logger.New(log.Ctx{"taskId": task.Id})
+	if err != nil {
+		return http.StatusInternalServerError, WrapError("failed to create async task", err)
+	}
+	logger.Info("Async Job Call task created", log.Ctx{
+		"jobName":    job.Name,
+		"jobVersion": job.Version,
+		"jobPath":    jobPath,
+		"caller":     callerName,
+	})
+	c.JSON(http.StatusCreated, gin.H{ // 201 Created
+		"task_id": task.Id,
+		"status":  task.Status,
+	})
 
-		task.endedAt = ptr(time.Now())
-		if err == nil {
-			task.status = Completed
-			metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
-			duration := task.endedAt.Sub(task.startedAt).String()
-			logger.Info("Async Job Call task has ended", log.Ctx{
-				"taskId":     task.id,
-				"jobName":    job.Name,
-				"jobVersion": job.Version,
-				"jobPath":    targetUrl.Path,
-				"caller":     callerName,
-				"statusCode": *task.resultStatusCode,
-				"duration":   duration,
-			})
-		} else {
-			task.status = Failed
-			errorStr := err.Error()
-			task.errorMessage = &errorStr
-			logger.Error("Background Job Call request error", log.Ctx{
-				"taskId":     task.id,
-				"jobName":    job.Name,
-				"jobVersion": job.Version,
-				"jobStatus":  job.Status,
-				"caller":     callerName,
-				"host":       targetUrl.Host,
-				"path":       targetUrl.Path,
-				"error":      errorStr,
-			})
-			metricAsyncJobCallsErros.Inc()
-		}
-
-		// Notify subscribed listeners without blocking
-		select {
-		case task.doneChannel <- task.id:
-		default:
-		}
-		close(task.doneChannel)
-	}()
-
+	go handleBackgroundJobCall(cfg, taskStore, logger, job, task, targetUrl, requestBody, requestId)
 	return http.StatusOK, nil
 }
 
-func makeBackgroundJobCall(
-	target url.URL,
-	c *gin.Context,
-	requestBody []byte,
+func handleBackgroundJobCall(
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	logger log.Logger,
 	job *JobDetails,
+	task *AsyncTask,
+	targetUrl url.URL,
+	requestBody []byte,
+	requestId string,
+) {
+	err, retriable := makeJobCall(targetUrl, requestBody, cfg, taskStore, task, requestId)
+
+	taskStore.rwMutex.Lock()
+	task.endedAt = ptr(time.Now())
+	task.EndedAtTimestamp = ptr(time.Now().Unix())
+	if err == nil {
+		task.Status = Completed
+		task.ErrorMessage = nil
+		task.RetriableError = false
+		metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
+		duration := task.endedAt.Sub(task.startedAt).String()
+		logger.Info("Async Job Call task has ended successfully", log.Ctx{
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"jobPath":    targetUrl.Path,
+			"statusCode": *task.ResponseStatusCode,
+			"duration":   duration,
+		})
+	} else {
+		task.Status = Failed
+		task.ErrorMessage = ptr(err.Error())
+		task.RetriableError = retriable
+		logger.Error("Async Job Call request error", log.Ctx{
+			"jobName":    job.Name,
+			"jobVersion": job.Version,
+			"host":       targetUrl.Host,
+			"path":       targetUrl.Path,
+			"error":      err.Error(),
+		})
+		metricAsyncJobCallsErrors.Inc()
+	}
+	taskStore.rwMutex.Unlock()
+
+	if task.canBeRetried(cfg) {
+		logger.Info("Async job call crashed, retrying...")
+		time.Sleep(time.Duration(cfg.AsyncTaskRetryInterval) * time.Second)
+		metricAsyncRetriedCrashedTask.Inc()
+		err = retryJobCall(cfg, taskStore, logger, task, requestId)
+		if err != nil {
+			logger.Error("Failed to retry async task call", log.Ctx{
+				"error": err.Error(),
+			})
+		}
+		return
+	}
+
+	err = taskStore.UpdateTask(task)
+	if err != nil {
+		logger.Error("Failed to update async task", log.Ctx{
+			"error": err.Error(),
+		})
+	}
+
+	select { // Notify subscribed listeners without blocking
+	case task.doneChannel <- task.Id:
+	default:
+	}
+	close(task.doneChannel)
+}
+
+// Make an HTTP request to the target Job and keep the result of the task
+// Return error, boolean whether the error is retriable
+func makeJobCall(
+	target url.URL,
+	requestBody []byte,
 	cfg *Config,
 	taskStore *AsyncTaskStore,
 	task *AsyncTask,
 	requestId string,
-	callerName string,
-) error {
-	metricJobProxyRequestsStarted.WithLabelValues(job.Name, job.Version).Inc()
+) (error, bool) {
+	metricJobProxyRequestsStarted.WithLabelValues(task.JobName, task.JobVersion).Inc()
 	jobCallStartTime := time.Now()
 
 	requestBodyReader := bytes.NewReader(requestBody)
-	req, err := http.NewRequest(c.Request.Method, target.String(), requestBodyReader)
+	req, err := http.NewRequest(task.RequestMethod, target.String(), requestBodyReader)
 	if err != nil {
-		return errors.Wrap(err, "creating job request")
+		return WrapError("creating job request", err), false
+	}
+	for k, v := range task.RequestHeaders {
+		req.Header.Set(k, v)
 	}
 	req.URL.Scheme = target.Scheme
 	req.URL.Host = target.Host
 	req.URL.Path = target.Path
-	req.Header.Add("X-Forwarded-Host", req.Host)
+	req.Header.Set("X-Forwarded-Host", req.Host)
 	req.Host = target.Host
-	req.Header.Set(cfg.RequestTracingHeader, requestId)
-	if callerName != "" {
-		req.Header.Set(cfg.CallerNameHeader, callerName)
-	}
 	req.RequestURI = ""
+	req.Close = true
+
 	res, err := taskStore.jobHttpClient.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "making request to a job")
+		if errors.Is(err, io.EOF) {
+			return WrapError("connection broken to a target job (job may have died)", err), true
+		}
+		return WrapError("making request to a job", err), false
 	}
 
 	// Transform redirect links to relative (without hostname).
@@ -257,51 +232,39 @@ func makeBackgroundJobCall(
 	}
 	res.Header.Set(cfg.RequestTracingHeader, requestId)
 
-	task.resultStatusCode = ptr(res.StatusCode)
+	task.ResponseStatusCode = ptr(res.StatusCode)
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return errors.Wrap(err, "failed to read response body")
+		return WrapError("failed to read response body", err), false
 	}
-	task.resultData = bodyBytes
-	task.resultHeaders = make(map[string]string)
+	task.ResponseBody = string(bodyBytes)
+	task.ResponseHeaders = make(map[string]string)
 	for k, v := range res.Header {
-		task.resultHeaders[k] = strings.Join(v, ",")
-	}
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		err := json.Unmarshal(bodyBytes, &task.result)
-		if err != nil {
-			return errors.Wrap(err, "failed to parse response body as JSON")
-		}
+		task.ResponseHeaders[k] = strings.Join(v, ",")
 	}
 
 	statusCode := strconv.Itoa(res.StatusCode)
-	metricJobProxyResponseCodes.WithLabelValues(job.Name, job.Version, statusCode).Inc()
+	metricJobProxyResponseCodes.WithLabelValues(task.JobName, task.JobVersion, statusCode).Inc()
 	jobCallTime := time.Since(jobCallStartTime).Seconds()
-	metricJobCallResponseTimeHistogram.WithLabelValues(job.Name, job.Version).Observe(jobCallTime)
-	metricJobCallResponseTime.WithLabelValues(job.Name, job.Version).Add(jobCallTime)
-	metricJobProxyRequestsDone.WithLabelValues(job.Name, job.Version).Inc()
-	return nil
+	metricJobCallResponseTimeHistogram.WithLabelValues(task.JobName, task.JobVersion).Observe(jobCallTime)
+	metricJobCallResponseTime.WithLabelValues(task.JobName, task.JobVersion).Add(jobCallTime)
+	metricJobProxyRequestsDone.WithLabelValues(task.JobName, task.JobVersion).Inc()
+	return nil, false
 }
 
 // Get status of a task in this local replica instance
 func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
-	logger.Info("Request: local async task status", log.Ctx{
-		"method": c.Request.Method,
-		"path":   c.Request.URL.Path,
-	})
+	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
+	logger.Info("Request: local async task status")
 
-	taskStore.rwMutex.RLock()
-	task, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	task, ok := taskStore.GetLocalTask(taskId)
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
-			"task_id": task.id,
-			"status":  task.status,
+			"task_id": task.Id,
+			"status":  task.Status,
 		})
 	} else {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -316,69 +279,71 @@ func LocalTaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskSt
 func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
-	logger.Info("Request: async task status", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
+	logger.Info("Request: async task status")
 
-	taskStore.rwMutex.RLock()
-	task, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	storedTask, ok := taskStore.GetLocalTask(taskId)
 	if ok {
 		c.JSON(http.StatusOK, gin.H{
-			"task_id": task.id,
-			"status":  task.status,
+			"task_id": storedTask.Id,
+			"status":  storedTask.Status,
 		})
+		return
+	}
 
-	} else {
-		if len(taskStore.replicaDiscovery.otherReplicaAddrs) > 0 {
-			logger.Info("Checking unknown task in other replicas", log.Ctx{
-				"taskId":            taskId,
-				"otherReplicaAddrs": taskStore.replicaDiscovery.otherReplicaAddrs,
+	storedTask, err := taskStore.GetStoredTask(taskId)
+	if errors.Is(err, ErrAsyncTaskNotFound) {
+		respondError(c, cfg, logger, http.StatusNotFound,
+			"Task not found in Lifecycle", err, nil)
+		return
+	}
+	if err != nil {
+		respondError(c, cfg, logger, http.StatusInternalServerError,
+			"Failed to check async task in task storage", err, nil)
+		return
+	}
+	task := NewLocalTask(storedTask)
+
+	_, err = retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
+	if err != nil {
+		respondError(c, cfg, logger, http.StatusInternalServerError,
+			"Failed to retry a missing async task", err, map[string]any{
+				"pubInstance": task.PubInstanceAddr,
 			})
-			otherReplicaAddrs := taskStore.replicaDiscovery.otherReplicaAddrs
-			foundStatusCh := make(chan Pair[string, string])
-			for _, replicaAddr := range otherReplicaAddrs {
-				go func(replicaAddr string) {
-					exists, status, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
-					if err != nil {
-						logger.Error("Failed to check task on other Pub replica", log.Ctx{
-							"error":       err,
-							"taskId":      taskId,
-							"replicaAddr": replicaAddr,
-						})
-						foundStatusCh <- Pair[string, string]{replicaAddr, ""}
-					} else if exists {
-						foundStatusCh <- Pair[string, string]{replicaAddr, status}
-					} else {
-						foundStatusCh <- Pair[string, string]{replicaAddr, ""}
-					}
-				}(replicaAddr)
-			}
-			for range otherReplicaAddrs {
-				pair := <-foundStatusCh
-				replicaAddr := pair.First
-				status := pair.Second
-				if status != "" {
-					logger.Debug("Task found in other replica", log.Ctx{
-						"taskId":      taskId,
-						"replicaAddr": replicaAddr,
-					})
-					c.JSON(http.StatusOK, gin.H{
-						"task_id": taskId,
-						"status":  status,
-					})
-					return
-				}
-			}
-		}
+		return
+	}
 
-		logger.Info("Task not found in any replica", log.Ctx{
-			"taskId":            taskId,
-			"otherReplicaAddrs": taskStore.replicaDiscovery.otherReplicaAddrs,
-		})
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":     fmt.Sprintf("Task with id %s not found", taskId),
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
+	c.JSON(http.StatusOK, gin.H{
+		"task_id": task.Id,
+		"status":  task.Status,
+	})
+}
+
+func checkTaskStatusInReplica(
+	taskStore *AsyncTaskStore,
+	replicaAddr string,
+	taskId string,
+) (bool, string, error) {
+	url := fmt.Sprintf("http://%s/pub/async/task/%s/status/local", replicaAddr, taskId)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return false, "", WrapError("failed to create request to Pub replica", err)
+	}
+	res, err := taskStore.replicaHttpClient.Do(req)
+	if err != nil {
+		return false, "", WrapError("failed to make status request to Pub replica", err)
+	} else if res.StatusCode == http.StatusNotFound {
+		return false, "", nil
+	} else if res.StatusCode == http.StatusOK {
+		dto := &AsyncTaskStatusDto{}
+		defer res.Body.Close()
+		err = json.NewDecoder(res.Body).Decode(dto)
+		if err != nil {
+			return false, "", WrapError("failed to parse response body as JSON", err)
+		}
+		return true, string(dto.Status), nil
+	} else {
+		return false, "", fmt.Errorf("response error when checking task on other Pub replica: %s", res.Status)
 	}
 }
 
@@ -387,79 +352,66 @@ func TaskStatusEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) 
 func TaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
+	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
 	logger.Info("Request: Poll async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 
-	taskStore.rwMutex.RLock()
-	_, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	_, ok := taskStore.GetLocalTask(taskId)
 	if ok {
 		LocalTaskPollEndpoint(c, cfg, taskStore, false)
 	} else {
-		if len(taskStore.replicaDiscovery.otherReplicaAddrs) > 0 {
-			logger.Info("Checking unknown task in other replicas", log.Ctx{
-				"taskId":            taskId,
-				"otherReplicaAddrs": taskStore.replicaDiscovery.otherReplicaAddrs,
-			})
-			otherReplicaAddrs := taskStore.replicaDiscovery.otherReplicaAddrs
-			foundOnReplicas := make(chan string)
-			for _, replicaAddr := range otherReplicaAddrs {
-				go func(replicaAddr string) {
-					exists, _, err := checkTaskStatusInReplica(taskStore, replicaAddr, taskId)
-					if err != nil {
-						logger.Error("Failed to check task on other Pub replica", log.Ctx{
-							"error":       err,
-							"taskId":      taskId,
-							"replicaAddr": replicaAddr,
-						})
-						foundOnReplicas <- ""
-						return
-					}
-					if exists {
-						foundOnReplicas <- replicaAddr
-					} else {
-						foundOnReplicas <- ""
-					}
-				}(replicaAddr)
-			}
-			for range otherReplicaAddrs {
-				replicaAddr := <-foundOnReplicas
-				if replicaAddr != "" {
-					forwardTaskPollToReplica(c, cfg, logger, taskStore, replicaAddr, taskId)
-					return
-				}
-			}
+		storedTask, err := taskStore.GetStoredTask(taskId)
+		if errors.Is(err, ErrAsyncTaskNotFound) {
+			respondError(c, cfg, logger, http.StatusNotFound,
+				"Task not found in Lifecycle", err, nil)
+			return
+		}
+		if err != nil {
+			respondError(c, cfg, logger, http.StatusInternalServerError,
+				"Failed to look up the async task in Lifecycle", err, nil)
+			return
+		}
+		task := NewLocalTask(storedTask)
+
+		if task.Status != Ongoing {
+			respondTaskResult(c, logger, task, taskStore)
+			return
 		}
 
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":     fmt.Sprintf("Task with id %s not found", taskId),
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
+		retried, err := retryTaskIfMissing(cfg, taskStore, logger, task, requestId)
+		if err != nil {
+			respondError(c, cfg, logger, http.StatusInternalServerError,
+				"Failed to retry a missing async task", err, map[string]any{
+					"pubInstance": task.PubInstanceAddr,
+				})
+			return
+		}
+		if retried {
+			LocalTaskPollEndpoint(c, cfg, taskStore, false)
+			return
+		}
+
+		forwardTaskPollToReplica(c, cfg, logger, taskStore, task.PubInstanceAddr, taskId)
 	}
 }
 
 // Wait using HTTP Long Polling until task is completed or timeout is reached.
-// Its an internal endpoint used for communication between Pub replicas.
+// It's an internal endpoint used for communication between Pub replicas.
 // It checks the result locally and does not search in other replicas.
 func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, accessLog bool) {
 	taskId := c.Param("taskId")
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logger := log.New(log.Ctx{"requestId": requestId})
+	logger := log.New(log.Ctx{"requestId": requestId, "taskId": taskId})
 	if accessLog {
-		logger.Info("Request: Poll async task of this replica", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
+		logger.Info("Request: Polling local async task", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	}
 
-	taskStore.rwMutex.RLock()
-	task, ok := taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	task, ok := taskStore.GetLocalTask(taskId)
 	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":     fmt.Sprintf("Task with id %s not found", taskId),
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
+		respondError(c, cfg, logger, http.StatusNotFound,
+			"Task not found locally", nil, nil)
 		return
 	}
-	if task.status != Ongoing {
+	if task.Status != Ongoing {
 		respondTaskResult(c, logger, task, taskStore)
 		return
 	}
@@ -473,52 +425,24 @@ func LocalTaskPollEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStor
 	case <-c.Request.Context().Done():
 		c.String(http.StatusGatewayTimeout, "Request canceled")
 		return
+	case <-task.quitChannel:
+		c.String(http.StatusRequestTimeout, "Request time-out due to termination signal")
+		return
 	case <-time.After(taskStore.longPollTimeout):
 		break
 	}
 
-	taskStore.rwMutex.RLock()
-	task, ok = taskStore.tasks[taskId]
-	taskStore.rwMutex.RUnlock()
+	task, ok = taskStore.GetLocalTask(taskId)
 	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": fmt.Sprintf("Task with id %s not found", taskId),
-		})
+		logger.Warn("Task not found locally after time-out")
+		c.String(http.StatusRequestTimeout, "Time-out")
 		return
 	}
-	if task.status == Ongoing {
-		c.String(http.StatusRequestTimeout, "Time out")
+	if task.Status == Ongoing {
+		c.String(http.StatusRequestTimeout, "Time-out")
 		return
 	} else {
 		respondTaskResult(c, logger, task, taskStore)
-	}
-}
-
-func checkTaskStatusInReplica(
-	taskStore *AsyncTaskStore,
-	replicaAddr string,
-	taskId string,
-) (bool, string, error) {
-	url := fmt.Sprintf("http://%s/pub/async/task/%s/status/local", replicaAddr, taskId)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return false, "", errors.Wrap(err, "failed to create request to Pub replica")
-	}
-	res, err := taskStore.replicaHttpClient.Do(req)
-	if err != nil {
-		return false, "", errors.Wrap(err, "failed to make request to Pub replica")
-	} else if res.StatusCode == http.StatusNotFound {
-		return false, "", nil
-	} else if res.StatusCode == http.StatusOK {
-		dto := &AsyncTaskStatusDto{}
-		defer res.Body.Close()
-		err = json.NewDecoder(res.Body).Decode(dto)
-		if err != nil {
-			return false, "", errors.Wrap(err, "failed to parse response body as JSON")
-		}
-		return true, string(dto.Status), nil
-	} else {
-		return false, "", errors.Errorf("Response error when checking task on other Pub replica: %s", res.Status)
 	}
 }
 
@@ -531,120 +455,181 @@ func forwardTaskPollToReplica(
 	taskId string,
 ) {
 	logger.Info("Forwarding async task poll to other replica", log.Ctx{
-		"taskId":      taskId,
 		"replicaAddr": replicaAddr,
 	})
 	url := fmt.Sprintf("http://%s/pub/async/task/%s/poll/local", replicaAddr, taskId)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		logger.Error("Failed to make request to Pub replica", log.Ctx{
-			"error": err,
-			"url":   url,
-		})
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"error":     "Failed to make request to Pub replica",
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
+		respondError(c, cfg, logger, http.StatusServiceUnavailable,
+			"Failed to make request to Pub replica", err, map[string]any{
+				"url": url,
+			})
 		return
 	}
 	res, err := taskStore.replicaPollHttpClient.Do(req)
 	if err != nil {
-		logger.Error("Failed to make request to Pub replica", log.Ctx{
-			"error": err,
-			"url":   url,
-		})
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"error":     "Failed to make request to Pub replica",
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
+		respondError(c, cfg, logger, http.StatusServiceUnavailable,
+			"Failed to forward task poll request to Pub replica", err, map[string]any{
+				"url": url,
+			})
 		return
 	}
 
 	for k, v := range res.Header {
 		c.Writer.Header()[k] = v
 	}
-
 	defer res.Body.Close()
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		logger.Error("Failed to read response body", log.Ctx{
-			"error": err,
-		})
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"error":     errors.Wrap(err, "failed to read response body").Error(),
-			"requestId": getRequestTracingId(c.Request, cfg.RequestTracingHeader),
-		})
+		respondError(c, cfg, logger, http.StatusServiceUnavailable,
+			"Failed to read response body", err, nil)
+		return
 	}
-
 	c.Data(res.StatusCode, res.Header.Get("Content-Type"), bodyBytes)
 }
 
+func (task *AsyncTask) canBeRetried(cfg *Config) bool {
+	return task.Attempts < cfg.AsyncMaxAttempts && task.Status == Failed && task.RetriableError
+}
+
+func retryJobCall(
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	logger log.Logger,
+	task *AsyncTask,
+	requestId string,
+) error {
+	task.Attempts++
+	task.PubInstanceAddr = taskStore.replicaDiscovery.MyAddr
+	task.Status = Ongoing
+	task.doneChannel = make(chan string)
+	metricAsyncRetriedTask.Inc()
+	errorMessage := ""
+	if task.ErrorMessage != nil {
+		errorMessage = *task.ErrorMessage
+	}
+	logger.Info("Retrying async job call", log.Ctx{
+		"jobName":      task.JobName,
+		"jobVersion":   task.JobVersion,
+		"jobPath":      task.JobPath,
+		"attempts":     task.Attempts,
+		"replicaAddr":  task.PubInstanceAddr,
+		"errorMessage": errorMessage,
+	})
+
+	err := taskStore.UpdateTask(task)
+	if err != nil {
+		return WrapError("failed to update async task", err)
+	}
+
+	job, err := getJobDetails(cfg, task.JobName, task.JobVersion)
+	if err != nil {
+		return WrapError("failed to get job details", err)
+	}
+	urlPath := JoinURL("/pub/job/", task.JobName, task.JobVersion, task.JobPath)
+	targetUrl := TargetURL(cfg, job, urlPath)
+	requestBody := []byte(task.RequestBody)
+
+	go handleBackgroundJobCall(cfg, taskStore, logger, job, task, targetUrl, requestBody, requestId)
+	return nil
+}
+
+// Ensure task is retried if it's supposed to be running but is missing
+func retryTaskIfMissing(
+	cfg *Config,
+	taskStore *AsyncTaskStore,
+	logger log.Logger,
+	task *AsyncTask,
+	requestId string,
+) (bool, error) {
+	if task.Status != Ongoing {
+		return false, nil // completed or failed task doesn't need to be retried
+	}
+	if !isTaskMissing(cfg, taskStore, task) {
+		return false, nil
+	}
+	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
+		"pubInstance": task.PubInstanceAddr,
+	})
+	metricAsyncRetriedMissingTask.Inc()
+	err := retryJobCall(cfg, taskStore, logger, task, requestId)
+	if err != nil {
+		return false, WrapError("failed to retry a job call", err)
+	}
+	return true, nil
+}
+
+func isTaskMissing(cfg *Config, taskStore *AsyncTaskStore, task *AsyncTask) bool {
+	if task.PubInstanceAddr != "" && task.PubInstanceAddr == taskStore.replicaDiscovery.MyAddr {
+		return true
+	}
+	if task.PubInstanceAddr == "" {
+		task.PubInstanceAddr = fmt.Sprintf("127.0.0.1:%s", cfg.ListenPort)
+	}
+	exists, status, err := checkTaskStatusInReplica(taskStore, task.PubInstanceAddr, task.Id)
+	if err != nil {
+		return true // Failed to check async task in a supposed Pub replica
+	}
+	if !exists {
+		return true // Task not found in a supposed replica
+	}
+	task.Status = TaskStatus(status)
+	return false
+}
+
 func respondTaskResult(c *gin.Context, logger log.Logger, task *AsyncTask, taskStore *AsyncTaskStore) {
-	if task.status == Ongoing || task.status == Failed {
+	if task.Status == Ongoing || task.Status == Failed {
 		var durationStr *string
 		if task.endedAt != nil {
 			duration := task.endedAt.Sub(task.startedAt).String()
 			durationStr = &duration
 		}
 		var statusCode int = http.StatusOK
-		if task.status == Failed {
+		if task.Status == Failed {
 			statusCode = http.StatusInternalServerError
-		} else if task.status == Ongoing {
+		} else if task.Status == Ongoing {
 			statusCode = http.StatusAccepted
 		}
 		c.JSON(statusCode, gin.H{
-			"task_id":     task.id,
-			"status":      task.status,
-			"job_name":    task.jobName,
-			"job_version": task.jobVersion,
-			"job_path":    task.jobPath,
-			"http_method": task.httpMethod,
+			"task_id":     task.Id,
+			"status":      task.Status,
+			"job_name":    task.JobName,
+			"job_version": task.JobVersion,
+			"job_path":    task.JobPath,
+			"http_method": task.RequestMethod,
 			"started_at":  task.startedAt,
 			"ended_at":    task.endedAt,
 			"duration":    durationStr,
-			"error":       task.errorMessage,
+			"error":       task.ErrorMessage,
+			"attempts":    task.Attempts,
 		})
-	} else if task.status == Completed {
-		for k, v := range task.resultHeaders {
+	} else if task.Status == Completed {
+		for k, v := range task.ResponseHeaders {
 			c.Writer.Header().Set(k, v)
 		}
-		contentType, ok := task.resultHeaders["Content-Type"]
+		contentType, ok := task.ResponseHeaders["Content-Type"]
 		if ok {
-			c.Data(*task.resultStatusCode, contentType, task.resultData)
+			c.Data(*task.ResponseStatusCode, contentType, []byte(task.ResponseBody))
 		} else {
-			c.Data(*task.resultStatusCode, "", task.resultData)
+			c.Data(*task.ResponseStatusCode, "", []byte(task.ResponseBody))
 		}
 	}
 
-	if task.status == Completed || task.status == Failed {
+	if task.Status == Completed || task.Status == Failed {
 		go func() {
 			// Delete task after short time in case of timeout occured while sending the result to the client
 			time.Sleep(30 * time.Second)
-			taskStore.rwMutex.Lock()
-			delete(taskStore.tasks, task.id)
-			taskStore.rwMutex.Unlock()
+			err := taskStore.DeleteTask(task.Id)
+			if err != nil {
+				logger.Error("Failed to delete async task", log.Ctx{
+					"error": err.Error(),
+				})
+				return
+			}
 			logger.Info("Retrieved task has been deleted", log.Ctx{
-				"taskId": task.id,
-				"status": task.status,
+				"status": task.Status,
 			})
 		}()
-	}
-}
-
-func (s *AsyncTaskStore) cleanUpRoutine() {
-	for {
-		time.Sleep(5 * time.Minute)
-		s.rwMutex.Lock()
-		for taskId, task := range s.tasks {
-			if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
-				log.Info("Cleaning up obsolete async call task", log.Ctx{
-					"taskId":     task.id,
-					"started_at": task.startedAt,
-				})
-				delete(s.tasks, taskId)
-			}
-		}
-		s.rwMutex.Unlock()
 	}
 }
 
@@ -658,19 +643,13 @@ func respondError(
 	errorContext map[string]any,
 ) {
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
-	logCtxMap := log.Ctx{
-		"error":     err.Error(),
-		"requestId": requestId,
-	}
-	ginCtxMap := gin.H{
-		"error":     errors.Wrap(err, errorName).Error(),
-		"requestId": requestId,
-	}
+	logCtxMap := log.Ctx{"requestId": requestId}
+	ginCtxMap := gin.H{"requestId": requestId}
 	if err == nil {
 		ginCtxMap["error"] = errorName
 	} else {
 		logCtxMap["error"] = err.Error()
-		ginCtxMap["error"] = errors.Wrap(err, errorName).Error()
+		ginCtxMap["error"] = WrapError(errorName, err).Error()
 	}
 	for k, v := range errorContext {
 		logCtxMap[k] = v

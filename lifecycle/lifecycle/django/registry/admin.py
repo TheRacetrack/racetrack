@@ -8,7 +8,7 @@ from django.contrib.admin.options import (
 )
 from django.contrib.admin import SimpleListFilter
 
-from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent, Setting
+from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent, Setting, AsyncJobCall
 from ...auth.subject import regenerate_auth_token_by_id
 
 
@@ -136,6 +136,12 @@ class SettingAdmin(admin.ModelAdmin):
     search_fields = ['name', 'value']
 
 
+class AsyncJobCallAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status', 'started_at', 'job_name')
+    list_filter = ['status']
+    search_fields = ['id', 'status', 'job_name']
+
+
 admin.site.unregister(User)
 admin.site.register(User, RacetrackUserAdmin)
 
@@ -149,6 +155,7 @@ admin.site.register(AuditLogEvent, AuditLogEventAdmin)
 admin.site.register(AuthSubject, AuthSubjectAdmin)
 admin.site.register(AuthResourcePermission, AuthResourcePermissionAdmin)
 admin.site.register(Setting, SettingAdmin)
+admin.site.register(AsyncJobCall, AsyncJobCallAdmin)
 
 
 admin.site.index_title = f"Site administration (db: {os.environ.get('DJANGO_DB_TYPE')})"

@@ -96,8 +96,6 @@ Path parameters:
   the task is still in progress, the client should repeat the request
 - `404 Not Found` -
   This error indicates that the task ID provided is invalid or the task is not found.
-  It's also possible that the server may have been restarted while the task was in progress.
-  The client should initiate a new task.
 - `500 Internal Server Error` -
   the task has failed.
   Details of an error will be included in the HTTP body in the JSON format with the following fields:
@@ -194,21 +192,22 @@ result = response.json()
 ## Details
 - To provide the result of the task to the client,
   Racetrack has to keep the result in memory for a certain period of time.
-- The result are removed from the memory right after the client retrieves the result.
+- Additionaly, it will store the records of the ongoing tasks in the database,
+  to continue working on them after a server restart (e.g. due to the upgrade).
+- The result are removed from the memory (and the database) right after the client retrieves the result.
   So that **it can't be retrieved again**.
   To accommodate any potential timeouts during the retrieval process,
   we allow a grace period of 10 seconds post-retrieval before the result is eventually removed.
-- Results aren't stored in the database, but in the ephemeral memory only.
-- The task's result will be removed from the memory after a certain period of time,
+- The task's result will be removed from the memory (and the database) after a certain period of time,
   even if the client didn't retrieve it. This timeout is set to **120 minutes**.
 - Racetrack doesn't keep the ongoing tasks that stuck forever on the job's end.
   There is a hard timeout for the task, set to **120 minutes**.
 - If the Racetrack servers are restarted (for instance, during an upgrade),
-  it will clear the information about ongoing tasks.
-  This will result in a 404 error for the task that was in progress.
-  In such scenarios, the client can resubmit the task.
+  the ongoing tasks will be resumed.
 - Multiple replicas of the Pub component (Racetrack's gateway)
   communicate with each other to share the tasks and the results, so the result can be retrieved from any of them.
 - The timeout for long polling is configured to **30 seconds**.
-  This implies that the server will terminate the request after 30 seconds of no activity.
+  This implies that the server will terminate the polling endpoint after 30 seconds of no activity.
   Consequently, the client will renew the request every 30 seconds in a loop, until the task is completed.
+- If a connection to a job is lost (eg. due to Out of Memory kill),
+  the task will be retried automatically until reaching the maximum number of attempts (set to **2** by default).

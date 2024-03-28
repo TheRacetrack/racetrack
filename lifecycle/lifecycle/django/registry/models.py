@@ -5,7 +5,7 @@ from django.db import models
 
 from racetrack_client.utils.time import now
 from racetrack_commons.auth.scope import AuthScope
-from racetrack_commons.entities.dto import JobStatus, DeploymentStatus
+from racetrack_commons.entities.dto import JobStatus, DeploymentStatus, AsyncJobCallStatus
 
 
 def new_uuid() -> str:
@@ -208,3 +208,31 @@ class Setting(models.Model):
 
     name = models.CharField(max_length=512, primary_key=True)
     value = models.JSONField(null=True, blank=True)
+
+
+class AsyncJobCall(models.Model):
+    class Meta:
+        app_label = 'registry'
+        verbose_name_plural = "Async Job Calls"
+
+    id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
+    status = models.CharField(max_length=32, choices=[(tag.value, tag.value) for tag in AsyncJobCallStatus])
+    started_at = models.DateTimeField(default=now)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
+    job_name = models.CharField(max_length=512)
+    job_version = models.CharField(max_length=256)
+    job_path = models.CharField(max_length=512, blank=True)
+    request_method = models.CharField(max_length=32)
+    request_url = models.CharField(max_length=512)
+    request_headers = models.JSONField(null=True, blank=True)
+    request_body = models.BinaryField(max_length=None, blank=True)
+    response_status_code = models.IntegerField(null=True)
+    response_headers = models.JSONField(null=True, blank=True)
+    response_body = models.BinaryField(max_length=None, blank=True)
+    attempts = models.IntegerField(default=0)
+    pub_instance_addr = models.CharField(max_length=256, blank=True)
+    retriable_error = models.BooleanField()
+
+    def __str__(self):
+        return self.id

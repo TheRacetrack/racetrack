@@ -1,10 +1,11 @@
 import json
+
 from lifecycle.config import Config
 from lifecycle.django.registry import models
 from lifecycle.job.pub import get_job_pub_url
 from racetrack_client.manifest.load import parse_manifest_or_empty
 from racetrack_client.utils.time import datetime_to_timestamp
-from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointRequestDto, EscDto
+from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointRequestDto, EscDto, AsyncJobCallDto
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, DeploymentDto
 
 
@@ -84,4 +85,30 @@ def audit_log_event_to_dto(model: models.AuditLogEvent) -> AuditLogEventDto:
         username_subject=model.username_subject,
         job_name=model.job_name,
         job_version=model.job_version,
+    )
+
+
+def async_job_call_to_dto(model: models.AsyncJobCall) -> AsyncJobCallDto:
+    request_body: str = model.request_body.decode()
+    response_body: str = model.response_body.decode()
+    ended_at: int | None = datetime_to_timestamp(model.ended_at) if model.ended_at is not None else None
+    return AsyncJobCallDto(
+        id=model.id,
+        status=model.status,
+        started_at=datetime_to_timestamp(model.started_at),
+        ended_at=ended_at,
+        error=model.error,
+        job_name=model.job_name,
+        job_version=model.job_version,
+        job_path=model.job_path,
+        request_method=model.request_method,
+        request_url=model.request_url,
+        request_headers=model.request_headers,
+        request_body=request_body,
+        response_status_code=model.response_status_code,
+        response_headers=model.response_headers,
+        response_body=response_body,
+        attempts=model.attempts,
+        pub_instance_addr=model.pub_instance_addr,
+        retriable_error=model.retriable_error,
     )
