@@ -41,7 +41,7 @@ class TimeoutJob:
         elif mode == "exit":
             sys.exit()
 
-        elif mode == "oom":
+        elif mode == "malloc":
             for x in range(10 * 1024 * 1024):
                 self.mem.append(x)
             return {'mem': len(self.mem)}
