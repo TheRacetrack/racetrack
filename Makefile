@@ -57,6 +57,9 @@ setup-test-e2e:
 	( cd racetrack_commons && make setup )
 	@echo Activate your venv: . venv/bin/activate
 
+install-racetrack-client:
+	( cd racetrack_client && pip install -e . )
+
 lint:
 	-python -m mypy --ignore-missing-imports --exclude 'racetrack_client/build' racetrack_client
 	-python -m mypy --ignore-missing-imports racetrack_commons

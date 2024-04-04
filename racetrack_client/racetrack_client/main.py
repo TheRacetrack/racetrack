@@ -306,6 +306,8 @@ def _call_job(
 
 
 def _parse_key_value_pairs(extra_vars: Optional[List[str]]) -> Dict[str, str]:
+    if not extra_vars:
+        return {}
     key_values: Dict[str, str] = {}
     for var in extra_vars:
         parts = var.split('=')

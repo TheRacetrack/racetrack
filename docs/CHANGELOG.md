@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Status of an async job call can be checked at endpoint: `/pub/async/task/{ID}/status`.
   See [Asynchronous calls to jobs](./user/async-job-calls.md) guide for more details.
+- Maximum number of concurrent requests can be limited by `max_concurrency` field in a manifest:
+  ```yaml
+  jobtype_extra:
+    max_concurrency: 1
+  ```
+  By default, concurrent requests are unlimited. Setting `max_concurrency` to `1` will make the job
+  process requests one by one. Overdue requests will be queued and processed in order.
+
+  Having such concurrency limits may cause some requests to wait in a queue.
+  If an average throughput is higher than the job can handle, the queue will grow indefinitely.
+  To prevent that, you can also set `jobtype_extra.max_concurrency_queue` to limit the queue size.
+  When the queue is full, the job will return `429 Too Many Requests` status code.
+
+  See the [Python job type reference](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md)
+
+### Changed
+- FastAPI dependency has been upgraded to solve memory leaks.
+  ([#442](https://github.com/TheRacetrack/racetrack/issues/442))
 
 ### Changed
 - Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
