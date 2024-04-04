@@ -75,8 +75,20 @@ var (
 		Name: "pub_async_job_calls_done",
 		Help: "Total number of finished async Job calls (done and successful)",
 	}, []string{"job_name", "job_version"})
-	metricAsyncJobCallsErros = promauto.NewCounter(prometheus.CounterOpts{
+	metricAsyncJobCallsErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "pub_async_job_calls_errors",
 		Help: "Total number of failed async Job calls",
+	})
+	metricAsyncRetriedTask = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_async_retried_task",
+		Help: "Total number of retried async tasks",
+	})
+	metricAsyncRetriedCrashedTask = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_async_retried_crashed_task",
+		Help: "Total number of retried async tasks due to a job crash",
+	})
+	metricAsyncRetriedMissingTask = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_async_retried_missing_task",
+		Help: "Total number of retried async tasks due to a missing task",
 	})
 )

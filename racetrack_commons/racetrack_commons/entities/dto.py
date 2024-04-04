@@ -103,3 +103,30 @@ class AuditLogEventDto(BaseModel):
     username_subject: Optional[str] = None
     job_name: Optional[str] = None
     job_version: Optional[str] = None
+
+
+class AsyncJobCallStatus(Enum):
+    ONGOING = 'ongoing'  # job call in progress
+    COMPLETED = 'completed'  # done with a successful result
+    FAILED = 'failed'  # aborted to due error
+
+
+class AsyncJobCallDto(BaseModel):
+    id: str
+    status: str
+    started_at: int  # timestamp in milliseconds
+    ended_at: int | None  # timestamp in milliseconds
+    error: str | None
+    job_name: str
+    job_version: str
+    job_path: str
+    request_method: str
+    request_url: str
+    request_headers: dict[str, str]
+    request_body: str
+    response_status_code: int | None
+    response_headers: dict[str, str] | None
+    response_body: str
+    attempts: int = 0
+    pub_instance_addr: str
+    retriable_error: bool

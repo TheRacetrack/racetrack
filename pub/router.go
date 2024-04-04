@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
@@ -17,7 +21,8 @@ func ListenAndServe(cfg *Config) error {
 	router.Use(gin.Recovery())
 
 	replicaDiscovery := NewReplicaDiscovery(cfg)
-	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery)
+	taskStorage := NewLifecycleTaskStorage(cfg.LifecycleUrl, cfg.LifecycleToken)
+	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery, taskStorage)
 
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")
 	// and at prefixed path (when accessed through ingress proxy)
@@ -43,11 +48,30 @@ func ListenAndServe(cfg *Config) error {
 	}
 
 	listenAddress := "0.0.0.0:" + cfg.ListenPort
+	server := &http.Server{
+		Addr:    listenAddress,
+		Handler: router.Handler(),
+	}
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-quit
+		log.Info("Shutting down server...", log.Ctx{"signal": sig})
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		asyncTaskStore.CancelOngoingRequests()
+		if err := server.Shutdown(ctx); err != nil {
+			log.Error("Shutting down server", log.Ctx{"error": err})
+		}
+		<-ctx.Done()
+		log.Info("Server shutdown timeout")
+	}()
 	log.Info("Listening on", log.Ctx{"listenAddress": listenAddress})
-	if err := router.Run(listenAddress); err != nil {
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Error("Serving http", log.Ctx{"error": err})
 		return errors.Wrap(err, "Failed to serve")
 	}
+	log.Info("Server closed")
 	return nil
 }
 
@@ -73,10 +97,10 @@ func SetupEndpoints(
 	})
 
 	router.Any(baseUrl+"/async/new/job/:job/:version/*path", func(c *gin.Context) {
-		AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
+		TaskStartEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
 	})
 	router.Any(baseUrl+"/async/new/job/:job/:version", func(c *gin.Context) {
-		AsyncJobCallEndpoint(c, cfg, asyncTaskStore, "")
+		TaskStartEndpoint(c, cfg, asyncTaskStore, "")
 	})
 	router.GET(baseUrl+"/async/task/:taskId/poll", func(c *gin.Context) {
 		TaskPollEndpoint(c, cfg, asyncTaskStore)

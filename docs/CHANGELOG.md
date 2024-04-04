@@ -27,6 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FastAPI dependency has been upgraded to solve memory leaks.
   ([#442](https://github.com/TheRacetrack/racetrack/issues/442))
 
+### Changed
+- Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
+  The restart could be either due to an upgrade in Racetrack services
+  or a job crash (like an Out of Memory kill).
+  Regardless of the reason, the job call will keep retrying
+  until it hits the maximum number of attempts.
+  Async job calls are stored in a database for a short period.
+  ([#424](https://github.com/TheRacetrack/racetrack/issues/424))
+
 ## [2.27.0] - 2024-03-04
 ### Added
 - Job type plugins can validate their part of the manifest.
