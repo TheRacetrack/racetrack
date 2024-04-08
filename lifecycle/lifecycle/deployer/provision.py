@@ -125,7 +125,7 @@ def roll_back_unsuccessful_deployment(job: JobDto, deployment: DeploymentDto):
         deployer.delete_job(job.name, job.version)
     except BaseException as e:
         logger.error(f'failed to clean up a faulty job from an infrastructure: {e}')
-    delete_job_model(job.job_name, job.job_version)
+    delete_job_model(job.name, job.version)
 
 
 def post_job_deploy(
