@@ -33,7 +33,7 @@ def check_until_job_is_operational(
 
 # this can have long timeout since any potential malfunction in here is not related to a model/entrypoint
 # but the cluster errors that shouldn't happen usually
-@backoff.on_exception(backoff.fibo, RuntimeError, max_value=3, max_time=360, jitter=None, logger=None)
+@backoff.on_exception(backoff.fibo, RuntimeError, max_value=3, max_time=15 * 60, jitter=None, logger=None)
 def wait_until_job_is_alive(
     base_url: str,
     expected_deployment_timestamp: int,

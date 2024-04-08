@@ -22,6 +22,7 @@ def list_cluster_jobs(config: Config, plugin_engine: PluginEngine) -> Iterable[J
 def check_job_condition(job: JobDto, on_job_alive: Callable):
     """
     Verify if deployed Job is really operational
+    :param job: job data
     :param on_job_alive: handler called when Job is live, but not ready yet
     (server running already, but still initializing)
     """
