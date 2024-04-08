@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - FastAPI dependency has been upgraded to solve memory leaks.
   ([#442](https://github.com/TheRacetrack/racetrack/issues/442))
+- If an error occurs while deploying a job to an infrastructure,
+  the unsuccessful deployment is rolled back to clean up the mess.
+  The timeout for intializing a job in the cluster (waiting until it's alive) has been increased to 15 minutes.
+  ([#436](https://github.com/TheRacetrack/racetrack/issues/436))
 
 ### Changed
 - Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
