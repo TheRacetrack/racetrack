@@ -3,6 +3,7 @@ from typing import Callable
 import backoff
 
 from racetrack_client.utils.request import Requests, RequestError, Response
+from lifecycle.server.cache import LifecycleCache
 
 
 def check_until_job_is_operational(
@@ -24,20 +25,31 @@ def check_until_job_is_operational(
     :param headers: headers to include when making a request
     :raise RuntimeError in case of failure
     """
-    response = wait_until_job_is_alive(base_url, deployment_timestamp, headers)
+
+    # this can have long timeout since any potential malfunction in here is not related to a model/entrypoint
+    # but the cluster errors that shouldn't happen usually
+    @backoff.on_exception(backoff.fibo, RuntimeError, max_value=3,
+                          max_time=LifecycleCache.config.timeout_until_job_alive, jitter=None, logger=None)
+    def _wait_until_job_is_alive(_base_url: str, expected_deployment_timestamp: int, _headers: dict[str, str] | None) -> Response:
+        return check_job_is_alive(_base_url, expected_deployment_timestamp, _headers)
+
+    response = _wait_until_job_is_alive(base_url, deployment_timestamp, headers)
     _validate_live_response(response)
-    if on_job_alive:
+    if on_job_alive is not None:
         on_job_alive()
-    wait_until_job_is_ready(base_url, headers)
+
+    @backoff.on_exception(backoff.fibo, TimeoutError, max_value=3,
+                          max_time=LifecycleCache.config.timeout_until_job_ready, jitter=None, logger=None)
+    def _wait_until_job_is_ready(_base_url: str, _headers: dict[str, str] | None = None):
+        check_job_is_ready(_base_url, _headers)
+
+    _wait_until_job_is_ready(base_url, headers)
 
 
-# this can have long timeout since any potential malfunction in here is not related to a model/entrypoint
-# but the cluster errors that shouldn't happen usually
-@backoff.on_exception(backoff.fibo, RuntimeError, max_value=3, max_time=15 * 60, jitter=None, logger=None)
-def wait_until_job_is_alive(
+def check_job_is_alive(
     base_url: str,
     expected_deployment_timestamp: int,
-    headers: dict[str, str] | None = None,
+    headers: dict[str, str] | None,
 ) -> Response:
     """Wait until Job resource (pod or container) is up. This catches internal cluster errors"""
     try:
@@ -60,8 +72,7 @@ def wait_until_job_is_alive(
     return response
 
 
-@backoff.on_exception(backoff.fibo, TimeoutError, max_value=3, max_time=10 * 60, jitter=None, logger=None)
-def wait_until_job_is_ready(base_url: str, headers: dict[str, str] | None = None):
+def check_job_is_ready(base_url: str, headers: dict[str, str] | None) -> None:
     response = Requests.get(f'{base_url}/ready', headers=headers, timeout=3)
     if response.status_code == 200:
         return
