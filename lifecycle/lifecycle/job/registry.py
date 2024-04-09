@@ -133,16 +133,17 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
         job_status_count: dict[str, int] = defaultdict(int)
 
         for job_id, registry_job in registry_jobs_map.items():
-            if job_id in cluster_jobs_map:
-                cluster_job = cluster_jobs_map[job_id]
-                _sync_registry_job(registry_job, cluster_job)
-                _apply_job_notice(registry_job, available_job_types)
-            else:
-                # job not present in Cluster
-                if registry_job.status != JobStatus.LOST.value:
-                    logger.info(f'job is lost: {registry_job}')
-                    registry_job.status = JobStatus.LOST.value
-                    models_registry.update_job(registry_job)
+            if registry_job.status != JobStatus.STARTING:
+                if job_id in cluster_jobs_map:
+                    cluster_job = cluster_jobs_map[job_id]
+                    _sync_registry_job(registry_job, cluster_job)
+                    _apply_job_notice(registry_job, available_job_types)
+                else:
+                    # job not present in Cluster
+                    if registry_job.status != JobStatus.LOST.value:
+                        logger.info(f'job is lost: {registry_job}')
+                        registry_job.status = JobStatus.LOST.value
+                        models_registry.update_job(registry_job)
 
             job_status_count[registry_job.status] += 1
 
