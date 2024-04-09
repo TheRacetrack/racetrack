@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the unsuccessful deployment is rolled back to clean up the mess.
   The timeout for intializing a job in the cluster (waiting until it's alive) has been increased to 15 minutes.
   ([#436](https://github.com/TheRacetrack/racetrack/issues/436))
+- A new status `STARTING` has been introduced for a Job that is still initialising.
+  This way, the `ERROR` state is reserved solely for the unexpected problems
+  that arise after a job has been successfully initialised.
+  It is possible to distinguish whether a job has ever run successfully.
+  Thanks to this, version aliases, such as `latest` or wildcards, won't redirect to starting Jobs that are not yet ready.
+  ([#437](https://github.com/TheRacetrack/racetrack/issues/437))
 
 ### Changed
 - Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
