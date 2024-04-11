@@ -7,7 +7,7 @@ from lifecycle.django.registry import models
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import save_deployment_phase
 from lifecycle.job.dto_converter import job_family_model_to_dto
-from lifecycle.job.models_registry import create_job_family_if_not_exist, save_job_model, update_job
+from lifecycle.job.models_registry import create_job_family_if_not_exist, save_job_model, update_job, delete_job_model
 from lifecycle.job.public_endpoints import create_job_public_endpoint_if_not_exist
 from lifecycle.monitor.monitors import check_job_condition
 from lifecycle.server.metrics import metric_deployed_job
@@ -99,7 +99,11 @@ def provision_job(
         def on_job_alive():
             save_deployment_phase(deployment.id, 'initializing Job entrypoint')
 
-        check_job_condition(job, on_job_alive)
+        try:
+            check_job_condition(job, on_job_alive)
+        except BaseException as e:
+            roll_back_unsuccessful_deployment(job, deployment)
+            raise e
 
     with wrap_context('invoking post-deploy actions'):
         save_deployment_phase(deployment.id, 'post-deploy hooks')
@@ -110,8 +114,18 @@ def provision_job(
     update_job(job)
 
     metric_deployed_job.inc()
-    logger.info(f'job {manifest.name} v{manifest.version} has been provisioned, deployment ID: {deployment.id}')
+    logger.info(f'job {manifest.name} {manifest.version} has been provisioned, deployment ID: {deployment.id}')
     return job
+
+
+def roll_back_unsuccessful_deployment(job: JobDto, deployment: DeploymentDto):
+    try:
+        logger.info(f'rolling back unsuccessful deployment {deployment.id} of a job {job.name} {job.version}')
+        deployer = get_job_deployer(job.infrastructure_target)
+        deployer.delete_job(job.name, job.version)
+    except BaseException as e:
+        logger.error(f'failed to clean up a faulty job from an infrastructure: {e}')
+    delete_job_model(job.name, job.version)
 
 
 def post_job_deploy(

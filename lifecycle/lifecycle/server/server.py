@@ -36,5 +36,6 @@ def run_lifecycle_supervisor():
 def _init_lifecycle() -> Tuple[Config, PluginEngine]:
     configure_logs()
     config: Config = load_config(Config)
+    LifecycleCache.config = config
     plugin_engine = PluginEngine(config.plugins_dir, on_reload=LifecycleCache.on_plugins_reload)
     return config, plugin_engine

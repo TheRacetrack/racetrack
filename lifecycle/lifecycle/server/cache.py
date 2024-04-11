@@ -2,12 +2,14 @@ from racetrack_client.log.context_error import wrap_context
 from racetrack_commons.deploy.job_type import JobType, gather_job_types
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
+from lifecycle.config import Config
 from lifecycle.infrastructure.model import InfrastructureTarget
 
 
 class LifecycleCache:
     infrastructure_targets: dict[str, InfrastructureTarget] = {}
     job_types: dict[str, JobType] = {}
+    config: Config = Config()
 
     @classmethod
     def on_plugins_reload(cls, plugin_engine: PluginEngine):

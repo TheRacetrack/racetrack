@@ -68,6 +68,11 @@ class Config(BaseModel):
     # Retention in seconds of Async job call models
     async_job_call_lifetime: int = 4 * 3600
 
+    # Maximum number of seconds to wait until the job is alive in the cluster (/live endpoint responds)
+    timeout_until_job_alive: int = 15 * 60
+    # Maximum number of seconds to wait until the job is ready (initialized)
+    timeout_until_job_ready: int = 10 * 60
+
     @field_validator(
         'max_job_memory_limit',
         'default_job_memory_min',
