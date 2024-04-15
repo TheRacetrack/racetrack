@@ -10,7 +10,7 @@ class JobStatus(Enum):
     STARTING = 'starting'  # job created but didn't appear as ready in cluster yet, still initializing
     RUNNING = 'running'
     ERROR = 'error'  # found in cluster but has failing status
-    ORPHANED = 'orphaned'  # found in cluster but Lifecycle doesn't recall to create that
+    ORPHANED = 'orphaned'  # found in cluster but Lifecycle doesn't recall creating it
     LOST = 'lost'  # expected but not found in cluster
 
 
