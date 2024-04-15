@@ -89,6 +89,10 @@ func TestRetryCrashedJobCall(t *testing.T) {
 	taskId := readJsonResponse(response)["task_id"].(string)
 
 	statusCode, responsePayload := getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[0], taskId))
+	for statusCode == http.StatusRequestTimeout {
+		fmt.Println("Polling again after 408 Request Timeout")
+		statusCode, responsePayload = getJsonRequest(fmt.Sprintf("http://%v/pub/async/task/%v/poll", addrs[0], taskId))
+	}
 	assert.Equal(t, statusCode, http.StatusOK, "job result should return status 200")
 	assert.EqualValues(t, responsePayload["result"], 42, "result data should be included in the job response")
 
@@ -118,6 +122,7 @@ func TestResumeMissingTask(t *testing.T) {
 	assert.Equal(t, response.StatusCode, http.StatusCreated, "async job call task should be created")
 	taskId := readJsonResponse(response)["task_id"].(string)
 
+	store.taskStorage = NewMemoryTaskStorage()
 	server.Close() // Restart server to clear local in-memory tasks
 	store = NewAsyncTaskStore(replicaDiscovery, taskStorage)
 	server = setupReplicaServer(addrs[0], cfg, store)

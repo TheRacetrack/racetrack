@@ -124,26 +124,26 @@ func handleBackgroundJobCall(
 ) {
 	err, retriable := makeJobCall(targetUrl, requestBody, cfg, taskStore, task, requestId)
 
-	taskStore.rwMutex.Lock()
-	task.endedAt = ptr(time.Now())
-	task.EndedAtTimestamp = ptr(time.Now().Unix())
+	taskCopy := *task
+	taskCopy.endedAt = ptr(time.Now())
+	taskCopy.EndedAtTimestamp = ptr(time.Now().Unix())
 	if err == nil {
-		task.Status = Completed
-		task.ErrorMessage = nil
-		task.RetriableError = false
+		taskCopy.Status = Completed
+		taskCopy.ErrorMessage = nil
+		taskCopy.RetriableError = false
 		metricAsyncJobCallsDone.WithLabelValues(job.Name, job.Version).Inc()
-		duration := task.endedAt.Sub(task.startedAt).String()
+		duration := taskCopy.endedAt.Sub(taskCopy.startedAt).String()
 		logger.Info("Async Job Call task has ended successfully", log.Ctx{
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobPath":    targetUrl.Path,
-			"statusCode": *task.ResponseStatusCode,
+			"statusCode": *taskCopy.ResponseStatusCode,
 			"duration":   duration,
 		})
 	} else {
-		task.Status = Failed
-		task.ErrorMessage = ptr(err.Error())
-		task.RetriableError = retriable
+		taskCopy.Status = Failed
+		taskCopy.ErrorMessage = ptr(err.Error())
+		taskCopy.RetriableError = retriable
 		logger.Error("Async Job Call request error", log.Ctx{
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
@@ -153,13 +153,12 @@ func handleBackgroundJobCall(
 		})
 		metricAsyncJobCallsErrors.Inc()
 	}
-	taskStore.rwMutex.Unlock()
 
-	if task.canBeRetried(cfg) {
+	if taskCopy.canBeRetried(cfg) {
 		logger.Info("Async job call crashed, retrying...")
 		time.Sleep(time.Duration(cfg.AsyncTaskRetryInterval) * time.Second)
 		metricAsyncRetriedCrashedTask.Inc()
-		err = retryJobCall(cfg, taskStore, logger, task, requestId)
+		err = retryJobCall(cfg, taskStore, logger, &taskCopy, requestId)
 		if err != nil {
 			logger.Error("Failed to retry async task call", log.Ctx{
 				"error": err.Error(),
@@ -168,7 +167,7 @@ func handleBackgroundJobCall(
 		return
 	}
 
-	err = taskStore.UpdateTask(task)
+	err = taskStore.UpdateTask(&taskCopy)
 	if err != nil {
 		logger.Error("Failed to update async task", log.Ctx{
 			"error": err.Error(),
@@ -176,10 +175,10 @@ func handleBackgroundJobCall(
 	}
 
 	select { // Notify subscribed listeners without blocking
-	case task.doneChannel <- task.Id:
+	case taskCopy.doneChannel <- taskCopy.Id:
 	default:
 	}
-	close(task.doneChannel)
+	close(taskCopy.doneChannel)
 }
 
 // Make an HTTP request to the target Job and keep the result of the task
@@ -502,7 +501,6 @@ func retryJobCall(
 	task.Attempts++
 	task.PubInstanceAddr = taskStore.replicaDiscovery.MyAddr
 	task.Status = Ongoing
-	task.doneChannel = make(chan string)
 	metricAsyncRetriedTask.Inc()
 	errorMessage := ""
 	if task.ErrorMessage != nil {
@@ -516,16 +514,24 @@ func retryJobCall(
 		"replicaAddr":  task.PubInstanceAddr,
 		"errorMessage": errorMessage,
 	})
-
+	job, jobDetailsErr := getJobDetails(cfg, task.JobName, task.JobVersion)
+	if jobDetailsErr != nil {
+		logger.Error("failed to get job details", log.Ctx{
+			"error": jobDetailsErr.Error(),
+		})
+		task.Status = Failed
+		task.ErrorMessage = ptr(jobDetailsErr.Error())
+	}
 	err := taskStore.UpdateTask(task)
 	if err != nil {
-		return WrapError("failed to update async task", err)
+		logger.Error("Failed to update async task", log.Ctx{
+			"error": err.Error(),
+		})
 	}
-
-	job, err := getJobDetails(cfg, task.JobName, task.JobVersion)
-	if err != nil {
+	if jobDetailsErr != nil {
 		return WrapError("failed to get job details", err)
 	}
+
 	urlPath := JoinURL("/pub/job/", task.JobName, task.JobVersion, task.JobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
 	requestBody := []byte(task.RequestBody)
@@ -548,7 +554,7 @@ func retryTaskIfMissing(
 	if !isTaskMissing(cfg, taskStore, task) {
 		return false, nil
 	}
-	logger.Info("Task is gone in a supposed Pub replica, retrying", log.Ctx{
+	logger.Info("Task is gone in a supposed Pub replica, retrying missing task", log.Ctx{
 		"pubInstance": task.PubInstanceAddr,
 	})
 	metricAsyncRetriedMissingTask.Inc()
