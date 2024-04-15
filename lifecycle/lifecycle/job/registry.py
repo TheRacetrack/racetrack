@@ -7,7 +7,7 @@ from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.dto_converter import job_model_to_dto, job_family_model_to_dto
-from lifecycle.monitor.monitors import list_cluster_jobs
+from lifecycle.monitor.monitors import list_infrastructure_jobs
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import metric_jobs_count_by_status
 from racetrack_client.log.context_error import wrap_context
@@ -123,35 +123,36 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
     Synchronize jobs stored in the database registry and confront it with Kubernetes source of truth.
     It compares expected list of jobs with the actual state. In particular:
     - it probes every job and updates its status to RUNNING or ERROR.
-    - if the job is expected to be present, but was not found in a cluster, it gets LOST status.
-    - if there are extra jobs found in the cluster, called "orphans", they are ignored, but the log warning is written.
+    - if the job is expected to be present, but was not found in an infrastructure, it gets LOST status.
+    - if there are extra jobs found in the infrastructure, called "orphans", they are ignored, but the log warning is written.
     """
     with wrap_context('synchronizing job'):
         available_job_types: set[str] = set(LifecycleCache.job_types.keys())
-        cluster_jobs_map: dict[str, JobDto] = _generate_job_map(list_cluster_jobs(config, plugin_engine))
+        infrastructure_jobs_map: dict[str, JobDto] = _generate_job_map(list_infrastructure_jobs(config, plugin_engine))
         registry_jobs_map: dict[str, JobDto] = _generate_job_map(list_job_registry(config))
         job_status_count: dict[str, int] = defaultdict(int)
 
         for job_id, registry_job in registry_jobs_map.items():
-            if job_id in cluster_jobs_map:
-                cluster_job = cluster_jobs_map[job_id]
-                _sync_registry_job(registry_job, cluster_job)
-                _apply_job_notice(registry_job, available_job_types)
-            else:
-                # job not present in Cluster
-                if registry_job.status != JobStatus.LOST.value:
-                    logger.info(f'job is lost: {registry_job}')
-                    registry_job.status = JobStatus.LOST.value
-                    models_registry.update_job(registry_job)
+            if registry_job.status != JobStatus.STARTING:
+                if job_id in infrastructure_jobs_map:
+                    infrastructure_job = infrastructure_jobs_map[job_id]
+                    _sync_registry_job(registry_job, infrastructure_job)
+                    _apply_job_notice(registry_job, available_job_types)
+                else:
+                    # job not present in Cluster
+                    if registry_job.status != JobStatus.LOST.value:
+                        logger.info(f'job is lost: {registry_job}')
+                        registry_job.status = JobStatus.LOST.value
+                        models_registry.update_job(registry_job)
 
             job_status_count[registry_job.status] += 1
 
-        # Orphans - job missing in registry but present in cluster
-        for job_id, cluster_job in cluster_jobs_map.items():
+        # Orphans - job missing in registry but present in infrastructure
+        for job_id, infrastructure_job in infrastructure_jobs_map.items():
             if job_id not in registry_jobs_map:
-                cluster_job.status = JobStatus.ORPHANED.value
-                job_status_count[cluster_job.status] += 1
-                logger.warning(f'orphaned job found: {cluster_job}, internal name: {cluster_job.internal_name}')
+                infrastructure_job.status = JobStatus.ORPHANED.value
+                job_status_count[infrastructure_job.status] += 1
+                logger.warning(f'orphaned job found: {infrastructure_job}, internal name: {infrastructure_job.internal_name}')
 
     all_jobs_count = sum(job_status_count.values())
     if job_status_count[JobStatus.RUNNING.value] != all_jobs_count:
@@ -160,35 +161,35 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
         metric_jobs_count_by_status.labels(status=status.value).set(job_status_count[status.value])
 
 
-def _sync_registry_job(registry_job: JobDto, cluster_job: JobDto):
+def _sync_registry_job(registry_job: JobDto, infrastructure_job: JobDto):
     """
-    Update database job with data taken from cluster.
+    Update database job with data taken from infrastructure.
     Do database "update" only when change is detected in order to avoid redundant database operations.
     """
     changed = False
 
-    if registry_job.status != cluster_job.status:
-        registry_job.status = cluster_job.status
+    if registry_job.status != infrastructure_job.status:
+        registry_job.status = infrastructure_job.status
         changed = True
         logger.debug(f'job {registry_job} changed status to: {registry_job.status}')
-    if registry_job.error != cluster_job.error:
-        registry_job.error = cluster_job.error
+    if registry_job.error != infrastructure_job.error:
+        registry_job.error = infrastructure_job.error
         changed = True
-    if registry_job.notice != cluster_job.notice:
-        registry_job.notice = cluster_job.notice
+    if registry_job.notice != infrastructure_job.notice:
+        registry_job.notice = infrastructure_job.notice
         changed = True
-    if registry_job.infrastructure_target != cluster_job.infrastructure_target:
-        registry_job.infrastructure_target = cluster_job.infrastructure_target
+    if registry_job.infrastructure_target != infrastructure_job.infrastructure_target:
+        registry_job.infrastructure_target = infrastructure_job.infrastructure_target
         changed = True
-    if registry_job.internal_name != cluster_job.internal_name:
-        registry_job.internal_name = cluster_job.internal_name
+    if registry_job.internal_name != infrastructure_job.internal_name:
+        registry_job.internal_name = infrastructure_job.internal_name
         changed = True
-    if registry_job.replica_internal_names != cluster_job.replica_internal_names:
-        registry_job.replica_internal_names = cluster_job.replica_internal_names
+    if registry_job.replica_internal_names != infrastructure_job.replica_internal_names:
+        registry_job.replica_internal_names = infrastructure_job.replica_internal_names
         changed = True
-    if cluster_job.last_call_time is not None:
-        if registry_job.last_call_time is None or registry_job.last_call_time < cluster_job.last_call_time:
-            registry_job.last_call_time = cluster_job.last_call_time
+    if infrastructure_job.last_call_time is not None:
+        if registry_job.last_call_time is None or registry_job.last_call_time < infrastructure_job.last_call_time:
+            registry_job.last_call_time = infrastructure_job.last_call_time
             changed = True
 
     if changed:

@@ -24,6 +24,4 @@ def reconcile_jobs(config: Config, plugin_engine: PluginEngine):
 
 
 def is_job_reconcile_eligible(job: JobDto) -> bool:
-    if job.status != JobStatus.LOST.value:
-        return False
-    return True
+    return job.status == JobStatus.LOST.value
