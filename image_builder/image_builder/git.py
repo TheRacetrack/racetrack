@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 from typing import Optional
 from urllib.parse import urlsplit, quote
 
@@ -27,11 +28,12 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
                 raise ContextError('authentication failure') from e
             raise e
 
-    assert workspace.is_dir(), f'workspace directory doesn\'t exist: {workspace}'
+        shutil.rmtree((workspace / '.git').resolve())  # exclude .git from the job image
 
-    git_workspace = (workspace / manifest.git.directory).resolve()
-    assert git_workspace.is_dir(), f"can't find workspace subdirectory: {git_workspace}"
-    return git_workspace
+    assert workspace.is_dir(), f'workspace directory doesn\'t exist: {workspace}'
+    sub_workspace = (workspace / manifest.git.directory).resolve()
+    assert sub_workspace.is_dir(), f"can't find workspace subdirectory: {sub_workspace}"
+    return sub_workspace
 
 
 def read_job_git_version(workspace: Path) -> str:
