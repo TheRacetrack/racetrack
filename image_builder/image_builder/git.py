@@ -2,8 +2,6 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlsplit, quote
 
-from git import Repo
-
 from racetrack_commons.dir import project_root
 from racetrack_client.log.context_error import wrap_context, ContextError
 from racetrack_client.client_config.client_config import Credentials
@@ -17,8 +15,11 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
 
     with wrap_context('cloning git repo'):
         try:
-            shell(f'GIT_TERMINAL_PROMPT=0 git clone {remote_url} {workspace.resolve()}',
-                  workdir=project_root(), print_log=False)
+            if manifest.git.branch:
+                assert '"' not in manifest.git.branch, 'illegal characters in a branch name'
+            branch_cmd = f'--branch "{manifest.git.branch}"' if manifest.git.branch else ''
+            cmd = f'GIT_TERMINAL_PROMPT=0 git clone --depth=1 --single-branch {branch_cmd} "{remote_url}" "{workspace.resolve()}"'
+            shell(cmd, workdir=project_root(), print_log=False)
         except CommandError as e:
             if 'fatal: Authentication failed' in e.stdout:
                 if git_credentials is None:
@@ -27,11 +28,6 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
             raise e
 
     assert workspace.is_dir(), f'workspace directory doesn\'t exist: {workspace}'
-
-    repo = Repo(workspace.resolve())
-    with wrap_context('checking out git branch'):
-        if manifest.git.branch:
-            repo.git.checkout(manifest.git.branch)
 
     git_workspace = (workspace / manifest.git.directory).resolve()
     assert git_workspace.is_dir(), f"can't find workspace subdirectory: {git_workspace}"
