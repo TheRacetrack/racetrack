@@ -9,8 +9,8 @@ from racetrack_commons.entities.dto import JobDto
 from racetrack_commons.plugin.engine import PluginEngine
 
 
-def list_cluster_jobs(config: Config, plugin_engine: PluginEngine) -> Iterable[JobDto]:
-    """List jobs deployed in a cluster"""
+def list_infrastructure_jobs(config: Config, plugin_engine: PluginEngine) -> Iterable[JobDto]:
+    """List jobs deployed in all infrastructures"""
     infrastructures = list_infrastructure_targets(plugin_engine)
     for infrastructure in infrastructures:
         try:
