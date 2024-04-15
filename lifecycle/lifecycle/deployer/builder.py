@@ -59,6 +59,7 @@ def _send_image_build_request(
         f'{config.image_builder_url}/api/v1/build',
         json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment, build_flags),
     )
+    logger.debug(f'finished building a job by image-builder, deployment ID: {deployment.id}')
     response = parse_response_object(r, 'Image builder API error')
     build_logs: str = response['logs']
     image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
