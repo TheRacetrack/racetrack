@@ -30,8 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the unsuccessful deployment is rolled back to clean up the mess.
   The timeout for intializing a job in the cluster (waiting until it's alive) has been increased to 15 minutes.
   ([#436](https://github.com/TheRacetrack/racetrack/issues/436))
-
-### Changed
 - Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
   The restart could be either due to an upgrade in Racetrack services
   or a job crash (like an Out of Memory kill).
@@ -39,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   until it hits the maximum number of attempts.
   Async job calls are stored in a database for a short period.
   ([#424](https://github.com/TheRacetrack/racetrack/issues/424))
+
+### Fixed
+- Fixed race condition bug in Async job calls.
+  ([#449](https://github.com/TheRacetrack/racetrack/issues/449))
 
 ## [2.27.0] - 2024-03-04
 ### Added
