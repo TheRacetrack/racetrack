@@ -25,7 +25,7 @@ send-payload-post-auth:
  	-H "X-Racetrack-Esc-Auth: $(ESC_TOKEN)"
 
 test:
-	go test .
+	go test -p 1 .
 
 test-verbose:
-	go test -v .
+	go test -p 1 -v .
