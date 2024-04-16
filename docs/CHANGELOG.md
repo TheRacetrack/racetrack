@@ -5,9 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.28.0] - 2024-04-16
 ### Added
 - Status of an async job call can be checked at endpoint: `/pub/async/task/{ID}/status`.
   See [Asynchronous calls to jobs](./user/async-job-calls.md) guide for more details.
+  ([#434](https://github.com/TheRacetrack/racetrack/issues/434))
 - Maximum number of concurrent requests can be limited by `max_concurrency` field in a manifest:
   ```yaml
   jobtype_extra:
@@ -22,10 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   When the queue is full, the job will return `429 Too Many Requests` status code.
 
   See the [Python job type reference](https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md)
+- Docker command can be overwritten when running job locally.
+  Check out `racetrack run-local --help`.
+  ([#431](https://github.com/TheRacetrack/racetrack/issues/431))
+- New flag in Racetrack CLI to avoid using cache when building the job's image:
+  `racetrack deploy --no-cache`
+  ([#430](https://github.com/TheRacetrack/racetrack/issues/430))
+- Manifest input can be piped into the Racetrack CLI to deploy a job.
+  ([#240](https://github.com/TheRacetrack/racetrack/issues/240))
 
 ### Changed
-- FastAPI dependency has been upgraded to solve memory leaks.
-  ([#442](https://github.com/TheRacetrack/racetrack/issues/442))
+- Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
+  The restart could be either due to an upgrade in Racetrack services
+  or a job crash (like an Out of Memory kill).
+  Regardless of the reason, the job call will keep retrying
+  until it hits the maximum number of attempts.
+  Async job calls are stored in a database for a short period.
+  ([#424](https://github.com/TheRacetrack/racetrack/issues/424))
 - If an error occurs while deploying a job to an infrastructure,
   the unsuccessful deployment is rolled back to clean up the mess.
   The timeout for intializing a job in the cluster (waiting until it's alive) has been increased to 15 minutes.
@@ -37,14 +53,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Thanks to this, version aliases, such as `latest` or wildcards, won't redirect to starting Jobs that are not yet ready.
   ([#437](https://github.com/TheRacetrack/racetrack/issues/437))
 
-### Changed
-- Asynchronous job calls are now resilient to restarts by automatically retrying the requests,
-  The restart could be either due to an upgrade in Racetrack services
-  or a job crash (like an Out of Memory kill).
-  Regardless of the reason, the job call will keep retrying
-  until it hits the maximum number of attempts.
-  Async job calls are stored in a database for a short period.
-  ([#424](https://github.com/TheRacetrack/racetrack/issues/424))
+### Fixed
+- FastAPI dependency has been upgraded to solve memory leaks.
+  ([#442](https://github.com/TheRacetrack/racetrack/issues/442))
+- Fixed nullable extra_vars in racetrack CLI.
+  ([#440](https://github.com/TheRacetrack/racetrack/issues/440))
 
 ## [2.27.0] - 2024-03-04
 ### Added
