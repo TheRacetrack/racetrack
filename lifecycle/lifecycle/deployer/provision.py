@@ -87,6 +87,7 @@ def provision_job(
         )
 
     with wrap_context('saving job in database'):
+        job.status = JobStatus.STARTING.value
         job.deployed_by = deployment.deployed_by
         job.manifest = manifest
         job.manifest_yaml = deployment.manifest_yaml

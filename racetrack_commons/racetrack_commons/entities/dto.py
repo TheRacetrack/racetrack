@@ -7,10 +7,10 @@ from racetrack_client.manifest import Manifest
 
 
 class JobStatus(Enum):
-    CREATED = 'created'  # job created but didnt appear in cluster yet
+    STARTING = 'starting'  # job created but didn't appear as ready in cluster yet, still initializing
     RUNNING = 'running'
     ERROR = 'error'  # found in cluster but has failing status
-    ORPHANED = 'orphaned'  # found in cluster but LC doesn't recall to create that
+    ORPHANED = 'orphaned'  # found in cluster but Lifecycle doesn't recall creating it
     LOST = 'lost'  # expected but not found in cluster
 
 

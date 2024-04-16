@@ -13,7 +13,7 @@ from racetrack_client.manifest.validate import validate_manifest
 from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_client.log.logs import get_logger
-from racetrack_commons.entities.dto import JobDto, JobFamilyDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
 
 logger = get_logger(__name__)
 
@@ -70,7 +70,8 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Job:
 
 @db_access
 def read_latest_job_model(job_name: str) -> models.Job:
-    job_queryset = models.Job.objects.filter(name=job_name)
+    job_queryset = models.Job.objects.filter(name=job_name, status__in=[
+        JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value])
     if job_queryset.count() == 0:
         raise EntityNotFound(f'No job named {job_name}')
     jobs: List[models.Job] = list(job_queryset)
@@ -89,7 +90,8 @@ def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> mode
     """
     version_pattern = SemanticVersionPattern.from_x_pattern(version_wildcard)
 
-    job_queryset = models.Job.objects.filter(name=job_name)
+    job_queryset = models.Job.objects.filter(name=job_name, status__in=[
+        JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value])
     if job_queryset.count() == 0:
         raise EntityNotFound(f'No job named {job_name}')
     jobs: List[models.Job] = list(job_queryset)
