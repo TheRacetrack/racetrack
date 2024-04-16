@@ -33,7 +33,7 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
 
     assert workspace.is_dir(), f'workspace directory doesn\'t exist: {workspace}'
     sub_workspace = (workspace / manifest.git.directory).resolve()
-    assert sub_workspace.is_dir(), f"can't find workspace subdirectory: {sub_workspace}"\
+    assert sub_workspace.is_dir(), f"can't find workspace subdirectory: {sub_workspace}"
     return sub_workspace, git_version
 
 
