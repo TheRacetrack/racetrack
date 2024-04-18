@@ -21,6 +21,7 @@ from image_builder.metrics import (metric_active_building_tasks,
                                    metric_image_building_requests,
                                    metric_image_building_done_requests)
 from image_builder.phase import phase_context
+from image_builder.progress import update_deployment_phase
 from racetrack_commons.plugin.engine import PluginEngine
 
 """Supported image builders for different platforms"""
@@ -65,21 +66,20 @@ def build_job_image(
 
             (workspace / 'job.yaml').write_text(manifest.origin_yaml_)
 
-        with phase_context('building image', metric_labels, deployment_id, config):
-            logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
-                        f'deployment ID: {deployment_id}, git version: {git_version}')
-            build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
-            image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
-                                                           build_env_vars, deployment_id, plugin_engine, build_flags)
+        logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
+                    f'deployment ID: {deployment_id}, git version: {git_version}')
+        build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
+        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
+                                                       build_env_vars, deployment_id, plugin_engine, build_flags)
 
         if config.clean_up_workspaces:
             with phase_context('cleaning up the workspace', metric_labels, deployment_id, config):
                 if repo_dir.exists():
                     shutil.rmtree(repo_dir)
 
-        with phase_context('finalizing the build', metric_labels, deployment_id, config):
-            logger.info(f'finished building an image {manifest.name} {manifest.version}, deployment ID: {deployment_id}, '
-                        f'logs size: {len(logs)} bytes, image names: {image_names}')
+        update_deployment_phase(config, deployment_id, 'finalizing the build')
+        logger.info(f'finished building an image {manifest.name} {manifest.version}, deployment ID: {deployment_id}, '
+                    f'logs size: {len(logs)} bytes, image names: {image_names}')
         return image_names, logs, error
 
     finally:

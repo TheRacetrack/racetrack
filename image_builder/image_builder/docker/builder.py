@@ -39,19 +39,20 @@ class DockerBuilder(ImageBuilder):
         build_flags: list[str]
     ) -> tuple[list[str], str, str | None]:
         """Build images from manifest file in a workspace directory and return built image name"""
-        _wait_for_docker_engine_ready()
-
-        job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
-        validate_jobtype_manifest(job_type, manifest, plugin_engine)
-
         metric_labels = {
             'job_name': manifest.name,
             'job_version': manifest.version,
         }
-        Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
-        logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
-        logs: list[str] = []
+        with phase_context('preparing job type builder', metric_labels, deployment_id, config):
+            _wait_for_docker_engine_ready()
 
+            job_type: JobType = load_job_type(plugin_engine, manifest.get_jobtype())
+            validate_jobtype_manifest(job_type, manifest, plugin_engine)
+
+            Path(config.build_logs_dir).mkdir(parents=True, exist_ok=True)
+            logs_filename = f'{config.build_logs_dir}/{deployment_id}.log'
+
+        logs: list[str] = []
         built_images: list[str] = []
         images_num = job_type.containers_num
         for image_index in range(images_num):
@@ -95,7 +96,7 @@ def _build_job_image(
     build_flags: list[str],
 ):
     progress = f'({image_index+1}/{images_num})'
-    with phase_context(f'building image {progress}', metric_labels, deployment_id, config):
+    with phase_context(f'building image {progress}', metric_labels, deployment_id, config, metric_phase='building image'):
 
         base_image: str = ''  # Base images are deprecated, to be removed
         if job_type.base_image_paths and job_type.base_image_paths[image_index] is not None:
@@ -124,7 +125,7 @@ def _build_job_image(
         )
         logs.append(build_logs)
 
-    with phase_context(f'pushing image {progress}', metric_labels, deployment_id, config):
+    with phase_context(f'pushing image {progress}', metric_labels, deployment_id, config, metric_phase='pushing image'):
         _push_container_image(image_name, logs_filename)
         logger.info(f'Job image {progress} has been built and pushed: {image_name}')
 

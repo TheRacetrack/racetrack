@@ -38,6 +38,11 @@ metric_image_building_phase_duration = Counter(
     "Number of seconds spent on image building phase",
     labelnames=['job_name', 'job_version', 'phase'],
 )
+metric_image_building_phase_done = Counter(
+    "image_building_phase_done",
+    "Number of completed image building phases",
+    labelnames=['job_name', 'job_version', 'phase'],
+)
 
 metric_active_building_tasks = Gauge(
     "active_building_tasks",
