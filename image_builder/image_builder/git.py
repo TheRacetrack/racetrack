@@ -15,9 +15,10 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
     remote_url = git_remote_with_credentials(manifest.git.remote, git_credentials)
 
     with wrap_context('cloning git repo'):
+        if manifest.git.branch:
+            assert '"' not in manifest.git.branch, 'illegal characters in a branch name'
+            shell(f'git check-ref-format --branch "{manifest.git.branch}"')  # validate branch name
         try:
-            if manifest.git.branch:
-                assert '"' not in manifest.git.branch, 'illegal characters in a branch name'
             branch_cmd = f'--branch "{manifest.git.branch}"' if manifest.git.branch else ''
             cmd = f'GIT_TERMINAL_PROMPT=0 git clone --depth=1 --single-branch {branch_cmd} "{remote_url}" "{workspace.resolve()}"'
             shell(cmd, workdir=project_root(), print_log=False)
@@ -29,7 +30,9 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
             raise e
 
     git_version = read_job_git_version(workspace)
-    shutil.rmtree((workspace / '.git').resolve())  # exclude .git from the job image
+    git_path = (workspace / '.git').resolve()
+    assert git_path.as_posix().startswith(str(project_root() / 'workspaces'))
+    shutil.rmtree(git_path)  # exclude .git from the job image
 
     assert workspace.is_dir(), f'workspace directory doesn\'t exist: {workspace}'
     sub_workspace = (workspace / manifest.git.directory).resolve()
