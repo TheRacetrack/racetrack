@@ -20,7 +20,7 @@ metric_image_building_done_requests = Counter(
 )
 metric_image_building_request_duration = Counter(
     "image_building_request_duration_seconds",
-    "Total number of seconds spent on image building",
+    "Total number of seconds spent on overall image building",
     labelnames=['job_name', 'job_version'],
 )
 metric_images_pushed = Counter(
@@ -32,6 +32,11 @@ metric_images_pushed_duration = Counter(
     "images_pushed_duration",
     "Total number of seconds spent on pushing images to registry",
     labelnames=['job_name', 'job_version'],
+)
+metric_image_building_phase_duration = Counter(
+    "image_building_phase_duration",
+    "Number of seconds spent on image building phase",
+    labelnames=['job_name', 'job_version', 'phase'],
 )
 
 metric_active_building_tasks = Gauge(

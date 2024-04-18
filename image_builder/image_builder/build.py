@@ -5,7 +5,6 @@ import time
 from base64 import b64decode
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
-from image_builder.progress import update_deployment_phase
 
 from racetrack_client.client.env import merge_env_vars
 from racetrack_client.client_config.client_config import Credentials
@@ -16,11 +15,12 @@ from racetrack_commons.dir import project_root
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.builder import DockerBuilder
-from image_builder.git import fetch_repository, read_job_git_version
+from image_builder.git import fetch_repository
 from image_builder.metrics import (metric_active_building_tasks,
                                    metric_image_building_request_duration,
                                    metric_image_building_requests,
                                    metric_image_building_done_requests)
+from image_builder.phase import phase_context
 from racetrack_commons.plugin.engine import PluginEngine
 
 """Supported image builders for different platforms"""
@@ -51,8 +51,7 @@ def build_job_image(
     metric_active_building_tasks.inc()
     start_time = time.time()
     try:
-        update_deployment_phase(config, deployment_id, 'fetching the source code')
-        with wrap_context('preparing workspace'):
+        with phase_context('fetching the source code', metric_labels, deployment_id, config):
             logger.debug(f'preparing workspace for {manifest.name} {manifest.version}, deployment ID: {deployment_id}')
 
             assert manifest.image_type in image_builders, f'not supported image_type: {manifest.image_type}'
@@ -66,23 +65,21 @@ def build_job_image(
 
             (workspace / 'job.yaml').write_text(manifest.origin_yaml_)
 
-        build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
-
-        update_deployment_phase(config, deployment_id, 'building image')
-        logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
-                    f'deployment ID: {deployment_id}, git version: {git_version}')
-        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
-                                                       build_env_vars, deployment_id, plugin_engine, build_flags)
+        with phase_context('building image', metric_labels, deployment_id, config):
+            logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
+                        f'deployment ID: {deployment_id}, git version: {git_version}')
+            build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
+            image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
+                                                           build_env_vars, deployment_id, plugin_engine, build_flags)
 
         if config.clean_up_workspaces:
-            with wrap_context('cleaning up the workspace'):
-                update_deployment_phase(config, deployment_id, 'cleaning up the workspace')
+            with phase_context('cleaning up the workspace', metric_labels, deployment_id, config):
                 if repo_dir.exists():
                     shutil.rmtree(repo_dir)
 
-        logger.info(f'finished building an image {manifest.name} {manifest.version}, deployment ID: {deployment_id}, '
-                    f'logs size: {len(logs)} bytes, image names: {image_names}')
-        update_deployment_phase(config, deployment_id, 'finalizing the build')
+        with phase_context('finalizing the build', metric_labels, deployment_id, config):
+            logger.info(f'finished building an image {manifest.name} {manifest.version}, deployment ID: {deployment_id}, '
+                        f'logs size: {len(logs)} bytes, image names: {image_names}')
         return image_names, logs, error
 
     finally:
