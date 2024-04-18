@@ -30,7 +30,9 @@ def fetch_repository(workspace: Path, manifest: Manifest, git_credentials: Optio
             raise e
 
     git_version = read_job_git_version(workspace)
-    shutil.rmtree((workspace / '.git').resolve())  # exclude .git from the job image
+    git_path = (workspace / '.git').resolve()
+    assert git_path.as_posix().startswith(str(project_root() / 'workspaces'))
+    shutil.rmtree(git_path)  # exclude .git from the job image
 
     assert workspace.is_dir(), f'workspace directory doesn\'t exist: {workspace}'
     sub_workspace = (workspace / manifest.git.directory).resolve()
