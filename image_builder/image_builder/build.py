@@ -80,7 +80,8 @@ def build_job_image(
                 if repo_dir.exists():
                     shutil.rmtree(repo_dir)
 
-        logger.info(f'finished building an image {manifest.name}, deployment ID: {deployment_id}')
+        logger.info(f'finished building an image {manifest.name} {manifest.version}, deployment ID: {deployment_id}, '
+                    f'logs size: {len(logs)} bytes, image names: {image_names}')
         update_deployment_phase(config, deployment_id, 'finalizing the build')
         return image_names, logs, error
 
@@ -113,6 +114,5 @@ def prepare_workspace(
             return repo_dir, repo_dir, 'tar'
 
     with wrap_context('fetching job repo'):
-        workspace = fetch_repository(repo_dir, manifest, git_credentials)
-        git_version = read_job_git_version(workspace)
+        workspace, git_version = fetch_repository(repo_dir, manifest, git_credentials)
         return workspace, repo_dir, git_version

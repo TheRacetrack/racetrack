@@ -118,16 +118,6 @@ These files are available under BSD 3-Clause License, which you can find at http
 
 ----------------------------------------------------------------------
 
-This project uses GitPython (unmodified)
-
-https://github.com/gitpython-developers/GitPython
-
-Copyright (C) 2008, 2009 Michael Trier and contributors. All rights reserved.
-
-These files are available under BSD 3-Clause License, which you can find at https://github.com/gitpython-developers/GitPython/blob/main/LICENSE
-
-----------------------------------------------------------------------
-
 This project uses Python-Markdown (unmodified)
 
 https://github.com/Python-Markdown/markdown

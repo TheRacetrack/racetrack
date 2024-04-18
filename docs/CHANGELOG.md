@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- When building a Job, Racetrack only fetches a single commit from the selected branch in the
+  repository containing the Job's source code. The image builder also performs "clone" and
+  "checkout" in a single step. Downloading fewer data makes the build process faster.
+  ([#446](https://github.com/TheRacetrack/racetrack/issues/446))
+- `.git` folder is excluded from the job image when copying the source code.
+
 ### Fixed
 - Fixed race condition bug in Async job calls.
   ([#449](https://github.com/TheRacetrack/racetrack/issues/449))
