@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import backoff
 
@@ -28,7 +28,7 @@ def run_job_locally(
     build_context_method: BuildContextMethod = BuildContextMethod.default,
     port: Optional[int] = None,
     extra_vars: Dict[str, str] = None,
-    build_flags: list[str] = [],
+    build_flags: List[str] = [],
     cmd: Optional[str] = None,
 ):
     client_config = load_client_config()
