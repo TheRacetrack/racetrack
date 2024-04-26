@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import yaml
 
@@ -38,7 +38,7 @@ def load_merged_manifest_dict(manifest_path: Path, extra_vars: Dict[str, str]) -
         with wrap_context('applying extra vars'):
             for extra_key, extra_value in extra_vars.items():
                 assert extra_key, 'extra var key cannot be empty'
-                key_nodes: list[str] = extra_key.split('.')
+                key_nodes: List[str] = extra_key.split('.')
                 last_name = key_nodes[-1]
                 target_node: Dict = manifest_dict
                 for key_node in key_nodes[:-1]:

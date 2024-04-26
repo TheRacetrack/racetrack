@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import selectors
 import sys
 import tempfile
 from typing import List, Optional, Dict
@@ -67,7 +66,7 @@ def send_deploy_request(
     force: bool = False,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
     extra_vars: Dict[str, str] = None,
-    build_flags: list[str] = [],
+    build_flags: List[str] = [],
 ):
     """
     Send request deploying a new Job to running Lifecycle instance
