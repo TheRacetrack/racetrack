@@ -133,7 +133,7 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
         job_status_count: dict[str, int] = defaultdict(int)
 
         for job_id, registry_job in registry_jobs_map.items():
-            if registry_job.status != JobStatus.STARTING:
+            if registry_job.status != JobStatus.STARTING.value:
                 if job_id in infrastructure_jobs_map:
                     infrastructure_job = infrastructure_jobs_map[job_id]
                     _sync_registry_job(registry_job, infrastructure_job)
@@ -169,9 +169,10 @@ def _sync_registry_job(registry_job: JobDto, infrastructure_job: JobDto):
     changed = False
 
     if registry_job.status != infrastructure_job.status:
+        old_status = registry_job.status
         registry_job.status = infrastructure_job.status
         changed = True
-        logger.debug(f'job {registry_job} changed status to: {registry_job.status}')
+        logger.debug(f'job {registry_job} changed status from {old_status} to {registry_job.status}')
     if registry_job.error != infrastructure_job.error:
         registry_job.error = infrastructure_job.error
         changed = True
