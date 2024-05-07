@@ -1,8 +1,11 @@
 from __future__ import annotations
+import json
 import sys
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from racetrack_client.log.errors import EntityNotFound, AlreadyExists, ValidationError
 from racetrack_commons.api.metrics import metric_internal_server_errors
@@ -67,18 +70,43 @@ def register_error_handlers(api: FastAPI):
             content={'error': error_message, 'type': error_type},
         )
 
-    @api.middleware('http')
-    async def catch_all_exceptions_middleware(request: Request, call_next):
+    api.add_middleware(ErrorHandlerMiddleware)
+
+
+class ErrorHandlerMiddleware:
+    def __init__(
+        self,
+        app: ASGIApp,
+    ) -> None:
+        self.app: ASGIApp = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
         try:
-            return await call_next(request)
+            await self.app(scope, receive, send)
         except BaseException as error:
             metric_internal_server_errors.inc()
+            request = Request(scope=scope)
             log_request_exception_with_tracing(request, error)
             error_message, error_type = _upack_error_message(error)
-            return JSONResponse(
-                status_code=500,
-                content={'error': error_message, 'type': error_type},
-            )
+            json_content = {'error': error_message, 'type': error_type}
+            await send_json_content(send, 500, json_content)
+
+
+async def send_json_content(send: Send, status_code: int, json_content: Any):
+    await send({
+        "type": "http.response.start",
+        "status": status_code,
+        "headers": [
+            [b"content-type", b"application/json"],
+        ],
+    })
+    await send({
+        "type": "http.response.body",
+        "body": json.dumps(json_content).encode(),
+    })
 
 
 def _upack_error_message(e: BaseException) -> tuple[str, str]:
