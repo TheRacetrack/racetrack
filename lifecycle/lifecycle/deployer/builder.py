@@ -58,6 +58,7 @@ def _send_image_build_request(
     r = Requests.post(
         f'{config.image_builder_url}/api/v1/build',
         json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment, build_flags),
+        timeout=3600,
     )
     logger.debug(f'image-builder finished building a job, deployment ID: {deployment.id}')
     response = parse_response_object(r, 'Image builder API error')
