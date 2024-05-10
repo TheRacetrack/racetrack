@@ -15,7 +15,7 @@ def test_server_sent_events():
 
     def sse_generator():
         for num in range(3):
-            yield f'event: locationUpdate\ndata: {{"id": {num}}}\n\n'
+            yield f'data: {{"progress": {num}}}\n\n'
 
     @app.get("/sse")
     def sse_endpoint():
@@ -39,14 +39,11 @@ def test_server_sent_events():
 def _test_sse_client_get(port: int):
     response = httpx.get(f'http://127.0.0.1:{port}/sse')
     assert response.status_code == 200
-    assert response.text == '''event: locationUpdate
-data: {"id": 0}
+    assert response.text == '''data: {"progress": 0}
 
-event: locationUpdate
-data: {"id": 1}
+data: {"progress": 1}
 
-event: locationUpdate
-data: {"id": 2}
+data: {"progress": 2}
 
 '''
 
@@ -59,16 +56,15 @@ def _test_sse_client_stream(port: int):
                 lines.append(line)
 
     assert lines == [
-        'event: locationUpdate',
-        'data: {"id": 0}',
+        'data: {"progress": 0}',
         '',
-        'event: locationUpdate',
-        'data: {"id": 1}',
+        'data: {"progress": 1}',
         '',
-        'event: locationUpdate',
-        'data: {"id": 2}',
+        'data: {"progress": 2}',
         '',
     ]
+    stream_response.raise_for_status()
+    assert stream_response.status_code == 200
 
 
 @backoff.on_exception(backoff.fibo, httpx.RequestError, max_time=5, jitter=None)
