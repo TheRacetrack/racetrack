@@ -2,6 +2,7 @@ import threading
 from typing import Optional, Dict
 
 import backoff
+import httpx
 
 from lifecycle.config import Config
 from lifecycle.infrastructure.infra_target import determine_infrastructure_name
@@ -10,7 +11,7 @@ from lifecycle.django.registry.database import db_access
 from lifecycle.job.deployment import create_deployment, save_deployment_build_logs, save_deployment_image_name, save_deployment_result, save_deployment_phase
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.client.env import SecretVars
-from racetrack_client.utils.request import parse_response_object, Requests, RequestError
+from racetrack_client.utils.request import Requests, RequestError
 from racetrack_client.utils.datamodel import datamodel_to_dict
 from racetrack_client.utils.time import now
 from racetrack_client.log.context_error import wrap_context
@@ -20,6 +21,7 @@ from racetrack_client.manifest import Manifest
 from racetrack_commons.deploy.image import get_job_image
 from racetrack_commons.entities.dto import DeploymentDto, DeploymentStatus
 from racetrack_commons.plugin.engine import PluginEngine
+from racetrack_commons.api.server_sent_events import validate_streaming_response, extract_response_dict
 
 logger = get_logger(__name__)
 
@@ -55,18 +57,27 @@ def _send_image_build_request(
     """
     logger.info(f'building a job by image-builder, deployment ID: {deployment.id}')
     # see `image_builder.api._setup_api_endpoints`
-    r = Requests.post(
-        f'{config.image_builder_url}/api/v1/build',
-        json=_build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment, build_flags),
-        timeout=3600,
-    )
+    payload = _build_image_request_payload(manifest, git_credentials, secret_build_env, tag, build_context, deployment, build_flags)
+    response_buffer = ''
+    with httpx.Client(timeout=3600) as client:
+        with client.stream('POST', f'{config.image_builder_url}/api/v1/build/sse', json=payload) as stream_response:
+            for line in stream_response.iter_lines():
+                if line.strip() == 'event: keepalive_heartbeat':
+                    logger.debug(f'building in progress: keepalive heartbeat for deployment {deployment.id}')
+                else:
+                    response_buffer += line + '\n'
+
     logger.debug(f'image-builder finished building a job, deployment ID: {deployment.id}')
-    response = parse_response_object(r, 'Image builder API error')
-    build_logs: str = response['logs']
+    validate_streaming_response(stream_response)
+    response = extract_response_dict(response_buffer)
+    error = response.get('error')
+    if error:
+        raise RuntimeError(f'image-builder error: {error}')
+    build_logs: str = response['result']['logs']
     image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag)
     save_deployment_build_logs(deployment.id, build_logs)
     save_deployment_image_name(deployment.id, image_name)
-    error: str = response['error']
+    error: str = response['result']['error']
     if error:
         raise RuntimeError(error)
     logger.info(f'job image {image_name} has been built, deployment ID: {deployment.id}')
