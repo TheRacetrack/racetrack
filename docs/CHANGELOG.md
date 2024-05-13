@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Long deployments (over 20 minutes) no longer get stuck in the final stage.
+  ([#448](https://github.com/TheRacetrack/racetrack/issues/448))
 
 ## [2.29.2] - 2024-04-30
 ### Fixed
