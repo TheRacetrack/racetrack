@@ -1,10 +1,7 @@
-import json
-import queue
-from threading import Thread
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, FastAPI
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from image_builder.config import Config
@@ -18,6 +15,7 @@ from racetrack_client.utils.config import load_config
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.asgi.fastapi import create_fastapi
 from racetrack_commons.api.metrics import setup_metrics_endpoint
+from racetrack_commons.api.server_sent_events import stream_result_with_heartbeat
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.log.logs import get_logger
 
@@ -164,37 +162,15 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
         deployment_id = payload.deployment_id
         build_flags = payload.build_flags
 
-        result_channel = queue.Queue(maxsize=0)
+        def _result_runner() -> Dict:
+            image_names, logs, error = build_job_image(
+                config, manifest, git_credentials, secret_build_env, tag,
+                build_context, deployment_id, plugin_engine, build_flags,
+            )
+            return {
+                'image_names': image_names,
+                'logs': logs,
+                'error': error,
+            }
 
-        def _runner():
-            try:
-                image_names, logs, error = build_job_image(
-                    config, manifest, git_credentials, secret_build_env, tag,
-                    build_context, deployment_id, plugin_engine, build_flags,
-                )
-                result_channel.put(json.dumps({
-                    'result': {
-                        'image_names': image_names,
-                        'logs': logs,
-                        'error': error,
-                    },
-                }))
-            except BaseException as e:
-                result_channel.put(json.dumps({
-                    'error': str(e),
-                }))
-
-        Thread(target=_runner, daemon=True).start()
-
-        def sse_generator():
-            while True:
-                try:
-                    event: str = result_channel.get(block=True, timeout=60)
-                    yield f'event: result\ndata: {event}\n\n'
-                    result_channel.task_done()
-                    logger.debug('server sent events streaming done')
-                    return
-                except queue.Empty:
-                    yield f'event: keepalive_heartbeat\n\n'
-
-        return StreamingResponse(sse_generator(), media_type="text/event-stream")
+        return stream_result_with_heartbeat(_result_runner)
