@@ -41,3 +41,6 @@ class Config(BaseModel):
 
     # Remove workspace directories after building
     clean_up_workspaces: bool = True
+
+    # Verify if the submitted manifest YAML is consistent with the git repository
+    verify_manifest_consistency: bool = False
