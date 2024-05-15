@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- "Connection refused" error is now retriable in async job calls (will be retried automatically).
+  ([#459](https://github.com/TheRacetrack/racetrack/issues/459))
+
 ### Fixed
 - Long deployments (over 20 minutes) no longer get stuck in the final stage.
   ([#448](https://github.com/TheRacetrack/racetrack/issues/448))

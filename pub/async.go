@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -215,7 +216,10 @@ func makeJobCall(
 		if errors.Is(err, io.EOF) {
 			return WrapError("connection broken to a target job (job may have died)", err), true
 		}
-		return WrapError("making request to a job", err), false
+		if errors.Is(err, syscall.ECONNREFUSED) {
+			return WrapError("connection refused to a target job (job may have died)", err), true
+		}
+		return WrapError("making request to a job", err), true
 	}
 
 	// Transform redirect links to relative (without hostname).
