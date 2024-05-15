@@ -23,6 +23,7 @@ from lifecycle.django.registry import models
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import create_deployment, save_deployment_result
 from lifecycle.job.models_registry import job_exists, find_deleted_job
+from lifecycle.server.metrics import metric_done_job_deployments
 
 logger = get_logger(__name__)
 
@@ -99,8 +100,12 @@ def deploy_job_in_background(
     Schedule deployment of a job in background
     :return: deployment ID
     """
-    infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
-    deployment = create_deployment(manifest, username, infra_target)
+    try:
+        infra_target = determine_infrastructure_name(config, plugin_engine, manifest)
+        deployment = create_deployment(manifest, username, infra_target)
+    except BaseException as e:
+        metric_done_job_deployments.inc()
+        raise e
     logger.info(f'starting deployment {deployment.id} in background')
     args = (config, manifest, git_credentials, secret_vars, deployment,
             build_context, force, plugin_engine, auth_subject, build_flags)
@@ -138,6 +143,8 @@ def deploy_job_saving_result(
             job_name=deployment.job_name,
             job_version=deployment.job_version,
         )
+    finally:
+        metric_done_job_deployments.inc()
 
 
 def _protect_job_overwriting(manifest: Manifest, force: bool):

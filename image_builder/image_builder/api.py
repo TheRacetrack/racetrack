@@ -15,7 +15,11 @@ from racetrack_client.utils.config import load_config
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
 from racetrack_commons.api.asgi.fastapi import create_fastapi
 from racetrack_commons.api.metrics import setup_metrics_endpoint
+from racetrack_commons.api.server_sent_events import stream_result_with_heartbeat
 from racetrack_commons.plugin.engine import PluginEngine
+from racetrack_client.log.logs import get_logger
+
+logger = get_logger(__name__)
 
 
 def run_api_server():
@@ -146,3 +150,27 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
             'logs': logs,
             'error': error,
         }
+
+    @api.post('/build/sse', response_model=BuildingResultModel)
+    def _build_server_sent_events(payload: BuildPayloadModel):
+        """Stream events of building a Job image from a manifest"""
+        manifest = load_manifest_from_dict(payload.manifest)
+        git_credentials = load_credentials_from_dict(payload.git_credentials.model_dump() if payload.git_credentials else None)
+        tag = payload.tag
+        secret_build_env = payload.secret_build_env or {}
+        build_context = payload.build_context
+        deployment_id = payload.deployment_id
+        build_flags = payload.build_flags
+
+        def _result_runner() -> Dict:
+            image_names, logs, error = build_job_image(
+                config, manifest, git_credentials, secret_build_env, tag,
+                build_context, deployment_id, plugin_engine, build_flags,
+            )
+            return {
+                'image_names': image_names,
+                'logs': logs,
+                'error': error,
+            }
+
+        return stream_result_with_heartbeat(_result_runner)

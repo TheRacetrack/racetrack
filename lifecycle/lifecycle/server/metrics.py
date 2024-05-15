@@ -10,7 +10,14 @@ from prometheus_client.registry import Collector
 
 from lifecycle.server.db_status import database_status
 
-metric_requested_job_deployments = Counter('requested_job_deployments', 'Number of requests to deploy job')
+metric_requested_job_deployments = Counter(
+    'requested_job_deployments',
+    'Number of started job deployments',
+)
+metric_done_job_deployments = Counter(
+    'done_job_deployments',
+    'Number of finished job deployments (processed or failed)',
+)
 metric_deployed_job = Counter('deployed_job', 'Number of Jobs deployed successfully')
 metric_metrics_scrapes = Counter('metrics_scrapes', 'Number of Prometheus metrics scrapes')
 

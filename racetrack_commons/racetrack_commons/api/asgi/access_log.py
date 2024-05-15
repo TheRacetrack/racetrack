@@ -1,6 +1,7 @@
 import time
 
 from fastapi import FastAPI, Request, Response
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import HIDDEN_ACCESS_LOGS
@@ -27,10 +28,28 @@ def enable_request_access_log(fastapi_app: FastAPI):
     tracing_header = get_tracing_header_name()
     caller_header = get_caller_header_name()
 
-    @fastapi_app.middleware('http')
-    async def access_log_on_receive(request: Request, call_next) -> Response:
-        tracing_id = request.headers.get(tracing_header)
-        caller_name = request.headers.get(caller_header)
+    fastapi_app.add_middleware(RequestAccessLogMiddleware, tracing_header=tracing_header, caller_header=caller_header)
+
+
+class RequestAccessLogMiddleware:
+    def __init__(
+        self,
+        app: ASGIApp,
+        tracing_header: str = '',
+        caller_header: str = '',
+    ) -> None:
+        self.app: ASGIApp = app
+        self.tracing_header: str = tracing_header
+        self.caller_header: str = caller_header
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope=scope)
+        tracing_id = request.headers.get(self.tracing_header)
+        caller_name = request.headers.get(self.caller_header)
         uri = request.url.replace(scheme='', netloc='')
         request_logger = RequestTracingLogger(logger, {
             'tracing_id': tracing_id,
@@ -39,7 +58,8 @@ def enable_request_access_log(fastapi_app: FastAPI):
         message = f'{request.method} {uri}'
         if message not in HIDDEN_REQUEST_LOGS:
             request_logger.debug(f'Request: {message}')
-        return await call_next(request)
+
+        await self.app(scope, receive, send)
 
 
 def enable_response_access_log(fastapi_app: FastAPI):
@@ -67,6 +87,12 @@ def enable_response_access_log(fastapi_app: FastAPI):
         finally:
             metric_request_duration.observe(time.time() - start_time)
             metric_requests_done.inc()
+
+        if await request.is_disconnected():
+            method = request.method
+            uri = request.url.replace(scheme='', netloc='')
+            logger.error(f"Request cancelled by the client: {method} {uri}")
+            return Response(status_code=204)  # No Content
 
         method = request.method
         uri = request.url.replace(scheme='', netloc='')
