@@ -6,16 +6,6 @@ from base64 import b64decode
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
 
-import yaml
-
-from racetrack_client.client.env import merge_env_vars
-from racetrack_client.client_config.client_config import Credentials
-from racetrack_client.log.context_error import wrap_context
-from racetrack_client.log.logs import get_logger
-from racetrack_client.manifest.merge import merge_dicts
-from racetrack_client.manifest.load import Manifest, JOB_MANIFEST_FILENAME, FORMER_MANIFEST_FILENAME, \
-    load_manifest_dict_from_yaml
-from racetrack_commons.dir import project_root
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.builder import DockerBuilder
@@ -26,6 +16,13 @@ from image_builder.metrics import (metric_active_building_tasks,
                                    metric_image_building_done_requests)
 from image_builder.phase import phase_context
 from image_builder.progress import update_deployment_phase
+from image_builder.verify import verify_manifest_consistency
+from racetrack_client.client.env import merge_env_vars
+from racetrack_client.client_config.client_config import Credentials
+from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.logs import get_logger
+from racetrack_client.manifest.load import Manifest
+from racetrack_commons.dir import project_root
 from racetrack_commons.plugin.engine import PluginEngine
 
 """Supported image builders for different platforms"""
@@ -69,7 +66,7 @@ def build_job_image(
             workspace, repo_dir, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
 
             if config.verify_manifest_consistency:
-                _verify_manifest_consistency(manifest.origin_yaml_, workspace, repo_dir)
+                verify_manifest_consistency(manifest.origin_yaml_, workspace, repo_dir)
 
             (workspace / 'job.yaml').write_text(manifest.origin_yaml_)
 
@@ -120,42 +117,3 @@ def prepare_workspace(
     with wrap_context('fetching job repo'):
         workspace, git_version = fetch_repository(repo_dir, manifest, git_credentials)
         return workspace, repo_dir, git_version
-
-
-def _verify_manifest_consistency(submitted_yaml: str, workspace: Path, repo_dir: Path):
-    repo_file = _find_workspace_manifest_file(workspace, repo_dir)
-    if not repo_file:
-        logger.warning("Can't find manifest file in a Job repository to verify it with submitted YAML")
-        return
-    repo_content = repo_file.read_text()
-
-    with wrap_context('parsing YAML manifest'):
-        repo_dict = yaml.safe_load(repo_content)
-        submitted_dict = yaml.safe_load(submitted_yaml)
-
-    # take into account manifest extended by a base one
-    extends = repo_dict.get('extends')
-    if extends:
-        base_path = repo_file.parent / Path(extends)
-        with wrap_context('extending base manifest with overlay'):
-            with wrap_context('loading base manifest'):
-                base_manifest_dict = load_manifest_dict_from_yaml(base_path)
-            with wrap_context('merging base & overlay layers'):
-                repo_dict = merge_dicts(base_manifest_dict, repo_dict)
-                repo_dict['extends'] = None
-
-    if repo_dict != submitted_dict:
-        raise RuntimeError('Submitted job manifest is not consistent with the file found in a repository. Did you forget to "git push"?')
-
-
-def _find_workspace_manifest_file(workspace: Path, repo_dir: Path) -> Optional[Path]:
-    paths_to_check = [
-        workspace / JOB_MANIFEST_FILENAME,
-        workspace / FORMER_MANIFEST_FILENAME,
-        repo_dir / JOB_MANIFEST_FILENAME,
-        repo_dir / FORMER_MANIFEST_FILENAME,
-    ]
-    for path in paths_to_check:
-        if path.is_file():
-            return path
-    return None

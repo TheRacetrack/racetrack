@@ -97,6 +97,8 @@ class Manifest(BaseModel):
 
     # original YAML string from which the manifest was parsed, field for internal use only
     origin_yaml_: Optional[str] = Field(None, exclude=True)
+    # original dictionary from which the manifest was parsed, field for internal use only
+    origin_dict_: Optional[Dict[str, Any]] = Field(None, exclude=True)
 
     def get_jobtype(self):
         return self.jobtype if self.jobtype else self.lang
