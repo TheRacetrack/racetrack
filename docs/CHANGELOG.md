@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - "Connection refused" error is now retriable in async job calls (will be retried automatically).
+  ([#459](https://github.com/TheRacetrack/racetrack/issues/459))
+
+### Fixed
+- Long deployments (over 20 minutes) no longer get stuck in the final stage.
   ([#448](https://github.com/TheRacetrack/racetrack/issues/448))
 
 ## [2.29.2] - 2024-04-30

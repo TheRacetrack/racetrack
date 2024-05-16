@@ -86,6 +86,8 @@ services:
       DOCKER_HOST: tcp://docker-engine:2375
       CONFIG_FILE: /etc/racetrack/image-builder/config.yaml
       LIFECYCLE_AUTH_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWVkIjoiZGVhNzYzMDAtN2JhYy00ODRjLTkyOTYtNWQxMGNkOTM3YTU4Iiwic3ViamVjdCI6ImltYWdlLWJ1aWxkZXIiLCJzdWJqZWN0X3R5cGUiOiJpbnRlcm5hbCIsInNjb3BlcyI6WyJmdWxsX2FjY2VzcyJdfQ.ND3wDeK58L5T1jIYcuArQ5O3M0Ez3_pCAEi5NXD_hLY
+    stdin_open: true
+    tty: true
 
   dashboard:
     container_name: dashboard
@@ -110,6 +112,8 @@ services:
       EXTERNAL_GRAFANA_URL: 'http://127.0.0.1:3100'
       AUTH_REQUIRED: 'true'
       SITE_NAME: ''
+    stdin_open: true
+    tty: true
 
   pub:
     container_name: pub
