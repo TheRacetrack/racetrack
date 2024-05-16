@@ -35,9 +35,14 @@ def verify_manifest_consistency(submitted_yaml: str, workspace: Path, repo_dir: 
                 repo_dict['extends'] = None
 
     if submitted_dict != repo_dict:
-        logger.info(f'Submitted job manifest:\n{_sort_dict_keys(submitted_dict)}')
-        logger.info(f'Manifest file in Job repository:\n{_sort_dict_keys(repo_dict)}')
-        raise RuntimeError('Submitted job manifest is not consistent with the file found in a repository. Did you forget to "git push"?')
+        submitted_dict = _sort_dict_keys(submitted_dict)
+        repo_dict = _sort_dict_keys(repo_dict)
+        logger.info(f'Submitted job manifest:\n{submitted_dict}')
+        logger.info(f'Manifest file in Job repository:\n{repo_dict}')
+        difference = _differentiate_dicts(repo_dict, submitted_dict)
+        raise RuntimeError('Submitted job manifest is not consistent with the file found in a repository. '
+                           'Did you forget to do "git push"? '
+                           f'Difference: {difference}')
 
 
 def _find_workspace_manifest_file(workspace: Path, repo_dir: Path) -> Optional[Path]:
@@ -57,3 +62,20 @@ def _sort_dict_keys(d: dict | Any) -> dict:
     if not isinstance(d, dict):
         return d
     return {k: _sort_dict_keys(v) for k, v in sorted(d.items())}
+
+
+def _differentiate_dicts(a: dict, b: dict) -> dict:
+    diff = {}
+    for key in a.keys() | b.keys():
+        value_a = a.get(key)
+        value_b = b.get(key)
+        if key not in a or key not in b:
+            diff[key] = {'-': value_a, '+': value_b}
+        elif isinstance(value_a, dict) != isinstance(value_b, dict):
+            diff[key] = {'-': value_a, '+': value_b}
+        elif not isinstance(value_a, dict):
+            if value_a != value_b:
+                diff[key] = {'-': value_a, '+': value_b}
+        elif isinstance(value_a, dict) and isinstance(value_b, dict) and value_a != value_b:
+            diff[key] = _differentiate_dicts(value_a, value_b)
+    return diff
