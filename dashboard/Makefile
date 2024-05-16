@@ -2,7 +2,7 @@
 
 setup:
 	pip install -r requirements.txt
-	python setup.py develop
+	pip install -e .
 
 run:
 	LIFECYCLE_URL="http://127.0.0.1:7202/lifecycle" \

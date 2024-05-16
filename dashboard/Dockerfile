@@ -35,9 +35,9 @@ RUN pip install -r /src/racetrack_client/requirements.txt \
 
 COPY racetrack_client/racetrack_client/. /src/racetrack_client/racetrack_client/
 COPY racetrack_commons/racetrack_commons/. /src/racetrack_commons/racetrack_commons/
-RUN cd /src/racetrack_client && python setup.py develop &&\
-  cd /src/racetrack_commons && python setup.py develop &&\
-  cd /src/dashboard && python setup.py develop
+RUN cd /src/racetrack_client && pip install -e . &&\
+  cd /src/racetrack_commons && pip install -e . &&\
+  cd /src/dashboard && pip install -e .
 
 COPY dashboard/dashboard/. /src/dashboard/dashboard/
 
