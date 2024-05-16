@@ -38,9 +38,9 @@ RUN pip install -r /src/racetrack_client/requirements.txt \
 COPY racetrack_client/racetrack_client/. /src/racetrack_client/racetrack_client/
 COPY racetrack_commons/racetrack_commons/. /src/racetrack_commons/racetrack_commons/
 COPY image_builder/image_builder/. /src/image_builder/image_builder/
-RUN cd /src/racetrack_client && python setup.py develop &&\
-  cd /src/racetrack_commons && python setup.py develop &&\
-  cd /src/image_builder && python setup.py develop
+RUN cd /src/racetrack_client && pip install -e . &&\
+  cd /src/racetrack_commons && pip install -e . &&\
+  cd /src/image_builder && pip install -e .
 
 CMD ["python", "-u", "-m", "image_builder", "serve"]
 
