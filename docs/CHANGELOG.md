@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This only happens if the optional setting `verify_manifest_consistency` is turned on in the Image Builder.
   ([#452](https://github.com/TheRacetrack/racetrack/issues/452))
 
+## [2.29.3] - 2024-05-21
+### Added
+- Racetrack is compatible with Python 3.12
+  ([#463](https://github.com/TheRacetrack/racetrack/issues/463))
+
 ### Changed
 - "Connection refused" error is now retriable in async job calls (will be retried automatically).
   ([#459](https://github.com/TheRacetrack/racetrack/issues/459))
