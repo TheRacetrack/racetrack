@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Submitted manifest YAML is compared with the one in the job's repository.
+  In case of incosistencies, the deployment is aborted.
+  This only happens if the optional setting `verify_manifest_consistency` is turned on in the Image Builder.
+  ([#452](https://github.com/TheRacetrack/racetrack/issues/452))
 
 ## [2.29.3] - 2024-05-21
 ### Added

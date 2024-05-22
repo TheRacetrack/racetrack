@@ -79,7 +79,7 @@ def _build_image_request_payload(
     build_flags: list[str],
 ) -> Dict:
     return {
-        "manifest": datamodel_to_dict(manifest),
+        "manifest": manifest.origin_dict_,
         "git_credentials": git_credentials.model_dump() if git_credentials is not None else None,
         "secret_build_env": secret_build_env,
         "tag": tag,

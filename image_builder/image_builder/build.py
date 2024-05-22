@@ -6,12 +6,6 @@ from base64 import b64decode
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
 
-from racetrack_client.client.env import merge_env_vars
-from racetrack_client.client_config.client_config import Credentials
-from racetrack_client.log.context_error import wrap_context
-from racetrack_client.log.logs import get_logger
-from racetrack_client.manifest import Manifest
-from racetrack_commons.dir import project_root
 from image_builder.base import ImageBuilder
 from image_builder.config import Config
 from image_builder.docker.builder import DockerBuilder
@@ -22,6 +16,13 @@ from image_builder.metrics import (metric_active_building_tasks,
                                    metric_image_building_done_requests)
 from image_builder.phase import phase_context
 from image_builder.progress import update_deployment_phase
+from image_builder.verify import verify_manifest_consistency
+from racetrack_client.client.env import merge_env_vars
+from racetrack_client.client_config.client_config import Credentials
+from racetrack_client.log.context_error import wrap_context
+from racetrack_client.log.logs import get_logger
+from racetrack_client.manifest.load import Manifest
+from racetrack_commons.dir import project_root
 from racetrack_commons.plugin.engine import PluginEngine
 
 """Supported image builders for different platforms"""
@@ -33,15 +34,15 @@ logger = get_logger(__name__)
 
 
 def build_job_image(
-        config: Config,
-        manifest: Manifest,
-        git_credentials: Optional[Credentials],
-        secret_build_env: Dict[str, str],
-        tag: str,
-        build_context: Optional[str],
-        deployment_id: str,
-        plugin_engine: PluginEngine,
-        build_flags: list[str],
+    config: Config,
+    manifest: Manifest,
+    git_credentials: Optional[Credentials],
+    secret_build_env: Dict[str, str],
+    tag: str,
+    build_context: Optional[str],
+    deployment_id: str,
+    plugin_engine: PluginEngine,
+    build_flags: list[str],
 ) -> Tuple[List[str], str, Optional[str]]:
     """Build image from given manifest and return built image name"""
     metric_labels = {
@@ -63,6 +64,9 @@ def build_job_image(
             assert workspaces_path.is_dir(), 'workspaces directory doesn\'t exist'
 
             workspace, repo_dir, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
+
+            if config.verify_manifest_consistency and not build_context:
+                verify_manifest_consistency(manifest.origin_yaml_, workspace, repo_dir)
 
             (workspace / 'job.yaml').write_text(manifest.origin_yaml_)
 

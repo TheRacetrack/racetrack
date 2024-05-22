@@ -156,6 +156,13 @@ compose-up-service: compose-volumes
 		$(service)
 	$(docker-compose) up -d $(service)
 
+
+compose-restart-service: compose-down-service compose-up-service
+
+compose-down-service:
+	$(docker-compose) down $(service)
+
+
 up-pub:
 	$(docker-compose) build \
 		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
