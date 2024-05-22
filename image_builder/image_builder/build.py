@@ -65,7 +65,7 @@ def build_job_image(
 
             workspace, repo_dir, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
 
-            if config.verify_manifest_consistency:
+            if config.verify_manifest_consistency and not build_context:
                 verify_manifest_consistency(manifest.origin_yaml_, workspace, repo_dir)
 
             (workspace / 'job.yaml').write_text(manifest.origin_yaml_)

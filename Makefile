@@ -160,8 +160,7 @@ compose-up-service: compose-volumes
 compose-restart-service: compose-down-service compose-up-service
 
 compose-down-service:
-	$(docker-compose) stop $(service)
-	$(docker-compose) rm -f $(service)
+	$(docker-compose) down $(service)
 
 
 up-pub:
