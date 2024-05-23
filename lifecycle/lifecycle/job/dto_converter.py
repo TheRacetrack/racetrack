@@ -36,6 +36,7 @@ def job_model_to_dto(model: models.Job, config: Config) -> JobDto:
         infrastructure_target=model.infrastructure_target,
         replica_internal_names=model.replica_internal_names.split(',') if model.replica_internal_names else [],
         job_type_version=model.job_type_version,
+        infrastructure_stats=model.infrastructure_stats or {},
     )
 
 

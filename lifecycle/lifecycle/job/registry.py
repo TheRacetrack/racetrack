@@ -188,6 +188,9 @@ def _sync_registry_job(registry_job: JobDto, infrastructure_job: JobDto):
     if registry_job.replica_internal_names != infrastructure_job.replica_internal_names:
         registry_job.replica_internal_names = infrastructure_job.replica_internal_names
         changed = True
+    if registry_job.infrastructure_stats != infrastructure_job.infrastructure_stats:
+        registry_job.infrastructure_stats = infrastructure_job.infrastructure_stats
+        changed = True
     if infrastructure_job.last_call_time is not None:
         if registry_job.last_call_time is None or registry_job.last_call_time < infrastructure_job.last_call_time:
             registry_job.last_call_time = infrastructure_job.last_call_time

@@ -255,6 +255,12 @@ function onManifestUpdated() {
         </template>
     </q-field>
 
+    <template v-for="(value, key) in job?.infrastructure_stats ?? {}">
+        <q-field outlined :label="key" stack-label>
+            <template v-slot:control>{{ value }}</template>
+        </q-field>
+    </template>
+
     <q-field outlined label="Manifest" stack-label>
         <template v-slot:control>
             <ManifestView :manifestYaml="job?.manifest_yaml" />

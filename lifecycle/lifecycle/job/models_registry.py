@@ -134,6 +134,7 @@ def create_job_model(job_dto: JobDto) -> models.Job:
         infrastructure_target=job_dto.infrastructure_target,
         replica_internal_names=','.join(job_dto.replica_internal_names),
         job_type_version=job_dto.job_type_version,
+        infrastructure_stats=job_dto.infrastructure_stats,
     )
     new_job.save()
     return new_job
@@ -163,6 +164,7 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.infrastructure_target = job_dto.infrastructure_target
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
     job.job_type_version = job_dto.job_type_version
+    job.infrastructure_stats = job_dto.infrastructure_stats
     try:
         job.save(force_update=True)
     except models.Job.DoesNotExist:
