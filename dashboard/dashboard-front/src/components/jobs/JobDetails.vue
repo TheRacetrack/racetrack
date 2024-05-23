@@ -256,7 +256,7 @@ function onManifestUpdated() {
     </q-field>
 
     <template v-for="(value, key) in job?.infrastructure_stats ?? {}">
-        <q-field outlined :label="key" stack-label>
+        <q-field outlined :label="`Infrastructure statistics: ${key}`" stack-label>
             <template v-slot:control>{{ value }}</template>
         </q-field>
     </template>

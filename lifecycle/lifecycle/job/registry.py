@@ -207,7 +207,7 @@ def _generate_job_map(jobs: Iterable[JobDto]) -> dict[str, JobDto]:
 def _apply_job_notice(job: JobDto, available_job_types: set[str]):
     notice = job.notice
     if job.job_type_version not in available_job_types:
-        job.notice = f"This job type version is deprecated since it's not available anymore."
+        job.notice = "This version of the job type is obsolete and no longer available."
 
     if notice != job.notice:
         models_registry.update_job(job)
