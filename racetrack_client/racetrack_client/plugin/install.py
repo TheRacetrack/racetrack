@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
-from fileinput import filename
 import os
 from pathlib import Path
 import re
@@ -72,7 +70,6 @@ def uninstall_plugin(
 def download_installed_plugin_version(
         lifecycle_url: Optional[str],
         out_dir: Optional[str | Path],
-        out_filename: Optional[str | Path ],
         plugin_name: str,
         plugin_version: str,):
     """Download a plugin from a remote Racetrack server"""
@@ -88,41 +85,18 @@ def download_installed_plugin_version(
     _save_response_to_disk(r, out_dir, out_filename)
 
 
-def download_installed_plugins(lifecycle_url: Optional[str], out_dir: Optional[str | Path], out_filename: Optional[str | Path ]):
-    """Download all plugins from a remote Racetrack server"""
-    client_config = load_client_config()
-    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
-    user_auth = get_user_auth(client_config, lifecycle_url)
-    r = Requests.get(
-        f'{lifecycle_url}/api/v1/plugin/download_installed_plugins',
-        headers=get_auth_request_headers(user_auth),
-    )
-    _save_response_to_disk(r, out_dir, out_filename)
-
-
-def _save_response_to_disk(r: Response, out_dir: Optional[str | Path], out_filename: Optional[str | Path ]):
+def _save_response_to_disk(r: Response, out_dir: Optional[str | Path], out_filename: str | Path):
     if not out_dir:
         out_dir = Path.cwd()
     assert Path(out_dir).is_dir()
-    current_datetime = datetime.now().strftime('%Y%m%dT%H%M%S')
-    filename = Path(f'installed_plugins_{current_datetime}.zip') # fallback filename
 
     if r.status_code == 200:
-        if out_filename:
-            filename = Path(out_filename)
-
-        filename = Path(out_dir) / filename
-        with open(filename, 'wb') as file:
+        out_filename = Path(out_dir) / Path(out_filename)
+        with open(out_filename, 'wb') as file:
             file.write(r.content)
-
-        okay_msg = f'Downloaded installed plugin(s) as {filename}'
-        logger.info(okay_msg)
-        print(okay_msg)
-
+        logger.info(f'Downloaded installed plugin as {out_filename}')
     else:
-        err_msg = 'Failed to download installed plugin(s)'
-        logger.error(err_msg)
-        print(err_msg)
+        logger.error('Failed to download installed plugin')
 
 
 def list_installed_plugins(lifecycle_url: Optional[str]) -> None:
