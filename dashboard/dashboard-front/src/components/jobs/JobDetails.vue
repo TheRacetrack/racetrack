@@ -120,6 +120,11 @@ function onManifestUpdated() {
         errorMsg: `Failed to redeploy a job ${name} ${version}`,
     })
 }
+
+function capitalizeMetricName(name: string): string {
+    name = name.replace(/_/g, ' ')
+    return name.charAt(0).toUpperCase() + name.slice(1)
+}
 </script>
 
 <template>
@@ -256,7 +261,7 @@ function onManifestUpdated() {
     </q-field>
 
     <template v-for="(value, key) in job?.infrastructure_stats ?? {}">
-        <q-field outlined :label="`Infrastructure statistics: ${key}`" stack-label>
+        <q-field outlined :label="`Infrastructure statistics: ${capitalizeMetricName(key)}`" stack-label>
             <template v-slot:control>{{ value }}</template>
         </q-field>
     </template>
