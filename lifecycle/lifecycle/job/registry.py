@@ -210,6 +210,6 @@ def _apply_job_notice(registry_job: JobDto, infrastructure_job: JobDto, availabl
     if registry_job.job_type_version not in available_job_types:
         notice = "This version of the job type is obsolete and no longer available."
         if notice not in notices:
-            notices += notice
+            notices.append(notice)
 
     return ';'.join(notices)
