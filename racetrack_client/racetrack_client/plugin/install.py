@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from fileinput import filename
 import os
 from pathlib import Path
 import re
@@ -83,6 +84,7 @@ def download_installed_plugin_version(
         f'{lifecycle_url}/api/v1/plugin/{plugin_name}/{plugin_version}/download',
         headers=get_auth_request_headers(user_auth),
     )
+    out_filename = f'{plugin_name}-{plugin_version}.zip'
     _save_response_to_disk(r, out_dir, out_filename)
 
 
