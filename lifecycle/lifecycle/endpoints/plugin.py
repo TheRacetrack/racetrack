@@ -1,9 +1,15 @@
 import asyncio
 import collections
-from typing import List, Optional, Any
+import io
+from pathlib import Path
+import tempfile
+from typing import Generator, List, Optional, Any
+from venv import logger
+import zipfile
 
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, UploadFile, Request
+from fastapi import APIRouter, HTTPException, Response, UploadFile, Request
 
 from racetrack_client.plugin.plugin_manifest import PluginManifest
 from racetrack_commons.deploy.job_type import list_jobtype_names_of_plugins
@@ -53,6 +59,26 @@ class PluginsData(BaseModel):
 
 
 def setup_plugin_endpoints(api: APIRouter, plugin_engine: PluginEngine):
+    @api.get('/plugin/{plugin_name}/{plugin_version}/download')
+    def _download_installed_plugin_version(plugin_name: str, plugin_version: str) -> Response:
+        plugin_path = plugin_engine.plugins_path / f"{plugin_name}-{plugin_version}.zip"
+        if not plugin_path.exists():
+            raise HTTPException(status_code=404, detail=f"Plugin '{plugin_name}' version '{plugin_version}' not found")
+
+        return FileResponse(plugin_path, media_type='application/zip', filename=plugin_path.name)
+
+    @api.get('/plugin/download_installed_plugins', response_class=FileResponse)
+    def _download_installed_plugins() -> FileResponse:
+        """Download all plugins as a single zip file"""
+        plugin_paths = list(plugin_engine.plugins_path.glob('*.zip'))
+
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            with zipfile.ZipFile(temp_file.name, 'w') as zip_file:
+                for plugin_path in plugin_paths:
+                    zip_file.write(plugin_path, plugin_path.name)
+
+            return FileResponse(temp_file.name, media_type='application/zip', filename='installed_plugins.zip')
+
 
     @api.get('/plugin', response_model=List[PluginManifest])
     def _info_plugins() -> List[PluginManifest]:
@@ -79,7 +105,7 @@ def setup_plugin_endpoints(api: APIRouter, plugin_engine: PluginEngine):
         manifest = await loop.run_in_executor(None, plugin_engine.upload_plugin, filename, file_bytes, bool(replace))
         log_event_plugin_installed(manifest.name, manifest.version, username)
         return manifest
-    
+
     @api.delete('/plugin/{plugin_name}/{plugin_version}')
     def _delete_plugin_by_version(plugin_name: str, plugin_version: str, request: Request):
         """Deactivate and remove plugin with given name and version"""

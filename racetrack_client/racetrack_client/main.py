@@ -15,7 +15,7 @@ from racetrack_client.client_config.io import load_client_config
 from racetrack_client.client_config.update import set_credentials, set_current_remote, set_config_url_alias
 from racetrack_client.client_config.remote import get_current_remote, get_current_pub_address
 from racetrack_client.plugin.bundler.bundle import bundle_plugin
-from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin
+from racetrack_client.plugin.install import install_plugin, list_available_job_types, list_installed_plugins, uninstall_plugin, download_installed_plugins, download_installed_plugin_version
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.log.logs import get_logger
@@ -279,6 +279,28 @@ def _list_installed_plugins(
         list_available_job_types(remote)
     else:
         list_installed_plugins(remote)
+
+
+@cli_plugin.command('download-installed-plugins')
+def _download_installed_plugins(
+    remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
+    out_dir: str = typer.Option(default='.', show_default=True, help='output directory where to save the ZIP file'),
+    out_filename: str = typer.Option(default='installed_plugins.zip', show_default=True, help='filename of the output ZIP file'),
+):
+    """Downloads all plugins installed on a remote Racetrack server"""
+    download_installed_plugins(remote, out_dir, out_filename)
+
+
+@cli_plugin.command('download-plugin')
+def _download_installed_plugins(
+    remote: str = typer.Option(default=None, show_default=False, help="Racetrack server's URL or alias name"),
+    out_dir: str = typer.Option(default=None, show_default=False, help='output directory where to save the ZIP file'),
+    out_filename: str = typer.Option(default=None, show_default=False, help='filename of the output ZIP file'),
+    plugin_name: str = typer.Argument(..., show_default=False, help='Name of the plugin'),
+    plugin_version: str = typer.Argument(..., show_default=False, help='Version of the plugin'),
+):
+    """Downloads a plugin installed on a remote Racetrack server"""
+    download_installed_plugin_version(remote, out_dir, out_filename, plugin_name, plugin_version)
 
 
 @cli_plugin.command('bundle')

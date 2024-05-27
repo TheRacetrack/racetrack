@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 import os
 from pathlib import Path
 import re
@@ -11,7 +12,7 @@ from racetrack_client.client_config.client_config import ClientConfig
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
-from racetrack_client.utils.request import parse_response, parse_response_object, parse_response_list, Requests
+from racetrack_client.utils.request import parse_response, parse_response_object, parse_response_list, Requests, Response
 from racetrack_client.utils.semver import SemanticVersion
 
 logger = get_logger(__name__)
@@ -65,6 +66,61 @@ def uninstall_plugin(
     parse_response(r, 'Lifecycle response error')
 
     logger.info(f'Plugin {plugin_name} {plugin_version} has been uninstalled from {lifecycle_url}')
+
+
+def download_installed_plugin_version(
+        lifecycle_url: Optional[str],
+        out_dir: Optional[str | Path],
+        out_filename: Optional[str | Path ],
+        plugin_name: str,
+        plugin_version: str,):
+    """Download a plugin from a remote Racetrack server"""
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/plugin/{plugin_name}/{plugin_version}/download',
+        headers=get_auth_request_headers(user_auth),
+    )
+    _save_response_to_disk(r, out_dir, out_filename)
+
+
+def download_installed_plugins(lifecycle_url: Optional[str], out_dir: Optional[str | Path], out_filename: Optional[str | Path ]):
+    """Download all plugins from a remote Racetrack server"""
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/plugin/download_installed_plugins',
+        headers=get_auth_request_headers(user_auth),
+    )
+    _save_response_to_disk(r, out_dir, out_filename)
+
+
+def _save_response_to_disk(r: Response, out_dir: Optional[str | Path], out_filename: Optional[str | Path ]):
+    if not out_dir:
+        out_dir = Path.cwd()
+    assert Path(out_dir).is_dir()
+    current_datetime = datetime.now().strftime('%Y%m%dT%H%M%S')
+    filename = Path(f'installed_plugins_{current_datetime}.zip') # fallback filename
+
+    if r.status_code == 200:
+        if out_filename:
+            filename = Path(out_filename)
+
+        filename = Path(out_dir) / filename
+        with open(filename, 'wb') as file:
+            file.write(r.content)
+
+        okay_msg = f'Downloaded installed plugin(s) as {filename}'
+        logger.info(okay_msg)
+        print(okay_msg)
+
+    else:
+        err_msg = 'Failed to download installed plugin(s)'
+        logger.error(err_msg)
+        print(err_msg)
 
 
 def list_installed_plugins(lifecycle_url: Optional[str]) -> None:
