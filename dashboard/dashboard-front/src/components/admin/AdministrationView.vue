@@ -141,6 +141,10 @@ function deletePlugin(name: string, version: string) {
     })
 }
 
+function downloadPlugin(name: string, version: string) {
+  window.location.href = `/api/v1/plugin/${name}/${version}/download`
+}
+
 function onPluginUploadFailed(err: any) {
     console.error(err)
     let details = extractErrorDetails(err)
@@ -175,7 +179,7 @@ function stringToColour(str: string) {
             <div class="text-h6">Links</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-            
+
             <q-field outlined label="Lifecycle API server address" stack-label class="q-mt-md">
                 <template v-slot:control>
                     <a :href="envInfo.lifecycle_url || ''" target="_blank" class="x-overflow-any">
@@ -186,7 +190,7 @@ function stringToColour(str: string) {
                     <q-btn round dense flat icon="content_copy" @click="copyText(envInfo.lifecycle_url)" />
                 </template>
             </q-field>
-            
+
             <q-field outlined label="Lifecycle Admin panel" stack-label class="q-mt-md">
                 <template v-slot:control>
                     <a :href="lifecycleAdminUrl" target="_blank" class="x-overflow-any">
@@ -211,7 +215,7 @@ function stringToColour(str: string) {
 
         </q-card-section>
     </q-card>
-    
+
     <q-card class="q-my-lg q-pb-md">
         <q-card-section class="q-pb-none">
             <div class="text-h6">Versions</div>
@@ -280,10 +284,10 @@ function stringToColour(str: string) {
             </q-tree>
         </q-card-section>
         <q-card-section class="q-py-none">
-            
+
         </q-card-section>
     </q-card>
-    
+
     <q-card class="q-my-lg">
         <q-card-section class="q-pb-none">
             <div class="text-h6">Plugins</div>
@@ -319,11 +323,15 @@ function stringToColour(str: string) {
                                 @click="deletePlugin(plugin.name, plugin.version)">
                                 <q-tooltip>Delete plugin</q-tooltip>
                             </q-btn>
+                            <q-btn class="gt-xs" size="12px" flat dense round icon="download"
+                                @click="downloadPlugin(plugin.name, plugin.version)">
+                                <q-tooltip>Download plugin</q-tooltip>
+                            </q-btn>
                         </div>
                     </q-item-section>
                 </q-item>
             </q-list>
-            
+
         </q-card-section>
 
         <q-card-section>
