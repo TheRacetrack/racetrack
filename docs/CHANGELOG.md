@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   In case of incosistencies, the deployment is aborted.
   This only happens if the optional setting `verify_manifest_consistency` is turned on in the Image Builder.
   ([#452](https://github.com/TheRacetrack/racetrack/issues/452))
+- Infrastructure plugins can now provide its own statistics for every job.
+  These key-value statistics are displayed in Job details on a Dashboard.
+  ([#77](https://github.com/TheRacetrack/racetrack/issues/77))
 
 ## [2.29.3] - 2024-05-21
 ### Added

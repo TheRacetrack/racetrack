@@ -136,8 +136,8 @@ def sync_registry_jobs(config: Config, plugin_engine: PluginEngine):
             if registry_job.status != JobStatus.STARTING.value:
                 if job_id in infrastructure_jobs_map:
                     infrastructure_job = infrastructure_jobs_map[job_id]
+                    infrastructure_job.notice = _apply_job_notice(registry_job, infrastructure_job, available_job_types)
                     _sync_registry_job(registry_job, infrastructure_job)
-                    _apply_job_notice(registry_job, available_job_types)
                 else:
                     # job not present in Cluster
                     if registry_job.status != JobStatus.LOST.value:
@@ -204,10 +204,12 @@ def _generate_job_map(jobs: Iterable[JobDto]) -> dict[str, JobDto]:
     return {job_resource_name(job.name, job.version): job for job in jobs}
 
 
-def _apply_job_notice(job: JobDto, available_job_types: set[str]):
-    notice = job.notice
-    if job.job_type_version not in available_job_types:
-        job.notice = "This version of the job type is obsolete and no longer available."
+def _apply_job_notice(registry_job: JobDto, infrastructure_job: JobDto, available_job_types: set[str]) -> str | None:
+    notices: list[str] = infrastructure_job.notice.split(';') if infrastructure_job.notice else []
 
-    if notice != job.notice:
-        models_registry.update_job(job)
+    if registry_job.job_type_version not in available_job_types:
+        notice = "This version of the job type is obsolete and no longer available."
+        if notice not in notices:
+            notices += notice
+
+    return ';'.join(notices)
