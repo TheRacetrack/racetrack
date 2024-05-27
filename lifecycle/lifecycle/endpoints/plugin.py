@@ -64,19 +64,6 @@ def setup_plugin_endpoints(api: APIRouter, plugin_engine: PluginEngine):
 
         return FileResponse(plugin_path, media_type='application/zip', filename=plugin_path.name)
 
-    @api.get('/plugin/download_installed_plugins', response_class=FileResponse)
-    def _download_installed_plugins() -> FileResponse:
-        """Download all plugins as a single zip file"""
-        plugin_paths = list(plugin_engine.plugins_path.glob('*.zip'))
-
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            with zipfile.ZipFile(temp_file.name, 'w') as zip_file:
-                for plugin_path in plugin_paths:
-                    zip_file.write(plugin_path, plugin_path.name)
-
-            return FileResponse(temp_file.name, media_type='application/zip', filename='installed_plugins.zip')
-
-
     @api.get('/plugin', response_model=List[PluginManifest])
     def _info_plugins() -> List[PluginManifest]:
         """Get List of loaded plugins with their versions"""
