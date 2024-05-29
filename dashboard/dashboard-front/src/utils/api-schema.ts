@@ -17,6 +17,7 @@ export interface JobData {
     infrastructure_target?: string
     replica_internal_names: string[]
     job_type_version: string
+    infrastructure_stats: Record<string, any>
 }
 
 export interface DocPageContent {
