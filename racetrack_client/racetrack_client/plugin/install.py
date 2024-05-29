@@ -11,7 +11,7 @@ from racetrack_client.client_config.client_config import ClientConfig
 from racetrack_client.client_config.io import load_client_config
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import get_auth_request_headers
-from racetrack_client.utils.request import parse_response, parse_response_object, parse_response_list, Requests
+from racetrack_client.utils.request import parse_response, parse_response_object, parse_response_list, Requests, Response
 from racetrack_client.utils.semver import SemanticVersion
 
 logger = get_logger(__name__)
@@ -65,6 +65,38 @@ def uninstall_plugin(
     parse_response(r, 'Lifecycle response error')
 
     logger.info(f'Plugin {plugin_name} {plugin_version} has been uninstalled from {lifecycle_url}')
+
+
+def download_installed_plugin_version(
+        lifecycle_url: Optional[str],
+        out_dir: Optional[str | Path],
+        plugin_name: str,
+        plugin_version: str,):
+    """Download a plugin from a remote Racetrack server"""
+    client_config = load_client_config()
+    lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
+    user_auth = get_user_auth(client_config, lifecycle_url)
+
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/plugin/{plugin_name}/{plugin_version}/download',
+        headers=get_auth_request_headers(user_auth),
+    )
+    out_filename = f'{plugin_name}-{plugin_version}.zip'
+    _save_response_to_disk(r, out_dir, out_filename)
+
+
+def _save_response_to_disk(r: Response, out_dir: Optional[str | Path], out_filename: str | Path):
+    if not out_dir:
+        out_dir = Path.cwd()
+    assert Path(out_dir).is_dir()
+
+    if r.status_code == 200:
+        out_filename = Path(out_dir) / Path(out_filename)
+        with open(out_filename, 'wb') as file:
+            file.write(r.content)
+        logger.info(f'Downloaded installed plugin as {out_filename}')
+    else:
+        logger.error('Failed to download installed plugin')
 
 
 def list_installed_plugins(lifecycle_url: Optional[str]) -> None:
