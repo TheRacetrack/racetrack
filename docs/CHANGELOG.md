@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Infrastructure plugins can now provide its own statistics for every job.
   These key-value statistics are displayed in Job details on a Dashboard.
   ([#77](https://github.com/TheRacetrack/racetrack/issues/77))
+- Plugins added to racetrack can now be downloaded via the CLI or the admin interface.
+  ([#451](https://github.com/TheRacetrack/racetrack/issues/451))
 
 ## [2.29.3] - 2024-05-21
 ### Added
@@ -26,11 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Long deployments (over 20 minutes) no longer get stuck in the final stage.
   ([#448](https://github.com/TheRacetrack/racetrack/issues/448))
-
-### Added
-- Plugins added to racetrack can now be downloaded via the CLI or the admin interface.
-  ([#451](https://github.com/TheRacetrack/racetrack/issues/451))
-
 
 ## [2.29.2] - 2024-04-30
 ### Fixed
