@@ -1,7 +1,7 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.29.2
+TAG ?= 2.29.3
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 GHCR_PREFIX = ghcr.io/theracetrack/racetrack
@@ -155,6 +155,13 @@ compose-up-service: compose-volumes
 		--build-arg DOCKER_TAG="$(TAG)" \
 		$(service)
 	$(docker-compose) up -d $(service)
+
+
+compose-restart-service: compose-down-service compose-up-service
+
+compose-down-service:
+	$(docker-compose) down $(service)
+
 
 up-pub:
 	$(docker-compose) build \
