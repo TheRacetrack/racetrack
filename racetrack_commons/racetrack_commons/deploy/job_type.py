@@ -150,6 +150,7 @@ def _parse_job_type_definition(
             job_type.images.append(image_def)
 
     elif isinstance(job_type_value, list):  # Deprecated: list of template paths
+        logger.warning('Using deprecated job type definition. Use dictionary format.')
         assert len(job_type_value), "job type data list shouldn't be empty"
         for item in job_type_value:
             assert isinstance(item, str), \
@@ -162,6 +163,7 @@ def _parse_job_type_definition(
             job_type.images.append(image_def)
 
     elif isinstance(job_type_value, str):  # Deprecated: one template path
+        logger.warning('Using deprecated job type definition. Use dictionary format.')
         image_def = JobTypeImageDef(
             source='jobtype',
             dockerfile_path=plugin_data.plugin_dir / job_type_value,
@@ -170,7 +172,7 @@ def _parse_job_type_definition(
         job_type.images.append(image_def)
 
     elif isinstance(job_type_value, tuple):  # Deprecated: tuple of (base image path, template path)
-        logger.warning('Using deprecated base images. Please use a single job template instead.')
+        logger.warning('Using deprecated base images. Please use a single job template with a dictionary format.')
         image_def = JobTypeImageDef(
             source='jobtype',
             base_image_path=Path(job_type_value[0]),
