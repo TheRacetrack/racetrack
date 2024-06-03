@@ -82,7 +82,7 @@ def provision_job(
             tag=tag,
             runtime_env_vars=runtime_env_vars,
             family=family_dto,
-            containers_num=job_type.containers_num,
+            containers_num=job_type.images_num,
             runtime_secret_vars=secret_runtime_env,
         )
 

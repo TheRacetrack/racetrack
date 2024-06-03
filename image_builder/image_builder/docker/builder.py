@@ -18,7 +18,7 @@ from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, CommandError, shell_output
 from racetrack_client.utils.url import join_paths
 from racetrack_commons.deploy.image import get_job_image
-from racetrack_commons.deploy.job_type import JobType, load_job_type
+from racetrack_commons.deploy.job_type import JobType, load_job_type, JobTypeImageDef
 from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
@@ -54,7 +54,7 @@ class DockerBuilder(ImageBuilder):
 
         logs: list[str] = []
         built_images: list[str] = []
-        images_num = job_type.containers_num
+        images_num = job_type.images_num
         for image_index in range(images_num):
             progress = f'({image_index+1}/{images_num})'
 
@@ -96,32 +96,36 @@ def _build_job_image(
     build_flags: list[str],
 ):
     progress = f'({image_index+1}/{images_num})'
+    image_def: JobTypeImageDef = job_type.images[image_index]
     with phase_context(f'building image {progress}', metric_labels, deployment_id, config, metric_phase='building image'):
 
         base_image: str = ''  # Base images are deprecated, to be removed
-        if job_type.base_image_paths and job_type.base_image_paths[image_index] is not None:
+        if image_def.base_image_path is not None:
             logger.warning('Using deprecated base images. Please use a single job template instead.')
             with wrap_context(f'building base image {progress}'):
-                base_image = _build_base_image(config, job_type, image_index, deployment_id)
+                base_image = _build_base_image(config, job_type, image_def, image_index, deployment_id)
 
-        dockerfile_path: Path
-        if job_type.template_paths[image_index] is None:  # User-module Dockerfile
-            assert manifest.docker and manifest.docker.dockerfile_path, 'User-module Dockerfile manifest.docker.dockerfile_path is expected'
-            dockerfile_path = job_workspace / manifest.docker.dockerfile_path
-            assert dockerfile_path.is_file(), f'User-module Dockerfile was not found: {dockerfile_path}'
+        src_dockerfile_path: Path = image_def.dockerfile_path
+        if image_def.source == 'job':  # User-module Dockerfile from a Job's workspace
+            src_dockerfile_path = job_workspace / image_def.dockerfile_path
+            assert src_dockerfile_path.is_file(), f'User-module Dockerfile was not found in a job workspace: {image_def.dockerfile_path}'
         else:
+            assert src_dockerfile_path.is_file(), f'Dockerfile was not found in a job type: {image_def.dockerfile_path}'
+
+        dst_dockerfile_path: Path = src_dockerfile_path
+        if image_def.template:
             with wrap_context(f'templating Dockerfile {progress}'):
-                template_path: Path = job_type.jobtype_dir / job_type.template_paths[image_index]
+                template_path: Path = src_dockerfile_path
                 assert template_path.is_file(), f'Job template Dockerfile was not found: {template_path}'
-                dockerfile_path = job_workspace / f'.job-{image_index}.Dockerfile'
+                dst_dockerfile_path = job_workspace / f'.job-{image_index}.Dockerfile'
                 racetrack_version = os.environ.get('DOCKER_TAG', 'latest')
-                template_dockerfile(manifest, template_path, dockerfile_path,
+                template_dockerfile(manifest, template_path, dst_dockerfile_path,
                                     git_version, racetrack_version, job_type.version, env_vars, base_image)
 
         image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
         logger.info(f'building Job image {progress}: {image_name}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
         build_logs = _build_container_image(
-            image_name, dockerfile_path, job_workspace, job_type.jobtype_dir, logs_filename, build_flags,
+            image_name, dst_dockerfile_path, job_workspace, job_type.jobtype_dir, logs_filename, build_flags,
         )
         logs.append(build_logs)
 
@@ -197,6 +201,7 @@ def get_base_image_name(docker_registry: str, registry_namespace: str, name: str
 def _build_base_image(
     config: Config,
     job_type: JobType,
+    image_def: JobTypeImageDef,
     image_index: int,
     deployment_id: str,
 ) -> str:
@@ -211,7 +216,7 @@ def _build_base_image(
     logger.info(f'rebuilding base image {image_name}, '
                 f'deployment ID: {deployment_id}, keeping logs in {logs_filename}')
 
-    dockerfile_path = job_type.base_image_paths[image_index]
+    dockerfile_path = image_def.base_image_path
     assert dockerfile_path.is_file(), f'base Dockerfile doesn\'t exist: {dockerfile_path}'
     context_dir = dockerfile_path.parent
     shell_output(
