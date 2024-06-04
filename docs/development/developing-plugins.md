@@ -1,21 +1,20 @@
 # Developing plugins
 
 ## How does plugin work?
-Loading a plugin happens in Racetrack in a following manner:
-
-1. At startup of racetrack components,
-  the plugin code is extracted from the zipped file.
-2. If plugin contains `requirements.txt` file, it is installed using pip.
-3. `plugin.py` Python file is loaded. Class `Plugin` is expected to be defined in it. 
-  It is then instantiated and kept in internal plugins list.
-
-When some of the customizable events happens, 
-the plugin engine is notified and all plugin hooks are called in the order according to their priority:
-
-- Plugin has priority 0 by default. 
-- Lowest priority gets executed first. 
-- If there are many plugins with the same priority, 
-  they are executed in the order they were added in the configuration file.
+When Racetrack starts up, it scans for plugins. Each plugin is a zip file,
+and the process for loading them goes like this:
+ 
+1. Extract the plugin code from the zip file.
+2. If the plugin includes a `requirements.txt` file, it installs the dependencies.
+3. Racetrack loads the `plugin.py` file, which should define a class called `Plugin`.
+   This class is then instantiated and kept in internal plugins list.
+ 
+When certain customizable events occur, the plugin engine is notified.
+All the plugin hooks are then called, in order of their priority:
+ 
+- Plugins have a default priority of 0.
+- Plugins with the lowest priority get executed first.
+- If multiple plugins have the same priority, they are executed in the order they were added in the configuration file.
 
 ## Creating a plugin
 Create a git repo, copy [plugin_sample](plugin_sample) to it
@@ -36,12 +35,12 @@ Create `plugin-manifest.yaml` file in a plugin directory.
 Basically, it contains the metadata of the plugin.
 It can have the following fields in YAML format:
 
-- `name` (**required**) - name of the plugin
-- `version` (**required**) - version of the plugin
-- `url` (optional) - a link to the plugin page
-- `priority` (optional) - order in plugins sequence, lowest priority gets executed first. Integer field, 0 by default.
-- `category` (optional) - kind of the plugin, either 'infrastructure', 'job-type' or 'core'
-- `components` (optional) - list of Racetrack components that the plugin should be running on, e.g. 'lifecycle', 'image-builder'.
+- `name` (**required**, **string**) - name of the plugin
+- `version` (**required**, **string**) - version of the plugin
+- `url` (optional, **string**) - a link to the plugin page
+- `priority` (optional, **integer**) - order in plugins sequence, lowest priority gets executed first. Integer field, 0 by default.
+- `category` (optional, **string**) - kind of the plugin, either 'infrastructure', 'job-type' or 'core'
+- `components` (optional, **list of strings**) - list of Racetrack components that the plugin should be running on, e.g. `lifecycle`, `image-builder`.
   If it's empty, plugins are loaded on all components.
 
 Example:
@@ -72,7 +71,7 @@ by means of a `racetrack` client tool.
 See [plugin_sample](plugin_sample) for an example of a plugin.
 
 ## Supported hooks
-Here's the list of all supported hooks that can be implemented by the plugin class:
+To add functionality to the plugin, you can implement one of the following hooks (Python methods):
 
 ### `post_job_deploy`
 `post_job_deploy` implements supplementary actions invoked after a job is deployed.
@@ -100,16 +99,22 @@ class Plugin:
 It returns a dictionary, where a key is a job type name with version (e.g. `python3:1.0.2`)
 and the value is a **Job Type Definition** object.
 
-**Job Type Definition** is a dictionary that has the following keys:
-- `images` - list of **Job Image Definition** objects, defining job images used by job.
-If the job is composed of just one container, it should only contain the one element.
+**Job Type Definition** describes the details of the job images used by the job.
+It's a dictionary that has the key `images`, which is a list of **Job Image Definition** objects.
+If the job consists of a single container, the list will contain only one element.
 
-**Job Image Definition** is another dictionary that has the following keys:
-- `dockerfile_path` (**string**) - a relative path to the image Dockerfile
-- `source` (**string enum**) - either `"jobtype"` or `"job"` depending on the location of the expected Dockerfile. If it's provided by a job type plugin, choose `"jobtype"`. If it's provided by the Job itself, pick `"job"`.
+**Job Image Definition** is a dictionary with the following properties:
+
+- `dockerfile_path` (**string**) - a relative path to the Dockerfile
+- `source` (**string enum**) -
+  it's either `"jobtype"` or `"job"`, depending on the location of the expected Dockerfile.
+
+  - Choose `"jobtype"`, if a Dockerfile is provided by a job type plugin, in a ZIP bundle.
+  - Choose `"job"`, if a Dockerfile will be provided by the Job itself, taken from the Job's repository.
+
 - `template` (**boolean**) - whether Dockerfile is a template and contains variables to evaluate.
 
-For instance, if a job type needs just one container, `job_types` may return the following object with a reference path to a Dockerfile template:
+For instance, if a job type needs just one container, `job_types` may return the following object with a path pointing to a Dockerfile template:
 ```python
 class Plugin:
     def job_types(self) -> dict[str, dict]:
@@ -125,9 +130,25 @@ class Plugin:
             },
         }
 ```
+Another example of a "dockerfile" job type, where the Jobs provide its own image:
+```python
+class Plugin:
+    def job_types(self) -> dict[str, dict]:
+        return {
+            'dockerfile:1.0.0': {
+                'images': [
+                    {
+                        'source': 'job',
+                        'dockerfile_path': 'Dockerfile',
+                        'template': False,
+                    },
+                ],
+            },
+        }
+```
 
 ### `infrastructure_targets`
-Infrastructure Targets (deployment targets for Jobs) are provided by `infrastructure_targets` method of the plugin.
+**Infrastructure Targets** (deployment targets for Jobs) are provided by `infrastructure_targets` method of the plugin.
 ```python
 from typing import Any
 

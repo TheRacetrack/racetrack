@@ -35,7 +35,7 @@ to extend Racetrack.
 
     `plugin.py` describes the Plugin class - to be considered a job type, your
   `plugin.py` must at minimum implements the `job_types` method as described here in
-  [the documentation of all available hooks.](./developing-plugins.md#supported-hooks)
+  [the documentation of all available hooks.](./developing-plugins.md#job_types)
 
 6. Create a `.racetrackignore`
 
@@ -337,8 +337,17 @@ class Plugin:
         Job types provided by this plugin
         :return dict of job type name (with version) mapped to a definition of images to build
         """
+        plugin_version: str = getattr(self, 'plugin_manifest').version
         return {
-            f'golang:{self.plugin_manifest.version}': ['job-template.Dockerfile'],
+            f'golang:{plugin_version}': {
+                'images': [
+                    {
+                        'source': 'jobtype',
+                        'dockerfile_path': 'job-template.Dockerfile',
+                        'template': True,
+                    },
+                ],
+            },
         }
 ```
 </details>
