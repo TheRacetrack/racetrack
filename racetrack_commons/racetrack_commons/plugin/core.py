@@ -36,10 +36,10 @@ class PluginCore(ABC):
         """Supplementary env vars dictionary added to runtime vars when deploying a Job"""
         return None
 
-    def job_types(self) -> dict[str, list[str]]:
+    def job_types(self) -> dict[str, dict]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> list of images: dockerfile template path relative to a jobtype directory
+        :return dict of job type name (with version) mapped to a definition of images to build
         """
         return {}
 
