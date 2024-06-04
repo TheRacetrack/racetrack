@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plugins added to racetrack can now be downloaded via the CLI or the admin interface.
   ([#451](https://github.com/TheRacetrack/racetrack/issues/451))
 
+### Changed
+- The `job_types` method's format for plugins has been changed
+  to support providing Dockerfiles directly by the Jobs.
+  See [Developing plugins guide](./development/developing-plugins.md#job_types).
+  Previous format is still supported for backward compatibility.
+  ([#470](https://github.com/TheRacetrack/racetrack/issues/470))
+
 ## [2.29.3] - 2024-05-21
 ### Added
 - Racetrack is compatible with Python 3.12
