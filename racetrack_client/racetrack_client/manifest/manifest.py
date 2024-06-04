@@ -15,12 +15,6 @@ class GitManifest(BaseModel):
     directory: str = '.'
 
 
-class DockerManifest(BaseModel):
-    model_config = ConfigDict(extra='forbid')
-
-    dockerfile_path: Optional[str] = None
-
-
 class ResourcesManifest(BaseModel):
     model_config = ConfigDict(extra='forbid', arbitrary_types_allowed=True)
 
@@ -56,9 +50,6 @@ class Manifest(BaseModel):
     # relative path to base manifest file, which will be extended by this manifest
     extends: Optional[str] = None
 
-    # Docker-specific configuration
-    docker: Optional[DockerManifest] = None
-
     # type of deployed image: docker image, packer, AMI
     image_type: str = 'docker'
 
@@ -90,6 +81,7 @@ class Manifest(BaseModel):
     jobtype_extra: Optional[Dict[str, Any]] = None
     golang: Optional[Dict[str, Any]] = None  # Deprecated
     python: Optional[Dict[str, Any]] = None  # Deprecated
+    docker: Optional[Dict[str, Any]] = None  # Deprecated
     wrapper_properties: Optional[Dict[str, Any]] = None  # Deprecated
 
     # Back-end platform where to deploy the service
