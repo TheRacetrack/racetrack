@@ -11,8 +11,14 @@ These are the known, public Racetrack plugins that are commonly available to be 
       racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
       ```
 
-    - [Dockerfile-based Job Type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
-      (any language or app wrapped in a Dockerfile like Drupal or Sphinx)
+    - [Dockerfile-based Job Type](https://github.com/TheRacetrack/plugin-dockerfile-job-type)
+      (any language or app wrapped in a Dockerfile)
+      ```
+      racetrack plugin install github.com/TheRacetrack/plugin-dockerfile-job-type
+      ```
+
+    - [Dockerfile Proxy Job Type](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
+      (app wrapped in a Dockerfile like Drupal or Sphinx with a proxy server that adheres to the Racetrack requirements)
       ```
       racetrack plugin install github.com/TheRacetrack/plugin-docker-proxy-job-type
       ```
