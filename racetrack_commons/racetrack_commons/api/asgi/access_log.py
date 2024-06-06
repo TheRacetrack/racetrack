@@ -74,13 +74,16 @@ class ResponseAccessLogMiddleware:
         uri = request.url.replace(scheme='', netloc='')
 
         async def send_extra(message: Message):
-
-            if await is_request_disconnected(receive):
-                logger.error(f"Request cancelled by the client: {method} {uri}")
-                response = Response(status_code=204)  # No Content
-                return await response(scope, receive, send)
-
             if message["type"] == "http.response.start":
+                if await is_request_disconnected(receive):
+                    request_logger = RequestTracingLogger(logger, {
+                        'tracing_id': request.headers.get(self.tracing_header),
+                        'caller_name': request.headers.get(self.caller_header),
+                    })
+                    request_logger.warning(f"Request cancelled by the client: {method} {uri}")
+                    response = Response(status_code=204)  # No Content
+                    return await response(scope, receive, send)
+
                 response_code: int = message['status']
                 log_line = f'{method} {uri} {response_code}'
 
@@ -101,11 +104,11 @@ class ResponseAccessLogMiddleware:
         except RuntimeError as exc:
             if str(exc) == 'No response returned.':
                 if await is_request_disconnected(receive):
-                    tracing_id = request.headers.get(self.tracing_header)
-                    if tracing_id is not None:
-                        logger.error(f"[{tracing_id}] Request cancelled by the client: {method} {uri}")
-                    else:
-                        logger.error(f"Request cancelled by the client: {method} {uri}")
+                    request_logger = RequestTracingLogger(logger, {
+                        'tracing_id': request.headers.get(self.tracing_header),
+                        'caller_name': request.headers.get(self.caller_header),
+                    })
+                    request_logger.warning(f"Request cancelled by the client: {method} {uri}")
                     response = Response(status_code=204)  # No Content
                     return await response(scope, receive, send)
             raise
