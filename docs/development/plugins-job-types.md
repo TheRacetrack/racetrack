@@ -20,7 +20,6 @@ to extend Racetrack.
     template with the following variables, that gets built for each individual
     Job automatically by Racetrack.
 
-    - `base_image` - the name of the base docker image to use for building a Job
     - `env_vars` - dict with environment variables that should be assigned to the Job container
     - `manifest` - whole Job Manifest object (see [Job Manifest Schema](../manifest-schema.md))
     - `git_version` - version of the Job code taken from git repository
