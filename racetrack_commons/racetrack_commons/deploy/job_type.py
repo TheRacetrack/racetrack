@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 
 import backoff
@@ -15,9 +16,14 @@ from racetrack_commons.plugin.plugin_data import PluginData
 logger = get_logger(__name__)
 
 
+class ImageSourceLocation(str, Enum):
+    jobtype = 'jobtype'
+    job = 'job'
+
+
 @dataclass
 class JobTypeImageDef:
-    source: str  # either 'jobtype' or 'job' depending on location of the Dockerfile
+    source: ImageSourceLocation  # either 'jobtype' or 'job' depending on location of the Dockerfile
     dockerfile_path: Path  # absolute path to job image Dockerfile template
     template: bool  # whether Dockerfile is a template and contains variables to evaluate
     base_image_path: Path | None = None  # Deprecated: absolute path to base Dockerfile
@@ -136,14 +142,15 @@ def _parse_job_type_definition(
         for images_dict in images_dicts:
             source: str = images_dict.get('source', 'jobtype')
             assert source in {'jobtype', 'job'}, "'source' can be either 'jobtype' or 'job'"
+            source_enum = ImageSourceLocation(source)
             dockerfile_path_str: str = images_dict.get('dockerfile_path')
             assert dockerfile_path_str, '"dockerfile_path" is not specified in job type data'
             dockerfile_path = Path(dockerfile_path_str)
-            if source == 'jobtype':
+            if source_enum == ImageSourceLocation.jobtype:
                 dockerfile_path = plugin_data.plugin_dir / dockerfile_path_str
             template: bool = images_dict.get('template', True)
             image_def = JobTypeImageDef(
-                source=source,
+                source=source_enum,
                 dockerfile_path=dockerfile_path,
                 template=template,
             )
@@ -156,7 +163,7 @@ def _parse_job_type_definition(
             assert isinstance(item, str), \
                 f'Invalid dockerfile template path of a job type. Expected str, but found {type(item)}'
             image_def = JobTypeImageDef(
-                source='jobtype',
+                source=ImageSourceLocation.jobtype,
                 dockerfile_path=plugin_data.plugin_dir / item,
                 template=True,
             )
@@ -165,7 +172,7 @@ def _parse_job_type_definition(
     elif isinstance(job_type_value, str):  # Deprecated: one template path
         logger.warning('Using deprecated job type definition. Use dictionary format.')
         image_def = JobTypeImageDef(
-            source='jobtype',
+            source=ImageSourceLocation.jobtype,
             dockerfile_path=plugin_data.plugin_dir / job_type_value,
             template=True,
         )
@@ -174,7 +181,7 @@ def _parse_job_type_definition(
     elif isinstance(job_type_value, tuple):  # Deprecated: tuple of (base image path, template path)
         logger.warning('Using deprecated base images. Please use a single job template with a dictionary format.')
         image_def = JobTypeImageDef(
-            source='jobtype',
+            source=ImageSourceLocation.jobtype,
             base_image_path=Path(job_type_value[0]),
             dockerfile_path=Path(job_type_value[1]),
             template=True,
@@ -192,9 +199,8 @@ def _validate_job_type(job_type: JobType):
     images: list[JobTypeImageDef] = job_type.images
     job_full_name: str = job_type.full_name
     assert len(images) > 0, 'Job type should have non-empty list of template images'
-
     for image_def in images:
-        if image_def.source == 'jobtype':
+        if image_def.source == ImageSourceLocation.jobtype:
             dockerfile_path = image_def.dockerfile_path
             assert dockerfile_path.is_file(), f'cannot find Dockerfile for {job_full_name} job type: {dockerfile_path}'
 

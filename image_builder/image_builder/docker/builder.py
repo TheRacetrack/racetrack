@@ -18,7 +18,7 @@ from racetrack_client.manifest import Manifest
 from racetrack_client.utils.shell import shell, CommandError, shell_output
 from racetrack_client.utils.url import join_paths
 from racetrack_commons.deploy.image import get_job_image
-from racetrack_commons.deploy.job_type import JobType, load_job_type, JobTypeImageDef
+from racetrack_commons.deploy.job_type import JobType, load_job_type, JobTypeImageDef, ImageSourceLocation
 from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
@@ -106,7 +106,7 @@ def _build_job_image(
                 base_image = _build_base_image(config, job_type, image_def, image_index, deployment_id)
 
         src_dockerfile_path: Path = image_def.dockerfile_path
-        if image_def.source == 'job':  # User-module Dockerfile from a Job's workspace
+        if image_def.source == ImageSourceLocation.job:  # User-module Dockerfile from a Job's workspace
             src_dockerfile_path = job_workspace / image_def.dockerfile_path
             assert src_dockerfile_path.is_file(), f'User-module Dockerfile was not found in a job workspace: {image_def.dockerfile_path}'
         else:
