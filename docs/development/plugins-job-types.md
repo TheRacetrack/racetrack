@@ -20,7 +20,6 @@ to extend Racetrack.
     template with the following variables, that gets built for each individual
     Job automatically by Racetrack.
 
-    - `base_image` - the name of the base docker image to use for building a Job
     - `env_vars` - dict with environment variables that should be assigned to the Job container
     - `manifest` - whole Job Manifest object (see [Job Manifest Schema](../manifest-schema.md))
     - `git_version` - version of the Job code taken from git repository
@@ -35,7 +34,7 @@ to extend Racetrack.
 
     `plugin.py` describes the Plugin class - to be considered a job type, your
   `plugin.py` must at minimum implements the `job_types` method as described here in
-  [the documentation of all available hooks.](./developing-plugins.md#supported-hooks)
+  [the documentation of all available hooks.](./developing-plugins.md#job_types)
 
 6. Create a `.racetrackignore`
 
@@ -332,13 +331,22 @@ ENV DEPLOYED_BY_RACETRACK_VERSION "{{ deployed_by_racetrack_version }}"
 
 ```python
 class Plugin:
-    def job_types(self) -> dict[str, list[str]]:
+    def job_types(self) -> dict[str, dict]:
         """
         Job types provided by this plugin
-        :return dict of job type name (with version) -> list of images: dockerfile template path relative to a jobtype directory
+        :return dict of job type name (with version) mapped to a definition of images to build
         """
+        plugin_version: str = getattr(self, 'plugin_manifest').version
         return {
-            f'golang:{self.plugin_manifest.version}': ['job-template.Dockerfile'],
+            f'golang:{plugin_version}': {
+                'images': [
+                    {
+                        'source': 'jobtype',
+                        'dockerfile_path': 'job-template.Dockerfile',
+                        'template': True,
+                    },
+                ],
+            },
         }
 ```
 </details>

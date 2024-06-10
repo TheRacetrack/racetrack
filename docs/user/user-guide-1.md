@@ -13,7 +13,7 @@ Racetrack allows you to use several languages and frameworks (provided by [insta
 * [Standard Python 3](https://github.com/TheRacetrack/plugin-python-job-type)
 * [Golang services](https://github.com/TheRacetrack/plugin-go-job-type)
 * [Rust](https://github.com/TheRacetrack/plugin-rust-job-type)
-* And for exotic edge cases, [any Dockerfile-wrapped code](https://github.com/TheRacetrack/plugin-docker-proxy-job-type)
+* And for exotic edge cases, [any Dockerfile-wrapped code](https://github.com/TheRacetrack/plugin-dockerfile-job-type)
 * [HUGO framework](https://github.com/TheRacetrack/plugin-hugo-job-type)
 * [Drupal](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/drupal)
 * [Sphinx](https://github.com/TheRacetrack/plugin-docker-proxy-job-type/tree/master/sample/sphinx)
