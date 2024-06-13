@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.30.0] - 2024-06-10
 ### Added
 - Submitted manifest YAML is compared with the one in the job's repository.
   In case of incosistencies, the deployment is aborted.
@@ -15,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#77](https://github.com/TheRacetrack/racetrack/issues/77))
 - Plugins added to racetrack can now be downloaded via the CLI or the admin interface.
   ([#451](https://github.com/TheRacetrack/racetrack/issues/451))
+
+### Changed
+- The `job_types` method's format for plugins has been changed
+  to support providing Dockerfiles directly by the Jobs.
+  See [Developing plugins guide](./development/developing-plugins.md#job_types).
+  Previous format is still supported for backward compatibility.
+  ([#470](https://github.com/TheRacetrack/racetrack/issues/470))
 
 ## [2.29.3] - 2024-05-21
 ### Added
