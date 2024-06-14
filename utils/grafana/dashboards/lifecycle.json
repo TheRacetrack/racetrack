@@ -1222,7 +1222,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "failed, lifecycle:7102"
+                  "closed, lifecycle:7102"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -1329,6 +1329,7 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
+      "description": "connections with ESTABLISHED status, by remote TCP port",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1362,7 +1363,7 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -1392,7 +1393,7 @@
         "x": 18,
         "y": 16
       },
-      "id": 6,
+      "id": 22,
       "options": {
         "legend": {
           "calcs": [
@@ -1400,7 +1401,9 @@
           ],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "single",
@@ -1416,15 +1419,15 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "lifecycle_active_threads_count",
+          "expr": "lifecycle_established_connections_count",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{job}}",
+          "legendFormat": "port {{port}}, {{instance}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Active threads",
+      "title": "Established connections by port",
       "type": "timeseries"
     },
     {
@@ -1640,7 +1643,6 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Useful to determine pod restarts",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1702,6 +1704,110 @@
         "h": 8,
         "w": 6,
         "x": 12,
+        "y": 24
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "lifecycle_active_threads_count",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{job}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Active threads",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Useful to determine pod restarts",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
         "y": 24
       },
       "id": 9,
@@ -1769,7 +1875,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 24
+        "y": 32
       },
       "id": 14,
       "options": {
@@ -1823,6 +1929,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 16,
+  "version": 2,
   "weekStart": ""
 }

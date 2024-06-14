@@ -84,12 +84,22 @@ def collect_active_threads_metric() -> Iterator[Metric]:
 
 
 def collect_tcp_connections_metric() -> Iterator[Metric]:
+    net_connections = psutil.net_connections(kind='tcp')
+    tcp_connections = collections.Counter(conn.status for conn in net_connections)
     metric_name = 'lifecycle_tcp_connections_count'
-    tcp_connections = collections.Counter(p.status for p in psutil.net_connections(kind='tcp'))
     prometheus_metric = GaugeMetricFamily(metric_name, 'Number of open TCP connections by status')
     for status, count in tcp_connections.items():
         prometheus_metric.add_sample(metric_name, {
             'status': status,
+        }, count)
+    yield prometheus_metric
+
+    established_port_conns = collections.Counter(conn.raddr.port for conn in net_connections if conn.status == 'ESTABLISHED')
+    metric_name = 'lifecycle_established_connections_count'
+    prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Established TCP connections by remote port')
+    for port, count in established_port_conns.items():
+        prometheus_metric.add_sample(metric_name, {
+            'port': str(port),
         }, count)
     yield prometheus_metric
 
