@@ -922,7 +922,9 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "green",
+            "mode": "palette-classic",
+            "seriesBy": "last"
           },
           "custom": {
             "axisCenteredZero": false,
@@ -979,12 +981,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
-              },
-              {
                 "color": "red",
-                "value": 80
+                "value": null
               }
             ]
           },
@@ -1136,9 +1134,22 @@
           "legendFormat": "{{instance}}",
           "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(lifecycle_database_connection_opened_total - lifecycle_database_connection_closed_total)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Total",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Database open connections",
+      "title": "Open database connections",
       "type": "timeseries"
     },
     {
@@ -1203,7 +1214,32 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "failed, lifecycle:7102"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1222,8 +1258,8 @@
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "sortBy": "Last *",
-          "sortDesc": true
+          "sortBy": "Name",
+          "sortDesc": false
         },
         "tooltip": {
           "mode": "multi",
@@ -1270,9 +1306,22 @@
           "legendFormat": "opened, {{instance}}",
           "range": true,
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "rate(lifecycle_database_connection_closed_total[$__interval]) * 60",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "closed, {{instance}}",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Database connection rate",
+      "title": "Database connections rate",
       "type": "timeseries"
     },
     {
@@ -1759,7 +1808,7 @@
       "type": "stat"
     }
   ],
-  "refresh": "30s",
+  "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -1767,13 +1816,13 @@
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 4,
+  "version": 16,
   "weekStart": ""
 }

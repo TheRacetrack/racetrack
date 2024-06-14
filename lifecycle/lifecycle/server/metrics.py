@@ -37,7 +37,7 @@ metric_event_stream_client_disconnected = Gauge(
 
 metric_database_connection_opened = Counter(
     'lifecycle_database_connection_opened',
-    'Number of times connection to a database has been opened',
+    'Number of attempts to open a connection to a database (successful or failed)',
 )
 metric_database_connection_failed = Counter(
     'lifecycle_database_connection_failed',

@@ -1,6 +1,8 @@
 from django.db.backends.postgresql import base
 
 from racetrack_client.log.logs import get_logger
+from racetrack_client.log.context_error import ContextError
+from racetrack_client.log.exception import log_exception
 from lifecycle.server.db_status import database_status
 from lifecycle.server.metrics import metric_database_connection_opened, metric_database_connection_closed, \
     metric_database_cursor_created, metric_database_connection_failed
@@ -14,23 +16,19 @@ class DatabaseWrapper(base.DatabaseWrapper):
         super().__init__(*args, **kwargs)
     
     def connect(self):
-        logger.debug("DB: connect called")
+        metric_database_connection_opened.inc()
         try:
-            result = super().connect()
-            metric_database_connection_opened.inc()
-            return result
+            return super().connect()
         except BaseException as e:
             metric_database_connection_failed.inc()
             database_status.connected = False
-            logger.error("DB: connect FAILED")
+            log_exception(ContextError('Connection to database failed', e))
             raise e
 
     def close(self):
         metric_database_connection_closed.inc()
-        logger.debug("DB: close called")
         super().close()
 
     def create_cursor(self, name=None):
         metric_database_cursor_created.inc()
-        logger.debug("DB: create_cursor called")
         return super().create_cursor(name)
