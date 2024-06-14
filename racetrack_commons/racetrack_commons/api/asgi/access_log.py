@@ -71,18 +71,13 @@ class ResponseAccessLogMiddleware:
 
         request = Request(scope=scope)
         method = request.method
-        uri = request.url.replace(scheme='', netloc='')
+        uri = str(request.url.replace(scheme='', netloc=''))
+        start_time = time.time()
 
         async def send_extra(message: Message):
             if message["type"] == "http.response.start":
                 if await is_request_disconnected(receive):
-                    request_logger = RequestTracingLogger(logger, {
-                        'tracing_id': request.headers.get(self.tracing_header),
-                        'caller_name': request.headers.get(self.caller_header),
-                    })
-                    request_logger.warning(f"Request cancelled by the client: {method} {uri}")
-                    response = Response(status_code=204)  # No Content
-                    return await response(scope, receive, send)
+                    return await self.end_cancelled_request(scope, receive, send, request, method, uri, start_time)
 
                 response_code: int = message['status']
                 log_line = f'{method} {uri} {response_code}'
@@ -97,24 +92,28 @@ class ResponseAccessLogMiddleware:
             await send(message)
 
         metric_requests_started.inc()
-        start_time = time.time()
         try:
             await self.app(scope, receive, send_extra)
 
         except RuntimeError as exc:
             if str(exc) == 'No response returned.':
                 if await is_request_disconnected(receive):
-                    request_logger = RequestTracingLogger(logger, {
-                        'tracing_id': request.headers.get(self.tracing_header),
-                        'caller_name': request.headers.get(self.caller_header),
-                    })
-                    request_logger.warning(f"Request cancelled by the client: {method} {uri}")
-                    response = Response(status_code=204)  # No Content
-                    return await response(scope, receive, send)
+                    return await self.end_cancelled_request(scope, receive, send, request, method, uri, start_time)
             raise
         finally:
             metric_request_duration.observe(time.time() - start_time)
             metric_requests_done.inc()
+
+    async def end_cancelled_request(self, scope: Scope, receive: Receive, send: Send,
+                                    request: Request, method: str, uri: str, start_time: float):
+        request_logger = RequestTracingLogger(logger, {
+            'tracing_id': request.headers.get(self.tracing_header),
+            'caller_name': request.headers.get(self.caller_header),
+        })
+        duration = time.time() - start_time
+        request_logger.warning(f"Request cancelled by the client: {method} {uri}, {duration:.3f}s")
+        response = Response(status_code=204)  # No Content
+        return await response(scope, receive, send)
 
 
 async def is_request_disconnected(receive: Receive) -> bool:
