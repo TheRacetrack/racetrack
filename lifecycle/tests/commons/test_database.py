@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from racetrack_commons.database.database import populate_database_settings
+from lifecycle.django.database.database import populate_database_settings
 
 
 def test_populate_database_settings():
@@ -17,7 +17,7 @@ def test_populate_database_settings():
 
         databases = populate_database_settings(Path('.'))
         assert databases['default'] == {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'lifecycle.django.database',
             'NAME': 'racetrack-dev-c1',
             'USER': 'johny',
             'PASSWORD': '***',

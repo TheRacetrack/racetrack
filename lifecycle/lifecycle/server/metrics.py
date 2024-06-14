@@ -35,6 +35,23 @@ metric_event_stream_client_disconnected = Gauge(
     "Total number of disconnections from the event stream",
 )
 
+metric_database_connection_opened = Counter(
+    'lifecycle_database_connection_opened',
+    'Number of times connection to a database has been opened',
+)
+metric_database_connection_failed = Counter(
+    'lifecycle_database_connection_failed',
+    'Number of times connection to a database has failed',
+)
+metric_database_connection_closed = Counter(
+    'lifecycle_database_connection_closed',
+    'Number of times connection to a database has been closed',
+)
+metric_database_cursor_created = Counter(
+    'lifecycle_database_cursor_created',
+    'Number of times database cursor has been created',
+)
+
 
 def setup_lifecycle_metrics():
     REGISTRY.register(ServerResourcesCollector())
