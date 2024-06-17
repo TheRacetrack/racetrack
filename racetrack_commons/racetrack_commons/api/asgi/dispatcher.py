@@ -15,7 +15,6 @@ class AsgiDispatcher:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope['type'] == 'lifespan' and self.on_startup is not None:
             message = await receive()
-            print(f'AsgiDispatcher: lifespan: message.type: {message["type"]}')
             if message['type'] == 'lifespan.startup':
                 await self.on_startup()
                 await send({'type': 'lifespan.startup.complete'})
