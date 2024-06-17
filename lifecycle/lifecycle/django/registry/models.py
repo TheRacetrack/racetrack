@@ -1,4 +1,5 @@
 import uuid
+import warnings
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -82,6 +83,7 @@ class Deployment(models.Model):
     phase = models.TextField(null=True, blank=True)
     image_name = models.TextField(null=True, blank=True)
     infrastructure_target = models.CharField(max_length=256, null=True)
+    warnings = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.id}'

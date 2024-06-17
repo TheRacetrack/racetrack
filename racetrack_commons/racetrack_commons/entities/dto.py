@@ -75,6 +75,7 @@ class DeploymentDto(BaseModel):
     manifest_yaml: str  # manifest represented as YAML string
     job_name: str
     job_version: str
+    warnings: Optional[str] # for warnings people might want we deploying
 
 
 class EscDto(BaseModel):

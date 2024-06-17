@@ -116,7 +116,8 @@ def send_deploy_request(
             job_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth, [])
         except Exception as e:
             raise DeploymentError(e)
-
+        if warnings := _get_warning(lifecycle_url, deploy_id, user_auth):
+            logger.warning(warnings)
         logger.info(f'Job "{manifest.name}" has been deployed. Check out {job_url} to access your Job')
     finally:
         if tmp_file is not None and os.path.exists(tmp_file) and os.path.isfile(tmp_file):
@@ -165,6 +166,14 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
         else:
             logger.info(f'deployment in progress...')
     raise TimeoutError('Deployment timeout error')
+
+def _get_warning(lifecycle_url: str, deploy_id: str, user_auth: str) -> str | None:
+    r = Requests.get(
+        f'{lifecycle_url}/api/v1/deploy/{deploy_id}',
+        headers=get_auth_request_headers(user_auth),
+    )
+    response = parse_response_object(r, 'Lifecycle deployment status')
+    return response['warnings']
 
 
 def get_git_credentials(manifest: Manifest, client_config: ClientConfig) -> Optional[Credentials]:

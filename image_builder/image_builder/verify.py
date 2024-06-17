@@ -12,11 +12,12 @@ from racetrack_client.manifest.merge import merge_dicts
 logger = get_logger(__name__)
 
 
-def verify_manifest_consistency(submitted_yaml: str, workspace: Path, repo_dir: Path):
+def verify_manifest_consistency(submitted_yaml: str, workspace: Path, repo_dir: Path) -> str | None:
     repo_file = _find_workspace_manifest_file(workspace, repo_dir)
     if not repo_file:
-        logger.warning("Can't find manifest file in a Job repository to verify it with submitted YAML")
-        return
+        warning = "Can't find manifest file in a Job repository to verify it with submitted YAML"
+        logger.warning(warning)
+        return warning
     repo_content = repo_file.read_text()
 
     with wrap_context('parsing YAML manifest'):
