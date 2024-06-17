@@ -89,7 +89,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
 
     async def on_startup() -> None:
         if config.http_worker_thread_pool:
-            logger.debug(f'Setting {config.http_worker_thread_pool} threads in the HTTP thread pool')
+            logger.debug(f'Setting HTTP thread pool to {config.http_worker_thread_pool} threads')
             limiter = anyio.to_thread.current_default_thread_limiter()
             limiter.total_tokens = config.http_worker_thread_pool
 

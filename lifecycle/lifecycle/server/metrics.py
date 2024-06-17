@@ -3,7 +3,7 @@ import threading
 from typing import Iterator
 
 import psutil
-from prometheus_client import Counter, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 from prometheus_client.core import REGISTRY
 from prometheus_client.metrics_core import GaugeMetricFamily, Metric
 from prometheus_client.registry import Collector
@@ -50,6 +50,13 @@ metric_database_connection_closed = Counter(
 metric_database_cursor_created = Counter(
     'lifecycle_database_cursor_created',
     'Number of times database cursor has been created',
+)
+
+metric_job_model_fetch_duration = Histogram(
+    'lifecycle_job_model_fetch_duration',
+    'Duration of fetching Job model from a database in seconds',
+    buckets=(.001, .0025, .005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5,
+             10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, float("inf")),
 )
 
 
