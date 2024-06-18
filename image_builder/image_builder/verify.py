@@ -41,10 +41,11 @@ def verify_manifest_consistency(submitted_yaml: str, workspace: Path, repo_dir: 
         logger.info(f'Submitted job manifest:\n{submitted_dict}')
         logger.info(f'Manifest file in Job repository:\n{repo_dict}')
         difference = _differentiate_dicts(repo_dict, submitted_dict)
-        raise RuntimeError('Submitted job manifest is not consistent with the file found in a repository. '
-                           'Did you forget to do "git push"? '
-                           f'Difference: {difference}')
-
+        warning = ('Submitted job manifest is not consistent with the file found in a repository. '
+                    'Did you forget to do "git push"? '
+                    f'Difference: {difference}')
+        logger.warning(warning)
+        return warning
 
 def _find_workspace_manifest_file(workspace: Path, repo_dir: Path) -> Optional[Path]:
     paths_to_check = [
