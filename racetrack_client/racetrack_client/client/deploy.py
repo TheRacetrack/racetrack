@@ -8,6 +8,7 @@ import tarfile
 import io
 from base64 import b64encode
 from enum import Enum
+import warnings
 
 import backoff
 
@@ -113,11 +114,9 @@ def send_deploy_request(
         logger.info(f'job deployment requested: {deploy_id}')
 
         try:
-            job_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth, [])
+            job_url = _wait_for_deployment_result(lifecycle_url, deploy_id, user_auth, [], [])
         except Exception as e:
             raise DeploymentError(e)
-        if warnings := _get_warning(lifecycle_url, deploy_id, user_auth):
-            logger.warning(warnings)
         logger.info(f'Job "{manifest.name}" has been deployed. Check out {job_url} to access your Job')
     finally:
         if tmp_file is not None and os.path.exists(tmp_file) and os.path.isfile(tmp_file):
@@ -145,7 +144,7 @@ def get_deploy_request_payload(
 @backoff.on_exception(
     backoff.fibo, TimeoutError, max_value=3, max_time=DEPLOYMENT_TIMEOUT_SECS, jitter=None, logger=None
 )
-def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: str, phases: List[Optional[str]]) -> str:
+def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: str, phases: List[Optional[str]], warningss: List[Optional[str]]) -> str:
     # see `lifecycle.endpoints.deploy::setup_deploy_endpoints::DeployIdEndpoint` for server-side implementation
     r = Requests.get(
         f'{lifecycle_url}/api/v1/deploy/{deploy_id}',
@@ -165,15 +164,14 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
             logger.info(f'deployment in progress: {phase}...')
         else:
             logger.info(f'deployment in progress...')
-    raise TimeoutError('Deployment timeout error')
 
-def _get_warning(lifecycle_url: str, deploy_id: str, user_auth: str) -> str | None:
-    r = Requests.get(
-        f'{lifecycle_url}/api/v1/deploy/{deploy_id}',
-        headers=get_auth_request_headers(user_auth),
-    )
-    response = parse_response_object(r, 'Lifecycle deployment status')
-    return response['warnings']
+    warnings = response['warnings']
+    if not warningss or warningss[-1] != warnings:  # don't print the same warnings again
+        warningss.append(warnings)
+        if warnings:
+            logger.warning(warnings)
+
+    raise TimeoutError('Deployment timeout error')
 
 
 def get_git_credentials(manifest: Manifest, client_config: ClientConfig) -> Optional[Credentials]:
