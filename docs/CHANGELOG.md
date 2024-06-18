@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Added
+- Support deployment warnings, such as ([#452](https://github.com/TheRacetrack/racetrack/issues/452)).
+  Internal racetrack components can now send "log" warnings for a deployment.
+  ([#473](https://github.com/TheRacetrack/racetrack/issues/473))
 ## [2.30.0] - 2024-06-10
 ### Added
 - Submitted manifest YAML is compared with the one in the job's repository.
