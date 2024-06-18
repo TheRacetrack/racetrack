@@ -125,7 +125,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _update_deployment_phase(deploy_id: str, payload: DeploymentPhase, request: Request):
         """Update deployment's phase"""
         check_auth(request)
-        return save_deployment_phase(deploy_id, payload.phase)
+        save_deployment_phase(deploy_id, payload.phase)
 
 
     class DeploymentWarnings(BaseModel):
@@ -135,5 +135,4 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _update_deployment_warnings(deploy_id: str, payload: DeploymentWarnings, request: Request):
         """Update deployment's warnings"""
         check_auth(request)
-         # TODO: _update_deployment_phase above retruns save_deployment_phase which returns None. Any reason to do the same here?
-        return save_deployment_warnings(deploy_id, payload.warnings)
+        save_deployment_warnings(deploy_id, payload.warnings)

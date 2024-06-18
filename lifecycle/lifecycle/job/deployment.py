@@ -125,7 +125,7 @@ def save_deployment_warnings(deployment_id: str, warnings: str):
         deployment = models.Deployment.objects.get(id=deployment_id)
     except models.Deployment.DoesNotExist:
         raise EntityNotFound(f'deployment with ID {deployment_id} was not found')
-    deployment.warnings = f'{deployment.warnings},\n{warnings}' if deployment.warnings else warnings
+    deployment.warnings = f'{deployment.warnings}\n{warnings}' if deployment.warnings else warnings
     deployment.update_time = now()
     deployment.save()
 
