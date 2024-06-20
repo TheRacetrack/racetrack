@@ -8,7 +8,6 @@ import tarfile
 import io
 from base64 import b64encode
 from enum import Enum
-import warnings
 
 import backoff
 
