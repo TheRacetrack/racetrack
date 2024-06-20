@@ -150,6 +150,12 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
         headers=get_auth_request_headers(user_auth),
     )
     response = parse_response_object(r, 'Lifecycle deployment status')
+    warnings = response['warnings']
+    if not warningss or warningss[-1] != warnings:  # don't print the same warnings again
+        warningss.append(warnings)
+        if warnings:
+            logger.warning(warnings)
+
     status = response['status'].lower()
     if status == 'failed':
         raise RuntimeError(response['error'])
@@ -164,11 +170,6 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
         else:
             logger.info(f'deployment in progress...')
 
-    warnings = response['warnings']
-    if not warningss or warningss[-1] != warnings:  # don't print the same warnings again
-        warningss.append(warnings)
-        if warnings:
-            logger.warning(warnings)
 
     raise TimeoutError('Deployment timeout error')
 
