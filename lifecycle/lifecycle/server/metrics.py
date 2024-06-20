@@ -101,10 +101,11 @@ def collect_tcp_connections_metric() -> Iterator[Metric]:
         }, count)
     yield prometheus_metric
 
-    remote_ports = [c.raddr.port for c in net_connections if c.status == 'ESTABLISHED' and c.raddr.port < 10000]
+    max_remote_port = 10000
+    remote_ports = [c.raddr.port for c in net_connections if c.status == 'ESTABLISHED' and c.raddr.port < max_remote_port]
     established_port_conns = collections.Counter(remote_ports)
     metric_name = 'lifecycle_established_connections_count'
-    prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Established TCP connections by remote port (below 10000)')
+    prometheus_metric = GaugeMetricFamily(metric_name, f'Number of Established TCP connections by remote port (below {max_remote_port})')
     for port, count in established_port_conns.items():
         prometheus_metric.add_sample(metric_name, {
             'port': str(port),
