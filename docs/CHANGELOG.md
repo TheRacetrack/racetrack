@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#77](https://github.com/TheRacetrack/racetrack/issues/77))
 - Plugins added to racetrack can now be downloaded via the CLI or the admin interface.
   ([#451](https://github.com/TheRacetrack/racetrack/issues/451))
+- Fix portfolio UI sorting bug.
+  ([#479](https://github.com/TheRacetrack/racetrack/issues/479))
 
 ### Changed
 - The `job_types` method's format for plugins has been changed
