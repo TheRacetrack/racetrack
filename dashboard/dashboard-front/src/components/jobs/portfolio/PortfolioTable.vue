@@ -140,7 +140,7 @@ const columns: QTableProps['columns'] = [
         sortable: true,
     },
     {
-        name: 'udpate-time',
+        name: 'update-time',
         label: 'Update time',
         align: 'left',
         field: (row: PortfolioJob) => row.update_time,
