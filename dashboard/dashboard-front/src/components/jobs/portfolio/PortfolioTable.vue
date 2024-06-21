@@ -133,7 +133,7 @@ const columns: QTableProps['columns'] = [
     },
     {
         name: 'last-call-time',
-        label: 'Last calll time',
+        label: 'Last call time',
         align: 'left',
         field: (row: PortfolioJob) => row.last_call_time,
         format: (val: number) => formatTimestampIso8601(val),
