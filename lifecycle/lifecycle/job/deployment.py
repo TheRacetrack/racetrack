@@ -120,6 +120,17 @@ def save_deployment_phase(deployment_id: str, phase: str):
 
 
 @db_access
+def save_deployment_warnings(deployment_id: str, warnings: str):
+    try:
+        deployment = models.Deployment.objects.get(id=deployment_id)
+    except models.Deployment.DoesNotExist:
+        raise EntityNotFound(f'deployment with ID {deployment_id} was not found')
+    deployment.warnings = f'{deployment.warnings}\n{warnings}' if deployment.warnings else warnings
+    deployment.update_time = now()
+    deployment.save()
+
+
+@db_access
 def save_deployment_image_name(deployment_id: Optional[str], image_name: str):
     if not deployment_id:
         return

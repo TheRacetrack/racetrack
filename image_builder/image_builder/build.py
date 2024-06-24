@@ -17,6 +17,7 @@ from image_builder.metrics import (metric_active_building_tasks,
 from image_builder.phase import phase_context
 from image_builder.progress import update_deployment_phase
 from image_builder.verify import verify_manifest_consistency
+from image_builder.warnings import update_deployment_warnings
 from racetrack_client.client.env import merge_env_vars
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.log.context_error import wrap_context
@@ -64,9 +65,9 @@ def build_job_image(
             assert workspaces_path.is_dir(), 'workspaces directory doesn\'t exist'
 
             workspace, repo_dir, git_version = prepare_workspace(workspaces_path, manifest, git_credentials, build_context, deployment_id)
-
             if config.verify_manifest_consistency and not build_context:
-                verify_manifest_consistency(manifest.origin_yaml_, workspace, repo_dir)
+                if warnings := verify_manifest_consistency(manifest.origin_yaml_, workspace, repo_dir):
+                    update_deployment_warnings(config, deployment_id, warnings)
 
             (workspace / 'job.yaml').write_text(manifest.origin_yaml_)
 
@@ -80,7 +81,6 @@ def build_job_image(
             with phase_context('cleaning up the workspace', metric_labels, deployment_id, config):
                 if repo_dir.exists():
                     shutil.rmtree(repo_dir)
-
         update_deployment_phase(config, deployment_id, 'finalizing the build')
         logger.info(f'finished building an image {manifest.name} {manifest.version}, deployment ID: {deployment_id}, '
                     f'logs size: {len(logs)} bytes, image names: {image_names}')

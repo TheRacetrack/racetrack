@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and the duration of fetching Job data from the database.
   To improve logging, Lifecycle now displays more details about cancelled requests.
   ([#472](https://github.com/TheRacetrack/racetrack/issues/472))
+- Support deployment warnings, such as [#452](https://github.com/TheRacetrack/racetrack/issues/452).
+  Internal racetrack components can now send "log" warnings for a deployment.
+  ([#473](https://github.com/TheRacetrack/racetrack/issues/473))
 
 ### Changed
 - The Pub-Lifecycle client now has a timeout of 30 seconds.

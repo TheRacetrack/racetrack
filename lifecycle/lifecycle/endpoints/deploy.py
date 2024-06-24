@@ -9,7 +9,7 @@ from lifecycle.config import Config
 from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.builder import build_job_in_background
 from lifecycle.deployer.deploy import deploy_job_in_background
-from lifecycle.job.deployment import check_deployment_result, save_deployment_phase, list_recent_deployments
+from lifecycle.job.deployment import check_deployment_result, save_deployment_phase, list_recent_deployments, save_deployment_warnings
 from lifecycle.server.metrics import metric_requested_job_deployments
 from racetrack_commons.plugin.engine import PluginEngine
 from racetrack_client.client.env import load_secret_vars_from_dict
@@ -125,4 +125,14 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
     def _update_deployment_phase(deploy_id: str, payload: DeploymentPhase, request: Request):
         """Update deployment's phase"""
         check_auth(request)
-        return save_deployment_phase(deploy_id, payload.phase)
+        save_deployment_phase(deploy_id, payload.phase)
+
+
+    class DeploymentWarnings(BaseModel):
+        warnings: str = Field(description='deployment warnings')
+
+    @api.put('/deploy/{deploy_id}/warnings')
+    def _update_deployment_warnings(deploy_id: str, payload: DeploymentWarnings, request: Request):
+        """Update deployment's warnings"""
+        check_auth(request)
+        save_deployment_warnings(deploy_id, payload.warnings)

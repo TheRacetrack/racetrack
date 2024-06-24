@@ -55,6 +55,7 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         update_time=datetime_to_timestamp(model.update_time),
         job_name=model.job_name,
         job_version=model.job_version,
+        warnings=model.warnings
     )
 
 
