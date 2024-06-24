@@ -78,7 +78,7 @@ func NewMasterLifecycleClient(
 		authToken:     authToken,
 		internalToken: internalToken,
 		httpClient: &http.Client{
-			Timeout:   10 * time.Second,
+			Timeout:   30 * time.Second,
 			Transport: defaultLifecycleTransport,
 		},
 		requestTracingHeader: requestTracingHeader,

@@ -29,7 +29,7 @@ def populate_database_settings(base_dir: Path) -> Dict[str, Dict]:
             'NAME': base_dir / 'db.sqlite3',
         },
         'postgres': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'lifecycle.django.database',  # subclass of django.db.backends.postgresql
             'NAME': database_name,
             'USER': os.environ.get('POSTGRES_USER'),
             'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),

@@ -1,5 +1,6 @@
 import os
 
+import anyio
 import django
 from django.db import connections
 import socketio
@@ -86,6 +87,12 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
     if event_stream_server is None:
         event_stream_server = EventStreamServer(config)
 
+    async def on_startup() -> None:
+        if config.http_worker_thread_pool:
+            logger.debug(f'Setting HTTP thread pool to {config.http_worker_thread_pool} threads')
+            limiter = anyio.to_thread.current_default_thread_limiter()
+            limiter.total_tokens = config.http_worker_thread_pool
+
     dispatcher = AsgiDispatcher({
         '/admin': django_app,
         base_url + '/admin': django_app,
@@ -94,7 +101,7 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
         '/socket.io': WSGIMiddleware(sio_wsgi_app),
         base_url + '/socket.io': WSGIMiddleware(sio_wsgi_app),
         '/lifecycle/websocket/events': event_stream_server.asgi_app,
-    }, default=proxy)
+    }, default=proxy, on_startup=on_startup)
 
     return dispatcher
 

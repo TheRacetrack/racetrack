@@ -3,7 +3,7 @@ import threading
 from typing import Iterator
 
 import psutil
-from prometheus_client import Counter, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 from prometheus_client.core import REGISTRY
 from prometheus_client.metrics_core import GaugeMetricFamily, Metric
 from prometheus_client.registry import Collector
@@ -33,6 +33,30 @@ metric_event_stream_client_connected = Gauge(
 metric_event_stream_client_disconnected = Gauge(
     "lifecycle_event_stream_client_disconnected",
     "Total number of disconnections from the event stream",
+)
+
+metric_database_connection_opened = Counter(
+    'lifecycle_database_connection_opened',
+    'Number of attempts to open a connection to a database (successful or failed)',
+)
+metric_database_connection_failed = Counter(
+    'lifecycle_database_connection_failed',
+    'Number of times connection to a database has failed',
+)
+metric_database_connection_closed = Counter(
+    'lifecycle_database_connection_closed',
+    'Number of times connection to a database has been closed',
+)
+metric_database_cursor_created = Counter(
+    'lifecycle_database_cursor_created',
+    'Number of times database cursor has been created',
+)
+
+metric_job_model_fetch_duration = Histogram(
+    'lifecycle_job_model_fetch_duration',
+    'Duration of fetching Job model from a database in seconds',
+    buckets=(.001, .0025, .005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5,
+             10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, float("inf")),
 )
 
 
@@ -67,12 +91,24 @@ def collect_active_threads_metric() -> Iterator[Metric]:
 
 
 def collect_tcp_connections_metric() -> Iterator[Metric]:
+    net_connections = psutil.net_connections(kind='tcp')
+    tcp_connections = collections.Counter(conn.status for conn in net_connections)
     metric_name = 'lifecycle_tcp_connections_count'
-    tcp_connections = collections.Counter(p.status for p in psutil.net_connections(kind='tcp'))
     prometheus_metric = GaugeMetricFamily(metric_name, 'Number of open TCP connections by status')
     for status, count in tcp_connections.items():
         prometheus_metric.add_sample(metric_name, {
             'status': status,
+        }, count)
+    yield prometheus_metric
+
+    max_remote_port = 10000
+    remote_ports = [c.raddr.port for c in net_connections if c.status == 'ESTABLISHED' and c.raddr.port < max_remote_port]
+    established_port_conns = collections.Counter(remote_ports)
+    metric_name = 'lifecycle_established_connections_count'
+    prometheus_metric = GaugeMetricFamily(metric_name, f'Number of Established TCP connections by remote port (below {max_remote_port})')
+    for port, count in established_port_conns.items():
+        prometheus_metric.add_sample(metric_name, {
+            'port': str(port),
         }, count)
     yield prometheus_metric
 

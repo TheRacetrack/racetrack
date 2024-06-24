@@ -9,7 +9,10 @@ from django.db.backends.utils import CursorWrapper
 
 from racetrack_client.utils.shell import shell, CommandError
 from racetrack_client.log.exception import log_exception
+from racetrack_client.log.logs import get_logger
 from lifecycle.config import Config
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -48,8 +51,10 @@ def is_database_connected() -> bool:
             cursor.execute('SELECT 1')
         return True
     except CommandError:
+        logger.error('Connection to database failed (pg_isready failed)')
         return False
-    except DatabaseError:
+    except DatabaseError as e:
+        logger.error(f'Connection to database failed (DatabaseError): {e}')
         return False
     except BaseException as e:
         log_exception(e)

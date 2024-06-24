@@ -1,7 +1,8 @@
 import time
 
 from fastapi import FastAPI, Request, Response
-from starlette.types import ASGIApp, Receive, Scope, Send
+import anyio
+from starlette.types import ASGIApp, Receive, Scope, Send, Message
 
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import HIDDEN_ACCESS_LOGS
@@ -25,27 +26,23 @@ HIDDEN_REQUEST_LOGS = {
 
 def enable_request_access_log(fastapi_app: FastAPI):
     """Log every incoming request right after it's received with its Tracing ID"""
-    tracing_header = get_tracing_header_name()
-    caller_header = get_caller_header_name()
+    fastapi_app.add_middleware(RequestAccessLogMiddleware)
 
-    fastapi_app.add_middleware(RequestAccessLogMiddleware, tracing_header=tracing_header, caller_header=caller_header)
+
+def enable_response_access_log(fastapi_app: FastAPI):
+    """Log every response right after it's finished with its status code and Tracing ID"""
+    fastapi_app.add_middleware(ResponseAccessLogMiddleware)
 
 
 class RequestAccessLogMiddleware:
-    def __init__(
-        self,
-        app: ASGIApp,
-        tracing_header: str = '',
-        caller_header: str = '',
-    ) -> None:
+    def __init__(self, app: ASGIApp) -> None:
         self.app: ASGIApp = app
-        self.tracing_header: str = tracing_header
-        self.caller_header: str = caller_header
+        self.tracing_header: str = get_tracing_header_name()
+        self.caller_header: str = get_caller_header_name()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
+            return await self.app(scope, receive, send)
 
         request = Request(scope=scope)
         tracing_id = request.headers.get(self.tracing_header)
@@ -62,50 +59,68 @@ class RequestAccessLogMiddleware:
         await self.app(scope, receive, send)
 
 
-def enable_response_access_log(fastapi_app: FastAPI):
-    tracing_header = get_tracing_header_name()
-    caller_header = get_caller_header_name()
+class ResponseAccessLogMiddleware:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app: ASGIApp = app
+        self.tracing_header: str = get_tracing_header_name()
+        self.caller_header: str = get_caller_header_name()
 
-    @fastapi_app.middleware('http')
-    async def access_log(request: Request, call_next) -> Response:
-        metric_requests_started.inc()
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        request = Request(scope=scope)
+        method = request.method
+        uri = str(request.url.replace(scheme='', netloc=''))
         start_time = time.time()
+
+        async def send_extra(message: Message):
+            if message["type"] == "http.response.start":
+                if await is_request_disconnected(receive):
+                    return await self.end_cancelled_request(scope, receive, send, request, method, uri, start_time)
+
+                response_code: int = message['status']
+                log_line = f'{method} {uri} {response_code}'
+
+                if log_line not in HIDDEN_ACCESS_LOGS:
+                    request_logger = RequestTracingLogger(logger, {
+                        'tracing_id': request.headers.get(self.tracing_header),
+                        'caller_name': request.headers.get(self.caller_header),
+                    })
+                    request_logger.info(log_line)
+
+            await send(message)
+
+        metric_requests_started.inc()
         try:
-            response: Response = await call_next(request)
+            await self.app(scope, receive, send_extra)
+
         except RuntimeError as exc:
             if str(exc) == 'No response returned.':
-                if await request.is_disconnected():
-                    tracing_id = request.headers.get(tracing_header)
-                    method = request.method
-                    uri = request.url.replace(scheme='', netloc='')
-                    if tracing_id is not None:
-                        logger.error(f"[{tracing_id}] Request cancelled by the client: {method} {uri}")
-                    else:
-                        logger.error(f"Request cancelled by the client: {method} {uri}")
-                    return Response(status_code=204)  # No Content
+                if await is_request_disconnected(receive):
+                    return await self.end_cancelled_request(scope, receive, send, request, method, uri, start_time)
             raise
         finally:
             metric_request_duration.observe(time.time() - start_time)
             metric_requests_done.inc()
 
-        if await request.is_disconnected():
-            method = request.method
-            uri = request.url.replace(scheme='', netloc='')
-            logger.error(f"Request cancelled by the client: {method} {uri}")
-            return Response(status_code=204)  # No Content
+    async def end_cancelled_request(self, scope: Scope, receive: Receive, send: Send,
+                                    request: Request, method: str, uri: str, start_time: float):
+        request_logger = RequestTracingLogger(logger, {
+            'tracing_id': request.headers.get(self.tracing_header),
+            'caller_name': request.headers.get(self.caller_header),
+        })
+        duration = time.time() - start_time
+        request_logger.warning(f"Request cancelled by the client: {method} {uri}, {duration:.3f}s")
+        response = Response(status_code=204)  # No Content
+        return await response(scope, receive, send)
 
-        method = request.method
-        uri = request.url.replace(scheme='', netloc='')
-        response_code = response.status_code
-        log_line = f'{method} {uri} {response_code}'
 
-        if log_line not in HIDDEN_ACCESS_LOGS:
-            tracing_id = request.headers.get(tracing_header)
-            caller_name = request.headers.get(caller_header)
-            request_logger = RequestTracingLogger(logger, {
-                'tracing_id': tracing_id,
-                'caller_name': caller_name,
-            })
-            request_logger.info(log_line)
-
-        return response
+async def is_request_disconnected(receive: Receive) -> bool:
+    # If message isn't immediately available, move on
+    with anyio.CancelScope() as cs:
+        cs.cancel()
+        message = await receive()
+        if message.get("type") == "http.disconnect":
+            return True
+    return False

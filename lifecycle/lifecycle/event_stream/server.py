@@ -17,6 +17,7 @@ from lifecycle.config import Config
 from lifecycle.job.registry import list_job_registry
 from lifecycle.server.metrics import metric_event_stream_client_connected, metric_event_stream_client_disconnected
 from racetrack_client.log.logs import get_logger
+from racetrack_client.log.exception import log_exception
 from racetrack_commons.entities.dto import JobDto
 
 logger = get_logger(__name__)
@@ -65,17 +66,20 @@ class EventStreamServer:
     def watch_database_events(self):
         logger.debug('Starting watcher thread in Event Stream')
         last_jobs: dict[str, JobDto] | None = None
-        while len(self.clients) > 0:
+        try:
+            while len(self.clients) > 0:
 
-            jobs = list_job_registry(self.config)
-            current_jobs: dict[str, JobDto] = {job.id: job for job in jobs}
-            if last_jobs is not None and current_jobs != last_jobs:
-                logger.debug(f'Detected change in job models')
-                self.notify_clients({
-                    'event': 'job_models_changed',
-                })
-            last_jobs = current_jobs
+                jobs = list_job_registry(self.config)
+                current_jobs: dict[str, JobDto] = {job.id: job for job in jobs}
+                if last_jobs is not None and current_jobs != last_jobs:
+                    logger.debug(f'Detected change in job models')
+                    self.notify_clients({
+                        'event': 'job_models_changed',
+                    })
+                last_jobs = current_jobs
 
-            time.sleep(self.config.job_watcher_interval)
+                time.sleep(self.config.job_watcher_interval)
+        except BaseException as e:
+            log_exception(e)
 
         logger.debug('Event Stream watcher thread stopped')

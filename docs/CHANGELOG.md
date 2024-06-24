@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Lifecycle now provides more metrics to monitor its health.
+  In particular, it tracks the number of established database connections
+  and the duration of fetching Job data from the database.
+  To improve logging, Lifecycle now displays more details about cancelled requests.
+  ([#472](https://github.com/TheRacetrack/racetrack/issues/472))
+
+### Changed
+- The Pub-Lifecycle client now has a timeout of 30 seconds.
+- The HTTP thread pool of Lifecycle has been increased to 60 threads.
+  This setting is configurable through the config file.
 
 ## [2.30.0] - 2024-06-10
 ### Added
