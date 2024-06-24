@@ -73,6 +73,10 @@ class Config(BaseModel):
     # Maximum number of seconds to wait until the job is ready (initialized)
     timeout_until_job_ready: int = 10 * 60
 
+    # Number of threads in thread pool of HTTP worker - maximum number of concurrent requests
+    # By default, there are 40 threads available in the thread pool in FastAPI/anyio.
+    http_worker_thread_pool: Optional[int] = 60
+
     @field_validator(
         'max_job_memory_limit',
         'default_job_memory_min',

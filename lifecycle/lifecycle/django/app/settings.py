@@ -4,7 +4,7 @@ import warnings
 
 from django.utils.deprecation import RemovedInDjango50Warning
 
-from racetrack_commons.database.database import populate_database_settings
+from lifecycle.django.database.database import populate_database_settings
 from racetrack_client.utils.env import is_env_flag_enabled
 
 warnings.filterwarnings(action='ignore', category=RemovedInDjango50Warning)

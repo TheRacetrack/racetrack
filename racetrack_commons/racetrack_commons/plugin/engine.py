@@ -61,8 +61,7 @@ class PluginEngine:
         results = []
         for plugin_data in self.plugins_data:
             if hasattr(plugin_data.plugin_instance, function_name):
-                with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
-                                  log_debug=True):
+                with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}'):
                     result = getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
                     results.append(result)
         return results
@@ -78,8 +77,7 @@ class PluginEngine:
         function_name = function.__name__
         plugin_data = self.find_plugin(plugin_name)
         if hasattr(plugin_data.plugin_instance, function_name):
-            with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
-                              log_debug=True):
+            with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}'):
                 return getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
         else:
             logger.warning(f'Plugin {plugin_name} does not have hook {function_name}')
@@ -95,8 +93,7 @@ class PluginEngine:
         """
         function_name = function.__name__
         if hasattr(plugin_data.plugin_instance, function_name):
-            with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
-                              log_debug=True):
+            with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}'):
                 return getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
         else:
             return None
@@ -113,8 +110,7 @@ class PluginEngine:
         results: list[tuple[PluginData, Any]] = []
         for plugin_data in self.plugins_data:
             if hasattr(plugin_data.plugin_instance, function_name):
-                with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}',
-                                  log_debug=True):
+                with wrap_context(f'Invoking hook "{function_name}" of plugin {plugin_data.plugin_manifest.name} {plugin_data.plugin_manifest.version}'):
                     result = getattr(plugin_data.plugin_instance, function_name)(*args, **kwargs)
                     results.append((plugin_data, result))
         return results

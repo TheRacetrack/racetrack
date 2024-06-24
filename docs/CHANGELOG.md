@@ -6,9 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Support deployment warnings, such as ([#452](https://github.com/TheRacetrack/racetrack/issues/452)).
+- Lifecycle now provides more metrics to monitor its health.
+  In particular, it tracks the number of established database connections
+  and the duration of fetching Job data from the database.
+  To improve logging, Lifecycle now displays more details about cancelled requests.
+  ([#472](https://github.com/TheRacetrack/racetrack/issues/472))
+- Support deployment warnings, such as [#452](https://github.com/TheRacetrack/racetrack/issues/452).
   Internal racetrack components can now send "log" warnings for a deployment.
   ([#473](https://github.com/TheRacetrack/racetrack/issues/473))
+
+### Changed
+- The Pub-Lifecycle client now has a timeout of 30 seconds.
+- The HTTP thread pool of Lifecycle has been increased to 60 threads.
+  This setting is configurable through the config file.
+
 ## [2.30.0] - 2024-06-10
 ### Added
 - Submitted manifest YAML is compared with the one in the job's repository.

@@ -1,3 +1,4 @@
+import time
 from typing import Iterable, List, Optional
 
 from django.db.utils import IntegrityError
@@ -6,6 +7,7 @@ import yaml
 from lifecycle.auth.subject import get_auth_subject_by_job_family
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
+from lifecycle.server.metrics import metric_job_model_fetch_duration
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.manifest.load import load_manifest_from_dict
@@ -60,12 +62,16 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Job:
     :param job_version: Exact job version or an alias ("latest" or wildcard)
     :return: Job database model
     """
-    if job_version == 'latest':
-        return read_latest_job_model(job_name)
-    elif SemanticVersionPattern.is_x_pattern(job_version):
-        return read_latest_wildcard_job_model(job_name, job_version)
-    else:
-        return read_job_model(job_name, job_version)
+    start_time = time.time()
+    try:
+        if job_version == 'latest':
+            return read_latest_job_model(job_name)
+        elif SemanticVersionPattern.is_x_pattern(job_version):
+            return read_latest_wildcard_job_model(job_name, job_version)
+        else:
+            return read_job_model(job_name, job_version)
+    finally:
+        metric_job_model_fetch_duration.observe(time.time() - start_time)
 
 
 @db_access
