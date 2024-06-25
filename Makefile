@@ -203,15 +203,16 @@ docker-build:
 docker-build-stress:
 	$(docker-compose) -f tests/stress/docker-compose.stress.yaml build
 
-docker-push: docker-build
+docker-push-private: docker-build
 	docker login ${DOCKER_REGISTRY}
-	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:${TAG})
+	docker buildx build -t ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:${TAG} -f lifecycle/private.Dockerfile lifecycle
+	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:${TAG}
 	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/image-builder:${TAG})
 	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/dashboard:${TAG})
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pub:${TAG})
 	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:${TAG})
 
-docker-push-github: docker-build
+docker-push-public: docker-build
 	docker login ghcr.io
 	docker push ${GHCR_PREFIX}/lifecycle:latest
 	docker push ${GHCR_PREFIX}/image-builder:latest
@@ -293,12 +294,12 @@ version-current:
 	./utils/version_bumper.py --current
 
 # First line is needed to reload newest TAG value
-version-release: TAG = $(shell ./utils/version_bumper.py --current)
-version-release: docker-push
+version-release-private: TAG = $(shell ./utils/version_bumper.py --current)
+version-release-private: docker-push-private
 	@echo "Racetrack version $(TAG) is released to registry ${DOCKER_REGISTRY}"
 
-version-release-github: TAG = $(shell ./utils/version_bumper.py --current)
-version-release-github: docker-push-github
+version-release-public: TAG = $(shell ./utils/version_bumper.py --current)
+version-release-public: docker-push-public
 	@echo "Racetrack version $(TAG) is released to registry ghcr.io"
 
 template-local-env:

@@ -18,7 +18,7 @@ Do the following in order to apply your changes to your cluster:
 In racetrack repository:
 
 1. Increment version `make version-bump MR=123`, where `123` is the id of your merge request.
-1. Build & push docker images by running: `make version-release`.
+1. Build & push docker images by running: `make version-release-private`.
 
 In racetrack-config repository:
 
@@ -75,5 +75,5 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
    ```
 1. Build & push docker images by running:
    ```
-   make version-release version-release-github
+   make version-release-private version-release-public
    ```
