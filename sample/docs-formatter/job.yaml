@@ -1,0 +1,13 @@
+name: docs-formatter
+owner_email: sample@example.com
+jobtype: python3:latest
+version: 0.0.2
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/docs-formatter
+
+jobtype_extra:
+  requirements_path: 'requirements.txt'
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'JobEntrypoint'

@@ -1,0 +1,16 @@
+name: python-logging-format
+version: 0.0.1
+owner_email: sample@example.com
+lang: python3:latest
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/python-logging-format
+
+python:
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'JobEntrypoint'
+
+runtime_env:
+  LOG_STRUCTURED: 'true'
+  LOG_CALLER_NAME: 'true'
