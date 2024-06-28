@@ -1,0 +1,9 @@
+apiVersion: 1
+
+orgs:
+  - name: Main Org.
+    orgId: 1
+  - name: Sub Org 1
+    orgId: 2
+  - name: Sub Org 2
+    orgId: 3

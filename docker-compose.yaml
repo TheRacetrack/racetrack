@@ -25,8 +25,8 @@ services:
       CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
     command: >
       bash -c "
-      /src/lifecycle/wait-for-postgres.sh && 
-      /src/lifecycle/wait-for-migration.sh && 
+      /src/lifecycle/wait-for-postgres.sh &&
+      /src/lifecycle/wait-for-migration.sh &&
       python -u -m lifecycle serve"
     stdin_open: true
     tty: true
@@ -56,8 +56,8 @@ services:
       CONFIG_FILE: /etc/racetrack/lifecycle/config.yaml
     command: >
       bash -c "
-      /src/lifecycle/wait-for-postgres.sh && 
-      /src/lifecycle/lifecycle/django/migrate.sh && 
+      /src/lifecycle/wait-for-postgres.sh &&
+      /src/lifecycle/lifecycle/django/migrate.sh &&
       python -u -m lifecycle supervisor"
     stdin_open: true
     tty: true
@@ -194,7 +194,7 @@ services:
       DOCKER_TLS_CERTDIR: ''
     logging:
       driver: none
-  
+
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:v0.14.0
     container_name: postgres-exporter
@@ -217,7 +217,7 @@ services:
       - racetrack_default
     restart: unless-stopped
     user: '65534:65534'
-    command: 
+    command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
       - '--storage.tsdb.retention.time=60d'
     volumes:
@@ -227,7 +227,7 @@ services:
       driver: none
 
   grafana:
-    image: grafana/grafana:10.4.4
+    image: grafana/grafana:11.1.0
     container_name: grafana
     ports:
       - "3100:3000"
@@ -238,6 +238,7 @@ services:
     volumes:
       - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
+      - ./utils/grafana/alerting/:/etc/grafana/provisioning/alerting
       - ./utils/grafana/dashboards/:/var/lib/grafana/dashboards
     environment:
       - GF_AUTH_BASIC_ENABLED=false
