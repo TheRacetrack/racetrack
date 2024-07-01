@@ -1,57 +1,10 @@
+# See https://grafana.com/docs/grafana/latest/alerting/set-up/provision-alerting-resources/file-provisioning/
 apiVersion: 1
-muteTimes:
-    - orgId: 1
-      name: weekends
-      time_intervals:
-        - weekdays: [saturday, sunday]
 
-policies:
-    - orgId: 1
-      receiver: Email Contact Point1 # default receiver
-      routes:
-        - receiver: Email Contact Point1
-          object_matchers:
-            - [label_server, =, name_serverMcServerFace]
-          mute_time_intervals:
-            - weekends
-        - receiver: Email Contact Point2
-          object_matchers:
-            - - label_server
-              - =
-              - name_serverMcServerFace2
+muteTimes: []
 
-contactPoints:
-    - orgId: 1
-      name: Email Contact Point1
-      receivers:
-        - uid: unique_email_contact_point1_uid
-          type: email
-          settings:
-            addresses: your_email@company.org
-            message: '{{ template "custom_email.message" .}}'
-            singleEmail: false
-            subject: '{{ template "custom_email.subject" .}}'
-          disableResolveMessage: false
-    - orgId: 1
-      name: Email Contact Point2
-      receivers:
-        - uid: unique_email_contact_point2_uid
-          type: email
-          settings:
-            addresses: your_email@company.org
-            message: 'hi'
+policies: []
 
+contact_points: []
 
-templates:
-    - orgId: 1
-      name: custom_email.message
-      template: |
-        {{ define "custom_email.message" }}
-          hello fom custom alert
-        {{ end }}
-    - orgId: 1
-      name: custom_email.subject
-      template: |
-        {{ define "custom_email.subject" }}
-        {{ len .Alerts.Firing }} firing alert(s), {{ len .Alerts.Resolved }} resolved alert(s)
-        {{ end }}
+templates: []
