@@ -45,3 +45,5 @@ configMapGenerator:
     files:
       - datasource.yml=config/grafana/datasource.yaml
       - all.yml=config/grafana/dashboards-all.yaml
+      - alert-resources.yml=config/grafana/alerting/alert-resources.yaml
+      - alert-rules.yml=config/grafana/alerting/alert-rules.yaml
