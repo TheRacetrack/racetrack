@@ -238,8 +238,8 @@ services:
     volumes:
       - ./utils/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./utils/grafana/dashboards-all.yaml:/etc/grafana/provisioning/dashboards/all.yml
-      - ./utils/grafana/alerting/:/etc/grafana/provisioning/alerting
       - ./utils/grafana/dashboards/:/var/lib/grafana/dashboards
+      - ./utils/grafana/alerting/:/etc/grafana/provisioning/alerting
     environment:
       - GF_AUTH_BASIC_ENABLED=false
       - GF_AUTH_ANONYMOUS_ENABLED=true

@@ -18,7 +18,7 @@ spec:
       priorityClassName: high-priority
       containers:
         - name: grafana
-          image: grafana/grafana:10.1.4
+          image: grafana/grafana:11.1.0
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
@@ -37,6 +37,8 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-dashboards
               mountPath: /var/lib/grafana/dashboards
+            - name: grafana-config-alerting
+              mountPath: /etc/grafana/provisioning/alerting
       volumes:
         - name: grafana-config-datasources
           configMap:
@@ -53,6 +55,14 @@ spec:
         - name: grafana-dashboards
           hostPath:
             path: /src/utils/grafana/dashboards
+        - name: grafana-config-alerting
+          configMap:
+            name: grafana-config
+            items:
+            - key: alert-resources.yml
+              path: alert-resources.yml
+            - key: alert-rules.yml
+              path: alert-rules.yml
 
 ---
 apiVersion: v1
