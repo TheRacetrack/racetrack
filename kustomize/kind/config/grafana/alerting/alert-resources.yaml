@@ -1,14 +1,13 @@
-# See https://grafana.com/docs/grafana/latest/alerting/set-up/provision-alerting-resources/file-provisioning/
 apiVersion: 1
 
 muteTimes:
-- orgId: 1
-  name: no_weekends
-  time_intervals:
-    - weekdays: [saturday, sunday]
+    - orgId: 1
+      name: no_weekends
+      time_intervals:
+        - weekdays: [saturday, sunday]
 
 policies: []
 
-contact_points: []
+contactPoints: []
 
 templates: []
