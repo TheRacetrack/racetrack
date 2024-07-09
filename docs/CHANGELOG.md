@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Pub-Lifecycle client now has a timeout of 30 seconds.
 - The HTTP thread pool of Lifecycle has been increased to 60 threads.
   This setting is configurable through the config file.
+- Jobs are no longer deleted on unsuccessful, retried deployment.
+  ([#491](https://github.com/TheRacetrack/racetrack/issues/491))
 
 ## [2.30.0] - 2024-06-10
 ### Added
