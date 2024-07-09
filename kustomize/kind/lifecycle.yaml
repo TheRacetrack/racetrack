@@ -30,6 +30,11 @@ spec:
                         - lifecycle
                 topologyKey: kubernetes.io/hostname
       serviceAccountName: null
+      securityContext:
+        supplementalGroups: [200000]
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
       priorityClassName: high-priority
       initContainers:
         - name: init-django-db
