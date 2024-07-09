@@ -30,7 +30,7 @@ func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	statusCode, err := handleProxyRequest(c, cfg, logger, requestId, jobPath, startTime)
 	if err != nil {
-		metricJobProxyRequestErros.Inc()
+		metricJobProxyRequestErrors.Inc()
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
 			"status":   statusCode,
@@ -90,6 +90,7 @@ func handleProxyRequest(
 			})
 			return statusCode, nil
 		}
+		metricLifecycleErrors.Inc()
 		return statusCode, err
 	}
 

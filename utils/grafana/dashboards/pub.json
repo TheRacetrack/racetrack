@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 5,
+  "id": 3,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -257,6 +257,7 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
+      "description": "rate of error types per second",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -322,7 +323,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "last"
+            "max"
           ],
           "displayMode": "table",
           "placement": "right",
@@ -346,7 +347,7 @@
           "expr": "sum(irate(pub_job_proxy_errors[$__rate_interval]))",
           "hide": false,
           "interval": "",
-          "legendFormat": "reverse proxy errors",
+          "legendFormat": "job forwarding errors",
           "range": true,
           "refId": "C"
         },
@@ -360,12 +361,77 @@
           "expr": "sum(irate(pub_job_proxy_request_errors[$__rate_interval]))",
           "hide": false,
           "interval": "",
-          "legendFormat": "proxy request errors",
+          "legendFormat": "overall request errors",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(pub_lifecycle_errors[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "lifecycle API errors",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(pub_job_proxy_connection_broken_errors[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "job forward: connection broken (job died)",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(pub_job_proxy_connection_refused_errors[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "job forward: connection refused (dead job)",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(pub_job_proxy_context_canceled_errors[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "job forward: context canceled (client timeout)",
+          "range": true,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(pub_job_proxy_context_deadline_errors[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "job forward: context deadline (timeout to job)",
+          "range": true,
+          "refId": "G"
         }
       ],
-      "title": "Errors",
+      "title": "Errors rate",
       "type": "timeseries"
     },
     {
@@ -766,8 +832,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -896,8 +961,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1035,8 +1099,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1169,8 +1232,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1299,8 +1361,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1410,8 +1471,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
