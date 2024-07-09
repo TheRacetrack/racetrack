@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -76,6 +77,7 @@ func handleMasterProxyRequest(
 	jobCall *JobCallAuthData,
 	job *JobDetails,
 	callerName string,
+	startTime time.Time,
 ) (int, error) {
 	gatewayUrlTxt := *jobCall.RemoteGatewayUrl
 	gatewayUrl, err := url.Parse(gatewayUrlTxt)
@@ -107,7 +109,7 @@ func handleMasterProxyRequest(
 		"jobInternalName":      job.InternalName,
 	})
 
-	ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName)
+	ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName, startTime)
 	return http.StatusOK, nil
 }
 
