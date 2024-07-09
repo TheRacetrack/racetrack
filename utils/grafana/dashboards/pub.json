@@ -347,7 +347,7 @@
           "expr": "sum(irate(pub_job_proxy_errors[$__rate_interval]))",
           "hide": false,
           "interval": "",
-          "legendFormat": "job forwarding errors",
+          "legendFormat": "total job forwarding errors",
           "range": true,
           "refId": "C"
         },
@@ -832,7 +832,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -911,7 +912,7 @@
           "refId": "B"
         }
       ],
-      "title": "Response codes rate",
+      "title": "Job Response codes rate",
       "type": "timeseries"
     },
     {
@@ -961,7 +962,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1023,7 +1025,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total response codes",
+      "title": "Total job response codes",
       "type": "timeseries"
     },
     {
@@ -1099,7 +1101,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1232,7 +1235,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1361,7 +1365,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1471,7 +1476,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1612,7 +1618,7 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -1633,6 +1639,6 @@
   "timezone": "",
   "title": "PUB",
   "uid": "Ya0SU7Lnk",
-  "version": 3,
+  "version": 5,
   "weekStart": ""
 }
