@@ -24,7 +24,8 @@ def schedule_tasks_sync(config: Config, plugin_engine: PluginEngine):
 
 def _schedule_tasks(config: Config, plugin_engine: PluginEngine):
     schedule.every(1).minutes.do(sync_registry_jobs, config=config, plugin_engine=plugin_engine)
-    schedule.every(10).minutes.do(reconcile_jobs, config=config, plugin_engine=plugin_engine)
+    if config.reconciliation_loop:
+        schedule.every(10).minutes.do(reconcile_jobs, config=config, plugin_engine=plugin_engine)
     schedule.every(1).minutes.do(populate_metrics_jobs, config=config)
     schedule.every(1).hours.do(clean_up_async_job_calls, config=config)
 
