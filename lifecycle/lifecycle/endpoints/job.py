@@ -13,6 +13,7 @@ from lifecycle.job.ansi import strip_ansi_colors
 from lifecycle.job.graph import build_job_dependencies_graph
 from lifecycle.job.models_registry import update_job_manifest
 from lifecycle.job.portfolio import enrich_jobs_purge_info
+from lifecycle.job.reconcile import reconcile_jobs
 from lifecycle.job.registry import (
     delete_job,
     list_job_families,
@@ -174,3 +175,10 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         ensure_no_maintenance()
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         delete_async_job_call(call_id)
+
+    @api.post('/job/all/reconcile')
+    def _reconcile_all_jobs(request: Request):
+        """Run reconciliation for all lost jobs"""
+        ensure_no_maintenance()
+        check_auth(request, scope=AuthScope.CALL_ADMIN_API)
+        reconcile_jobs(config, plugin_engine)

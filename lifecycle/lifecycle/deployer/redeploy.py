@@ -77,7 +77,7 @@ def reprovision_job(
             provision_job(
                 config, manifest, job.image_tag, job_secrets.secret_build_env,
                 job_secrets.secret_runtime_env, deployment,
-                auth_subject, None, plugin_engine,
+                auth_subject, job, plugin_engine,
             )
 
         save_deployment_result(deployment.id, DeploymentStatus.DONE)

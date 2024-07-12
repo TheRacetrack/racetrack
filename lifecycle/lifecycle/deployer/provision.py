@@ -103,7 +103,8 @@ def provision_job(
         try:
             check_job_condition(job, on_job_alive)
         except BaseException as e:
-            roll_back_unsuccessful_deployment(job, deployment)
+            if previous_job is None:
+                roll_back_unsuccessful_deployment(job, deployment)
             raise e
 
     with wrap_context('invoking post-deploy actions'):

@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Reconciliation loop is now turned off by default. It can be enabled in configuration, if needed.
+  Instead, reconciliation can be triggered manually through the Dashboard, at Administration tab.
+  ([#497](https://github.com/TheRacetrack/racetrack/issues/497))
+- Jobs are no longer deleted on unsuccessful, retried deployment.
+  ([#491](https://github.com/TheRacetrack/racetrack/issues/491))
+
+## [2.31.0] - 2024-07-09
 ### Added
 - Lifecycle now provides more metrics to monitor its health.
   In particular, it tracks the number of established database connections
@@ -20,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The HTTP thread pool of Lifecycle has been increased to 60 threads.
   This setting is configurable through the config file.
 
+### Fixed
+- Fix portfolio UI sorting bug.
+  ([#479](https://github.com/TheRacetrack/racetrack/issues/479))
+
 ## [2.30.0] - 2024-06-10
 ### Added
 - Submitted manifest YAML is compared with the one in the job's repository.
@@ -31,10 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#77](https://github.com/TheRacetrack/racetrack/issues/77))
 - Plugins added to racetrack can now be downloaded via the CLI or the admin interface.
   ([#451](https://github.com/TheRacetrack/racetrack/issues/451))
-
-### Fixed
-- Fix portfolio UI sorting bug.
-  ([#479](https://github.com/TheRacetrack/racetrack/issues/479))
 
 ### Changed
 - The `job_types` method's format for plugins has been changed

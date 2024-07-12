@@ -77,6 +77,10 @@ class Config(BaseModel):
     # By default, there are 40 threads available in the thread pool in FastAPI/anyio.
     http_worker_thread_pool: Optional[int] = 60
 
+    # Whether reconciliation loop is enabled or not.
+    # Reconciliation loop is an automated, periodic process that restores missing jobs by re-provisioning them
+    reconciliation_loop: bool = False
+
     @field_validator(
         'max_job_memory_limit',
         'default_job_memory_min',
