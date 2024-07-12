@@ -364,7 +364,7 @@ function reconcileAllJobs() {
         </q-card-section>
         <q-card-section>
             <div class="row q-pt-sm">
-                <q-btn color="primary" push label="Reconcile all" icon="construction"
+                <q-btn color="primary" push label="Reconcile jobs" icon="construction"
                     @click="reconcileAllJobs" :loading="loading">
                     <q-tooltip>Re-provision all missing jobs</q-tooltip>
                 </q-btn>
