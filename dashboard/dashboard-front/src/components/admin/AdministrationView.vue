@@ -20,6 +20,7 @@ const lifecycleAdminUrl = computed(() => `${envInfo.lifecycle_url}/admin`)
 const jobTypeVersionsTreeRef: Ref<QTree | null> = ref(null)
 const infrastructureTargetsTreeRef: Ref<QTree | null> = ref(null)
 const replacePlugins: Ref<boolean> = ref(false)
+const loading = ref(false)
 
 interface PluginManifest {
     name: string
@@ -171,6 +172,16 @@ function stringToColour(str: string) {
     const colorIndex = (hash % badgeColors.length + badgeColors.length) % badgeColors.length
     return badgeColors[colorIndex]
 }
+
+function reconcileAllJobs() {
+    progressService.runLoading({
+        task: apiClient.post(`/api/v1/job/all/reconcile`, {}),
+        loadingState: loading,
+        progressMsg: `Reconciling jobs...`,
+        successMsg: `Reconciliation finished.`,
+        errorMsg: `Failed to reconcile jobs`,
+    })
+}
 </script>
 
 <template>
@@ -283,9 +294,6 @@ function stringToColour(str: string) {
                 </template>
             </q-tree>
         </q-card-section>
-        <q-card-section class="q-py-none">
-
-        </q-card-section>
     </q-card>
 
     <q-card class="q-my-lg">
@@ -347,6 +355,20 @@ function stringToColour(str: string) {
                 @uploaded="onPluginUploaded"
                 style="width: 100%"
                 />
+        </q-card-section>
+    </q-card>
+
+    <q-card class="q-my-lg">
+        <q-card-section class="q-pb-none">
+            <div class="text-h6">Maintenance</div>
+        </q-card-section>
+        <q-card-section>
+            <div class="row q-pt-sm">
+                <q-btn color="primary" push label="Reconcile jobs" icon="construction"
+                    @click="reconcileAllJobs" :loading="loading">
+                    <q-tooltip>Re-provision all missing jobs</q-tooltip>
+                </q-btn>
+            </div>
         </q-card-section>
     </q-card>
 </template>
