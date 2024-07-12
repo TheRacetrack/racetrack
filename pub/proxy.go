@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,18 +28,18 @@ func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	})
 
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleProxyRequest(c, cfg, logger, requestId, jobPath)
+	statusCode, err := handleProxyRequest(c, cfg, logger, requestId, jobPath, startTime)
 	if err != nil {
-		metricJobProxyRequestErros.Inc()
+		metricJobProxyRequestErrors.Inc()
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
-			"status": statusCode,
-			"error":  errorStr,
-			"path":   c.Request.URL.Path,
+			"status":   statusCode,
+			"error":    errorStr,
+			"path":     c.Request.URL.Path,
+			"duration": time.Since(startTime).String(),
 		})
 		c.JSON(statusCode, gin.H{
 			"error":     fmt.Sprintf("Proxy request error: %s", errorStr),
-			"status":    http.StatusText(statusCode),
 			"requestId": requestId,
 		})
 	}
@@ -49,6 +52,7 @@ func handleProxyRequest(
 	logger log.Logger,
 	requestId string,
 	jobPath string,
+	startTime time.Time,
 ) (int, error) {
 
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
@@ -73,19 +77,33 @@ func handleProxyRequest(
 
 	job, jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, cfg, requestId, jobName, jobVersion, jobPath)
 	if err != nil {
+		if statusCode == http.StatusNotFound {
+			logger.Warn("Job was not found", log.Ctx{
+				"status":   statusCode,
+				"error":    err.Error(),
+				"path":     c.Request.URL.Path,
+				"duration": time.Since(startTime).String(),
+			})
+			c.JSON(statusCode, gin.H{
+				"error":     fmt.Sprintf("Proxy request error: %s", err.Error()),
+				"requestId": requestId,
+			})
+			return statusCode, nil
+		}
+		metricLifecycleErrors.Inc()
 		return statusCode, err
 	}
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
 	if !cfg.RemoteGatewayMode && jobCall.RemoteGatewayUrl != nil {
-		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName)
+		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName, startTime)
 	}
 
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
 
-	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName, startTime)
 	return http.StatusOK, nil
 }
 
@@ -110,6 +128,7 @@ func ServeReverseProxy(
 	logger log.Logger,
 	requestId string,
 	callerName string,
+	startTime time.Time,
 ) {
 
 	director := func(req *http.Request) {
@@ -145,6 +164,7 @@ func ServeReverseProxy(
 			"jobPath":    target.Path,
 			"caller":     callerName,
 			"status":     res.StatusCode,
+			"duration":   time.Since(startTime).String(),
 		})
 		statusCode := strconv.Itoa(res.StatusCode)
 		metricJobProxyResponseCodes.WithLabelValues(job.Name, job.Version, statusCode).Inc()
@@ -152,7 +172,20 @@ func ServeReverseProxy(
 	}
 
 	errorHandler := func(res http.ResponseWriter, req *http.Request, err error) {
-		errorStr := err.Error()
+		metricJobProxyErrors.Inc()
+		if errors.Is(err, io.EOF) {
+			err = WrapError("connection broken to a target job (job may have died)", err)
+			metricJobProxyConnectionBrokenErrors.Inc()
+		} else if errors.Is(err, syscall.ECONNREFUSED) {
+			err = WrapError("connection refused to a target job (job may be dead)", err)
+			metricJobProxyConnectionRefusedErrors.Inc()
+		} else if errors.Is(err, context.Canceled) {
+			err = WrapError("client (or proxy timeout) canceled the request", err)
+			metricJobProxyContextCanceledErrors.Inc()
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			err = WrapError("request to a job timed out", err)
+			metricJobProxyContextDeadlineErrors.Inc()
+		}
 		logger.Error("Reverse proxy error", log.Ctx{
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
@@ -160,18 +193,17 @@ func ServeReverseProxy(
 			"caller":     callerName,
 			"host":       target.Host,
 			"path":       target.Path,
-			"error":      errorStr,
+			"error":      err.Error(),
+			"duration":   time.Since(startTime).String(),
 		})
 		c.JSON(http.StatusBadGateway, gin.H{
-			"error":      fmt.Sprintf("Reverse proxy error: %s", errorStr),
-			"status":     http.StatusText(http.StatusBadGateway),
+			"error":      fmt.Sprintf("Reverse proxy error: %s", err.Error()),
 			"jobName":    job.Name,
 			"jobVersion": job.Version,
 			"jobStatus":  job.Status,
 			"requestId":  requestId,
 			"caller":     callerName,
 		})
-		metricJobProxyErrors.Inc()
 	}
 
 	proxy := &httputil.ReverseProxy{

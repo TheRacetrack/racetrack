@@ -24,11 +24,31 @@ var (
 	}, []string{"job_name", "job_version", "status_code"})
 	metricJobProxyErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "pub_job_proxy_errors",
-		Help: "Total number of failures when accessing Job proxy (failure of PUB itself)",
+		Help: "Total number of failures when forwarding request to the Job (failure of PUB itself)",
 	})
-	metricJobProxyRequestErros = promauto.NewCounter(prometheus.CounterOpts{
+	metricJobProxyConnectionBrokenErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_job_proxy_connection_broken_errors",
+		Help: "Number of connection broken errors when forwarding request to the Job",
+	})
+	metricJobProxyConnectionRefusedErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_job_proxy_connection_refused_errors",
+		Help: "Number of connection refused errors when forwarding request to the Job",
+	})
+	metricJobProxyContextCanceledErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_job_proxy_context_canceled_errors",
+		Help: "Number of context canceled errors when forwarding request to the Job",
+	})
+	metricJobProxyContextDeadlineErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_job_proxy_context_deadline_errors",
+		Help: "Number of context deadline errors (timeouts) when forwarding request to the Job",
+	})
+	metricJobProxyRequestErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "pub_job_proxy_request_errors",
-		Help: "Total number of proxy request failures caused by bad requests",
+		Help: "Total number of proxy request failures caused by bad requests or overall Pub malfunction",
+	})
+	metricLifecycleErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_lifecycle_errors",
+		Help: "Number of Lifecycle API malfunctions",
 	})
 	metricJobCallResponseTime = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "pub_job_call_response_time",

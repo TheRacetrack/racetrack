@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/inconshreveable/log15"
@@ -10,13 +11,14 @@ import (
 )
 
 func remoteForwardEndpoint(c *gin.Context, cfg *Config, jobPath string) {
+	startTime := time.Now()
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
 
 	logger.Info("Incoming forwarding request from main Pub", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleRemoteForwardRequest(c, cfg, logger, requestId, jobPath)
+	statusCode, err := handleRemoteForwardRequest(c, cfg, logger, requestId, jobPath, startTime)
 	if err != nil {
 		errorStr := err.Error()
 		logger.Error("Proxy request error", log.Ctx{
@@ -38,6 +40,7 @@ func handleRemoteForwardRequest(
 	logger log.Logger,
 	requestId string,
 	jobPath string,
+	startTime time.Time,
 ) (int, error) {
 	if !cfg.RemoteGatewayMode {
 		return http.StatusUnauthorized, errors.New("Forwarding endpoint is only available in remote gateway mode")
@@ -87,6 +90,6 @@ func handleRemoteForwardRequest(
 		"targetUrl":       targetUrl.String(),
 	})
 
-	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName, startTime)
 	return http.StatusOK, nil
 }
