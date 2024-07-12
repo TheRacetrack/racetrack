@@ -16,6 +16,11 @@ spec:
         app.kubernetes.io/name: lifecycle-supervisor
     spec:
       serviceAccountName: null
+      securityContext:
+        supplementalGroups: [200000]
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
       priorityClassName: high-priority
       initContainers:
         - name: init-django-db
