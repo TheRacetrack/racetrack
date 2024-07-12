@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#497](https://github.com/TheRacetrack/racetrack/issues/497))
 - Jobs are no longer deleted on unsuccessful, retried deployment.
   ([#491](https://github.com/TheRacetrack/racetrack/issues/491))
+- Pub's metrics has been revised to detect overloaded jobs easier.
+  ([#493](https://github.com/TheRacetrack/racetrack/issues/493))
 
 ## [2.31.0] - 2024-07-09
 ### Added
