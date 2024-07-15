@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- A new tab "External Consumers" has been added to the Dashboard.
+  It allows to browse, read auth token and create a new ESC.
+  The tab is only available for administrator users.
+  ([#484](https://github.com/TheRacetrack/racetrack/issues/484))
+
 ### Changed
 - Reconciliation loop is now turned off by default. It can be enabled in configuration, if needed.
   Instead, reconciliation can be triggered manually through the Dashboard, at Administration tab.
