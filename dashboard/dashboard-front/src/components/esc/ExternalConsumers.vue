@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {onMounted, type Ref, ref} from 'vue'
 import {toastService} from '@/services/ToastService'
 import {apiClient} from '@/services/ApiClient'
 import {type EscDto} from '@/utils/api-schema'
 import {mdiAccountNetwork} from "@quasar/extras/mdi-v7";
+import CreateEscDialog from "@/components/esc/CreateEscDialog.vue";
 
 const consumersData = ref<EscDto[]>([])
 const loading = ref(true)
+const createEscDialogRef: Ref<typeof CreateEscDialog | null> = ref(null)
 
 function fetchConsumersData() {
     loading.value = true
@@ -20,12 +22,21 @@ function fetchConsumersData() {
         })
 }
 
+function createNewEsc() {
+    createEscDialogRef.value?.openDialog()
+}
+
+function onEscCreated() {
+    fetchConsumersData()
+}
+
 onMounted(() => {
     fetchConsumersData()
 })
 </script>
 
 <template>
+    <CreateEscDialog ref="createEscDialogRef" @escCreated="onEscCreated" />
     <q-card>
         <q-card-section class="q-pb-none">
             <span class="text-h6">
@@ -35,7 +46,7 @@ onMounted(() => {
 
         <q-card-section class="q-pb-none">
             <div class="full-width row wrap justify-end">
-                <q-btn color="primary" push label="Create a new ESC" icon="add" :to="{name: 'deploy-job'}" />
+                <q-btn color="primary" push label="Create a new ESC" icon="add" @click="createNewEsc()" />
             </div>
         </q-card-section>
 
