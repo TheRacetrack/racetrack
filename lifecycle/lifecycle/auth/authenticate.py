@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple
+from typing import Tuple
 
 from fastapi import Request
 
@@ -15,32 +15,32 @@ from racetrack_commons.auth.token import AuthTokenPayload, decode_jwt, verify_an
 logger = get_logger(__name__)
 
 
-def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, Optional[models.AuthSubject]]:
+def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, models.AuthSubject | None]:
     """Ensure request has valid token and recognize identity of the requester"""
-    auth_token = get_current_auth_token(request)
+    jwt_token: str = get_current_jwt_token(request)
 
     auth_secret_key = os.environ['AUTH_KEY']
-    token_payload = verify_and_decode_jwt(auth_token, auth_secret_key)
+    token_payload: AuthTokenPayload = verify_and_decode_jwt(jwt_token, auth_secret_key)
     if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
         return token_payload, None
 
     try:
-        auth_subject = find_auth_subject_by_token(auth_token)
+        auth_subject, auth_token = find_auth_subject_by_token(jwt_token)
     except EntityNotFound:
         raise UnauthorizedError('wrong credentials: token is unknown', 'token was not found in the database')
 
-    validate_auth_subject_access(auth_subject)
+    validate_auth_token_access(auth_token)
     return token_payload, auth_subject
 
 
-def get_current_auth_token(request: Request) -> str:
+def get_current_jwt_token(request: Request) -> str:
     auth_token = read_auth_token_header(request)
     if not auth_token:
         raise UnauthorizedError(f'auth token not found in a header {RT_AUTH_HEADER}')
     return auth_token
 
 
-def read_auth_token_header(request: Request) -> Optional[str]:
+def read_auth_token_header(request: Request) -> str | None:
     auth_token = request.headers.get(RT_AUTH_HEADER)
     # TODO: abandon backward compatibility with old headers
     if not auth_token:
@@ -51,24 +51,25 @@ def read_auth_token_header(request: Request) -> Optional[str]:
 
 
 @db_access
-def find_auth_subject_by_token(token: str) -> models.AuthSubject:
+def find_auth_subject_by_token(token: str) -> tuple[models.AuthSubject, models.AuthToken]:
     try:
-        return models.AuthSubject.objects.get(token=token)
+        auth_token: models.AuthToken = models.AuthToken.objects.get(token=token)
+        return auth_token.auth_subject, auth_token
     except models.AuthSubject.DoesNotExist:
-        raise EntityNotFound('Auth Subject with given token was not found')
+        raise EntityNotFound('given Auth Token was not found in the database')
 
 
 def get_username_from_token(request: Request) -> str:
-    auth_token = get_current_auth_token(request)
+    auth_token = get_current_jwt_token(request)
     token_payload = decode_jwt(auth_token)
     return token_payload.subject
 
 
-def validate_auth_subject_access(subject: models.AuthSubject):
-    """Check if auth subject still has access or it has been revoked or expired"""
-    if not subject.active:
-        raise UnauthorizedError('subject access has been revoked')
+def validate_auth_token_access(auth_token: models.AuthToken):
+    """Check if auth token has valid access - hasn't been revoked and hasn't expired"""
+    if not auth_token.active:
+        raise UnauthorizedError('given access token has been revoked')
 
-    if subject.expiry_time is not None:
-        if datetime_to_timestamp(now()) > subject.expiry_time.timestamp():
-            raise UnauthorizedError('subject access has expired')
+    if auth_token.expiry_time is not None:
+        if datetime_to_timestamp(now()) > auth_token.expiry_time.timestamp():
+            raise UnauthorizedError('given access token has expired')

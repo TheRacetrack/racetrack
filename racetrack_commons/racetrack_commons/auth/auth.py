@@ -5,7 +5,9 @@ class AuthSubjectType(Enum):
     USER = 'user'
     ESC = 'esc'
     JOB_FAMILY = 'job_family'
-    INTERNAL = 'internal'  # internal communication of Racetrack services
+    # internal communication of Racetrack services
+    # Internal tokens are not kept in a database, they're signed with the AUTH_KEY
+    INTERNAL = 'internal'
 
 
 class UnauthorizedError(RuntimeError):

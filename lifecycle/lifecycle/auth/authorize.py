@@ -1,4 +1,3 @@
-from typing import List, Optional
 from collections import defaultdict
 
 from django.db.models import Q
@@ -18,7 +17,7 @@ logger = get_logger(__name__)
 
 def authorize_subject_type(
     token_payload: AuthTokenPayload,
-    allowed_types: List[AuthSubjectType],
+    allowed_types: list[AuthSubjectType],
 ):
     allowed_type_values = [t.value for t in allowed_types]
     if token_payload.subject_type not in allowed_type_values:
@@ -33,12 +32,16 @@ def authorize_resource_access(
     job_name: str,
     job_version: str,
     scope: str,
-    endpoint: Optional[str] = None,
+    endpoint: str | None = None,
 ):
     """
     Check if auth subject has permissions to access the resource
     (job, job family) within requested scope
+    :param auth_subject: Auth subject model (either User, ESC or Job family)
+    :param job_name: Name of the job family
     :param job_version: Exact job version or an alias ("latest" or wildcard)
+    :param scope: name of allowed operation type
+    :param endpoint: optional filter for the endpoint path of the Job
     :raise UnauthorizedError: If auth subject has no permissions to access the resource
     """
     try:
@@ -80,7 +83,7 @@ def authorize_scope_access(
 
 def authorize_internal_token(
     token_payload: AuthTokenPayload,
-    scope: Optional[str] = None,
+    scope: str | None = None,
 ):
     if token_payload.scopes:
         if AuthScope.FULL_ACCESS.value in token_payload.scopes:
@@ -147,13 +150,15 @@ def has_scope_permission(
 def list_permitted_jobs(
     auth_subject: models.AuthSubject,
     scope: str,
-    all_jobs: List[JobDto],
-) -> List[JobDto]:
+    all_jobs: list[JobDto],
+) -> list[JobDto]:
     """
     List jobs that auth subject has permissions to access.
     Expand permissions for all resources and whole job families,
     map them to list of individual jobs from a database.
-    :param scope: Scope of the access (see AuthScope)
+    :param auth_subject: Auth subject model (either User, ESC or Job family)
+    :param scope: name of allowed operation type (see AuthScope)
+    :param all_jobs: list of Jobs to check against permission rules
     :return: List of jobs that auth subject has permissions to access (with no duplicates)
     """
     subject_filter = Q(auth_subject=auth_subject)
@@ -185,11 +190,14 @@ def list_permitted_jobs(
 def list_permitted_families(
     auth_subject: models.AuthSubject,
     scope: str,
-    all_families: List[JobFamilyDto],
-) -> List[JobFamilyDto]:
+    all_families: list[JobFamilyDto],
+) -> list[JobFamilyDto]:
     """
     List job families that auth subject has permissions to access.
-    :param scope: Scope of the access (see AuthScope)
+    :param auth_subject: Auth subject model (either User, ESC or Job family)
+    :param scope: name of allowed operation type (see AuthScope)
+    :param all_families: list of Job families to check against permission rules
+    :return: List of job families that auth subject has permissions to access (without duplicates)
     """
     subject_filter = Q(auth_subject=auth_subject)
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
@@ -212,13 +220,16 @@ def list_permitted_families(
 @db_access
 def grant_permission(
     auth_subject: models.AuthSubject,
-    job_name: Optional[str],
-    job_version: Optional[str],
+    job_name: str | None,
+    job_version: str | None,
     scope: str,
 ):
     """
     Grant permission to access the resource (job, job family) within requested scope
+    :param auth_subject: Auth subject model (either User, ESC or Job family) to give access to
+    :param job_name: Name of the job family
     :param job_version: Exact job version or an alias ("latest" or wildcard)
+    :param scope: name of allowed operation type (see AuthScope)
     """
     subject_filter = Q(auth_subject=auth_subject)
     scope_filter = Q(scope=scope)

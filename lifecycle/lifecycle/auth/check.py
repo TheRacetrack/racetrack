@@ -21,10 +21,10 @@ logger = get_logger(__name__)
 
 def check_auth(
     request: Request,
-    subject_types: List[AuthSubjectType] = None,
-    job_name: str = None,
-    job_version: str = None,
-    scope: AuthScope = None,
+    subject_types: List[AuthSubjectType] | None = None,
+    job_name: str | None = None,
+    job_version: str | None = None,
+    scope: AuthScope | None = None,
 ) -> models.AuthSubject:
     """
     Authenticate and authorize the request
@@ -41,7 +41,7 @@ def check_auth(
     else:
         if job_name:
             assert job_version, 'job_version is required when job_name is specified'
-            assert scope, 'scope is required when job_name is specified'
+            assert scope is not None, 'scope is required when job_name is specified'
             authorize_resource_access(auth_subject, job_name, job_version, scope.value)
         elif scope:
             authorize_scope_access(auth_subject, scope.value)
