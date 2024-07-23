@@ -4,7 +4,6 @@ from typing import Iterable, List, Optional
 from django.db.utils import IntegrityError
 import yaml
 
-from lifecycle.auth.subject import get_auth_subject_by_job_family
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
 from lifecycle.server.metrics import metric_job_model_fetch_duration
@@ -59,6 +58,7 @@ def job_family_exists(job_name: str) -> bool:
 def resolve_job_model(job_name: str, job_version: str) -> models.Job:
     """
     Find job by name and version, accepting version aliases
+    :param job_name: Name of job family
     :param job_version: Exact job version or an alias ("latest" or wildcard)
     :return: Job database model
     """
@@ -92,7 +92,8 @@ def read_latest_job_model(job_name: str) -> models.Job:
 @db_access
 def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> models.Job:
     """
-    :param version_wildcard: version pattern containing "x" wildcards, eg. "1.2.x", "2.x"
+    :param job_name: Name of job family
+    :param version_wildcard: version pattern containing "x" wildcards, e.g. "1.2.x", "2.x"
     """
     version_pattern = SemanticVersionPattern.from_x_pattern(version_wildcard)
 
@@ -152,7 +153,6 @@ def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
         name=job_family_dto.name,
     )
     new_model.save()
-    get_auth_subject_by_job_family(new_model)
     return new_model
 
 

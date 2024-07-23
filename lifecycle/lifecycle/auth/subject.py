@@ -6,7 +6,6 @@ from django.db.models import Q, QuerySet
 
 from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
-from lifecycle.job.models_registry import read_job_family_model
 from racetrack_commons.auth.auth import AuthSubjectType
 from racetrack_commons.auth.token import AuthTokenPayload, encode_jwt
 from racetrack_client.log.errors import EntityNotFound
@@ -192,10 +191,3 @@ def regenerate_all_esc_tokens():
         regenerate_auth_tokens(auth_subject)
     count = auth_subject_queryset.count()
     logger.info(f'Regenerated tokens of all {count} ESCs')
-
-
-def get_job_family_jwt_token(job_name: str) -> str:
-    family_model = read_job_family_model(job_name)
-    auth_subject = get_auth_subject_by_job_family(family_model)
-    auth_token = get_auth_token_by_subject(auth_subject)
-    return auth_token.token
