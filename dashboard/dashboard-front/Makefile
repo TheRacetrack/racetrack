@@ -6,7 +6,7 @@ setup:
 	nvm use v18.16 ;\
 	npm install
 
-run: 
+run:
 	. ./nvm-activate.sh ;\
 	npm run dev
 

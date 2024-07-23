@@ -27,6 +27,7 @@ def read_esc_model(esc_id: str) -> models.Esc:
 
 @db_access
 def create_esc(esc_dto: EscDto) -> EscDto:
+    assert esc_dto.name, 'ESC name can not be empty'
     esc_model = models.Esc()
     esc_model.name = esc_dto.name
 

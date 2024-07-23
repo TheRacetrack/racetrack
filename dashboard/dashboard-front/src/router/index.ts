@@ -21,6 +21,8 @@ import ProfileView from '@/components/account/ProfileView.vue'
 import AdministrationView from '@/components/admin/AdministrationView.vue'
 import PluginConfigView from '@/components/admin/PluginConfigView.vue'
 import PageNotFound from '@/components/PageNotFound.vue'
+import ExternalConsumers from "@/components/esc/ExternalConsumers.vue";
+import ExternalConsumerDetails from "@/components/esc/ExternalConsumerDetails.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +54,18 @@ const router = createRouter({
       path: '/deployments/:deploymentId',
       name: 'deployment-details',
       component: DeploymentDetails,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/esc',
+      name: 'esc-list',
+      component: ExternalConsumers,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/esc/:escId',
+      name: 'esc-details',
+      component: ExternalConsumerDetails,
       meta: { requiresAuth: true },
     },
     {

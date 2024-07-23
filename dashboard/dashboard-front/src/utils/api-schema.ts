@@ -39,3 +39,14 @@ export interface DeploymentDto {
     job_name: string
     job_version: string
 }
+
+export interface EscDto {
+    name: string
+    id?: string
+}
+
+export interface EscDetails {
+    id: string
+    name: string
+    token: string
+}

@@ -60,7 +60,7 @@ function regenerateToken() {
                 </template>
             </q-field>
             
-            <q-field outlined label="Auth Token" stack-label class="q-mt-md">
+            <q-field outlined label="Auth Token (X-Racetrack-Auth)" stack-label class="q-mt-md">
                 <template v-slot:control>
                     <span class="x-monospace x-overflow-any">
                         {{ authToken }}
