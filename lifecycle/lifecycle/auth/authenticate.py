@@ -29,8 +29,8 @@ def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, models.AuthS
     except EntityNotFound:
         raise UnauthorizedError('wrong credentials: token is unknown', 'token was not found in the database')
 
-    _save_token_use(auth_token)
     validate_auth_token_access(auth_token)
+    _save_token_use(auth_token)
     return token_payload, auth_subject
 
 

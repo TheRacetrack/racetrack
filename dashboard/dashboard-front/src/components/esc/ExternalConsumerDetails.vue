@@ -1,36 +1,91 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import {copyToClipboard} from "quasar"
+import { type QTableProps } from 'quasar'
+import {type EscAuthData, AuthTokenData} from '@/utils/api-schema'
+import { formatDateIso8601 } from '@/utils/time'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
-import {type EscDetails} from '@/utils/api-schema'
-import {copyToClipboard} from "quasar";
+import {progressService} from "@/services/ProgressService"
+import XTooltip from "@/components/XTooltip.vue"
 
 const route = useRoute()
 const escId = route.params.escId
-const escDetails = ref<EscDetails | null>(null)
+const escData = ref<EscAuthData | null>(null)
 
-function fetchConsumerData() {
-    apiClient.get<EscDetails>(`/api/v1/escs/${escId}/auth_data`)
+function fetchESCData() {
+    apiClient.get<EscAuthData>(`/api/v1/escs/${escId}/auth_data`)
         .then(response => {
-            escDetails.value = response.data
+            escData.value = response.data
         }).catch(err => {
             toastService.showErrorDetails(`Failed to fetch ESC details`, err)
         })
 }
 
-function copyAuthToken() {
-    copyToClipboard(escDetails.value?.token || '')
+onMounted(() => {
+    fetchESCData()
+})
+
+function copyAuthToken(authToken: AuthTokenData) {
+    copyToClipboard(authToken.token)
         .then(() => {
             toastService.success(`Auth Token copied to clipboard.`)
-        }).catch((error) => {
-            toastService.error(`Failed to copy to clipboard.`)
+        }).catch(err => {
+            toastService.showErrorDetails(`Failed to copy to clipboard.`, err)
         })
 }
 
-onMounted(() => {
-    fetchConsumerData()
-})
+function revokeAuthToken(authToken: AuthTokenData) {
+    progressService.confirmWithLoading({
+        confirmQuestion: `Are you sure you want to revoke this token?`,
+        onConfirm: () => {
+            return apiClient.delete(`/api/v1/escs/${escId}/auth_token/${authToken.id}`)
+        },
+        progressMsg: `Revoking token…`,
+        successMsg: `Token has been revoked.`,
+        errorMsg: `Failed to revoke the token`,
+        onSuccess: () => {
+            fetchESCData()
+        },
+    })
+}
+
+const authTokensColumns: QTableProps['columns'] = [
+    {
+        name: 'token',
+        label: 'Auth Token (X-Racetrack-Auth)',
+        align: 'left',
+        field: (row: AuthTokenData) => row.token,
+    },
+    {
+        name: 'expires-at',
+        label: 'Expires at',
+        align: 'right',
+        field: (row: AuthTokenData) => row.expiry_time,
+        format: (val: number) => formatDateIso8601(val),
+    },
+    {
+        name: 'active',
+        label: 'active',
+        align: 'right',
+        field: (row: AuthTokenData) => row.active,
+        format: (val: boolean) => val ? 'Yes' : 'No',
+    },
+    {
+        name: 'last-used-at',
+        label: 'Last used at',
+        align: 'right',
+        field: (row: AuthTokenData) => row.last_use_time,
+        format: (val: number) => formatDateIso8601(val),
+    },
+    {
+        name: 'actions',
+        label: 'Actions',
+        align: 'left',
+        field: (_: AuthTokenData) => "",
+    },
+]
 </script>
 
 <template>
@@ -42,26 +97,34 @@ onMounted(() => {
         <q-card-section>
             <q-field outlined label="ID" stack-label>
                 <template v-slot:control>
-                    {{ escDetails?.id }}
+                    {{ escData?.id }}
                 </template>
             </q-field>
 
             <q-field outlined label="Name" stack-label>
                 <template v-slot:control>
-                    <div>{{ escDetails?.name }}</div>
+                    <div>{{ escData?.name }}</div>
                 </template>
             </q-field>
 
-            <q-field outlined label="Auth Token (X-Racetrack-Auth)" stack-label>
-                <template v-slot:control>
-                    <span class="x-monospace x-overflow-any">
-                        {{ escDetails?.token }}
-                    </span>
+            <q-table
+                flat bordered
+                :rows="escData?.tokens || []"
+                :columns="authTokensColumns"
+                row-key="token"
+                no-data-label="No auth tokens"
+            >
+                <template v-slot:body-cell-actions="props">
+                    <q-td :props="props">
+                        <q-btn round dense flat icon="content_copy" @click="copyAuthToken(props.row)">
+                            <XTooltip>Copy token to clipboard</XTooltip>
+                        </q-btn>
+                        <q-btn round dense flat icon="clear" @click="revokeAuthToken(props.row)">
+                            <XTooltip>Revoke tkoen</XTooltip>
+                        </q-btn>
+                    </q-td>
                 </template>
-                <template v-slot:append>
-                    <q-btn round dense flat icon="content_copy" @click="copyAuthToken" />
-                </template>
-            </q-field>
+            </q-table>
         </q-card-section>
     </q-card>
 </template>

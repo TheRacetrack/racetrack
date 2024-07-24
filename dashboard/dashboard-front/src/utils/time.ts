@@ -6,6 +6,17 @@ export function formatTimestampIso8601(timestampS: number | undefined): string {
     return date.toISOString()
 }
 
+export function formatDateIso8601(timestampS: number | undefined): string {
+    if (!timestampS) {
+        return ''
+    }
+    const date = new Date(timestampS * 1000)
+    const day = leftZeroPad(date.getDate(), 2)
+    const month = leftZeroPad(date.getMonth() + 1, 2)
+    const year = leftZeroPad(date.getFullYear(), 4)
+    return `${year}-${month}-${day}`
+}
+
 export function timestampToLocalTime(timestampS: number | undefined): string {
     if (!timestampS) {
         return ''
@@ -85,4 +96,11 @@ export function formatDuration(timestampStart: number | undefined, timestampEnd:
     if (minutes > 0)
         return `${minutes}m ${seconds}s`
     return `${seconds}s`
+}
+
+export function leftZeroPad(num: number, size: number): string {
+    let s = num + ""
+    while (s.length < size)
+        s = "0" + s
+    return s
 }

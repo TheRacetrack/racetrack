@@ -62,13 +62,21 @@ def get_auth_subject_by_job_family(job_family: models.JobFamily) -> models.AuthS
     return auth_subject
 
 
+@db_access
 def get_auth_token_by_subject(auth_subject: models.AuthSubject) -> models.AuthToken:
-    """Return FIRST auth token associated with the given auth subject"""
+    """Return FIRST auth token associated with the given auth subject. Create if missing."""
     auth_tokens_queryset: QuerySet = models.AuthToken.objects.filter(auth_subject=auth_subject)
     auth_token: models.AuthToken | None = auth_tokens_queryset.first()
     if auth_token is None:
         return create_auth_token(auth_subject)
     return auth_token
+
+
+@db_access
+def get_auth_tokens_by_subject(auth_subject: models.AuthSubject) -> list[models.AuthToken]:
+    """Return all auth token associated with the given auth subject"""
+    auth_tokens_queryset: QuerySet = models.AuthToken.objects.filter(auth_subject=auth_subject)
+    return list(auth_tokens_queryset)
 
 
 def create_auth_token(auth_subject: models.AuthSubject) -> models.AuthToken:
@@ -159,6 +167,7 @@ def get_description_from_auth_subject(auth_subject: models.AuthSubject) -> str:
         raise ValueError("Unknown auth_subject type")
 
 
+@db_access
 def regenerate_specific_user_token(auth_subject: models.AuthSubject) -> str:
     regenerate_auth_tokens(auth_subject)
     logger.info(f'Regenerated token of User {auth_subject.user.username}')
@@ -166,6 +175,7 @@ def regenerate_specific_user_token(auth_subject: models.AuthSubject) -> str:
     return auth_token.token
 
 
+@db_access
 def regenerate_all_user_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(user__isnull=False))
     for auth_subject in auth_subject_queryset:
@@ -174,6 +184,7 @@ def regenerate_all_user_tokens():
     logger.info(f'Regenerated tokens of all {count} Users')
 
 
+@db_access
 def regenerate_all_job_family_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(job_family__isnull=False))
     for auth_subject in auth_subject_queryset:
@@ -182,9 +193,18 @@ def regenerate_all_job_family_tokens():
     logger.info(f'Regenerated tokens of all {count} Job Families')
 
 
+@db_access
 def regenerate_all_esc_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(esc__isnull=False))
     for auth_subject in auth_subject_queryset:
         regenerate_auth_tokens(auth_subject)
     count = auth_subject_queryset.count()
     logger.info(f'Regenerated tokens of all {count} ESCs')
+
+
+@db_access
+def revoke_token(token_id: str):
+    auth_token = models.AuthToken.objects.get(id=token_id)
+    subject_info = str(auth_token.auth_subject)
+    auth_token.delete()
+    logger.info(f'Auth token "{token_id}" revoked. Subject: {subject_info}')
