@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import {copyToClipboard} from "quasar"
 import { type QTableProps } from 'quasar'
-import {type EscAuthData, AuthTokenData} from '@/utils/api-schema'
+import {type EscAuthData, type AuthTokenData} from '@/utils/api-schema'
 import { formatDateIso8601 } from '@/utils/time'
 import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
@@ -38,7 +38,7 @@ function copyAuthToken(authToken: AuthTokenData) {
 
 function revokeAuthToken(authToken: AuthTokenData) {
     progressService.confirmWithLoading({
-        confirmQuestion: `Are you sure you want to revoke this token?`,
+        confirmQuestion: `Are you sure you want to revoke the token "${authToken.token}"?`,
         onConfirm: () => {
             return apiClient.delete(`/api/v1/escs/${escId}/auth_token/${authToken.id}`)
         },
@@ -54,7 +54,7 @@ function revokeAuthToken(authToken: AuthTokenData) {
 const authTokensColumns: QTableProps['columns'] = [
     {
         name: 'token',
-        label: 'Auth Token (X-Racetrack-Auth)',
+        label: 'Token string (X-Racetrack-Auth)',
         align: 'left',
         field: (row: AuthTokenData) => row.token,
     },
@@ -67,7 +67,7 @@ const authTokensColumns: QTableProps['columns'] = [
     },
     {
         name: 'active',
-        label: 'active',
+        label: 'Active',
         align: 'right',
         field: (row: AuthTokenData) => row.active,
         format: (val: boolean) => val ? 'Yes' : 'No',
@@ -108,7 +108,8 @@ const authTokensColumns: QTableProps['columns'] = [
             </q-field>
 
             <q-table
-                flat bordered
+                flat bordered hide-pagination
+                title="Auth Tokens"
                 :rows="escData?.tokens || []"
                 :columns="authTokensColumns"
                 row-key="token"
@@ -120,11 +121,19 @@ const authTokensColumns: QTableProps['columns'] = [
                             <XTooltip>Copy token to clipboard</XTooltip>
                         </q-btn>
                         <q-btn round dense flat icon="clear" @click="revokeAuthToken(props.row)">
-                            <XTooltip>Revoke tkoen</XTooltip>
+                            <XTooltip>Revoke token</XTooltip>
                         </q-btn>
                     </q-td>
                 </template>
+                <template v-slot:body-cell-token="props">
+                    <q-td :props="props">
+                        <div class="x-monospace x-overflow-any" style="max-width: 50vw; white-space: normal;">
+                            {{ props.row.token }}
+                        </div>
+                    </q-td>
+                </template>
             </q-table>
+
         </q-card-section>
     </q-card>
 </template>

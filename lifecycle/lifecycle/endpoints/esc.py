@@ -26,9 +26,9 @@ class EscPayloadModel(BaseModel):
 class AuthTokenData(BaseModel):
     id: str
     token: str
-    expiry_time: int
+    expiry_time: int | None
     active: bool
-    last_use_time: int
+    last_use_time: int | None
 
 
 class EscAuthData(BaseModel):

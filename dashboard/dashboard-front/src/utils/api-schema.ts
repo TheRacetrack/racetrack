@@ -48,9 +48,9 @@ export interface EscDto {
 export interface AuthTokenData {
     id: string
     token: string
-    expiry_time: number
+    expiry_time?: number
     active: boolean
-    last_use_time: number
+    last_use_time?: number
 }
 
 export interface EscAuthData {
