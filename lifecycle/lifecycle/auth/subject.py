@@ -63,7 +63,7 @@ def get_auth_subject_by_job_family(job_family: models.JobFamily) -> models.AuthS
 
 
 def get_auth_token_by_subject(auth_subject: models.AuthSubject) -> models.AuthToken:
-    """Return any auth token associated with the given auth subject"""
+    """Return FIRST auth token associated with the given auth subject"""
     auth_tokens_queryset: QuerySet = models.AuthToken.objects.filter(auth_subject=auth_subject)
     auth_token: models.AuthToken | None = auth_tokens_queryset.first()
     if auth_token is None:
@@ -76,6 +76,7 @@ def create_auth_token(auth_subject: models.AuthSubject) -> models.AuthToken:
     auth_token.auth_subject = auth_subject
     auth_token.token = generate_jwt_token(auth_subject)
     auth_token.active = True
+    auth_token.last_use_time = None
     auth_token.save()
     logger.info(f'Auth Token created for auth subject: {auth_subject}')
     return auth_token
@@ -97,9 +98,7 @@ def find_auth_subject_by_esc_id(esc_id: str) -> models.AuthSubject:
         raise EntityNotFound(f'Auth subject for ESC {esc_id} not found')
 
 
-def generate_jwt_token(
-    auth_subject: models.AuthSubject,
-) -> str:
+def generate_jwt_token(auth_subject: models.AuthSubject) -> str:
     subject_name = _get_subject_name_from_auth_subject(auth_subject)
     subject_type = _get_subject_type_from_auth_subject(auth_subject)
     payload = AuthTokenPayload(
@@ -111,20 +110,18 @@ def generate_jwt_token(
     return encode_jwt(payload, auth_secret_key)
 
 
-def regenerate_auth_tokens(
-    auth_subject: models.AuthSubject,
-):
+def regenerate_auth_tokens(auth_subject: models.AuthSubject):
     auth_tokens_queryset: QuerySet = models.AuthToken.objects.filter(auth_subject=auth_subject)
     for auth_token in auth_tokens_queryset:
         auth_token.token = generate_jwt_token(auth_subject)
+        auth_token.last_use_time = None
         auth_token.save()
 
 
-def regenerate_auth_token_by_id(
-    auth_token_id: str,
-):
+def regenerate_auth_token_by_id(auth_token_id: str):
     auth_token = models.AuthToken.objects.get(id=auth_token_id)
     auth_token.token = generate_jwt_token(auth_token.auth_subject)
+    auth_token.last_use_time = None
     auth_token.save()
     logger.info(f'Auth token generated for auth subject ID: {auth_token.auth_subject.id}')
 

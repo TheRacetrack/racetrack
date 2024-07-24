@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It allows to browse, read auth token and create a new ESC.
   The tab is only available for administrator users.
   ([#484](https://github.com/TheRacetrack/racetrack/issues/484))
+- "External Consumers" can have multiple auth tokens to facilitate the process of rotating tokens.
+  Tokens can be created and revoked from the Dashboard.
+  Dashboard keeps track of the date when each token was in-use last time.
+  ([#487](https://github.com/TheRacetrack/racetrack/issues/487))
 
 ### Changed
 - Reconciliation loop is now turned off by default. It can be enabled in configuration, if needed.

@@ -29,6 +29,7 @@ def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, models.AuthS
     except EntityNotFound:
         raise UnauthorizedError('wrong credentials: token is unknown', 'token was not found in the database')
 
+    _save_token_use(auth_token)
     validate_auth_token_access(auth_token)
     return token_payload, auth_subject
 
@@ -57,6 +58,16 @@ def find_auth_subject_by_token(token: str) -> tuple[models.AuthSubject, models.A
         return auth_token.auth_subject, auth_token
     except models.AuthSubject.DoesNotExist:
         raise EntityNotFound('given Auth Token was not found in the database')
+
+
+def _save_token_use(auth_token: models.AuthToken):
+    """
+    Update date of the last use of the auth token.
+    Keep it in daily granulatiry to avoid too many updates in the database.
+    """
+    if auth_token.last_use_time is None or auth_token.last_use_time.date() != now().date():
+        auth_token.last_use_time = now()
+        auth_token.save()
 
 
 def get_username_from_token(request: Request) -> str:
