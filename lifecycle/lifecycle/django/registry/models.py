@@ -198,6 +198,7 @@ class AuthToken(models.Model):
     token = models.CharField(max_length=1024)  # JWT token
     expiry_time = models.DateTimeField(null=True, blank=True)
     active = models.BooleanField(default=True)
+    last_use_time = models.DateTimeField(null=True, blank=True)
 
 
 class AuthResourcePermission(models.Model):
