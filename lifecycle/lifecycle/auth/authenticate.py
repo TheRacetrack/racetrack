@@ -56,7 +56,7 @@ def find_auth_subject_by_token(token: str) -> tuple[models.AuthSubject, models.A
     try:
         auth_token: models.AuthToken = models.AuthToken.objects.get(token=token)
         return auth_token.auth_subject, auth_token
-    except models.AuthSubject.DoesNotExist:
+    except models.AuthToken.DoesNotExist:
         raise EntityNotFound('given Auth Token was not found in the database')
 
 
