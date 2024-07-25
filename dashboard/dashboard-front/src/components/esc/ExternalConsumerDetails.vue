@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, type Ref} from 'vue'
 import { useRoute } from 'vue-router'
 import {copyToClipboard} from "quasar"
 import { type QTableProps } from 'quasar'
@@ -9,10 +9,12 @@ import { toastService } from '@/services/ToastService'
 import { apiClient } from '@/services/ApiClient'
 import {progressService} from "@/services/ProgressService"
 import XTooltip from "@/components/XTooltip.vue"
+import GenerateEscTokenDialog from "@/components/esc/GenerateEscTokenDialog.vue"
 
 const route = useRoute()
 const escId = route.params.escId
 const escData = ref<EscAuthData | null>(null)
+const generateEscTokenDialogRef: Ref<typeof GenerateEscTokenDialog | null> = ref(null)
 
 function fetchESCData() {
     apiClient.get<EscAuthData>(`/api/v1/escs/${escId}/auth_data`)
@@ -49,6 +51,14 @@ function revokeAuthToken(authToken: AuthTokenData) {
             fetchESCData()
         },
     })
+}
+
+function generateNewToken() {
+    generateEscTokenDialogRef.value?.openDialog(escId)
+}
+
+function onTokenGenerated() {
+    fetchESCData()
 }
 
 const authTokensColumns: QTableProps['columns'] = [
@@ -89,13 +99,20 @@ const authTokensColumns: QTableProps['columns'] = [
 </script>
 
 <template>
+    <GenerateEscTokenDialog ref="generateEscTokenDialogRef" @onTokenGenerated="onTokenGenerated" />
     <q-card>
         <q-card-section>
             <div class="text-h6">External Service Consumer Details</div>
         </q-card-section>
 
+        <q-card-section class="q-pb-none">
+            <div class="full-width row wrap justify-end">
+                <q-btn color="primary" push label="Generate Auth Token" icon="add" @click="generateNewToken()" />
+            </div>
+        </q-card-section>
+
         <q-card-section>
-            <q-field outlined label="ID" stack-label>
+            <q-field outlined label="ESC ID" stack-label>
                 <template v-slot:control>
                     {{ escData?.id }}
                 </template>

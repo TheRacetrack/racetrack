@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db.models import Q, QuerySet
@@ -41,7 +42,6 @@ def get_auth_subject_by_esc(esc_model: models.Esc) -> models.AuthSubject:
     auth_subject = models.AuthSubject()
     auth_subject.esc = esc_model
     auth_subject.save()
-    create_auth_token(auth_subject)
     logger.info(f'Created auth subject for ESC {esc_model}')
     return auth_subject
 
@@ -79,12 +79,13 @@ def get_auth_tokens_by_subject(auth_subject: models.AuthSubject) -> list[models.
     return list(auth_tokens_queryset)
 
 
-def create_auth_token(auth_subject: models.AuthSubject) -> models.AuthToken:
+def create_auth_token(auth_subject: models.AuthSubject, expiry_time: datetime | None = None) -> models.AuthToken:
     auth_token = models.AuthToken()
     auth_token.auth_subject = auth_subject
     auth_token.token = generate_jwt_token(auth_subject)
     auth_token.active = True
     auth_token.last_use_time = None
+    auth_token.expiry_time = expiry_time
     auth_token.save()
     logger.info(f'Auth Token created for auth subject: {auth_subject}')
     return auth_token

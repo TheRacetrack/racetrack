@@ -1,5 +1,5 @@
 from typing import Iterable
-from lifecycle.auth.subject import get_auth_subject_by_esc
+from lifecycle.auth.subject import get_auth_subject_by_esc, create_auth_token
 
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
@@ -35,9 +35,10 @@ def create_esc(esc_dto: EscDto) -> EscDto:
         esc_model.id = esc_dto.id
         if models.Esc.objects.filter(id=esc_dto.id).exists():
             raise AlreadyExists('ESC already exists')
-    esc_model.save()
-    # Esc needs to have id (done in save() above) before we can create auth token
-    get_auth_subject_by_esc(esc_model)
+    esc_model.save()  # Esc needs to have saved id before we can create auth token
+
+    auth_subject = get_auth_subject_by_esc(esc_model)
+    create_auth_token(auth_subject)
 
     return esc_model_to_dto(esc_model)
 

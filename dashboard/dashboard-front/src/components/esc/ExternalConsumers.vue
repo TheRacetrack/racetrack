@@ -3,8 +3,8 @@ import {onMounted, type Ref, ref} from 'vue'
 import {toastService} from '@/services/ToastService'
 import {apiClient} from '@/services/ApiClient'
 import {type EscDto} from '@/utils/api-schema'
-import {mdiAccountNetwork} from "@quasar/extras/mdi-v7";
-import CreateEscDialog from "@/components/esc/CreateEscDialog.vue";
+import {mdiAccountNetwork} from "@quasar/extras/mdi-v7"
+import CreateEscDialog from "@/components/esc/CreateEscDialog.vue"
 
 const consumersData = ref<EscDto[]>([])
 const loading = ref(true)

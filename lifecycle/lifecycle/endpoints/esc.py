@@ -3,11 +3,11 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from racetrack_client.utils.datamodel import parse_dict_datamodel
-from racetrack_client.utils.time import datetime_to_timestamp
+from racetrack_client.utils.time import datetime_to_timestamp, timestamp_to_datetime
 from racetrack_commons.entities.dto import EscDto
 from lifecycle.job.esc import list_escs, create_esc, read_esc_model
 from lifecycle.auth.check import check_staff_user
-from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_tokens_by_subject, revoke_token
+from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_tokens_by_subject, revoke_token, create_auth_token
 from lifecycle.django.registry import models
 
 
@@ -35,6 +35,10 @@ class EscAuthData(BaseModel):
     id: str
     name: str
     tokens: list[AuthTokenData]
+
+
+class CreateTokenPayload(BaseModel):
+    expiry_time: int | None
 
 
 def setup_esc_endpoints(api: APIRouter):
@@ -76,3 +80,18 @@ def setup_esc_endpoints(api: APIRouter):
         check_staff_user(request)
         read_esc_model(esc_id)
         revoke_token(token_id)
+
+    @api.post('/escs/{esc_id}/auth_token')
+    def _add_new_esc_token(esc_id: str, payload: CreateTokenPayload, request: Request) -> AuthTokenData:
+        check_staff_user(request)
+        esc_model = read_esc_model(esc_id)
+        auth_subject: models.AuthSubject = get_auth_subject_by_esc(esc_model)
+        expiry_time = timestamp_to_datetime(payload.expiry_time) if payload.expiry_time is not None else None
+        auth_token: models.AuthToken = create_auth_token(auth_subject, expiry_time=expiry_time)
+        return AuthTokenData(
+            id=auth_token.id,
+            token=auth_token.token,
+            expiry_time=datetime_to_timestamp(auth_token.expiry_time) if auth_token.expiry_time is not None else None,
+            active=auth_token.active,
+            last_use_time=datetime_to_timestamp(auth_token.last_use_time) if auth_token.last_use_time is not None else None,
+        )
