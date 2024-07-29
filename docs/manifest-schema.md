@@ -25,8 +25,6 @@ fields:
 - `version`, *string* - Version of the Job. It must adhere to Semantic Versioning standard.
 - `jobtype_extra`, *object* - Jobtype specific extra parameters
     - Fields specified and validated by the jobtype.
-- `docker`, *object* - Manifest for Dockerfile job types
-    - `dockerfile_path`, *string* - relative path to Dockerfile recipe
 - `build_env`, *object: string to string* - dictionary of environment variables that should be set when building the image
 - `image_type`, *string* - type of deployed image. Only `docker` is currently available.
 - `infrastructure_target`, *string* - Back-end platform where to deploy the service.
@@ -60,8 +58,6 @@ jobtype_extra:
   requirements_path: 'python/requirements.txt'
   entrypoint_path: 'python/entrypoint.py'
   entrypoint_class: 'JobClazz'
-docker:
-  dockerfile_path: 'docker/Dockerfile'
 build_env:
   DEBIAN_FRONTEND: 'noninteractive'
 image_type: docker
