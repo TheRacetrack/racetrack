@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from lifecycle.auth.authenticate import authenticate_token
 from lifecycle.auth.authorize import authorize_internal_token, authorize_resource_access, grant_permission
 from lifecycle.auth.cookie import set_auth_token_cookie
-from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, get_description_from_auth_subject, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
+from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, get_auth_token_by_subject, get_description_from_auth_subject, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
 from lifecycle.infrastructure.model import InfrastructureTarget
@@ -41,6 +41,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
                 authorize_internal_token(token_payload, scope)
             else:
+                assert auth_subject is not None
                 authorize_resource_access(auth_subject, job_name, job_version, scope)
 
         except UnauthorizedError as e:
@@ -59,6 +60,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             if token_payload.subject_type == AuthSubjectType.INTERNAL.value:
                 authorize_internal_token(token_payload, scope)
             else:
+                assert auth_subject is not None
                 authorize_resource_access(auth_subject, job_name, job_version, scope, endpoint)
 
         except UnauthorizedError as e:
@@ -94,10 +96,11 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             job = job_model_to_dto(job_model, config)
             auth_data = JobCallAuthData(job=job, caller=caller)
 
-            infrastructure: InfrastructureTarget = LifecycleCache.infrastructure_targets.get(job.infrastructure_target)
-            if infrastructure is not None:
-                auth_data.remote_gateway_url = infrastructure.remote_gateway_url
-                auth_data.remote_gateway_token = infrastructure.remote_gateway_token
+            if job.infrastructure_target is not None:
+                infrastructure: InfrastructureTarget | None = LifecycleCache.infrastructure_targets.get(job.infrastructure_target)
+                if infrastructure is not None:
+                    auth_data.remote_gateway_url = infrastructure.remote_gateway_url
+                    auth_data.remote_gateway_token = infrastructure.remote_gateway_token
 
             return auth_data
 
@@ -128,7 +131,8 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         esc_model = read_esc_model(esc_id)
         auth_subject = get_auth_subject_by_esc(esc_model)
-        return {'token': auth_subject.token}
+        auth_token = get_auth_token_by_subject(auth_subject)
+        return {'token': auth_token.token}
 
     @api.post('/auth/token/user/regenerate')
     def _generate_tokens_for_user(request: Request) -> JSONResponse:

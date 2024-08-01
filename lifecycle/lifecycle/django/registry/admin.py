@@ -8,7 +8,8 @@ from django.contrib.admin.options import (
 )
 from django.contrib.admin import SimpleListFilter
 
-from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, TrashJob, AuditLogEvent, Setting, AsyncJobCall
+from .models import AuthResourcePermission, AuthSubject, PublicEndpointRequest, Job, Deployment, Esc, JobFamily, \
+    TrashJob, AuditLogEvent, Setting, AsyncJobCall, AuthToken
 from ...auth.subject import regenerate_auth_token_by_id
 
 
@@ -85,21 +86,26 @@ class AuthSubjectTypeFilter(SimpleListFilter):
 
 
 class AuthSubjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'subject_type', 'user', 'esc', 'job_family', 'active', 'expiry_time')
-    search_fields = ['user__username', 'esc__name', 'job_family__name', 'token']
-    list_filter = ['active', AuthSubjectTypeFilter]
-    change_form_template = 'admin/auth_subject_change_form.html'
+    list_display = ('id', 'subject_type', 'user', 'esc', 'job_family')
+    search_fields = ['user__username', 'esc__name', 'job_family__name']
+    list_filter = [AuthSubjectTypeFilter]
+
+
+class AuthTokenAdmin(admin.ModelAdmin):
+    list_display = ('id', 'auth_subject', 'active', 'expiry_time')
+    search_fields = ['token']
+    list_filter = ['active']
+    change_form_template = 'admin/auth_token_change_form.html'
 
     @csrf_protect_m
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         if request.method == 'POST' and '_generate_token' in request.POST and object_id is not None:
             regenerate_auth_token_by_id(str(object_id))
             return HttpResponseRedirect(request.get_full_path())
-
         return admin.ModelAdmin.changeform_view(self, request, object_id, form_url, extra_context)
 
     def get_form(self, request, obj=None, **kwargs):
-        form = super(AuthSubjectAdmin, self).get_form(request, obj, **kwargs)
+        form = super(AuthTokenAdmin, self).get_form(request, obj, **kwargs)
         form.base_fields['token'].widget.attrs['style'] = 'width: 90em;'
         return form
 
@@ -153,6 +159,7 @@ admin.site.register(PublicEndpointRequest, PublicEndpointRequestAdmin)
 admin.site.register(TrashJob, TrashJobAdmin)
 admin.site.register(AuditLogEvent, AuditLogEventAdmin)
 admin.site.register(AuthSubject, AuthSubjectAdmin)
+admin.site.register(AuthToken, AuthTokenAdmin)
 admin.site.register(AuthResourcePermission, AuthResourcePermissionAdmin)
 admin.site.register(Setting, SettingAdmin)
 admin.site.register(AsyncJobCall, AsyncJobCallAdmin)

@@ -39,7 +39,9 @@ defineExpose({
                 <div class="text-h6">Are you sure?</div>
             </q-card-section>
             
-            <q-card-section class="q-pt-none">{{ dialogBody }}</q-card-section>
+            <q-card-section class="q-pt-none" style="overflow-wrap: break-word;">
+                {{ dialogBody }}
+            </q-card-section>
             
             <q-card-actions align="right">
                 <q-btn flat color="white" text-color="black" label="Cancel" v-close-popup />

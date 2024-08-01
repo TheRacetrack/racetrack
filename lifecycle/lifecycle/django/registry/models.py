@@ -163,14 +163,9 @@ class AuthSubject(models.Model):
         app_label = 'registry'
 
     id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     esc = models.ForeignKey(Esc, on_delete=models.CASCADE, null=True, blank=True)
     job_family = models.ForeignKey(JobFamily, on_delete=models.CASCADE, null=True, blank=True)
-
-    token = models.CharField(max_length=1024)
-    expiry_time = models.DateTimeField(null=True, blank=True)
-    active = models.BooleanField(default=True)
 
     def __str__(self):
         if self.user is not None:
@@ -189,6 +184,22 @@ class AuthSubject(models.Model):
         if self.job_family is not None:
             return 'Job Family'
         return 'Unknown'
+
+
+class AuthToken(models.Model):
+    class Meta:
+        app_label = 'registry'
+        indexes = [
+            models.Index(fields=["token"], name="token_idx"),
+        ]
+
+    id = models.CharField(max_length=36, primary_key=True, default=new_uuid)
+    auth_subject = models.ForeignKey(AuthSubject, on_delete=models.CASCADE)
+    token = models.CharField(max_length=1024)  # JWT token
+    expiry_time = models.DateTimeField(null=True, blank=True)
+    active = models.BooleanField(default=True)
+    # last day the token was used for authentication
+    last_use_time = models.DateTimeField(null=True, blank=True)
 
 
 class AuthResourcePermission(models.Model):

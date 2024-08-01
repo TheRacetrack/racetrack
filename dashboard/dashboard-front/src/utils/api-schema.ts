@@ -45,8 +45,16 @@ export interface EscDto {
     id?: string
 }
 
-export interface EscDetails {
+export interface AuthTokenData {
+    id: string
+    token: string
+    expiry_time?: number
+    active: boolean
+    last_use_time?: number
+}
+
+export interface EscAuthData {
     id: string
     name: string
-    token: string
+    tokens: AuthTokenData[]
 }

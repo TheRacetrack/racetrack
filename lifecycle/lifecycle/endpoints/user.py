@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.auth.check import check_auth
 from lifecycle.auth.cookie import set_auth_token_cookie, delete_auth_cookie
+from lifecycle.auth.subject import get_auth_token_by_subject
 from lifecycle.auth.users import authenticate_username_with_password, register_user_account
 from lifecycle.auth.users import change_user_password
 from racetrack_client.log.errors import ValidationError
@@ -28,19 +29,20 @@ def setup_user_endpoints(api: APIRouter):
         auth_subject = check_auth(request)
         username = get_username_from_token(request)
         user: User = auth_subject.user
+        auth_token = get_auth_token_by_subject(auth_subject)
         return UserProfileDto(
             username=username,
-            token=auth_subject.token,
+            token=auth_token.token,
             is_staff=user.is_staff,
         )
 
     @api.post('/users/login')
     def _login_user_account(payload: UserCredentialsModel) -> JSONResponse:
         """Validate username and password and return auth token and user data"""
-        user, auth_subject = authenticate_username_with_password(payload.username, payload.password)
+        user, auth_subject, auth_token = authenticate_username_with_password(payload.username, payload.password)
         user_profile = UserProfileDto(
             username=user.username,
-            token=auth_subject.token,
+            token=auth_token.token,
             is_staff=user.is_staff,
         )
         response = JSONResponse(user_profile.model_dump())

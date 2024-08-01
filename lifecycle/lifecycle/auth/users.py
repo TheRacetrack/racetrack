@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
-from lifecycle.auth.subject import regenerate_auth_token
+from lifecycle.auth.subject import create_auth_token, get_auth_token_by_subject
 from lifecycle.auth.subject import get_auth_subject_by_user
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 
 
 @db_access
-def authenticate_username_with_password(username: str, password: str) -> tuple[User, models.AuthSubject]:
+def authenticate_username_with_password(username: str, password: str) -> tuple[User, models.AuthSubject, models.AuthToken]:
     user: User = django_auth.authenticate(username=username, password=password)
     if user is None:
         raise UnauthorizedError('incorrect username or password')
@@ -23,7 +23,8 @@ def authenticate_username_with_password(username: str, password: str) -> tuple[U
         raise UnauthorizedError('user account is disabled')
 
     auth_subject = get_auth_subject_by_user(user)
-    return user, auth_subject
+    auth_token = get_auth_token_by_subject(auth_subject)
+    return user, auth_subject, auth_token
 
 
 @db_access
@@ -71,10 +72,8 @@ def change_user_password(username: str, old_password: str, new_password: str):
 def create_auth_subject_for_user(user_model: User) -> models.AuthSubject:
     auth_subject = models.AuthSubject()
     auth_subject.user = user_model
-    auth_subject.token = ''
-    auth_subject.active = True
     auth_subject.save()
-    regenerate_auth_token(auth_subject)
+    create_auth_token(auth_subject)
     return auth_subject
 
 
