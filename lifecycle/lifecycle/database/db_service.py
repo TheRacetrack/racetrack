@@ -1,8 +1,9 @@
 import os
+from typing import Any
 
 from psycopg_pool import ConnectionPool
 from psycopg import Connection, Cursor
-from psycopg.sql import SQL, Literal
+from psycopg.sql import SQL, Literal, Identifier, Composed
 
 from racetrack_client.log.logs import get_logger
 
@@ -41,8 +42,8 @@ class DbService:
     def on_configure_connection(self, connection: Connection) -> None:
         if self.schema:
             with connection.cursor() as cursor:
-                cursor.execute(SQL('SET search_path TO {schema}').format(schema=Literal(self.schema)))
-                # cursor.execute(f'SET search_path TO {self.schema}')
+                sql = SQL('SET search_path TO {schema}').format(schema=Literal(self.schema))
+                cursor.execute(sql)
             connection.commit()
         self.connection_status = True
 
@@ -60,15 +61,35 @@ class DbService:
     def connection_pool_size(self) -> int:
         return self.connection_pool.get_stats()['pool_size']
 
-    def select_all(self) -> list[dict]:
-        conn: Connection
+    def execute_sql(self, sql: Composed, params: dict | None = None) -> None:
         with self.connection_pool.connection() as conn:
             cursor: Cursor
             with conn.cursor() as cursor:
-                cursor.execute('select * from registry_authsubject')
+                cursor.execute(sql, params=params)
+
+    def execute_sql_fetch_one(self, sql: Composed, params: dict | None = None) -> dict[str, Any] | None:
+        with self.connection_pool.connection() as conn:
+            cursor: Cursor
+            with conn.cursor() as cursor:
+                cursor.execute(sql, params=params)
+                row = cursor.fetchone()
+                if row is None:
+                    return None
+                col_names = [desc[0] for desc in cursor.description]
+                return dict(zip(col_names, row))
+
+    def execute_sql_fetch_all(self, sql: Composed, params: dict | None = None) -> list[dict]:
+        with self.connection_pool.connection() as conn:
+            cursor: Cursor
+            with conn.cursor() as cursor:
+                cursor.execute(sql, params=params)
                 rows: list = cursor.fetchall()
                 col_names = [desc[0] for desc in cursor.description]
                 return [dict(zip(col_names, row)) for row in rows]
+
+    def select_many(self, table: str) -> list[dict]:
+        sql = SQL('select * from {table}').format(table=Identifier(table))
+        return self.execute_sql_fetch_all(sql)
 
 
 def get_database_name() -> str:
