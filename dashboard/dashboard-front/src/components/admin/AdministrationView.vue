@@ -142,20 +142,8 @@ function deletePlugin(name: string, version: string) {
     })
 }
 
-// If the url has a port, we are assuming the port is lifecycle, in which case we don't need to prepend /lifecycle
-// If the url does not have a port, we need to prepend /lifecycle
-const getBaseUrl = () => {
-    const { hostname, port } = window.location;
-    if (port) {
-        return ``;
-    } else {
-        return '/lifecycle';
-    }
-};
-
 const downloadPlugin = (name: string, version: string) => {
-    const baseUrl = getBaseUrl();
-    window.location.href = `${baseUrl}/api/v1/plugin/${name}/${version}/download`;
+    window.location.href = `/dashboard/api/v1/plugin/${name}/${version}/download`;
 };
 
 function onPluginUploadFailed(err: any) {

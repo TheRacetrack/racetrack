@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#493](https://github.com/TheRacetrack/racetrack/issues/493))
 
 ### Fixed
-- Download button works on clusters.
+- Download button works on Kubernetes clusters.
   ([#490](https://github.com/TheRacetrack/racetrack/issues/490))
 
 ## [2.31.0] - 2024-07-09
