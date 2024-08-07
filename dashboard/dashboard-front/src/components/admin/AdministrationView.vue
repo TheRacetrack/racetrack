@@ -142,9 +142,9 @@ function deletePlugin(name: string, version: string) {
     })
 }
 
-function downloadPlugin(name: string, version: string) {
-  window.location.href = `/api/v1/plugin/${name}/${version}/download`
-}
+const downloadPlugin = (name: string, version: string) => {
+    window.location.href = `/dashboard/api/v1/plugin/${name}/${version}/download`;
+};
 
 function onPluginUploadFailed(err: any) {
     console.error(err)

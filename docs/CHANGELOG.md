@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pub's metrics has been revised to detect overloaded jobs easier.
   ([#493](https://github.com/TheRacetrack/racetrack/issues/493))
 
+### Fixed
+- Download button works on Kubernetes clusters.
+  ([#490](https://github.com/TheRacetrack/racetrack/issues/490))
+
 ## [2.31.0] - 2024-07-09
 ### Added
 - Lifecycle now provides more metrics to monitor its health.
