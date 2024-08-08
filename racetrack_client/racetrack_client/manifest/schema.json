@@ -1,0 +1,147 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "RTCore manifest validation",
+    "type": "object",
+    "required": ["owner_email", "git", "name"],
+    "allOf": [
+        {"oneOf": [
+            {"required": ["lang"]},
+            {"required": ["jobtype"]}
+        ]},
+        {"oneOf": [
+            {"required": ["jobtype_extra"]},
+            {"required": ["python"]},
+            {"required": ["golang"]},
+            {"required": ["wrapper_properties"]},
+            {"allOf": [
+                {"not": {"required": ["jobtype_extra"]}},
+                {"not": {"required": ["python"]}},
+                {"not": {"required": ["golang"]}},
+                {"not": {"required": ["wrapper_properties"]}}
+            ]}
+        ]}
+    ],
+    "uniqueItems": true,
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "jobtype": {
+            "type": "string",
+            "pattern": ".+:.+",
+            "$comment": "Required, logic handled elsewhere for backwards compatability with the depricated version of the same key; lang"
+        },
+        "lang": {
+            "type": "string",
+            "deprecated": true
+        },
+        "git": {
+            "additionalProperties": false,
+            "required": ["remote"],
+            "properties": {
+                "remote": {
+                    "type": "string",
+                    "pattern": "^https://"
+                },
+                "branch": {
+                    "type": "string"
+                },
+                "directory": {
+                    "type": "string"
+                }
+            }
+        },
+        "owner_email": {
+            "type": "string",
+            "pattern": ".+@.+"
+        },
+        "extends": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+            "$comment": "Regular expression provided by https://semver.org/"
+        },
+        "jobtype_extra": {
+            "$comment": "Replaces python, golang, wrapper_properties keys. Cannot appear next to any of these"
+        },
+        "python": {
+            "deprecated": true
+        },
+        "golang": {
+            "deprecated": true
+        },
+        "wrapper_properties": {
+            "deprecated": true
+        },
+        "docker": {
+            "properties": {
+                "dockerfile_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "build_env": {
+            "type": "object",
+            "patternProperties": {
+                ".": {
+                    "type": "string"
+                }
+            }
+        },
+        "image_type": {
+            "type": "string"
+        },
+        "infrastructure_target": {
+            "type": "string"
+        },
+        "labels": {
+            "properties": {
+                "dockerfile_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "public_endpoints": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "replicas": {
+            "type": "number",
+            "maximum": 50
+        },
+        "resources": {
+            "properties": {
+                "memory_min": {},
+                "memory_max": {},
+                "cpu_min": {},
+                "cpu_max": {}
+            }
+        },
+        "runtime_env": {
+            "type": "object",
+            "patternProperties": {
+                ".": {
+                    "type": "string"
+                }
+            }
+        },
+        "secret_build_env_file": {
+            "type": "string"
+        },
+        "secret_runtime_env_file": {
+            "type": "string"
+        },
+        "system_dependencies": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}
+
