@@ -1,23 +1,27 @@
-import os
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.object_mapper import ObjectMapper
-from lifecycle.database.tables import JobFamilyTable
+from lifecycle.database.tables import JobFamilyTable, AuthUserTable, new_uuid
+
+from tests.utils import change_workdir
 
 
 def test_db_models():
-    cwd = os.getcwd()
-    try:
-        os.chdir('..')
-
+    with change_workdir('..'):
         engine = create_db_engine()
         object_builder = ObjectMapper(engine)
 
-        # record: JobFamilyTable = object_builder.find_one(JobFamilyTable, filters={'id': '123'})
-        # assert record is not None
+        records = object_builder.list_all(AuthUserTable)
+        assert len(records) == 1
 
-        records = object_builder.list_all(JobFamilyTable)
-        assert len(records) == 0
-        
+        user: AuthUserTable = object_builder.find_one(AuthUserTable, filters={'id': 1})
+        assert user.id == 1
+        assert user.username == 'admin'
+        assert user.is_staff is True
 
-    finally:
-        os.chdir(cwd)
+        object_builder.create(JobFamilyTable(
+            id=new_uuid(),
+            name='primer',
+        ))
+        family_records = object_builder.list_all(JobFamilyTable)
+        assert len(family_records) == 1
+        assert family_records[0].name == 'primer'

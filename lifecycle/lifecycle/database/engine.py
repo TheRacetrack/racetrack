@@ -52,3 +52,11 @@ class DbEngine(ABC):
         filter_params: list[Any] | None = None,
     ) -> dict[str, Any] | None:
         raise NotImplementedError
+
+    @abstractmethod
+    def insert_one(
+        self,
+        table: str,
+        data: dict[str, Any],
+    ) -> None:
+        raise NotImplementedError

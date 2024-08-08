@@ -6,6 +6,7 @@ from lifecycle.database.postgres.query_builder import QueryBuilder
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.tables import TableModel
+from lifecycle.database.type_parser import parse_typed_object
 
 logger = get_logger(__name__)
 
@@ -38,7 +39,7 @@ class ObjectMapper:
             columns = ', '.join(filters.keys())
             raise EntityNotFound(f'{table_type.table_name()} record not found for given {columns}')
 
-        return table_type.from_row(row)
+        return _convert_row_to_object(row, table_type)
 
     def list_all(
         self,
@@ -50,4 +51,26 @@ class ObjectMapper:
             fields=table_type.fields(),
             order_by=order_by,
         )
-        return [table_type.from_row(row) for row in rows]
+        return [_convert_row_to_object(row, table_type) for row in rows]
+
+    def create(
+        self,
+        record_object: TableModel,
+    ):
+        fields: list[str] = record_object.fields()
+        data = {}
+        for field in fields:
+            if not hasattr(record_object, field):
+                raise ValueError(f'given table model {type(record_object).__name__} has no field {field}')
+            data[field] = getattr(record_object, field)
+        self.engine.insert_one(
+            table=record_object.table_name(),
+            data=data,
+        )
+
+
+def _convert_row_to_object(
+    row: dict[str, Any],
+    table_type: Type[T],
+) -> T:
+    return parse_typed_object(row, table_type)

@@ -137,6 +137,14 @@ class PostgresEngine(DbEngine):
             limit=1,
         )
         return self.execute_sql_fetch_one(query, params)
+    
+    def insert_one(
+        self,
+        table: str,
+        data: dict[str, Any],
+    ) -> None:
+        query, params = self.query_builder.insert_one(table=table, data=data)
+        self.execute_sql(query, params)
 
 
 def get_database_name() -> str:

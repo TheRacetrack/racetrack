@@ -10,9 +10,17 @@ logger = get_logger(__name__)
 
 class SQLiteEngine(DbEngine):
 
-    def __init__(self):
+    def __init__(self, copy: bool = True):
         super().__init__()
-        self.connection: sqlite3.Connection = sqlite3.connect("lifecycle/django/db.sqlite3")
+        self.connection: sqlite3.Connection
+        if copy:
+            src_database: sqlite3.Connection = sqlite3.connect("lifecycle/django/db.sqlite3")
+            self.connection = sqlite3.connect(':memory:')
+            src_query = "".join(line for line in src_database.iterdump())
+            self.connection.executescript(src_query)
+            src_database.close()
+        else:
+            self.connection = sqlite3.connect("lifecycle/django/db.sqlite3")
         self.query_builder: QueryBuilder = QueryBuilder()
 
     def close(self):
@@ -79,3 +87,11 @@ class SQLiteEngine(DbEngine):
             limit=1,
         )
         return self.execute_sql_fetch_one(query, params)
+    
+    def insert_one(
+        self,
+        table: str,
+        data: dict[str, Any],
+    ) -> None:
+        query, params = self.query_builder.insert_one(table=table, data=data)
+        self.execute_sql(query, params)
