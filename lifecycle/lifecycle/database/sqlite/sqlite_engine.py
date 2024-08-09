@@ -2,7 +2,7 @@ from typing import Any
 import sqlite3
 
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.engine import DbEngine
+from lifecycle.database.engine import DbEngine, _check_affected_rows
 from lifecycle.database.sqlite.query_builder import QueryBuilder
 
 logger = get_logger(__name__)
@@ -29,8 +29,18 @@ class SQLiteEngine(DbEngine):
     def placeholder(self) -> str:
         return '?'
 
-    def execute_sql(self, query: str, params: list | None = None) -> None:
-        self.connection.execute(query, params or [])
+    def execute_sql(
+        self,
+        query: str,
+        params: list | None = None,
+        expected_affected_rows: int = -1,
+    ) -> None:
+        cursor: sqlite3.Cursor = self.connection.cursor()
+        try:
+            cursor.execute(query, params or [])
+            _check_affected_rows(expected_affected_rows, cursor.rowcount)
+        finally:
+            cursor.close()
 
     def execute_sql_fetch_one(self, query: str, params: list | None = None) -> dict[str, Any] | None:
         cursor: sqlite3.Cursor = self.connection.cursor()
@@ -94,7 +104,7 @@ class SQLiteEngine(DbEngine):
         data: dict[str, Any],
     ) -> None:
         query, params = self.query_builder.insert_one(table=table, data=data)
-        self.execute_sql(query, params)
+        self.execute_sql(query, params, expected_affected_rows=1)
 
     def count(
         self,
@@ -110,7 +120,21 @@ class SQLiteEngine(DbEngine):
         assert row is not None
         return row['count']
     
-    def update(
+    def update_one(
+        self,
+        table: str,
+        filter_conditions: list[str],
+        filter_params: list[Any],
+        new_data: dict[str, Any],
+    ) -> None:
+        query, params = self.query_builder.update(
+            table=table,
+            filter_conditions=filter_conditions, filter_params=filter_params,
+            new_data=new_data,
+        )
+        self.execute_sql(query, params, expected_affected_rows=1)
+    
+    def update_many(
         self,
         table: str,
         filter_conditions: list[str],
@@ -124,7 +148,7 @@ class SQLiteEngine(DbEngine):
         )
         self.execute_sql(query, params)
 
-    def delete(
+    def delete_one(
         self,
         table: str,
         filter_conditions: list[str] | None = None,
@@ -134,4 +158,4 @@ class SQLiteEngine(DbEngine):
             table=table,
             filter_conditions=filter_conditions, filter_params=filter_params,
         )
-        self.execute_sql(query, params)
+        self.execute_sql(query, params, expected_affected_rows=1)

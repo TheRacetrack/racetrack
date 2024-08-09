@@ -6,7 +6,7 @@ from psycopg import Connection, Cursor
 from psycopg.sql import SQL, Literal, Composable
 
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.engine import DbEngine
+from lifecycle.database.engine import DbEngine, _check_affected_rows
 from lifecycle.database.postgres.query_builder import QueryBuilder
 
 logger = get_logger(__name__)
@@ -68,12 +68,18 @@ class PostgresEngine(DbEngine):
     def placeholder(self) -> str:
         return '%s'
 
-    def execute_sql(self, query: str | Composable, params: list | None = None) -> None:
+    def execute_sql(
+        self,
+        query: str | Composable,
+        params: list | None = None,
+        expected_affected_rows: int = -1,
+    ) -> None:
         with self.connection_pool.connection() as conn:
             cursor: Cursor
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
                 cursor.execute(sql, params=params)
+                _check_affected_rows(expected_affected_rows, cursor.rowcount)
 
     def execute_sql_fetch_one(self, query: str | Composable, params: list | None = None) -> dict[str, Any] | None:
         with self.connection_pool.connection() as conn:
@@ -144,7 +150,7 @@ class PostgresEngine(DbEngine):
         data: dict[str, Any],
     ) -> None:
         query, params = self.query_builder.insert_one(table=table, data=data)
-        self.execute_sql(query, params)
+        self.execute_sql(query, params, expected_affected_rows=1)
 
     def count(
         self,
@@ -159,8 +165,22 @@ class PostgresEngine(DbEngine):
         row = self.execute_sql_fetch_one(query, params)
         assert row is not None
         return row['count']
+
+    def update_one(
+        self,
+        table: str,
+        filter_conditions: list[str],
+        filter_params: list[Any],
+        new_data: dict[str, Any],
+    ) -> None:
+        query, params = self.query_builder.update(
+            table=table,
+            filter_conditions=filter_conditions, filter_params=filter_params,
+            new_data=new_data,
+        )
+        self.execute_sql(query, params, expected_affected_rows=1)
     
-    def update(
+    def update_many(
         self,
         table: str,
         filter_conditions: list[str],
@@ -174,7 +194,7 @@ class PostgresEngine(DbEngine):
         )
         self.execute_sql(query, params)
 
-    def delete(
+    def delete_one(
         self,
         table: str,
         filter_conditions: list[str] | None = None,
@@ -184,7 +204,7 @@ class PostgresEngine(DbEngine):
             table=table,
             filter_conditions=filter_conditions, filter_params=filter_params,
         )
-        self.execute_sql(query, params)
+        self.execute_sql(query, params, expected_affected_rows=1)
 
 
 

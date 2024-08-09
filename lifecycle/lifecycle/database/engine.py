@@ -15,7 +15,12 @@ class DbEngine(ABC):
         return {}
 
     @abstractmethod
-    def execute_sql(self, query: str, params: list | None = None) -> None:
+    def execute_sql(
+        self,
+        query: str,
+        params: list | None = None,
+        expected_affected_rows: int = -1,
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -71,7 +76,17 @@ class DbEngine(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def update(
+    def update_many(
+        self,
+        table: str,
+        filter_conditions: list[str],
+        filter_params: list[Any],
+        new_data: dict[str, Any],
+    ) -> None:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def update_one(
         self,
         table: str,
         filter_conditions: list[str],
@@ -81,10 +96,27 @@ class DbEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def delete(
+    def delete_one(
         self,
         table: str,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
     ) -> None:
         raise NotImplementedError
+
+
+class NoRowsAffected(RuntimeError):
+    pass
+
+class TooManyRowsAffected(RuntimeError):
+    pass
+
+
+def _check_affected_rows(expected: int, actual: int):
+    if expected > 0:
+        if actual > expected:
+            raise TooManyRowsAffected(f'Affected too many rows: {actual}, expected {expected}')
+        elif actual == 0:
+            raise NoRowsAffected(f'No rows affected, expected {expected}')
+        elif actual != expected:
+            raise RuntimeError(f'Expected {expected} rows affected, but got {actual}')

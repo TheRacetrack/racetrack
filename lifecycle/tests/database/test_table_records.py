@@ -1,8 +1,10 @@
+from lifecycle.database.engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.object_mapper import ObjectMapper
 from lifecycle.database.tables import JobFamilyRecord, AuthUserRecord
 from lifecycle.database.table_model import new_uuid
 
+from racetrack_client.utils.time import now
 from tests.utils import change_workdir
 
 
@@ -18,6 +20,7 @@ def test_record_operations():
         assert user.id == 1
         assert user.username == 'admin'
         assert user.is_staff is True
+        assert user.date_joined < now()
 
         object_builder.create(JobFamilyRecord(
             id=new_uuid(),
@@ -36,3 +39,9 @@ def test_record_operations():
 
         object_builder.delete(JobFamilyRecord, id=record_id)
         assert object_builder.count(JobFamilyRecord) == 0
+        
+        try:
+            object_builder.delete(JobFamilyRecord, id=record_id)
+            assert False, 'it should raise NoRowsAffected exception'
+        except NoRowsAffected:
+            pass

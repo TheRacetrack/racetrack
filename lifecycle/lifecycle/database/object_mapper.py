@@ -100,7 +100,7 @@ class ObjectMapper:
         filter_kwargs = dict(zip(primary_key_columns, primary_keys))
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         new_record_data = _get_record_data(record_object)
-        self.engine.update(
+        self.engine.update_one(
             table=table_type.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
@@ -114,7 +114,7 @@ class ObjectMapper:
     ):
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
-        self.engine.delete(
+        self.engine.delete_one(
             table=table_type.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
