@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Self, ClassVar, Dict, Protocol
+from typing import Any, ClassVar, Dict, Protocol
 from dataclasses import asdict, is_dataclass
 import uuid
 
@@ -23,12 +23,28 @@ class TableModel(ABC):
         return table_name
     
     @classmethod
+    def primary_key_columns(cls) -> list[str]:
+        metadata = getattr(cls, 'Metadata')
+        assert metadata is not None, f'Metadata class not specified in {cls}'
+        primary_key = getattr(metadata, 'primary_key')
+        assert metadata is not None, f'primary_key not specified in {cls}.Metadata'
+        assert len(primary_key), f'primary_key of {cls} should consist of at least one column'
+        return primary_key
+    
+    def primary_keys(self) -> list:
+        columns = self.primary_key_columns()
+        for column in columns:
+            if not hasattr(self, column):
+                raise ValueError(f'record has no field {column}')
+        return [getattr(self, column) for column in columns]
+    
+    @classmethod
     def fields(cls) -> list[str]:
         field_annotations: dict[str, type] = cls.__annotations__
         return list(field_annotations.keys())
 
     @classmethod
-    def from_row(cls, row: dict[str, Any]) -> Self:
+    def from_row(cls, row: dict[str, Any]) -> 'TableModel':
         return cls(**row)
 
     def to_row(self: IsDataclass) -> dict[str, Any]:

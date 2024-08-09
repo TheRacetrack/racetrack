@@ -8,6 +8,7 @@ from lifecycle.database.table_model import TableModel
 class JobFamilyRecord(TableModel):
     class Metadata:
         table_name = 'registry_jobfamily'
+        primary_key = ['id']
 
     id: str
     name: str
@@ -17,6 +18,7 @@ class JobFamilyRecord(TableModel):
 class AuthUserRecord(TableModel):
     class Metadata:
         table_name = 'auth_user'
+        primary_key = ['id']
 
     id: int
     password: str

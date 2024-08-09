@@ -17,17 +17,16 @@ class ObjectMapper:
 
     def __init__(self, engine: DbEngine):
         self.engine: DbEngine = engine
+        self.placeholder = self.engine.placeholder()
         self.query_builder: QueryBuilder = QueryBuilder()
 
     def find_one(
         self,
         table_type: Type[T],
-        filters: dict[str, Any],
+        **filter_kwargs: Any,
     ) -> T:
-        assert filters, 'filters should contain at least one criteria'
-        placeholder = self.engine.placeholder()
-        filter_conditions = [f'{field} = {placeholder}' for field in filters.keys()]
-        filter_params = list(filters.values())
+        assert len(filter_kwargs), 'query should be filtered by at least one criteria'
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
 
         row = self.engine.select_one(
             table=table_type.table_name(),
@@ -36,8 +35,8 @@ class ObjectMapper:
             filter_params=filter_params,
         )
         if row is None:
-            columns = ', '.join(filters.keys())
-            raise EntityNotFound(f'{table_type.table_name()} record not found for given {columns}')
+            joined = ", ".join(filter_kwargs.keys())
+            raise EntityNotFound(f'{table_type.table_name()} record not found for given {joined}')
 
         return _convert_row_to_object(row, table_type)
 
@@ -52,20 +51,73 @@ class ObjectMapper:
             order_by=order_by,
         )
         return [_convert_row_to_object(row, table_type) for row in rows]
+    
+    def count(
+        self,
+        table_type: Type[T],
+        **filter_kwargs: Any,
+    ) -> int:
+        if not filter_kwargs:
+            return self.engine.count(table=table_type.table_name())
+        
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        return self.engine.count(
+            table=table_type.table_name(),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+        )
+
+    def _build_filter_conditions(
+        self,
+        table_type: Type[T],
+        filter_kwargs: dict[str, Any],
+    ) -> tuple[list[str], list[Any]]:
+        filter_keys: list[str] = list(filter_kwargs.keys())
+        fields = table_type.fields()
+        for filter_key in filter_keys:
+            assert filter_key in fields, f'filtered key {filter_key} is not a valid column'
+        filter_conditions: list[str] = [f'{field} = {self.placeholder}' for field in filter_keys]
+        filter_params = list(filter_kwargs.values())
+        return filter_conditions, filter_params
 
     def create(
         self,
         record_object: TableModel,
     ):
-        fields: list[str] = record_object.fields()
-        data = {}
-        for field in fields:
-            if not hasattr(record_object, field):
-                raise ValueError(f'given table model {type(record_object).__name__} has no field {field}')
-            data[field] = getattr(record_object, field)
+        record_data = _get_record_data(record_object)
         self.engine.insert_one(
             table=record_object.table_name(),
-            data=data,
+            data=record_data,
+        )
+    
+    def update(
+        self,
+        table_type: Type[T],
+        record_object: T,
+    ):
+        primary_key_columns = table_type.primary_key_columns()
+        primary_keys = record_object.primary_keys()
+        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        new_record_data = _get_record_data(record_object)
+        self.engine.update(
+            table=table_type.table_name(),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+            new_data=new_record_data,
+        )
+    
+    def delete(
+        self,
+        table_type: Type[T],
+        **filter_kwargs: Any,
+    ):
+        assert len(filter_kwargs), 'query should be filtered by at least one criteria'
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        self.engine.delete(
+            table=table_type.table_name(),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
         )
 
 
@@ -74,3 +126,13 @@ def _convert_row_to_object(
     table_type: Type[T],
 ) -> T:
     return parse_typed_object(row, table_type)
+
+
+def _get_record_data(record_object: TableModel) -> dict[str, Any]:
+    fields: list[str] = record_object.fields()
+    data = {}
+    for field in fields:
+        if not hasattr(record_object, field):
+            raise ValueError(f'given table model {type(record_object).__name__} has no field {field}')
+        data[field] = getattr(record_object, field)
+    return data

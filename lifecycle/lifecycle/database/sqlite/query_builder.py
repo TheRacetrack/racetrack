@@ -71,6 +71,16 @@ class QueryBuilder:
         query = f'delete from {table}{where_clause}'
         return query, where_params
     
+    def count(
+        self,
+        table: str,
+        filter_conditions: list[str] | None = None,
+        filter_params: list[Any] | None = None,
+    ) -> QueryWithParams:
+        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
+        query = f'select count(*) as count from {table}{where_clause}'
+        return query, where_params
+    
     def _build_where_clause(self,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,

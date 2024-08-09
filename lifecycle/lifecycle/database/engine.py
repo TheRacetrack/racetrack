@@ -48,8 +48,8 @@ class DbEngine(ABC):
         self,
         table: str,
         fields: list[str],
-        filter_conditions: list[str] | None = None,
-        filter_params: list[Any] | None = None,
+        filter_conditions: list[str],
+        filter_params: list[Any],
     ) -> dict[str, Any] | None:
         raise NotImplementedError
 
@@ -58,5 +58,33 @@ class DbEngine(ABC):
         self,
         table: str,
         data: dict[str, Any],
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def count(
+        self,
+        table: str,
+        filter_conditions: list[str] | None = None,
+        filter_params: list[Any] | None = None,
+    ) -> int:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def update(
+        self,
+        table: str,
+        filter_conditions: list[str],
+        filter_params: list[Any],
+        new_data: dict[str, Any],
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete(
+        self,
+        table: str,
+        filter_conditions: list[str] | None = None,
+        filter_params: list[Any] | None = None,
     ) -> None:
         raise NotImplementedError

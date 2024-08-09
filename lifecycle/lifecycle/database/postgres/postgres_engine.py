@@ -128,8 +128,8 @@ class PostgresEngine(DbEngine):
         self,
         table: str,
         fields: list[str],
-        filter_conditions: list[str] | None = None,
-        filter_params: list[Any] | None = None,
+        filter_conditions: list[str],
+        filter_params: list[Any],
     ) -> dict[str, Any] | None:
         query, params = self.query_builder.select(
             table=table, fields=fields,
@@ -145,6 +145,47 @@ class PostgresEngine(DbEngine):
     ) -> None:
         query, params = self.query_builder.insert_one(table=table, data=data)
         self.execute_sql(query, params)
+
+    def count(
+        self,
+        table: str,
+        filter_conditions: list[str] | None = None,
+        filter_params: list[Any] | None = None,
+    ) -> int:
+        query, params = self.query_builder.count(
+            table=table,
+            filter_conditions=filter_conditions, filter_params=filter_params,
+        )
+        row = self.execute_sql_fetch_one(query, params)
+        assert row is not None
+        return row['count']
+    
+    def update(
+        self,
+        table: str,
+        filter_conditions: list[str],
+        filter_params: list[Any],
+        new_data: dict[str, Any],
+    ) -> None:
+        query, params = self.query_builder.update(
+            table=table,
+            filter_conditions=filter_conditions, filter_params=filter_params,
+            new_data=new_data,
+        )
+        self.execute_sql(query, params)
+
+    def delete(
+        self,
+        table: str,
+        filter_conditions: list[str] | None = None,
+        filter_params: list[Any] | None = None,
+    ) -> None:
+        query, params = self.query_builder.delete(
+            table=table,
+            filter_conditions=filter_conditions, filter_params=filter_params,
+        )
+        self.execute_sql(query, params)
+
 
 
 def get_database_name() -> str:
