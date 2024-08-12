@@ -88,7 +88,7 @@ class ObjectMapper:
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
-    
+
     def exists(
         self,
         table_type: Type[T],
@@ -98,7 +98,7 @@ class ObjectMapper:
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         row = self.query_wrapper.select_one(
             table=table_type.table_name(),
-            fields=table_type.fields(),
+            fields=table_type.primary_key_columns(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -116,20 +116,48 @@ class ObjectMapper:
 
     def update(
         self,
-        table_type: Type[T],
-        record_object: T,
+        record_object: TableModel,
     ):
-        primary_key_columns = table_type.primary_key_columns()
+        primary_key_columns = record_object.primary_key_columns()
         primary_keys = record_object.primary_keys()
         filter_kwargs = dict(zip(primary_key_columns, primary_keys))
-        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        filter_conditions, filter_params = self._build_filter_conditions(
+            type(record_object), filter_kwargs
+        )
         new_record_data = _get_record_data(record_object)
         self.query_wrapper.update_one(
-            table=table_type.table_name(),
+            table=record_object.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
             new_data=new_record_data,
         )
+
+    def record_exists(
+        self,
+        record_object: TableModel,
+    ) -> bool:
+        primary_key_columns = record_object.primary_key_columns()
+        primary_keys = record_object.primary_keys()
+        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        filter_conditions, filter_params = self._build_filter_conditions(
+            type(record_object), filter_kwargs
+        )
+        row = self.query_wrapper.select_one(
+            table=record_object.table_name(),
+            fields=primary_key_columns,
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+        )
+        return row is not None
+
+    def create_or_update(
+        self,
+        record_object: TableModel,
+    ):
+        if self.record_exists(record_object):
+            self.update(record_object)
+        else:
+            self.create(record_object)
 
     def delete(
         self,
