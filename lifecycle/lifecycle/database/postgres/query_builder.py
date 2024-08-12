@@ -1,16 +1,17 @@
 from typing import Any, Iterable
 
-from psycopg.sql import SQL, Literal, Identifier, Placeholder, Composable, Composed
+from psycopg.sql import SQL, Literal, Identifier, Placeholder, Composable
 from psycopg.abc import Query
 
 from racetrack_client.log.logs import get_logger
+from lifecycle.database.base_query_builder import BaseQueryBuilder, QueryWithParams
 
 logger = get_logger(__name__)
 
-QueryWithParams = tuple[Composed, list[Any]]
 
-
-class QueryBuilder:
+class QueryBuilder(BaseQueryBuilder):
+    def placeholder(self) -> str:
+        return '%s'
 
     def select(
         self,
@@ -67,7 +68,9 @@ class QueryBuilder:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('update {table} set {updated_fields}{where}').format(
             table=Literal(table),
-            updated_fields=SQL(', ').join([SQL('{} = %s').format(Identifier(field)) for field in new_data.keys()]),
+            updated_fields=SQL(', ').join(
+                [SQL('{} = %s').format(Identifier(field)) for field in new_data.keys()]
+            ),
             where=where_clause,
         )
         params = list(new_data.values()) + where_params
@@ -85,7 +88,7 @@ class QueryBuilder:
             where=where_clause,
         )
         return query, where_params
-    
+
     def count(
         self,
         table: str,
@@ -98,18 +101,19 @@ class QueryBuilder:
             where=where_clause,
         )
         return query, where_params
-    
-    def _build_where_clause(self,
+
+    def _build_where_clause(
+        self,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
     ) -> tuple[Query, list]:
         if not filter_conditions:
             return SQL(''), []
         query = SQL(' where {}').format(
-            SQL(' and ').join(map(SQL, filter_conditions))
+            SQL(' and ').join(map(SQL, filter_conditions))  # type: ignore
         )
         return query, filter_params or []
-    
+
     def _build_order_fields(self, order_by: list[str] | None) -> Iterable[Composable]:
         for field in order_by or []:
             if field.startswith('-'):

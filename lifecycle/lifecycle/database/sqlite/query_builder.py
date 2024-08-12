@@ -1,13 +1,14 @@
 from typing import Any, Iterable
 
 from racetrack_client.log.logs import get_logger
+from lifecycle.database.base_query_builder import BaseQueryBuilder, QueryWithParams
 
 logger = get_logger(__name__)
 
-QueryWithParams = tuple[str, list[Any]]
 
-
-class QueryBuilder:
+class QueryBuilder(BaseQueryBuilder):
+    def placeholder(self) -> str:
+        return '?'
 
     def select(
         self,
@@ -70,7 +71,7 @@ class QueryBuilder:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = f'delete from {table}{where_clause}'
         return query, where_params
-    
+
     def count(
         self,
         table: str,
@@ -80,8 +81,9 @@ class QueryBuilder:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = f'select count(*) as count from {table}{where_clause}'
         return query, where_params
-    
-    def _build_where_clause(self,
+
+    def _build_where_clause(
+        self,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
     ) -> tuple[str, list]:
@@ -90,7 +92,7 @@ class QueryBuilder:
         joined_conditions = ' and '.join(filter_conditions)
         query = f' where {joined_conditions}'
         return query, filter_params or []
-    
+
     def _build_order_fields(self, order_by: list[str] | None) -> Iterable[str]:
         for field in order_by or []:
             if field.startswith('-'):

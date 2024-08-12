@@ -3,17 +3,16 @@ from typing import Any
 
 from psycopg_pool import ConnectionPool
 from psycopg import Connection, Cursor
-from psycopg.sql import SQL, Literal, Composable
+from psycopg.sql import SQL, Literal, Composable, Composed
 
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.engine import DbEngine, _check_affected_rows
+from lifecycle.database.base_engine import DbEngine, check_affected_rows
 from lifecycle.database.postgres.query_builder import QueryBuilder
 
 logger = get_logger(__name__)
 
 
 class PostgresEngine(DbEngine):
-
     def __init__(self, max_pool_size: int = 20):
         super().__init__()
         self.connection_status: bool | None = None
@@ -64,13 +63,10 @@ class PostgresEngine(DbEngine):
     @property
     def connection_pool_size(self) -> int:
         return self.connection_pool.get_stats()['pool_size']
-    
-    def placeholder(self) -> str:
-        return '%s'
 
     def execute_sql(
         self,
-        query: str | Composable,
+        query: str | Composed,
         params: list | None = None,
         expected_affected_rows: int = -1,
     ) -> None:
@@ -79,9 +75,11 @@ class PostgresEngine(DbEngine):
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
                 cursor.execute(sql, params=params)
-                _check_affected_rows(expected_affected_rows, cursor.rowcount)
+                check_affected_rows(expected_affected_rows, cursor.rowcount)
 
-    def execute_sql_fetch_one(self, query: str | Composable, params: list | None = None) -> dict[str, Any] | None:
+    def execute_sql_fetch_one(
+        self, query: str | Composed, params: list | None = None
+    ) -> dict[str, Any] | None:
         with self.connection_pool.connection() as conn:
             cursor: Cursor
             with conn.cursor() as cursor:
@@ -94,7 +92,9 @@ class PostgresEngine(DbEngine):
                 col_names = [desc[0] for desc in cursor.description]
                 return dict(zip(col_names, row))
 
-    def execute_sql_fetch_all(self, query: str | Composable, params: list | None = None) -> list[dict]:
+    def execute_sql_fetch_all(
+        self, query: str | Composed, params: list | None = None
+    ) -> list[dict]:
         with self.connection_pool.connection() as conn:
             cursor: Cursor
             with conn.cursor() as cursor:
@@ -104,115 +104,20 @@ class PostgresEngine(DbEngine):
                 assert cursor.description, 'no column names in the result'
                 col_names = [desc[0] for desc in cursor.description]
                 return [dict(zip(col_names, row)) for row in rows]
-    
-    def _get_query_bytes(self, query: str | Composable, connection: Connection) -> bytes:
+
+    def _get_query_bytes(self, query: str | Composed, connection: Connection) -> bytes:
         if isinstance(query, Composable):
             return query.as_bytes(connection)
         if isinstance(query, str):
             return query.encode()
-        raise ValueError(f"Unsupported query type: {type(query)}")
-            
-    def select_many(
-        self,
-        table: str,
-        fields: list[str],
-        filter_conditions: list[str] | None = None,
-        filter_params: list[Any] | None = None,
-        order_by: list[str] | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
-    ) -> list[dict]:
-        query, params = self.query_builder.select(
-            table=table, fields=fields,
-            filter_conditions=filter_conditions, filter_params=filter_params,
-            order_by=order_by,
-            limit=limit, offset=offset,
-        )
-        return self.execute_sql_fetch_all(query, params)
-
-    def select_one(
-        self,
-        table: str,
-        fields: list[str],
-        filter_conditions: list[str],
-        filter_params: list[Any],
-    ) -> dict[str, Any] | None:
-        query, params = self.query_builder.select(
-            table=table, fields=fields,
-            filter_conditions=filter_conditions, filter_params=filter_params,
-            limit=1,
-        )
-        return self.execute_sql_fetch_one(query, params)
-    
-    def insert_one(
-        self,
-        table: str,
-        data: dict[str, Any],
-    ) -> None:
-        query, params = self.query_builder.insert_one(table=table, data=data)
-        self.execute_sql(query, params, expected_affected_rows=1)
-
-    def count(
-        self,
-        table: str,
-        filter_conditions: list[str] | None = None,
-        filter_params: list[Any] | None = None,
-    ) -> int:
-        query, params = self.query_builder.count(
-            table=table,
-            filter_conditions=filter_conditions, filter_params=filter_params,
-        )
-        row = self.execute_sql_fetch_one(query, params)
-        assert row is not None
-        return row['count']
-
-    def update_one(
-        self,
-        table: str,
-        filter_conditions: list[str],
-        filter_params: list[Any],
-        new_data: dict[str, Any],
-    ) -> None:
-        query, params = self.query_builder.update(
-            table=table,
-            filter_conditions=filter_conditions, filter_params=filter_params,
-            new_data=new_data,
-        )
-        self.execute_sql(query, params, expected_affected_rows=1)
-    
-    def update_many(
-        self,
-        table: str,
-        filter_conditions: list[str],
-        filter_params: list[Any],
-        new_data: dict[str, Any],
-    ) -> None:
-        query, params = self.query_builder.update(
-            table=table,
-            filter_conditions=filter_conditions, filter_params=filter_params,
-            new_data=new_data,
-        )
-        self.execute_sql(query, params)
-
-    def delete_one(
-        self,
-        table: str,
-        filter_conditions: list[str] | None = None,
-        filter_params: list[Any] | None = None,
-    ) -> None:
-        query, params = self.query_builder.delete(
-            table=table,
-            filter_conditions=filter_conditions, filter_params=filter_params,
-        )
-        self.execute_sql(query, params, expected_affected_rows=1)
-
+        raise ValueError(f'Unsupported query type: {type(query)}')
 
 
 def get_database_name() -> str:
     database_name = os.environ.get('POSTGRES_DB', '')
     if '{CLUSTER_NAME}' in database_name:  # evaluate templated database name
         cluster_hostname = os.environ.get('CLUSTER_FQDN')
-        assert cluster_hostname, "CLUSTER_FQDN is not set"
+        assert cluster_hostname, 'CLUSTER_FQDN is not set'
         parts = cluster_hostname.split('.')
         if parts[0] == os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack'):
             cluster_name = parts[1]
@@ -227,7 +132,7 @@ def get_schema_name() -> str | None:
     if postgres_schema == '{CLUSTER_FQDN}':
         cluster_hostname = os.environ.get('CLUSTER_FQDN')
         racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
-        assert cluster_hostname, "CLUSTER_FQDN is not set"
+        assert cluster_hostname, 'CLUSTER_FQDN is not set'
         parts = cluster_hostname.split('.')
         if parts[0] == racetrack_subdomain:
             postgres_schema = parts[1]
@@ -237,5 +142,5 @@ def get_schema_name() -> str | None:
     if not postgres_schema:
         return None
     assert not postgres_schema.startswith('"'), "POSTGRES_SCHEMA should not start with '\"'"
-    assert not postgres_schema.startswith("'"), "POSTGRES_SCHEMA should not start with '\''"
+    assert not postgres_schema.startswith("'"), "POSTGRES_SCHEMA should not start with '''"
     return postgres_schema

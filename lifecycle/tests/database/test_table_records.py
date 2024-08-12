@@ -1,7 +1,7 @@
-from lifecycle.database.engine import NoRowsAffected
+from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.object_mapper import ObjectMapper
-from lifecycle.database.tables import JobFamilyRecord, AuthUserRecord
+from lifecycle.database.schema.tables import JobFamilyRecord, AuthUserRecord
 from lifecycle.database.table_model import new_uuid
 
 from racetrack_client.utils.time import now

@@ -1,11 +1,11 @@
 from typing import Any, Type, TypeVar
 
-from lifecycle.database.engine import DbEngine
-from lifecycle.database.postgres.query_builder import QueryBuilder
+from lifecycle.database.base_engine import DbEngine
 
+from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.tables import TableModel
+from lifecycle.database.schema.tables import TableModel
 from lifecycle.database.type_parser import parse_typed_object
 
 logger = get_logger(__name__)
@@ -16,9 +16,8 @@ T = TypeVar("T", bound=TableModel)
 class ObjectMapper:
 
     def __init__(self, engine: DbEngine):
-        self.engine: DbEngine = engine
-        self.placeholder = self.engine.placeholder()
-        self.query_builder: QueryBuilder = QueryBuilder()
+        self.query_wrapper: QueryWrapper = QueryWrapper(engine)
+        self.placeholder: str = engine.query_builder.placeholder()
 
     def find_one(
         self,
@@ -28,7 +27,7 @@ class ObjectMapper:
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
 
-        row = self.engine.select_one(
+        row = self.query_wrapper.select_one(
             table=table_type.table_name(),
             fields=table_type.fields(),
             filter_conditions=filter_conditions,
@@ -45,7 +44,7 @@ class ObjectMapper:
         table_type: Type[T],
         order_by: list[str] | None = None,
     ) -> list[T]:
-        rows = self.engine.select_many(
+        rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.fields(),
             order_by=order_by,
@@ -58,10 +57,10 @@ class ObjectMapper:
         **filter_kwargs: Any,
     ) -> int:
         if not filter_kwargs:
-            return self.engine.count(table=table_type.table_name())
+            return self.query_wrapper.count(table=table_type.table_name())
         
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
-        return self.engine.count(
+        return self.query_wrapper.count(
             table=table_type.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
@@ -85,7 +84,7 @@ class ObjectMapper:
         record_object: TableModel,
     ):
         record_data = _get_record_data(record_object)
-        self.engine.insert_one(
+        self.query_wrapper.insert_one(
             table=record_object.table_name(),
             data=record_data,
         )
@@ -100,7 +99,7 @@ class ObjectMapper:
         filter_kwargs = dict(zip(primary_key_columns, primary_keys))
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         new_record_data = _get_record_data(record_object)
-        self.engine.update_one(
+        self.query_wrapper.update_one(
             table=table_type.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
@@ -114,7 +113,7 @@ class ObjectMapper:
     ):
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
-        self.engine.delete_one(
+        self.query_wrapper.delete_one(
             table=table_type.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
