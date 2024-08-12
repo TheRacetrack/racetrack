@@ -30,7 +30,7 @@ class QueryBuilder(BaseQueryBuilder):
         """
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('select {fields} from {table}{where}').format(
-            fields=SQL(', ').join(map(Literal, fields)),
+            fields=SQL(', ').join(map(Identifier, fields)),
             table=Identifier(table),
             where=where_clause,
         )
@@ -51,7 +51,7 @@ class QueryBuilder(BaseQueryBuilder):
         data: dict[str, Any],
     ) -> QueryWithParams:
         query = SQL('insert into {table} ({fields}) values ({values})').format(
-            table=Literal(table),
+            table=Identifier(table),
             fields=SQL(', ').join(map(Identifier, data.keys())),
             values=SQL(', ').join(Placeholder() * len(data)),
         )
@@ -67,7 +67,7 @@ class QueryBuilder(BaseQueryBuilder):
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('update {table} set {updated_fields}{where}').format(
-            table=Literal(table),
+            table=Identifier(table),
             updated_fields=SQL(', ').join(
                 [SQL('{} = %s').format(Identifier(field)) for field in new_data.keys()]
             ),
@@ -84,7 +84,7 @@ class QueryBuilder(BaseQueryBuilder):
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('delete from {table}{where}').format(
-            table=Literal(table),
+            table=Identifier(table),
             where=where_clause,
         )
         return query, where_params
@@ -97,7 +97,7 @@ class QueryBuilder(BaseQueryBuilder):
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('select count(*) as count from {table}{where}').format(
-            table=Literal(table),
+            table=Identifier(table),
             where=where_clause,
         )
         return query, where_params

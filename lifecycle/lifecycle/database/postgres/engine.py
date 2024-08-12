@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 
 class PostgresEngine(DbEngine):
-    def __init__(self, max_pool_size: int = 20):
+    def __init__(self, max_pool_size: int = 20, log_queries: bool = False):
         super().__init__()
         self.connection_status: bool | None = None
         conn_params = {
@@ -40,6 +40,7 @@ class PostgresEngine(DbEngine):
             num_workers=3,  # Number of background worker threads used to maintain the pool state. Background workers are used for example to create new connections and to clean up connections when they are returned to the pool
         )
         self.query_builder: QueryBuilder = QueryBuilder()
+        self.log_queries: bool = log_queries
 
     def _on_configure_connection(self, connection: Connection) -> None:
         if self.schema:
@@ -77,6 +78,7 @@ class PostgresEngine(DbEngine):
             cursor: Cursor
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
+                self._log_query(sql)
                 cursor.execute(sql, params=params)
                 check_affected_rows(expected_affected_rows, cursor.rowcount)
 
@@ -87,6 +89,7 @@ class PostgresEngine(DbEngine):
             cursor: Cursor
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
+                self._log_query(sql)
                 cursor.execute(sql, params=params)
                 row = cursor.fetchone()
                 if row is None:
@@ -102,6 +105,7 @@ class PostgresEngine(DbEngine):
             cursor: Cursor
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
+                self._log_query(sql)
                 cursor.execute(sql, params=params)
                 rows: list = cursor.fetchall()
                 assert cursor.description, 'no column names in the result'
@@ -114,6 +118,10 @@ class PostgresEngine(DbEngine):
         if isinstance(query, str):
             return query.encode()
         raise ValueError(f'Unsupported query type: {type(query)}')
+
+    def _log_query(self, query: bytes) -> None:
+        if self.log_queries:
+            logger.debug(f'SQL query: {query.decode()}')
 
 
 def get_database_name() -> str:

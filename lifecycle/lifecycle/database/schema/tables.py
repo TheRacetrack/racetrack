@@ -5,7 +5,7 @@ from lifecycle.database.table_model import TableModel
 
 
 @dataclass
-class JobFamilyRecord(TableModel):
+class JobFamily(TableModel):
     """Collection of Jobs generations with the same name (family name)"""
     class Metadata:
         table_name = 'registry_jobfamily'
@@ -16,7 +16,7 @@ class JobFamilyRecord(TableModel):
 
 
 @dataclass
-class JobRecord(TableModel):
+class Job(TableModel):
     class Metadata:
         table_name = 'registry_job'
         primary_key = ['id']
@@ -45,7 +45,7 @@ class JobRecord(TableModel):
 
 
 @dataclass
-class DeploymentRecord(TableModel):
+class Deployment(TableModel):
     class Metadata:
         table_name = 'registry_deployment'
         primary_key = ['id']
@@ -67,7 +67,7 @@ class DeploymentRecord(TableModel):
 
 
 @dataclass
-class EscRecord(TableModel):
+class Esc(TableModel):
     class Metadata:
         table_name = 'registry_esc'
         primary_key = ['id']
@@ -77,7 +77,7 @@ class EscRecord(TableModel):
 
 
 @dataclass
-class PublicEndpointRecord(TableModel):
+class PublicEndpoint(TableModel):
     class Metadata:
         table_name = 'registry_publicendpointrequest'
         primary_key = ['id']
@@ -89,7 +89,7 @@ class PublicEndpointRecord(TableModel):
 
 
 @dataclass
-class TrashJobRecord(TableModel):
+class TrashJob(TableModel):
     class Metadata:
         table_name = 'registry_trashjob'
         primary_key = ['id']
@@ -112,7 +112,7 @@ class TrashJobRecord(TableModel):
 
 
 @dataclass
-class AuditLogEventRecord(TableModel):
+class AuditLogEvent(TableModel):
     class Metadata:
         table_name = 'registry_auditlogevent'
         primary_key = ['id']
@@ -129,7 +129,7 @@ class AuditLogEventRecord(TableModel):
 
 
 @dataclass
-class AuthSubjectRecord(TableModel):
+class AuthSubject(TableModel):
     class Metadata:
         table_name = 'registry_authsubject'
         primary_key = ['id']
@@ -141,7 +141,7 @@ class AuthSubjectRecord(TableModel):
 
 
 @dataclass
-class AuthTokenRecord(TableModel):
+class AuthToken(TableModel):
     class Metadata:
         table_name = 'registry_authtoken'
         primary_key = ['id']
@@ -156,7 +156,7 @@ class AuthTokenRecord(TableModel):
 
 
 @dataclass
-class AuthResourcePermissionRecord(TableModel):
+class AuthResourcePermission(TableModel):
     class Metadata:
         table_name = 'registry_authresourcepermission'
         primary_key = ['id']
@@ -172,7 +172,7 @@ class AuthResourcePermissionRecord(TableModel):
 
 
 @dataclass
-class SettingRecord(TableModel):
+class Setting(TableModel):
     class Metadata:
         table_name = 'registry_setting'
         primary_key = ['name']
@@ -182,7 +182,7 @@ class SettingRecord(TableModel):
 
 
 @dataclass
-class AsyncJobCallRecord(TableModel):
+class AsyncJobCall(TableModel):
     class Metadata:
         table_name = 'registry_asyncjobcall'
         primary_key = ['id']
@@ -208,7 +208,7 @@ class AsyncJobCallRecord(TableModel):
 
 
 @dataclass
-class AuthUserRecord(TableModel):
+class AuthUser(TableModel):
     class Metadata:
         table_name = 'auth_user'
         primary_key = ['id']

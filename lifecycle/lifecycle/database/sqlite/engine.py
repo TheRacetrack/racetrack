@@ -11,7 +11,7 @@ DB_PATH = 'lifecycle/django/db.sqlite3'
 
 
 class SQLiteEngine(DbEngine):
-    def __init__(self, copy: bool = True):
+    def __init__(self, copy: bool = True, log_queries: bool = True) -> None:
         super().__init__()
         self.connection: sqlite3.Connection
         if copy:
@@ -23,6 +23,7 @@ class SQLiteEngine(DbEngine):
         else:
             self.connection = sqlite3.connect(DB_PATH)
         self.query_builder: QueryBuilder = QueryBuilder()
+        self.log_queries: bool = log_queries
 
     def check_connection(self) -> None:
         self.connection.execute('select 1')
@@ -73,4 +74,5 @@ class SQLiteEngine(DbEngine):
             cursor.close()
 
     def _log_query(self, query: str) -> None:
-        logger.debug(f'SQL query: {query}')
+        if self.log_queries:
+            logger.debug(f'SQL query: {query}')
