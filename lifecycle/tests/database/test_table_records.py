@@ -3,12 +3,14 @@ from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.object_mapper import ObjectMapper
 from lifecycle.database.schema.tables import JobFamilyRecord, AuthUserRecord
 from lifecycle.database.table_model import new_uuid
-
 from racetrack_client.utils.time import now
+from racetrack_client.log.logs import configure_logs
+
 from tests.utils import change_workdir
 
 
 def test_record_operations():
+    configure_logs()
     with change_workdir('..'):
         engine = create_db_engine()
         object_builder = ObjectMapper(engine)
@@ -50,6 +52,7 @@ def test_record_operations():
 
 
 def test_create_or_update():
+    configure_logs()
     with change_workdir('..'):
         object_builder = ObjectMapper(create_db_engine())
 

@@ -108,7 +108,7 @@ class ObjectMapper:
         self,
         record_object: TableModel,
     ):
-        record_data = _get_record_data(record_object)
+        record_data = _extract_record_data(record_object)
         self.query_wrapper.insert_one(
             table=record_object.table_name(),
             data=record_data,
@@ -124,7 +124,7 @@ class ObjectMapper:
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
         )
-        new_record_data = _get_record_data(record_object)
+        new_record_data = _extract_record_data(record_object)
         self.query_wrapper.update_one(
             table=record_object.table_name(),
             filter_conditions=filter_conditions,
@@ -193,7 +193,7 @@ def _convert_row_to_object(
     return parse_typed_object(row, table_type)
 
 
-def _get_record_data(record_object: TableModel) -> dict[str, Any]:
+def _extract_record_data(record_object: TableModel) -> dict[str, Any]:
     fields: list[str] = record_object.fields()
     data = {}
     for field in fields:

@@ -35,6 +35,7 @@ class SQLiteEngine(DbEngine):
     ) -> None:
         cursor: sqlite3.Cursor = self.connection.cursor()
         try:
+            self._log_query(query)
             cursor.execute(query, params or [])
             check_affected_rows(expected_affected_rows, cursor.rowcount)
         finally:
@@ -45,6 +46,7 @@ class SQLiteEngine(DbEngine):
     ) -> dict[str, Any] | None:
         cursor: sqlite3.Cursor = self.connection.cursor()
         try:
+            self._log_query(query)
             cursor.execute(query, params or [])
             row = cursor.fetchone()
             if row is None:
@@ -58,6 +60,7 @@ class SQLiteEngine(DbEngine):
     def execute_sql_fetch_all(self, query: str, params: list | None = None) -> list[dict]:
         cursor: sqlite3.Cursor = self.connection.cursor()
         try:
+            self._log_query(query)
             cursor.execute(query, params or [])
             rows: list = cursor.fetchall()
             assert cursor.description, 'no column names in the result'
@@ -65,3 +68,6 @@ class SQLiteEngine(DbEngine):
             return [dict(zip(col_names, row)) for row in rows]
         finally:
             cursor.close()
+
+    def _log_query(self, query: str) -> None:
+        logger.debug(f'SQL query: {query}')
