@@ -1,1 +1,3 @@
 include racetrack_client/manifest/schema.json
+prune tests
+include racetrack_client/py.typed
