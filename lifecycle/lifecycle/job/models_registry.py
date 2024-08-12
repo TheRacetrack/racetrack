@@ -2,11 +2,9 @@ import time
 from typing import Iterable, List, Optional
 
 from django.db.utils import IntegrityError
+from lifecycle.server.cache import LifecycleCache
 import yaml
 
-from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
-from lifecycle.server.metrics import metric_job_model_fetch_duration
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.manifest.load import load_manifest_from_dict
@@ -15,6 +13,10 @@ from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
+from lifecycle.django.registry import models
+from lifecycle.django.registry.database import db_access
+from lifecycle.server.metrics import metric_job_model_fetch_duration
+from lifecycle.database.schema import tables
 
 logger = get_logger(__name__)
 
@@ -25,10 +27,9 @@ def list_job_models() -> Iterable[models.Job]:
     return models.Job.objects.all().order_by('-update_time', 'name')
 
 
-@db_access
-def list_job_family_models() -> Iterable[models.JobFamily]:
+def list_job_family_models() -> list[tables.JobFamily]:
     """List deployed job families stored in registry database"""
-    return models.JobFamily.objects.all().order_by('name')
+    return LifecycleCache.record_mapper().list_all(tables.JobFamily, order_by=['name'])
 
 
 @db_access
