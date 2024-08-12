@@ -41,7 +41,7 @@ class Job(TableModel):
     # exact name and version of a job type used to build this job
     job_type_version: str
     # Statistics of a Job seen by infrastructure
-    infrastructure_stats: str | None
+    infrastructure_stats: str | None  # JSON
 
 
 @dataclass
@@ -178,7 +178,7 @@ class Setting(TableModel):
         primary_key = ['name']
 
     name: str
-    value: str | None
+    value: str | None  # JSON
 
 
 @dataclass
@@ -197,10 +197,10 @@ class AsyncJobCall(TableModel):
     job_path: str
     request_method: str
     request_url: str
-    request_headers: str | None
+    request_headers: str | None  # JSON
     request_body: bytes
     response_status_code: int | None
-    response_headers: str | None
+    response_headers: str | None  # JSON
     response_body: bytes
     attempts: int
     pub_instance_addr: str

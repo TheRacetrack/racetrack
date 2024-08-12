@@ -21,10 +21,10 @@ from lifecycle.database.schema import tables
 logger = get_logger(__name__)
 
 
-@db_access
-def list_job_models() -> Iterable[models.Job]:
+def list_job_models() -> list[tables.Job]:
     """List deployed jobs stored in registry database"""
-    return models.Job.objects.all().order_by('-update_time', 'name')
+    mapper = LifecycleCache.record_mapper()
+    return mapper.list_all(tables.Job, order_by=['-update_time', 'name'])
 
 
 def list_job_family_models() -> list[tables.JobFamily]:
@@ -46,11 +46,8 @@ def job_exists(job_name: str, job_version: str) -> bool:
 
 
 def job_family_exists(job_name: str) -> bool:
-    try:
-        read_job_family_model(job_name)
-        return True
-    except EntityNotFound:
-        return False
+    mapper = LifecycleCache.record_mapper()
+    return mapper.exists(tables.JobFamily, name=job_name)
 
 
 def resolve_job_model(job_name: str, job_version: str) -> models.Job:

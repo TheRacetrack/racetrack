@@ -7,7 +7,7 @@ from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.dto_converter import job_model_to_dto, job_family_model_to_dto
-from lifecycle.database.schema.dto_converter import job_family_record_to_dto
+from lifecycle.database.schema.dto_converter import job_family_record_to_dto, job_record_to_dto
 from lifecycle.monitor.monitors import list_infrastructure_jobs
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import metric_jobs_count_by_status
@@ -27,9 +27,9 @@ logger = get_logger(__name__)
 def list_job_registry(config: Config, auth_subject: Optional[models.AuthSubject] = None) -> List[JobDto]:
     """List jobs getting results from registry (Database)"""
     if auth_subject is None:
-        return [job_model_to_dto(job, config) for job in models_registry.list_job_models()]
+        return [job_record_to_dto(job, config) for job in models_registry.list_job_models()]
     else:
-        jobs = [job_model_to_dto(job, config) for job in models_registry.list_job_models()]
+        jobs = [job_record_to_dto(job, config) for job in models_registry.list_job_models()]
         return list_permitted_jobs(auth_subject, AuthScope.READ_JOB.value, jobs)
 
 

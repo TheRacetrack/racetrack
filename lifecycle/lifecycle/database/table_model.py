@@ -1,19 +1,23 @@
 from abc import ABC
-from typing import Any, ClassVar, Dict, Protocol
 from dataclasses import asdict, is_dataclass
+import json
+from typing import Any, ClassVar, Dict, Protocol
 import uuid
+
+from racetrack_client.log.context_error import ContextError
 
 
 class IsDataclass(Protocol):
     """Type alias for a dataclass instance"""
-    __dataclass_fields__: ClassVar[Dict[str, Any]] 
-    
+
+    __dataclass_fields__: ClassVar[Dict[str, Any]]
+
 
 class TableModel(ABC):
     def __init__(self, **row_data):
         for field_name, value in row_data.items():
             setattr(self, field_name, value)
-    
+
     @classmethod
     def table_name(cls) -> str:
         metadata = getattr(cls, 'Metadata')
@@ -21,7 +25,7 @@ class TableModel(ABC):
         table_name = getattr(metadata, 'table_name')
         assert metadata is not None, f'table_name not specified in {cls}.Metadata'
         return table_name
-    
+
     @classmethod
     def primary_key_columns(cls) -> list[str]:
         metadata = getattr(cls, 'Metadata')
@@ -30,14 +34,14 @@ class TableModel(ABC):
         assert metadata is not None, f'primary_key not specified in {cls}.Metadata'
         assert len(primary_key), f'primary_key of {cls} should consist of at least one column'
         return primary_key
-    
+
     def primary_keys(self) -> list:
         columns = self.primary_key_columns()
         for column in columns:
             if not hasattr(self, column):
                 raise ValueError(f'record has no field {column}')
         return [getattr(self, column) for column in columns]
-    
+
     @classmethod
     def fields(cls) -> list[str]:
         field_annotations: dict[str, type] = cls.__annotations__
@@ -55,3 +59,12 @@ class TableModel(ABC):
 
 def new_uuid() -> str:
     return str(uuid.uuid4())
+
+
+def parse_json_column(text: str | None) -> Any:
+    if text is None:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        raise ContextError('Unparsable JSON content') from e
