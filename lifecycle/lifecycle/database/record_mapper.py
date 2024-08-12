@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 T = TypeVar('T', bound=TableModel)
 
 
-class ObjectMapper:
+class RecordMapper:
     def __init__(self, engine: DbEngine):
         self.query_wrapper: QueryWrapper = QueryWrapper(engine)
         self.placeholder: str = engine.query_builder.placeholder()

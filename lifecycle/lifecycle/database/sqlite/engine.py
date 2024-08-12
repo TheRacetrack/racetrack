@@ -24,6 +24,9 @@ class SQLiteEngine(DbEngine):
             self.connection = sqlite3.connect(DB_PATH)
         self.query_builder: QueryBuilder = QueryBuilder()
 
+    def check_connection(self) -> None:
+        self.connection.execute('select 1')
+
     def close(self):
         self.connection.close()
 

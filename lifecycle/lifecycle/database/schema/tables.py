@@ -6,6 +6,7 @@ from lifecycle.database.table_model import TableModel
 
 @dataclass
 class JobFamilyRecord(TableModel):
+    """Collection of Jobs generations with the same name (family name)"""
     class Metadata:
         table_name = 'registry_jobfamily'
         primary_key = ['id']
@@ -117,7 +118,7 @@ class AuditLogEventRecord(TableModel):
         primary_key = ['id']
 
     id: str
-    version: int
+    version: int  # data structure version
     timestamp: datetime
     event_type: str
     properties: str | None
@@ -147,9 +148,10 @@ class AuthTokenRecord(TableModel):
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubjectRecord
-    token: str
+    token: str  # JWT token
     expiry_time: datetime | None
     active: bool
+    # last day the token was used for authentication
     last_use_time: datetime | None
 
 
@@ -160,8 +162,10 @@ class AuthResourcePermissionRecord(TableModel):
         primary_key = ['id']
 
     id: int
-    scope: str
     auth_subject_id: str  # foreign key: AuthSubjectRecord
+    # operation permitted to the subject
+    scope: str
+    # resource-scope: anything, job family, job, endpoint
     job_family_id: str | None  # foreign key: JobFamilyRecord
     job_id: str | None  # foreign key: JobRecord
     endpoint: str | None

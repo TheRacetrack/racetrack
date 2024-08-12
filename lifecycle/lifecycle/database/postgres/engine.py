@@ -52,6 +52,9 @@ class PostgresEngine(DbEngine):
     def _on_reconnect_failed(self, _: ConnectionPool) -> None:
         self.connection_status = False
         logger.error('Connection to database failed')
+    
+    def check_connection(self) -> None:
+        self.connection_pool.check()
 
     def close(self):
         self.connection_pool.close()

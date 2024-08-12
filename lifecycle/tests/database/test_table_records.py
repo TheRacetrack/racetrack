@@ -1,6 +1,6 @@
 from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
-from lifecycle.database.object_mapper import ObjectMapper
+from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.database.schema.tables import JobFamilyRecord, AuthUserRecord
 from lifecycle.database.table_model import new_uuid
 from racetrack_client.utils.time import now
@@ -13,7 +13,7 @@ def test_record_operations():
     configure_logs()
     with change_workdir('..'):
         engine = create_db_engine()
-        object_builder = ObjectMapper(engine)
+        object_builder = RecordMapper(engine)
 
         records = object_builder.list_all(AuthUserRecord)
         assert len(records) == 1
@@ -54,7 +54,7 @@ def test_record_operations():
 def test_create_or_update():
     configure_logs()
     with change_workdir('..'):
-        object_builder = ObjectMapper(create_db_engine())
+        object_builder = RecordMapper(create_db_engine())
 
         record: JobFamilyRecord = JobFamilyRecord(
             id=new_uuid(),

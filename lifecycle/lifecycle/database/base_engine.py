@@ -10,6 +10,9 @@ logger = get_logger(__name__)
 class DbEngine(ABC):
     def __init__(self) -> None:
         self.query_builder: BaseQueryBuilder
+    
+    def check_connection(self) -> None:
+        pass
 
     def close(self):
         pass
