@@ -45,3 +45,5 @@ def test_record_operations():
             assert False, 'it should raise NoRowsAffected exception'
         except NoRowsAffected:
             pass
+
+        assert not object_builder.exists(JobFamilyRecord, id='nil')
