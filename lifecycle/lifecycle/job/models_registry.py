@@ -41,11 +41,8 @@ def read_job_model(job_name: str, job_version: str) -> models.Job:
 
 
 def job_exists(job_name: str, job_version: str) -> bool:
-    try:
-        read_job_model(job_name, job_version)
-        return True
-    except EntityNotFound:
-        return False
+    mapper = LifecycleCache.record_mapper()
+    return mapper.exists(tables.Job, name=job_name, version=job_version)
 
 
 def job_family_exists(job_name: str) -> bool:

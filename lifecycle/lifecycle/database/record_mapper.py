@@ -190,6 +190,11 @@ def _convert_row_to_object(
     row: dict[str, Any],
     table_type: Type[T],
 ) -> T:
+    valid_fields = table_type.fields()
+    for column in row.keys():
+        assert (
+            column in valid_fields
+        ), f'retrieved column "{column}" is not a valid field for the model {type(table_type)}'
     return parse_typed_object(row, table_type)
 
 
