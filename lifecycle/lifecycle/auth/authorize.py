@@ -1,12 +1,10 @@
 from collections import defaultdict
 
-from django.db.models import Q
-
+from lifecycle.database.schema import tables
+from lifecycle.server.cache import LifecycleCache
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.auth.token import AuthTokenPayload
-from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
 from lifecycle.job.models_registry import resolve_job_model
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 from racetrack_client.log.logs import get_logger
@@ -28,7 +26,7 @@ def authorize_subject_type(
 
 
 def authorize_resource_access(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     job_name: str,
     job_version: str,
     scope: str,
@@ -67,7 +65,7 @@ def authorize_resource_access(
 
 
 def authorize_scope_access(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     scope: str,
 ):
     """
@@ -95,29 +93,40 @@ def authorize_internal_token(
             )
 
 
-@db_access
 def has_endpoint_permission(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     job_name: str,
     job_version: str,
     endpoint: str,
     scope: str,
 ) -> bool:
+    mapper = LifecycleCache.record_mapper()
+    placeholder: str = mapper.placeholder
+    filter_params = []
+
+    # filter_condition = f'"auth_subject_id" = {placeholder}'
+    # filter_params.append(auth_subject.id)
+
+    # job_name_filter = f'"job_family_id" is NULL or ' # JOIN
+
+    # return mapper.exists_on_condition(
+    #     tables.AuthResourcePermission, filter_condition=filter_condition, filter_params=filter_params,
+    # )
+
     subject_filter = Q(auth_subject=auth_subject)
     job_name_filter = Q(job_family__name=job_name) | Q(job_family__isnull=True)
     job_version_filter = Q(job__version=job_version) | Q(job__isnull=True)
     endpoint_filter = Q(endpoint=endpoint) | Q(endpoint__isnull=True)
     resource_filter = job_name_filter & job_version_filter & endpoint_filter
     scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
-    queryset = models.AuthResourcePermission.objects.filter(
+    queryset = tables.AuthResourcePermission.objects.filter(
         subject_filter & resource_filter & scope_filter
     )
     return queryset.exists()
 
 
-@db_access
 def has_resource_permission(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     job_name: str,
     job_version: str,
     scope: str,
@@ -133,9 +142,8 @@ def has_resource_permission(
     return queryset.exists()
 
 
-@db_access
 def has_scope_permission(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     scope: str,
 ) -> bool:
     subject_filter = Q(auth_subject=auth_subject)
@@ -146,9 +154,8 @@ def has_scope_permission(
     return queryset.exists()
 
 
-@db_access
 def list_permitted_jobs(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     scope: str,
     all_jobs: list[JobDto],
 ) -> list[JobDto]:
@@ -186,9 +193,8 @@ def list_permitted_jobs(
     return [id_to_job[fid] for fid in sorted(job_ids)]
 
 
-@db_access
 def list_permitted_families(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     scope: str,
     all_families: list[JobFamilyDto],
 ) -> list[JobFamilyDto]:
@@ -217,9 +223,8 @@ def list_permitted_families(
     return [name_to_family[name] for name in sorted(family_names)]
 
 
-@db_access
 def grant_permission(
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     job_name: str | None,
     job_version: str | None,
     scope: str,

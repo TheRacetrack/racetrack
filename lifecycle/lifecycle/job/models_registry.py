@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 from django.db.utils import IntegrityError
 from lifecycle.server.cache import LifecycleCache
@@ -32,12 +32,9 @@ def list_job_family_models() -> list[tables.JobFamily]:
     return LifecycleCache.record_mapper().list_all(tables.JobFamily, order_by=['name'])
 
 
-@db_access
-def read_job_model(job_name: str, job_version: str) -> models.Job:
-    try:
-        return models.Job.objects.get(name=job_name, version=job_version)
-    except models.Job.DoesNotExist:
-        raise EntityNotFound(f'Job with name {job_name} and version {job_version} was not found')
+def read_job_model(job_name: str, job_version: str) -> tables.Job:
+    mapper = LifecycleCache.record_mapper()
+    return mapper.find_one(tables.Job, name=job_name, version=job_version)
 
 
 def job_exists(job_name: str, job_version: str) -> bool:
@@ -50,7 +47,7 @@ def job_family_exists(job_name: str) -> bool:
     return mapper.exists(tables.JobFamily, name=job_name)
 
 
-def resolve_job_model(job_name: str, job_version: str) -> models.Job:
+def resolve_job_model(job_name: str, job_version: str) -> tables.Job:
     """
     Find job by name and version, accepting version aliases
     :param job_name: Name of job family
@@ -69,47 +66,50 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Job:
         metric_job_model_fetch_duration.observe(time.time() - start_time)
 
 
-@db_access
-def read_latest_job_model(job_name: str) -> models.Job:
-    job_queryset = models.Job.objects.filter(name=job_name, status__in=[
-        JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value])
-    if job_queryset.count() == 0:
+def read_latest_job_model(job_name: str) -> tables.Job:
+    mapper = LifecycleCache.record_mapper()
+    placeholder: str = mapper.placeholder
+    filter_condition = f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})'
+    filter_params = [job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value]
+    jobs: list[tables.Job] = mapper.filter(
+        tables.Job, filter_condition=filter_condition, filter_params=filter_params,
+    )
+    if len(jobs) == 0:
         raise EntityNotFound(f'No job named {job_name}')
-    jobs: List[models.Job] = list(job_queryset)
 
     latest_job = SemanticVersion.find_latest_stable(jobs, key=lambda f: f.version)
     if latest_job is None:
         raise EntityNotFound("No stable version found")
-
     return latest_job
 
 
-@db_access
-def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> models.Job:
+def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> tables.Job:
     """
     :param job_name: Name of job family
     :param version_wildcard: version pattern containing "x" wildcards, e.g. "1.2.x", "2.x"
     """
     version_pattern = SemanticVersionPattern.from_x_pattern(version_wildcard)
 
-    job_queryset = models.Job.objects.filter(name=job_name, status__in=[
-        JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value])
-    if job_queryset.count() == 0:
+    mapper = LifecycleCache.record_mapper()
+    placeholder: str = mapper.placeholder
+    filter_condition = f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})'
+    filter_params = [job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value]
+    jobs: list[tables.Job] = mapper.filter(
+        tables.Job, filter_condition=filter_condition, filter_params=filter_params,
+    )
+    if len(jobs) == 0:
         raise EntityNotFound(f'No job named {job_name}')
-    jobs: List[models.Job] = list(job_queryset)
 
     latest_job = SemanticVersion.find_latest_wildcard(version_pattern, jobs, key=lambda f: f.version)
     if latest_job is None:
         raise EntityNotFound(f"Not found any stable version matching pattern: {version_wildcard}")
-
     return latest_job
 
 
-@db_access
-def read_job_family_model(job_family: str) -> models.JobFamily:
+def read_job_family_model(job_family: str) -> tables.JobFamily:
     try:
-        return models.JobFamily.objects.get(name=job_family)
-    except models.JobFamily.DoesNotExist:
+        return LifecycleCache.record_mapper().find_one(tables.JobFamily, name=job_family)
+    except EntityNotFound:
         raise EntityNotFound(f'Job Family with name {job_family} was not found')
 
 
@@ -118,10 +118,9 @@ def delete_job_model(job_name: str, job_version: str):
     models.Job.objects.get(name=job_name, version=job_version).delete()
 
 
-@db_access
-def create_job_model(job_dto: JobDto) -> models.Job:
+def create_job_model(job_dto: JobDto) -> tables.Job:
     job_family = create_job_family_if_not_exist(job_dto.name)
-    new_job = models.Job(
+    new_job = tables.Job(
         name=job_dto.name,
         version=job_dto.version,
         family=job_family,
@@ -151,8 +150,7 @@ def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
     return new_model
 
 
-@db_access
-def update_job_model(job: models.Job, job_dto: JobDto):
+def update_job_model(job: tables.Job, job_dto: JobDto):
     job.status = job_dto.status
     job.update_time = timestamp_to_datetime(job_dto.update_time)
     job.manifest = job_dto.manifest_yaml
@@ -191,8 +189,7 @@ def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
         raise EntityNotFound(f'Job model has gone before updating: {job_model}')
 
 
-@db_access
-def save_job_model(job_dto: JobDto) -> models.Job:
+def save_job_model(job_dto: JobDto) -> tables.Job:
     """Create or update existing job"""
     try:
         job_model = read_job_model(job_dto.name, job_dto.version)
@@ -202,7 +199,6 @@ def save_job_model(job_dto: JobDto) -> models.Job:
     return job_model
 
 
-@db_access
 def update_job(job_dto: JobDto) -> models.Job:
     """Update existing job"""
     job_model = read_job_model(job_dto.name, job_dto.version)
@@ -210,8 +206,7 @@ def update_job(job_dto: JobDto) -> models.Job:
     return job_model
 
 
-@db_access
-def create_job_family_if_not_exist(job_family: str) -> models.JobFamily:
+def create_job_family_if_not_exist(job_family: str) -> tables.JobFamily:
     try:
         return read_job_family_model(job_family)
     except EntityNotFound:

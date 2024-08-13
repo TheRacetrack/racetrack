@@ -45,7 +45,7 @@ def list_job_families(auth_subject: Optional[models.AuthSubject] = None) -> List
 def read_job_family(job_family: str) -> JobFamilyDto:
     """Read job family from registry (Database)"""
     family_model = models_registry.read_job_family_model(job_family)
-    return job_family_model_to_dto(family_model)
+    return job_family_record_to_dto(family_model)
 
 
 def read_job(job_name: str, job_version: str, config: Config) -> JobDto:
@@ -58,13 +58,13 @@ def read_job(job_name: str, job_version: str, config: Config) -> JobDto:
     :raise EntityNotFound if job with given name doesn't exist
     """
     job_model = models_registry.read_job_model(job_name, job_version)
-    return job_model_to_dto(job_model, config)
+    return job_record_to_dto(job_model, config)
 
 
 def read_versioned_job(job_name: str, job_version: str, config: Config) -> JobDto:
     """Find job by name and version, accepting version aliases"""
     job_model = models_registry.resolve_job_model(job_name, job_version)
-    return job_model_to_dto(job_model, config)
+    return job_record_to_dto(job_model, config)
 
 
 def delete_job(

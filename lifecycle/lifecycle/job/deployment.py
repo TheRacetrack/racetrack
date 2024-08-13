@@ -3,6 +3,7 @@ import uuid
 from datetime import timedelta
 
 from lifecycle.config import Config
+from lifecycle.database.schema.dto_converter import job_record_to_dto
 from lifecycle.django.registry import models
 from lifecycle.django.registry.database import db_access
 from lifecycle.job.dto_converter import deployment_model_to_dto, job_model_to_dto
@@ -62,7 +63,7 @@ def check_deployment_result(deploy_id: str, config: Config) -> DeploymentDto:
         if deployment.status == DeploymentStatus.DONE.value:
             try:
                 job_model = read_job_model(deployment.job_name, deployment.job_version)
-                dto.job = job_model_to_dto(job_model, config)
+                dto.job = job_record_to_dto(job_model, config)
             except EntityNotFound:
                 pass
         return dto

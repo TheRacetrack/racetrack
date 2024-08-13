@@ -5,8 +5,7 @@ from lifecycle.django.registry import models
 from lifecycle.job.pub import get_job_pub_url
 from racetrack_client.manifest.load import parse_manifest_or_empty
 from racetrack_client.utils.time import datetime_to_timestamp
-from racetrack_commons.entities.dto import AuditLogEventDto, PublicEndpointRequestDto, EscDto, AsyncJobCallDto
-from racetrack_commons.entities.dto import JobDto, JobFamilyDto, DeploymentDto
+from racetrack_commons.entities.dto import JobDto, JobFamilyDto, DeploymentDto, AuditLogEventDto, PublicEndpointRequestDto, EscDto, AsyncJobCallDto
 
 
 def job_family_model_to_dto(model: models.JobFamily) -> JobFamilyDto:
@@ -55,7 +54,7 @@ def deployment_model_to_dto(model: models.Deployment) -> DeploymentDto:
         update_time=datetime_to_timestamp(model.update_time),
         job_name=model.job_name,
         job_version=model.job_version,
-        warnings=model.warnings
+        warnings=model.warnings,
     )
 
 

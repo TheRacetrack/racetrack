@@ -3,8 +3,8 @@ from typing import Tuple
 
 from fastapi import Request
 
-from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
+from lifecycle.database.schema import tables
+from lifecycle.server.cache import LifecycleCache
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import RT_AUTH_HEADER
@@ -15,7 +15,7 @@ from racetrack_commons.auth.token import AuthTokenPayload, decode_jwt, verify_an
 logger = get_logger(__name__)
 
 
-def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, models.AuthSubject | None]:
+def authenticate_token(request: Request) -> Tuple[AuthTokenPayload, tables.AuthSubject | None]:
     """Ensure request has valid token and recognize identity of the requester"""
     jwt_token: str = get_current_jwt_token(request)
 
@@ -51,23 +51,24 @@ def read_auth_token_header(request: Request) -> str | None:
     return auth_token
 
 
-@db_access
-def find_auth_subject_by_token(token: str) -> tuple[models.AuthSubject, models.AuthToken]:
+def find_auth_subject_by_token(token: str) -> tuple[tables.AuthSubject, tables.AuthToken]:
     try:
-        auth_token: models.AuthToken = models.AuthToken.objects.get(token=token)
-        return auth_token.auth_subject, auth_token
-    except models.AuthToken.DoesNotExist:
+        mapper = LifecycleCache.record_mapper()
+        auth_token: tables.AuthToken = mapper.find_one(tables.AuthToken, token=token)
+        auth_subject: tables.AuthSubject = mapper.find_one(tables.AuthSubject, id=auth_token.auth_subject_id)
+        return auth_subject, auth_token
+    except EntityNotFound:
         raise EntityNotFound('given Auth Token was not found in the database')
 
 
-def _save_token_use(auth_token: models.AuthToken):
+def _save_token_use(auth_token: tables.AuthToken):
     """
     Update date of the last use of the auth token.
     Keep it in daily granulatiry to avoid too many updates in the database.
     """
     if auth_token.last_use_time is None or auth_token.last_use_time.date() != now().date():
         auth_token.last_use_time = now()
-        auth_token.save()
+        LifecycleCache.record_mapper().update(auth_token)
 
 
 def get_username_from_token(request: Request) -> str:
@@ -76,7 +77,7 @@ def get_username_from_token(request: Request) -> str:
     return token_payload.subject
 
 
-def validate_auth_token_access(auth_token: models.AuthToken):
+def validate_auth_token_access(auth_token: tables.AuthToken):
     """Check if auth token has valid access - hasn't been revoked and hasn't expired"""
     if not auth_token.active:
         raise UnauthorizedError('given access token has been revoked')
