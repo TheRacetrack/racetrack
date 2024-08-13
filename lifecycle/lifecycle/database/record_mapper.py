@@ -39,8 +39,8 @@ class RecordMapper:
             filter_params=filter_params,
         )
         if row is None:
-            joined = ', '.join(filter_kwargs.keys())
-            raise EntityNotFound(f'{table_type.table_name()} record not found for given {joined}')
+            filtered_by = ', '.join(filter_kwargs.keys())
+            raise EntityNotFound(f'{table_type.__name__} record not found for given {filtered_by}')
 
         return _convert_row_to_object(row, table_type)
 
@@ -64,11 +64,27 @@ class RecordMapper:
     ) -> list[T]:
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
-
         rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.fields(),
             filter_conditions=filter_conditions,
+            filter_params=filter_params,
+            order_by=order_by,
+        )
+        return [_convert_row_to_object(row, table_type) for row in rows]
+
+    def filter(
+        self,
+        table_type: Type[T],
+        filter_condition: str,
+        filter_params: list[Any],
+        order_by: list[str] | None = None,
+    ) -> list[T]:
+        """Filter by more sophisticated SQL condition"""
+        rows = self.query_wrapper.select_many(
+            table=table_type.table_name(),
+            fields=table_type.fields(),
+            filter_conditions=[filter_condition],
             filter_params=filter_params,
             order_by=order_by,
         )
@@ -104,34 +120,6 @@ class RecordMapper:
         )
         return row is not None
 
-    def create(
-        self,
-        record_object: TableModel,
-    ):
-        record_data = _extract_record_data(record_object)
-        self.query_wrapper.insert_one(
-            table=record_object.table_name(),
-            data=record_data,
-        )
-
-    def update(
-        self,
-        record_object: TableModel,
-    ):
-        primary_key_columns = record_object.primary_key_columns()
-        primary_keys = record_object.primary_keys()
-        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
-        filter_conditions, filter_params = self._build_filter_conditions(
-            type(record_object), filter_kwargs
-        )
-        new_record_data = _extract_record_data(record_object)
-        self.query_wrapper.update_one(
-            table=record_object.table_name(),
-            filter_conditions=filter_conditions,
-            filter_params=filter_params,
-            new_data=new_record_data,
-        )
-
     def record_exists(
         self,
         record_object: TableModel,
@@ -149,11 +137,54 @@ class RecordMapper:
             filter_params=filter_params,
         )
         return row is not None
+    
+    def exists_on_condition(
+        self,
+        table_type: Type[T],
+        filter_condition: str,
+        filter_params: list[Any],
+    ) -> bool:
+        """Check if any record matches the SQL condition"""
+        first_row = self.query_wrapper.select_one(
+            table=table_type.table_name(),
+            fields=table_type.primary_key_columns(),
+            filter_conditions=[filter_condition],
+            filter_params=filter_params,
+        )
+        return first_row is not None
+
+    def create(
+        self,
+        record_object: TableModel,
+    ) -> None:
+        record_data = _extract_record_data(record_object)
+        self.query_wrapper.insert_one(
+            table=record_object.table_name(),
+            data=record_data,
+        )
+
+    def update(
+        self,
+        record_object: TableModel,
+    ) -> None:
+        primary_key_columns = record_object.primary_key_columns()
+        primary_keys = record_object.primary_keys()
+        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        filter_conditions, filter_params = self._build_filter_conditions(
+            type(record_object), filter_kwargs
+        )
+        new_record_data = _extract_record_data(record_object)
+        self.query_wrapper.update_one(
+            table=record_object.table_name(),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+            new_data=new_record_data,
+        )
 
     def create_or_update(
         self,
         record_object: TableModel,
-    ):
+    ) -> None:
         if self.record_exists(record_object):
             self.update(record_object)
         else:
@@ -163,11 +194,27 @@ class RecordMapper:
         self,
         table_type: Type[T],
         **filter_kwargs: Any,
-    ):
+    ) -> None:
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         self.query_wrapper.delete_one(
             table=table_type.table_name(),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+        )
+
+    def delete_record(
+        self,
+        record_object: TableModel,
+    ) -> None:
+        primary_key_columns = record_object.primary_key_columns()
+        primary_keys = record_object.primary_keys()
+        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        filter_conditions, filter_params = self._build_filter_conditions(
+            type(record_object), filter_kwargs
+        )
+        self.query_wrapper.delete_one(
+            table=record_object.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )

@@ -14,6 +14,9 @@ class JobFamily(TableModel):
     id: str
     name: str
 
+    def __str__(self):
+        return f'{self.name}'
+
 
 @dataclass
 class Job(TableModel):
@@ -40,8 +43,11 @@ class Job(TableModel):
     replica_internal_names: str | None
     # exact name and version of a job type used to build this job
     job_type_version: str
-    # Statistics of a Job seen by infrastructure
-    infrastructure_stats: str | None  # JSON
+    # Statistics of a Job seen by infrastructure, JSON
+    infrastructure_stats: str | None
+
+    def __str__(self):
+        return f'{self.name} {self.version}'
 
 
 @dataclass
@@ -65,6 +71,9 @@ class Deployment(TableModel):
     infrastructure_target: str | None
     warnings: str | None
 
+    def __str__(self):
+        return f'{self.id}'
+
 
 @dataclass
 class Esc(TableModel):
@@ -75,9 +84,12 @@ class Esc(TableModel):
     id: str
     name: str
 
+    def __str__(self):
+        return f'{self.name} ({self.id})'
+
 
 @dataclass
-class PublicEndpoint(TableModel):
+class PublicEndpointRequest(TableModel):
     class Metadata:
         table_name = 'registry_publicendpointrequest'
         primary_key = ['id']
@@ -138,6 +150,24 @@ class AuthSubject(TableModel):
     user_id: int | None  # foreign key: AuthUserRecord
     esc_id: str | None  # foreign key: EscRecord
     job_family_id: str | None  # foreign key: JobFamilyRecord
+
+    def __str__(self):
+        if self.user_id is not None:
+            return f'User: {self.user_id}'
+        if self.esc_id is not None:
+            return f'ESC: {self.esc_id}'
+        if self.job_family_id is not None:
+            return f'Job Family: {self.job_family_id}'
+        return f'{self.id}'
+
+    def subject_type(self) -> str:
+        if self.user_id is not None:
+            return 'User'
+        if self.esc_id is not None:
+            return 'ESC'
+        if self.job_family_id is not None:
+            return 'Job Family'
+        return 'Unknown'
 
 
 @dataclass
@@ -205,10 +235,13 @@ class AsyncJobCall(TableModel):
     attempts: int
     pub_instance_addr: str
     retriable_error: bool
+    
+    def __str__(self):
+        return self.id
 
 
 @dataclass
-class AuthUser(TableModel):
+class User(TableModel):
     class Metadata:
         table_name = 'auth_user'
         primary_key = ['id']

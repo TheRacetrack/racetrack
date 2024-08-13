@@ -1,7 +1,7 @@
 from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
-from lifecycle.database.schema.tables import JobFamily, AuthUser
+from lifecycle.database.schema.tables import JobFamily, User
 from lifecycle.database.table_model import new_uuid
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import configure_logs
@@ -15,10 +15,10 @@ def test_record_operations():
         engine = create_db_engine()
         object_builder = RecordMapper(engine)
 
-        records = object_builder.list_all(AuthUser)
+        records = object_builder.list_all(User)
         assert len(records) == 1
 
-        user: AuthUser = object_builder.find_one(AuthUser, id=1)
+        user: User = object_builder.find_one(User, id=1)
         assert user.id == 1
         assert user.username == 'admin'
         assert user.is_staff is True
