@@ -6,7 +6,8 @@ setup:
 
 test:
 	cd tests &&\
-	SECRET_KEY=dev AUTH_KEY=dev DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings" DB_TYPE=sqlite-memory \
+	SECRET_KEY=dev AUTH_KEY=dev DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings" \
+	DB_TYPE=sqlite-memory DB_PATH=../lifecycle/django/db.sqlite3 \
 	python -m pytest -vv --tb=short -ra $(test)
 
 run:

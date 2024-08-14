@@ -1,5 +1,6 @@
 from typing import Any
 import sqlite3
+import os
 
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.base_engine import DbEngine, check_affected_rows
@@ -7,21 +8,26 @@ from lifecycle.database.sqlite.query_builder import QueryBuilder
 
 logger = get_logger(__name__)
 
-DB_PATH = 'lifecycle/django/db.sqlite3'
+DB_PATH: str = os.environ.get('DB_PATH', 'lifecycle/django/db.sqlite3')
 
 
 class SQLiteEngine(DbEngine):
     def __init__(self, copy: bool = True, log_queries: bool = True) -> None:
         super().__init__()
+        if copy:
+            logger.info(f'Using in-memory copy of local SQLite database: {DB_PATH}')
+        else:
+            logger.info(f'Using local SQLite database: {DB_PATH}')
+
         self.connection: sqlite3.Connection
         if copy:
             src_database: sqlite3.Connection = sqlite3.connect(DB_PATH)
-            self.connection = sqlite3.connect(':memory:')
+            self.connection = sqlite3.connect(':memory:', check_same_thread=False)
             src_query = ''.join(line for line in src_database.iterdump())
             self.connection.executescript(src_query)
             src_database.close()
         else:
-            self.connection = sqlite3.connect(DB_PATH)
+            self.connection = sqlite3.connect(DB_PATH, check_same_thread=False)
         self.query_builder: QueryBuilder = QueryBuilder()
         self.log_queries: bool = log_queries
 
