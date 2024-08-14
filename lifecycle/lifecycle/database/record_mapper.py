@@ -2,6 +2,7 @@ from typing import Any, Type, TypeVar
 
 from lifecycle.database.base_engine import DbEngine
 
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
@@ -74,21 +75,22 @@ class RecordMapper:
             order_by=order_by,
         )
         return [_convert_row_to_object(row, table_type) for row in rows]
-
+    
     def filter(
         self,
         table_type: Type[T],
-        filter_condition: str,
-        filter_params: list[Any],
+        condition: QueryCondition,
         order_by: list[str] | None = None,
+        limit: int | None = None,
     ) -> list[T]:
         """Filter by more sophisticated SQL condition"""
         rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.fields(),
-            filter_conditions=[filter_condition],
-            filter_params=filter_params,
+            filter_conditions=condition.filter_conditions,
+            filter_params=condition.filter_params,
             order_by=order_by,
+            limit=limit,
         )
         return [_convert_row_to_object(row, table_type) for row in rows]
 

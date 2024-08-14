@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
 from lifecycle.database.table_model import new_uuid
 from lifecycle.server.cache import LifecycleCache
@@ -201,9 +202,8 @@ def regenerate_specific_user_token(auth_subject: tables.AuthSubject) -> str:
 
 def regenerate_all_user_tokens():
     mapper = LifecycleCache.record_mapper()
-    filter_condition = '"user_id" is not NULL'
     auth_subjects: list[tables.AuthSubject] = mapper.filter(
-        tables.AuthSubject, filter_condition=filter_condition, filter_params=[],
+        tables.AuthSubject, condition=QueryCondition('"user_id" is not NULL'),
     )
     for auth_subject in auth_subjects:
         regenerate_auth_tokens(auth_subject)
@@ -213,9 +213,8 @@ def regenerate_all_user_tokens():
 
 def regenerate_all_job_family_tokens():
     mapper = LifecycleCache.record_mapper()
-    filter_condition = '"job_family_id" is not NULL'
     auth_subjects: list[tables.AuthSubject] = mapper.filter(
-        tables.AuthSubject, filter_condition=filter_condition, filter_params=[],
+        tables.AuthSubject, condition=QueryCondition('"job_family_id" is not NULL'),
     )
     for auth_subject in auth_subjects:
         regenerate_auth_tokens(auth_subject)
@@ -225,9 +224,8 @@ def regenerate_all_job_family_tokens():
 
 def regenerate_all_esc_tokens():
     mapper = LifecycleCache.record_mapper()
-    filter_condition = '"esc_id" is not NULL'
     auth_subjects: list[tables.AuthSubject] = mapper.filter(
-        tables.AuthSubject, filter_condition=filter_condition, filter_params=[],
+        tables.AuthSubject, condition=QueryCondition('"esc_id" is not NULL'),
     )
     for auth_subject in auth_subjects:
         regenerate_auth_tokens(auth_subject)

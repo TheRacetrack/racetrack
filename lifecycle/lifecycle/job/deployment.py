@@ -2,6 +2,7 @@ import uuid
 from datetime import timedelta
 
 from lifecycle.config import Config
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
 from lifecycle.database.schema.dto_converter import deployment_record_to_dto, job_record_to_dto
 from lifecycle.job.models_registry import read_job_model
@@ -44,9 +45,11 @@ def check_for_concurrent_deployments(manifest: Manifest):
     mapper = LifecycleCache.record_mapper()
     placeholder = mapper.placeholder
     update_time_after = now() - timedelta(minutes=1)
-    filter_condition = f'"status" = {placeholder} and "job_name" = {placeholder} and "job_version" = {placeholder} and "update_time" >= {placeholder}'
-    filter_params = [DeploymentStatus.IN_PROGRESS.value, manifest.name, manifest.version, update_time_after]
-    ongoing_deployments = mapper.filter(tables.Deployment, filter_condition=filter_condition, filter_params=filter_params)
+    filter_condition = QueryCondition(
+        f'"status" = {placeholder} and "job_name" = {placeholder} and "job_version" = {placeholder} and "update_time" >= {placeholder}',
+        DeploymentStatus.IN_PROGRESS.value, manifest.name, manifest.version, update_time_after
+    )
+    ongoing_deployments = mapper.filter(tables.Deployment, condition=filter_condition)
 
     if ongoing_deployments:
         ongoing = ongoing_deployments[0]

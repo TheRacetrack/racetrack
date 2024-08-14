@@ -3,6 +3,7 @@ import time
 
 from django.db.utils import IntegrityError
 from lifecycle.database.base_engine import NoRowsAffected
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.table_model import new_uuid
 from lifecycle.server.cache import LifecycleCache
 import yaml
@@ -70,11 +71,11 @@ def resolve_job_model(job_name: str, job_version: str) -> tables.Job:
 def read_latest_job_model(job_name: str) -> tables.Job:
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    filter_condition = f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})'
-    filter_params = [job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value]
-    jobs: list[tables.Job] = mapper.filter(
-        tables.Job, filter_condition=filter_condition, filter_params=filter_params,
+    filter_condition = QueryCondition(
+        f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})',
+        job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value,
     )
+    jobs: list[tables.Job] = mapper.filter(tables.Job, condition=filter_condition)
     if len(jobs) == 0:
         raise EntityNotFound(f'No job named {job_name}')
 
@@ -93,11 +94,11 @@ def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> tabl
 
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    filter_condition = f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})'
-    filter_params = [job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value]
-    jobs: list[tables.Job] = mapper.filter(
-        tables.Job, filter_condition=filter_condition, filter_params=filter_params,
+    filter_condition = QueryCondition(
+        f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})',
+        job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value,
     )
+    jobs: list[tables.Job] = mapper.filter(tables.Job, condition=filter_condition)
     if len(jobs) == 0:
         raise EntityNotFound(f'No job named {job_name}')
 
