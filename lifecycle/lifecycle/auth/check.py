@@ -1,15 +1,14 @@
 from functools import wraps
 from typing import List
 
-from django.contrib.auth.models import User
-from django.http import Http404
-from django.shortcuts import get_object_or_404
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from lifecycle.auth.authorize import authorize_internal_token, authorize_resource_access, authorize_scope_access, authorize_subject_type
 from lifecycle.auth.authenticate import authenticate_token
 from lifecycle.database.schema import tables
+from lifecycle.server.cache import LifecycleCache
+from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
@@ -101,8 +100,8 @@ def check_staff_user(
     username = token_payload.subject
 
     try:
-        user: User = get_object_or_404(User, username=username)
-    except Http404:
+        user: tables.User = LifecycleCache.record_mapper().find_one(tables.User, username=username)
+    except EntityNotFound:
         raise UnauthorizedError(f'User {username} was not found')
     if not user.is_active:
         raise UnauthorizedError(f'User {username} is not active')

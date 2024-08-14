@@ -1,17 +1,16 @@
-from typing import Iterable, Optional, List
+from typing import Iterable
 from collections import defaultdict
 from lifecycle.auth.authorize import list_permitted_families, list_permitted_jobs
 
 from lifecycle.config import Config
+from lifecycle.database.schema import tables
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
-from lifecycle.job.dto_converter import job_model_to_dto, job_family_model_to_dto
 from lifecycle.database.schema.dto_converter import job_family_record_to_dto, job_record_to_dto
 from lifecycle.monitor.monitors import list_infrastructure_jobs
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import metric_jobs_count_by_status
-from lifecycle.django.registry import models
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.scope import AuthScope
@@ -24,7 +23,7 @@ from racetrack_commons.plugin.engine import PluginEngine
 logger = get_logger(__name__)
 
 
-def list_job_registry(config: Config, auth_subject: Optional[models.AuthSubject] = None) -> List[JobDto]:
+def list_job_registry(config: Config, auth_subject: tables.AuthSubject | None = None) -> list[JobDto]:
     """List jobs getting results from registry (Database)"""
     if auth_subject is None:
         return [job_record_to_dto(job, config) for job in models_registry.list_job_models()]
@@ -33,7 +32,7 @@ def list_job_registry(config: Config, auth_subject: Optional[models.AuthSubject]
         return list_permitted_jobs(auth_subject, AuthScope.READ_JOB.value, jobs)
 
 
-def list_job_families(auth_subject: Optional[models.AuthSubject] = None) -> List[JobFamilyDto]:
+def list_job_families(auth_subject: tables.AuthSubject | None = None) -> list[JobFamilyDto]:
     """List jobs getting results from registry (Database)"""
     if auth_subject is None:
         return [job_family_record_to_dto(family) for family in models_registry.list_job_family_models()]

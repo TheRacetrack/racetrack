@@ -1,13 +1,11 @@
-from typing import Optional
-
 from lifecycle.config import Config
+from lifecycle.database.schema import tables
 from lifecycle.deployer.deploy import build_and_provision, provision_job
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.deployer.secrets import JobSecrets
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import create_deployment, save_deployment_phase, save_deployment_result
 from lifecycle.job.registry import decommission_job_infrastructure, read_job
-from lifecycle.django.registry import models
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.manifest.manifest import Manifest
 from racetrack_commons.entities.audit import AuditLogEventType
@@ -21,7 +19,7 @@ def redeploy_job(
     config: Config,
     plugin_engine: PluginEngine,
     deployer_username: str,
-    auth_subject: Optional[models.AuthSubject],
+    auth_subject: tables.AuthSubject | None,
     build_flags: list[str] = [], # Setting a default here let's us ignore build_flags when redeploying
 ):
     """Deploy (rebuild and reprovision) Job once again without knowing secrets"""
@@ -30,6 +28,7 @@ def redeploy_job(
     assert manifest is not None, "job doesn't have Manifest data specified"
 
     infra_target = job.infrastructure_target
+    assert infra_target
     deployment = create_deployment(manifest, deployer_username, infra_target)
     try:
         job_secrets = _retrieve_job_secrets(manifest, job)
@@ -57,7 +56,7 @@ def reprovision_job(
     config: Config,
     plugin_engine: PluginEngine,
     deployer_username: str,
-    auth_subject: Optional[models.AuthSubject],
+    auth_subject: tables.AuthSubject | None,
 ):
     """Reprovision already built Job image once again to a cluster"""
     job = read_job(job_name, job_version, config)
@@ -66,6 +65,7 @@ def reprovision_job(
     assert job.image_tag is not None, "latest image tag is unknown"
 
     infra_target = job.infrastructure_target
+    assert infra_target
     deployment = create_deployment(manifest, deployer_username, infra_target)
     try:
         if manifest.secret_runtime_env_file:
@@ -94,7 +94,7 @@ def move_job(
     config: Config,
     plugin_engine: PluginEngine,
     deployer_username: str,
-    auth_subject: Optional[models.AuthSubject],
+    auth_subject: tables.AuthSubject | None,
 ):
     """Move job from one infrastructure target to another"""
     job = read_job(job_name, job_version, config)

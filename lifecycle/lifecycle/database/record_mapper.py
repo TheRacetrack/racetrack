@@ -48,11 +48,13 @@ class RecordMapper:
         self,
         table_type: Type[T],
         order_by: list[str] | None = None,
+        limit: int | None = None,
     ) -> list[T]:
         rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.fields(),
             order_by=order_by,
+            limit=limit,
         )
         return [_convert_row_to_object(row, table_type) for row in rows]
 

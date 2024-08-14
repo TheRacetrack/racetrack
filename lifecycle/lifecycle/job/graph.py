@@ -1,9 +1,9 @@
-from typing import List, Optional
 from dataclasses import dataclass
 
 from lifecycle.auth.authorize import list_permitted_jobs
 from lifecycle.auth.subject import find_auth_subject_by_esc_id, find_auth_subject_by_job_family_name
 from lifecycle.config.config import Config
+from lifecycle.database.schema import tables
 from lifecycle.job.esc import list_escs
 from lifecycle.job.registry import list_job_registry
 from racetrack_commons.auth.scope import AuthScope
@@ -11,7 +11,6 @@ from racetrack_commons.entities.dto import EscDto, JobDto
 from racetrack_commons.urls import get_external_pub_url
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
-from lifecycle.django.registry import models
 
 logger = get_logger(__name__)
 
@@ -21,7 +20,7 @@ class JobGraphNode:
     id: str
     type: str
     title: str
-    subtitle: Optional[str] = None
+    subtitle: str | None = None
 
 
 @dataclass
@@ -32,16 +31,16 @@ class JobGraphEdge:
 
 @dataclass
 class JobGraph:
-    nodes: List[JobGraphNode]
-    edges: List[JobGraphEdge]
+    nodes: list[JobGraphNode]
+    edges: list[JobGraphEdge]
 
 
-def build_job_dependencies_graph(config: Config, auth_subject: Optional[models.AuthSubject]) -> JobGraph:
-    jobs: List[JobDto] = list_job_registry(config, auth_subject)
+def build_job_dependencies_graph(config: Config, auth_subject: tables.AuthSubject | None) -> JobGraph:
+    jobs: list[JobDto] = list_job_registry(config, auth_subject)
     family_names = _group_job_families(jobs)
-    escs: List[EscDto] = list(list_escs())
+    escs: list[EscDto] = list(list_escs())
 
-    nodes: List[JobGraphNode] = []
+    nodes: list[JobGraphNode] = []
     for esc in escs:
         nodes.append(JobGraphNode(
             id=f'esc-{esc.id}',
@@ -58,7 +57,7 @@ def build_job_dependencies_graph(config: Config, auth_subject: Optional[models.A
             subtitle=f'Job Family: {family_name}\nJobs:\n{job_family_details}',
         ))
 
-    edges: List[JobGraphEdge] = []
+    edges: list[JobGraphEdge] = []
 
     for family_name in family_names:
         try:
@@ -93,7 +92,7 @@ def build_job_dependencies_graph(config: Config, auth_subject: Optional[models.A
     return JobGraph(nodes=nodes, edges=edges)
 
 
-def list_job_family_details(jobs: List[JobDto], family_name: str, config: Config) -> str:
+def list_job_family_details(jobs: list[JobDto], family_name: str, config: Config) -> str:
     family_jobs = [f for f in jobs if f.name == family_name]
     return '\n'.join(('- ' + _get_job_details(f, config) for f in family_jobs))
 
@@ -104,5 +103,5 @@ def _get_job_details(job: JobDto, config: Config) -> str:
     return f'{job.name} v{job.version} - {url}'
 
 
-def _group_job_families(jobs: List[JobDto]) -> List[str]:
+def _group_job_families(jobs: list[JobDto]) -> list[str]:
     return list(set([f.name for f in jobs]))

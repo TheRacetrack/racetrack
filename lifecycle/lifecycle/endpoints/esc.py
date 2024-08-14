@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, Request
+from lifecycle.database.schema import tables
 from pydantic import BaseModel, Field
 
 from racetrack_client.utils.datamodel import parse_dict_datamodel
@@ -8,7 +9,6 @@ from racetrack_commons.entities.dto import EscDto
 from lifecycle.job.esc import list_escs, create_esc, read_esc_model
 from lifecycle.auth.check import check_staff_user
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_tokens_by_subject, revoke_token, create_auth_token
-from lifecycle.django.registry import models
 
 
 class EscPayloadModel(BaseModel):
@@ -61,8 +61,8 @@ def setup_esc_endpoints(api: APIRouter):
         """Get ESC's all details with auth token"""
         check_staff_user(request)
         esc_model = read_esc_model(esc_id)
-        auth_subject: models.AuthSubject = get_auth_subject_by_esc(esc_model)
-        auth_tokens: list[models.AuthToken] = get_auth_tokens_by_subject(auth_subject)
+        auth_subject = get_auth_subject_by_esc(esc_model)
+        auth_tokens: list[tables.AuthToken] = get_auth_tokens_by_subject(auth_subject)
         return EscAuthData(
             id=esc_id,
             name=esc_model.name,
@@ -85,9 +85,9 @@ def setup_esc_endpoints(api: APIRouter):
     def _add_new_esc_token(esc_id: str, payload: CreateTokenPayload, request: Request) -> AuthTokenData:
         check_staff_user(request)
         esc_model = read_esc_model(esc_id)
-        auth_subject: models.AuthSubject = get_auth_subject_by_esc(esc_model)
+        auth_subject = get_auth_subject_by_esc(esc_model)
         expiry_time = timestamp_to_datetime(payload.expiry_time) if payload.expiry_time is not None else None
-        auth_token: models.AuthToken = create_auth_token(auth_subject, expiry_time=expiry_time)
+        auth_token = create_auth_token(auth_subject, expiry_time=expiry_time)
         return AuthTokenData(
             id=auth_token.id,
             token=auth_token.token,

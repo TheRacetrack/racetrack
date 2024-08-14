@@ -191,7 +191,7 @@ class AuthResourcePermission(TableModel):
         table_name = 'registry_authresourcepermission'
         primary_key = ['id']
 
-    id: int
+    id: int | None
     auth_subject_id: str  # foreign key: AuthSubjectRecord
     # operation permitted to the subject
     scope: str

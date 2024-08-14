@@ -1,7 +1,9 @@
+import json
 import time
-from typing import List, Optional
 
 from django.db.utils import IntegrityError
+from lifecycle.database.base_engine import NoRowsAffected
+from lifecycle.database.table_model import new_uuid
 from lifecycle.server.cache import LifecycleCache
 import yaml
 
@@ -13,8 +15,6 @@ from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
-from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
 from lifecycle.server.metrics import metric_job_model_fetch_duration
 from lifecycle.database.schema import tables
 
@@ -29,7 +29,8 @@ def list_job_models() -> list[tables.Job]:
 
 def list_job_family_models() -> list[tables.JobFamily]:
     """List deployed job families stored in registry database"""
-    return LifecycleCache.record_mapper().list_all(tables.JobFamily, order_by=['name'])
+    mapper = LifecycleCache.record_mapper()
+    return mapper.list_all(tables.JobFamily, order_by=['name'])
 
 
 def read_job_model(job_name: str, job_version: str) -> tables.Job:
@@ -113,40 +114,45 @@ def read_job_family_model(job_family: str) -> tables.JobFamily:
         raise EntityNotFound(f'Job Family with name {job_family} was not found')
 
 
-@db_access
 def delete_job_model(job_name: str, job_version: str):
-    models.Job.objects.get(name=job_name, version=job_version).delete()
+    mapper = LifecycleCache.record_mapper()
+    job = mapper.find_one(tables.Job, name=job_name, version=job_version)
+    mapper.delete_record(job)
 
 
 def create_job_model(job_dto: JobDto) -> tables.Job:
     job_family = create_job_family_if_not_exist(job_dto.name)
     new_job = tables.Job(
+        id=new_uuid(),
+        family_id=job_family.id,
         name=job_dto.name,
         version=job_dto.version,
-        family=job_family,
         status=job_dto.status,
         create_time=timestamp_to_datetime(job_dto.create_time),
         update_time=timestamp_to_datetime(job_dto.update_time),
         manifest=job_dto.manifest_yaml,
         internal_name=job_dto.internal_name,
         error=job_dto.error,
+        notice=None,
         image_tag=job_dto.image_tag,
         deployed_by=job_dto.deployed_by,
+        last_call_time=None,
         infrastructure_target=job_dto.infrastructure_target,
         replica_internal_names=','.join(job_dto.replica_internal_names),
         job_type_version=job_dto.job_type_version,
-        infrastructure_stats=job_dto.infrastructure_stats,
+        infrastructure_stats=json.dumps(job_dto.infrastructure_stats),
     )
-    new_job.save()
+    LifecycleCache.record_mapper().create(new_job)
     return new_job
 
 
-@db_access
-def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
-    new_model = models.JobFamily(
+def create_job_family_model(job_family_dto: JobFamilyDto) -> tables.JobFamily:
+    mapper = LifecycleCache.record_mapper()
+    new_model = tables.JobFamily(
+        id=new_uuid(),
         name=job_family_dto.name,
     )
-    new_model.save()
+    mapper.create(new_model)
     return new_model
 
 
@@ -163,14 +169,13 @@ def update_job_model(job: tables.Job, job_dto: JobDto):
     job.infrastructure_target = job_dto.infrastructure_target
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
     job.job_type_version = job_dto.job_type_version
-    job.infrastructure_stats = job_dto.infrastructure_stats
+    job.infrastructure_stats = json.dumps(job_dto.infrastructure_stats)
     try:
-        job.save(force_update=True)
-    except models.Job.DoesNotExist:
+        LifecycleCache.record_mapper().update(job)
+    except NoRowsAffected:
         raise EntityNotFound(f'Job model has gone before updating: {job}')
 
 
-@db_access
 def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
     with wrap_context('parsing YAML'):
         manifest_dict = yaml.safe_load(manifest_yaml)
@@ -184,8 +189,8 @@ def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
     job_model = read_job_model(job_name, job_version)
     job_model.manifest = manifest_yaml
     try:
-        job_model.save(force_update=True)
-    except models.Job.DoesNotExist:
+        LifecycleCache.record_mapper().update(job_model)
+    except NoRowsAffected:
         raise EntityNotFound(f'Job model has gone before updating: {job_model}')
 
 
@@ -199,7 +204,7 @@ def save_job_model(job_dto: JobDto) -> tables.Job:
     return job_model
 
 
-def update_job(job_dto: JobDto) -> models.Job:
+def update_job(job_dto: JobDto) -> tables.Job:
     """Update existing job"""
     job_model = read_job_model(job_dto.name, job_dto.version)
     update_job_model(job_model, job_dto)
@@ -213,10 +218,9 @@ def create_job_family_if_not_exist(job_family: str) -> tables.JobFamily:
         return create_job_family_model(JobFamilyDto(name=job_family))
 
 
-@db_access
 def create_trashed_job(job_dto: JobDto):
-    age_days = days_ago(job_dto.create_time)
-    new_job = models.TrashJob(
+    age_days = days_ago(job_dto.create_time) or 0
+    new_job = tables.TrashJob(
         id=job_dto.id,
         name=job_dto.name,
         version=job_dto.version,
@@ -234,19 +238,18 @@ def create_trashed_job(job_dto: JobDto):
         age_days=age_days,
     )
     try:
-        new_job.save()
+        LifecycleCache.record_mapper().create(new_job)
     except IntegrityError:
         logger.error(f'Trash Job already exists with ID={job_dto.id}, {job_dto.name} {job_dto.version}')
 
 
-@db_access
 def find_deleted_job(
     job_name: str,
     job_version: str,
-) -> Optional[models.TrashJob]:
-    queryset = models.TrashJob.objects.filter(
-        name=job_name, version=job_version,
+) -> tables.TrashJob | None:
+    records = LifecycleCache.record_mapper().find_many(
+        tables.TrashJob, name=job_name, version=job_version,
     )
-    if queryset.count() == 0:
+    if len(records) == 0:
         return None
-    return queryset.first()
+    return records[0]
