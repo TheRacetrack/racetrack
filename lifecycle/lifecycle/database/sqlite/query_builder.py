@@ -16,6 +16,7 @@ class QueryBuilder(BaseQueryBuilder):
         fields: list[str],
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
+        join_expression: str | None = None,
         order_by: list[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
@@ -25,17 +26,31 @@ class QueryBuilder(BaseQueryBuilder):
         :param filter_conditions: list of SQL conditions to include in where clause, joined with AND
         :param filter_params: list of Query parameters to place in where clause conditions
         """
+        field_expressions: list[str]
+        if join_expression:
+            field_expressions = [
+                f'{table}.{field} as {field}'
+                for field in fields
+            ]
+        else:
+            field_expressions = fields
+        fields_joined = ', '.join(field_expressions)
+
+        query = f'select {fields_joined} from {table}'
+        if join_expression:
+            query += f' {join_expression}'
+
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        fields_joined = ', '.join(fields)
-        query = f'select {fields_joined} from {table}{where_clause}'
-        if limit:
-            query += f' limit {limit}'
-        if offset:
-            query += f' offset {offset}'
+        if where_clause:
+            query += f' {where_clause}'
         if order_by:
             order_fields = self._build_order_fields(order_by)
             order_fields_joined = ', '.join(order_fields)
             query += f' order by {order_fields_joined}'
+        if limit:
+            query += f' limit {limit}'
+        if offset:
+            query += f' offset {offset}'
         return query, where_params
 
     def insert_one(
@@ -58,7 +73,9 @@ class QueryBuilder(BaseQueryBuilder):
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
         updated_fields = ', '.join([f'{field} = ?' for field in new_data.keys()])
-        query = f'update {table} set {updated_fields}{where_clause}'
+        query = f'update {table} set {updated_fields}'
+        if where_clause:
+            query += f' {where_clause}'
         params = list(new_data.values()) + where_params
         return query, params
 
@@ -69,7 +86,9 @@ class QueryBuilder(BaseQueryBuilder):
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        query = f'delete from {table}{where_clause}'
+        query = f'delete from {table}'
+        if where_clause:
+            query += f' {where_clause}'
         return query, where_params
 
     def count(
@@ -79,18 +98,20 @@ class QueryBuilder(BaseQueryBuilder):
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        query = f'select count(*) as count from {table}{where_clause}'
+        query = f'select count(*) as count from {table}'
+        if where_clause:
+            query += f' {where_clause}'
         return query, where_params
 
     def _build_where_clause(
         self,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
-    ) -> tuple[str, list]:
+    ) -> tuple[str | None, list]:
         if not filter_conditions:
-            return '', []
+            return None, []
         joined_conditions = ' and '.join(filter_conditions)
-        query = f' where {joined_conditions}'
+        query = f'where {joined_conditions}'
         return query, filter_params or []
 
     def _build_order_fields(self, order_by: list[str] | None) -> Iterable[str]:

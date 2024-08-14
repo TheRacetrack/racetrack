@@ -15,7 +15,7 @@ def test_record_operations():
         engine = create_db_engine()
         object_builder = RecordMapper(engine)
 
-        records = object_builder.list_all(User)
+        records = object_builder.find_all(User)
         assert len(records) == 1
 
         user: User = object_builder.find_one(User, id=1)
@@ -29,7 +29,7 @@ def test_record_operations():
             name='primer',
         ))
         assert object_builder.count(JobFamily) == 1
-        family_records: list[JobFamily] = object_builder.list_all(JobFamily)
+        family_records: list[JobFamily] = object_builder.find_all(JobFamily)
         assert len(family_records) == 1
         assert family_records[0].name == 'primer'
 

@@ -45,20 +45,6 @@ class RecordMapper:
 
         return _convert_row_to_object(row, table_type)
 
-    def list_all(
-        self,
-        table_type: Type[T],
-        order_by: list[str] | None = None,
-        limit: int | None = None,
-    ) -> list[T]:
-        rows = self.query_wrapper.select_many(
-            table=table_type.table_name(),
-            fields=table_type.fields(),
-            order_by=order_by,
-            limit=limit,
-        )
-        return [_convert_row_to_object(row, table_type) for row in rows]
-
     def find_many(
         self,
         table_type: Type[T],
@@ -80,6 +66,7 @@ class RecordMapper:
         self,
         table_type: Type[T],
         condition: QueryCondition,
+        join_expression: str | None = None,
         order_by: list[str] | None = None,
         limit: int | None = None,
     ) -> list[T]:
@@ -89,6 +76,22 @@ class RecordMapper:
             fields=table_type.fields(),
             filter_conditions=condition.filter_conditions,
             filter_params=condition.filter_params,
+            join_expression=join_expression,
+            order_by=order_by,
+            limit=limit,
+        )
+        return [_convert_row_to_object(row, table_type) for row in rows]
+
+    def find_all(
+        self,
+        table_type: Type[T],
+        order_by: list[str] | None = None,
+        limit: int | None = None,
+    ) -> list[T]:
+        """List all objects without filtering"""
+        rows = self.query_wrapper.select_many(
+            table=table_type.table_name(),
+            fields=table_type.fields(),
             order_by=order_by,
             limit=limit,
         )
@@ -124,7 +127,7 @@ class RecordMapper:
         )
         return row is not None
 
-    def record_exists(
+    def exists_record(
         self,
         record_object: TableModel,
     ) -> bool:
@@ -145,17 +148,19 @@ class RecordMapper:
     def exists_on_condition(
         self,
         table_type: Type[T],
-        filter_condition: str,
-        filter_params: list[Any],
+        condition: QueryCondition,
+        join_expression: str | None = None,
     ) -> bool:
         """Check if any record matches the SQL condition"""
-        first_row = self.query_wrapper.select_one(
+        rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.primary_key_columns(),
-            filter_conditions=[filter_condition],
-            filter_params=filter_params,
+            join_expression=join_expression,
+            filter_conditions=condition.filter_conditions,
+            filter_params=condition.filter_params,
+            limit=1,
         )
-        return first_row is not None
+        return len(rows) > 0
 
     def create(
         self,
@@ -189,7 +194,7 @@ class RecordMapper:
         self,
         record_object: TableModel,
     ) -> None:
-        if self.record_exists(record_object):
+        if self.exists_record(record_object):
             self.update(record_object)
         else:
             self.create(record_object)

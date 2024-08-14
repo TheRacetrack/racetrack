@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
 from lifecycle.server.cache import LifecycleCache
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
@@ -102,27 +103,40 @@ def has_endpoint_permission(
 ) -> bool:
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    filter_params = []
 
-    # filter_condition = f'"auth_subject_id" = {placeholder}'
-    # filter_params.append(auth_subject.id)
+    table_permission = tables.AuthResourcePermission.table_name()
+    table_family = tables.JobFamily.table_name()
+    table_job = tables.Job.table_name()
+    join_expression = f'left join {table_family} on {table_family}.id = {table_permission}.job_family_id'
+    join_expression += f' left join {table_job} on {table_job}.id = {table_permission}.job_id'
 
-    # job_name_filter = f'"job_family_id" is NULL or ' # JOIN
-
-    # return mapper.exists_on_condition(
-    #     tables.AuthResourcePermission, filter_condition=filter_condition, filter_params=filter_params,
-    # )
-
-    subject_filter = Q(auth_subject=auth_subject)
-    job_name_filter = Q(job_family__name=job_name) | Q(job_family__isnull=True)
-    job_version_filter = Q(job__version=job_version) | Q(job__isnull=True)
-    endpoint_filter = Q(endpoint=endpoint) | Q(endpoint__isnull=True)
-    resource_filter = job_name_filter & job_version_filter & endpoint_filter
-    scope_filter = Q(scope=scope) | Q(scope=AuthScope.FULL_ACCESS.value)
-    queryset = tables.AuthResourcePermission.objects.filter(
-        subject_filter & resource_filter & scope_filter
+    subject_filter = QueryCondition(f'{table_permission}."auth_subject_id" = {placeholder}', auth_subject.id)
+    job_name_filter = QueryCondition.operator_or(
+        QueryCondition(f'{table_family}.name = {placeholder}', job_name),
+        QueryCondition(f'{table_permission}.job_family_id is null'),
     )
-    return queryset.exists()
+    job_version_filter = QueryCondition.operator_or(
+        QueryCondition(f'{table_job}.version = {placeholder}', job_version),
+        QueryCondition(f'{table_permission}.job_id is null'),
+    )
+    endpoint_filter = QueryCondition.operator_or(
+        QueryCondition(f'{table_permission}.endpoint = {placeholder}', endpoint),
+        QueryCondition(f'{table_permission}.endpoint is null'),
+    )
+    resource_filter = QueryCondition.operator_and(
+        job_name_filter,
+        job_version_filter,
+        endpoint_filter,
+    )
+    scope_filter = QueryCondition.operator_or(
+        QueryCondition(f'{table_permission}."scope" = {placeholder}', scope),
+        QueryCondition(f'{table_permission}."scope" = {placeholder}', AuthScope.FULL_ACCESS.value),
+    )
+    filter_condition = QueryCondition.operator_and(subject_filter, resource_filter, scope_filter)
+
+    return mapper.exists_on_condition(
+        tables.AuthResourcePermission, join_expression=join_expression, condition=filter_condition,
+    )
 
 
 def has_resource_permission(

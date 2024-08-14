@@ -19,6 +19,7 @@ class QueryBuilder(BaseQueryBuilder):
         fields: list[str],
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
+        join_expression: str | None = None,
         order_by: list[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
@@ -28,21 +29,34 @@ class QueryBuilder(BaseQueryBuilder):
         :param filter_conditions: list of SQL conditions to include in where clause, joined with AND
         :param filter_params: list of Query parameters to place in where clause conditions
         """
-        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        query = SQL('select {fields} from {table}{where}').format(
-            fields=SQL(', ').join(map(Identifier, fields)),
+        field_expressions: list[Composable]
+        if join_expression:
+            field_expressions = [
+                SQL('{}.{} as {}').format(Identifier(table), Identifier(field), Identifier(field))
+                for field in fields
+            ]
+        else:
+            field_expressions = [Identifier(field) for field in fields]
+
+        query = SQL('select {fields} from {table}').format(
+            fields=SQL(', ').join(field_expressions),
             table=Identifier(table),
-            where=where_clause,
         )
-        if limit:
-            query += SQL(' limit {}').format(Literal(limit))
-        if offset:
-            query += SQL(' offset {}').format(Literal(offset))
+        if join_expression:
+            query += SQL(' ' + join_expression)
+
+        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
+        if where_clause:
+            query += SQL(' {}').format(where_clause)
         if order_by:
             order_fields = self._build_order_fields(order_by)
             query += SQL(' order by {order_fields}').format(
                 order_fields=SQL(', ').join(order_fields),
             )
+        if limit:
+            query += SQL(' limit {}').format(Literal(limit))
+        if offset:
+            query += SQL(' offset {}').format(Literal(offset))
         return query, where_params
 
     def insert_one(
@@ -66,13 +80,14 @@ class QueryBuilder(BaseQueryBuilder):
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        query = SQL('update {table} set {updated_fields}{where}').format(
+        query = SQL('update {table} set {updated_fields}').format(
             table=Identifier(table),
             updated_fields=SQL(', ').join(
                 [SQL('{} = %s').format(Identifier(field)) for field in new_data.keys()]
             ),
-            where=where_clause,
         )
+        if where_clause:
+            query += SQL(' {}').format(where_clause)
         params = list(new_data.values()) + where_params
         return query, params
 
@@ -83,10 +98,11 @@ class QueryBuilder(BaseQueryBuilder):
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        query = SQL('delete from {table}{where}').format(
+        query = SQL('delete from {table}').format(
             table=Identifier(table),
-            where=where_clause,
         )
+        if where_clause:
+            query += SQL(' {}').format(where_clause)
         return query, where_params
 
     def count(
@@ -96,20 +112,21 @@ class QueryBuilder(BaseQueryBuilder):
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
         where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        query = SQL('select count(*) as count from {table}{where}').format(
+        query = SQL('select count(*) as count from {table}').format(
             table=Identifier(table),
-            where=where_clause,
         )
+        if where_clause:
+            query += SQL(' {}').format(where_clause)
         return query, where_params
 
     def _build_where_clause(
         self,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
-    ) -> tuple[Query, list]:
+    ) -> tuple[Query | None, list]:
         if not filter_conditions:
-            return SQL(''), []
-        query = SQL(' where {}').format(
+            return None, []
+        query = SQL('where {}').format(
             SQL(' and ').join(map(SQL, filter_conditions))  # type: ignore
         )
         return query, filter_params or []

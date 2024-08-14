@@ -25,13 +25,13 @@ logger = get_logger(__name__)
 def list_job_models() -> list[tables.Job]:
     """List deployed jobs stored in registry database"""
     mapper = LifecycleCache.record_mapper()
-    return mapper.list_all(tables.Job, order_by=['-update_time', 'name'])
+    return mapper.find_all(tables.Job, order_by=['-update_time', 'name'])
 
 
 def list_job_family_models() -> list[tables.JobFamily]:
     """List deployed job families stored in registry database"""
     mapper = LifecycleCache.record_mapper()
-    return mapper.list_all(tables.JobFamily, order_by=['name'])
+    return mapper.find_all(tables.JobFamily, order_by=['name'])
 
 
 def read_job_model(job_name: str, job_version: str) -> tables.Job:

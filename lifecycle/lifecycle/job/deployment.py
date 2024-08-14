@@ -76,7 +76,7 @@ def check_deployment_result(deploy_id: str, config: Config) -> DeploymentDto:
 
 def list_recent_deployments(limit: int) -> list[DeploymentDto]:
     mapper = LifecycleCache.record_mapper()
-    deployment_models = mapper.list_all(tables.Deployment, order_by=['-update_time'], limit=limit)
+    deployment_models = mapper.find_all(tables.Deployment, order_by=['-update_time'], limit=limit)
     return [deployment_record_to_dto(m) for m in deployment_models]
 
 

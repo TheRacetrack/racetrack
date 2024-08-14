@@ -20,12 +20,13 @@ class QueryWrapper:
         fields: list[str],
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
+        join_expression: str | None = None,
         order_by: list[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> list[dict]:
         query, params = self.query_builder.select(
-            table=table, fields=fields,
+            table=table, fields=fields, join_expression=join_expression,
             filter_conditions=filter_conditions, filter_params=filter_params,
             order_by=order_by,
             limit=limit, offset=offset,

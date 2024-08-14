@@ -46,6 +46,6 @@ def create_esc(esc_dto: EscDto) -> EscDto:
 
 
 def list_escs() -> Iterable[EscDto]:
-    all_esc = LifecycleCache.record_mapper().list_all(tables.Esc)
+    all_esc = LifecycleCache.record_mapper().find_all(tables.Esc)
     for esc_model in all_esc:
         yield esc_record_to_dto(esc_model)

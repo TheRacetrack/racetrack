@@ -25,7 +25,7 @@ class Job(TableModel):
         primary_key = ['id']
 
     id: str
-    family_id: str  # foreign key: JobFamilyRecord
+    family_id: str  # foreign key: JobFamily
     name: str
     version: str
     status: str
@@ -95,7 +95,7 @@ class PublicEndpointRequest(TableModel):
         primary_key = ['id']
 
     id: str
-    job_id: str  # foreign key: JobRecord
+    job_id: str  # foreign key: Job
     endpoint: str
     active: bool
 
@@ -147,9 +147,9 @@ class AuthSubject(TableModel):
         primary_key = ['id']
 
     id: str
-    user_id: int | None  # foreign key: AuthUserRecord
-    esc_id: str | None  # foreign key: EscRecord
-    job_family_id: str | None  # foreign key: JobFamilyRecord
+    user_id: int | None  # foreign key: AuthUser
+    esc_id: str | None  # foreign key: Esc
+    job_family_id: str | None  # foreign key: JobFamily
 
     def __str__(self):
         if self.user_id is not None:
@@ -177,7 +177,7 @@ class AuthToken(TableModel):
         primary_key = ['id']
 
     id: str
-    auth_subject_id: str  # foreign key: AuthSubjectRecord
+    auth_subject_id: str  # foreign key: AuthSubject
     token: str  # JWT token
     expiry_time: datetime | None
     active: bool
@@ -192,12 +192,12 @@ class AuthResourcePermission(TableModel):
         primary_key = ['id']
 
     id: int | None
-    auth_subject_id: str  # foreign key: AuthSubjectRecord
+    auth_subject_id: str  # foreign key: AuthSubject
     # operation permitted to the subject
     scope: str
     # resource-scope: anything, job family, job, endpoint
-    job_family_id: str | None  # foreign key: JobFamilyRecord
-    job_id: str | None  # foreign key: JobRecord
+    job_family_id: str | None  # foreign key: JobFamily
+    job_id: str | None  # foreign key: Job
     endpoint: str | None
 
 

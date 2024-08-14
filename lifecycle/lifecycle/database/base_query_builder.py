@@ -23,6 +23,7 @@ class BaseQueryBuilder(ABC):
         fields: list[str],
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
+        join_expression: str | None = None,
         order_by: list[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
@@ -31,6 +32,7 @@ class BaseQueryBuilder(ABC):
         :param order_by: list of fields to order by, for descending order prepend column name with '-'
         :param filter_conditions: list of SQL conditions to include in where clause, joined with AND
         :param filter_params: list of Query parameters to place in where clause conditions
+        :param join_expression: expression to join tables in SQL query, eg. 'left join table2 on table1.id = table2.id'
         """
         raise NotImplementedError
 
