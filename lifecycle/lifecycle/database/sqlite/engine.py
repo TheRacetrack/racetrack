@@ -2,6 +2,7 @@ from typing import Any
 import sqlite3
 import os
 
+from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.base_engine import DbEngine, check_affected_rows
 from lifecycle.database.sqlite.query_builder import QueryBuilder
@@ -46,7 +47,10 @@ class SQLiteEngine(DbEngine):
         cursor: sqlite3.Cursor = self.connection.cursor()
         try:
             self._log_query(query)
-            cursor.execute(query, params or [])
+            try:
+                cursor.execute(query, params or [])
+            except sqlite3.IntegrityError as e:
+                raise AlreadyExists(str(e)) from e
             check_affected_rows(expected_affected_rows, cursor.rowcount)
         finally:
             cursor.close()

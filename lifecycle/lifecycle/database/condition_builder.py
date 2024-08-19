@@ -20,8 +20,9 @@ class QueryCondition:
         if not conditions_list:
             return QueryCondition.empty()
         expression = ' or '.join([f'({c.expression})' for c in conditions_list])
-        params = reduce(lambda x, y: x + y, [c.params for c in conditions_list])
-        return QueryCondition(expression, params)
+        condition = QueryCondition(expression)
+        condition.params = reduce(lambda x, y: x + y, [c.params for c in conditions_list])
+        return condition
 
     @staticmethod
     def operator_and(*conditions: 'QueryCondition') -> 'QueryCondition':
@@ -29,8 +30,9 @@ class QueryCondition:
         if not conditions_list:
             return QueryCondition.empty()
         expression = ' and '.join([f'({c.expression})' for c in conditions_list])
-        params = reduce(lambda x, y: x + y, [c.params for c in conditions_list])
-        return QueryCondition(expression, params)
+        condition = QueryCondition(expression)
+        condition.params = reduce(lambda x, y: x + y, [c.params for c in conditions_list])
+        return condition
 
     @property
     def filter_conditions(self) -> list[str] | None:

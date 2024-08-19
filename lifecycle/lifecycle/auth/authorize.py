@@ -2,7 +2,6 @@ from collections import defaultdict
 
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
-from lifecycle.database.table_model import new_uuid
 from lifecycle.server.cache import LifecycleCache
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_commons.auth.scope import AuthScope
@@ -177,6 +176,9 @@ def has_resource_permission(
         ),
         scope_filter,
     )
+
+    logger.debug(f'filter filter_conditions: {filter_condition.filter_conditions}')
+    logger.debug(f'filter params: {filter_condition.filter_params}')
 
     return mapper.exists_on_condition(
         tables.AuthResourcePermission, join_expression=join_expression, condition=filter_condition,

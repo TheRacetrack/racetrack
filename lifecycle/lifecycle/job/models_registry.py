@@ -9,7 +9,7 @@ from lifecycle.server.cache import LifecycleCache
 import yaml
 
 from racetrack_client.log.context_error import wrap_context
-from racetrack_client.log.errors import EntityNotFound
+from racetrack_client.log.errors import AlreadyExists, EntityNotFound
 from racetrack_client.manifest.load import load_manifest_from_dict
 from racetrack_client.manifest.validate import validate_manifest
 from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
@@ -240,7 +240,7 @@ def create_trashed_job(job_dto: JobDto):
     )
     try:
         LifecycleCache.record_mapper().create(new_job)
-    except IntegrityError:
+    except AlreadyExists:
         logger.error(f'Trash Job already exists with ID={job_dto.id}, {job_dto.name} {job_dto.version}')
 
 

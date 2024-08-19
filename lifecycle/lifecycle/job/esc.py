@@ -37,7 +37,7 @@ def create_esc(esc_dto: EscDto) -> EscDto:
         esc_model.id = esc_dto.id
         if mapper.exists(tables.Esc, id=esc_dto.id):
             raise AlreadyExists('ESC with given ID already exists')
-    mapper.update(esc_model)
+    mapper.create(esc_model)
 
     auth_subject = get_auth_subject_by_esc(esc_model)
     create_auth_token(auth_subject)

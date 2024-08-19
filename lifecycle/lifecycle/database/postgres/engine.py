@@ -2,9 +2,10 @@ import os
 from typing import Any
 
 from psycopg_pool import ConnectionPool
-from psycopg import Connection, Cursor
+from psycopg import Connection, Cursor, IntegrityError
 from psycopg.sql import SQL, Literal, Composable, Composed
 
+from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.base_engine import DbEngine, check_affected_rows
 from lifecycle.database.postgres.query_builder import QueryBuilder
@@ -79,7 +80,10 @@ class PostgresEngine(DbEngine):
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
                 self._log_query(sql)
-                cursor.execute(sql, params=params)
+                try:
+                    cursor.execute(sql, params=params)
+                except IntegrityError as e:
+                    raise AlreadyExists(str(e)) from e
                 check_affected_rows(expected_affected_rows, cursor.rowcount)
 
     def execute_sql_fetch_one(
