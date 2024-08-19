@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, Request, Response
+from lifecycle.database.schema.dto_converter import async_job_call_record_to_dto
 from pydantic import BaseModel, Field
 
 from lifecycle.auth.check import check_auth
@@ -8,7 +9,6 @@ from lifecycle.config import Config
 from lifecycle.config.maintenance import ensure_no_maintenance
 from lifecycle.deployer.redeploy import redeploy_job, reprovision_job, move_job
 from lifecycle.job.async_call import save_async_job_call, get_async_job_call, delete_async_job_call
-from lifecycle.job.dto_converter import async_job_call_to_dto
 from lifecycle.job.ansi import strip_ansi_colors
 from lifecycle.job.graph import build_job_dependencies_graph
 from lifecycle.job.models_registry import update_job_manifest
@@ -159,7 +159,7 @@ def setup_job_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
         ensure_no_maintenance()
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         model = get_async_job_call(call_id)
-        return async_job_call_to_dto(model)
+        return async_job_call_record_to_dto(model)
 
     @api.put('/job/async/call/{call_id}')
     def _update_async_job_call(request: Request, call_id: str, payload: AsyncJobCallDto):

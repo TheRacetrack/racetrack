@@ -24,7 +24,8 @@ def authenticate_username_with_password(username: str, password: str) -> tuple[U
     if not user.is_active:
         raise UnauthorizedError('user account is disabled')
 
-    auth_subject = get_auth_subject_by_user(user)
+    user_record = find_user_record_by_id(user.id)
+    auth_subject = get_auth_subject_by_user(user_record)
     auth_token = get_auth_token_by_subject(auth_subject)
     return user, auth_subject, auth_token
 
@@ -43,8 +44,9 @@ def register_user_account(username: str, password: str) -> User:
         pass
 
     user = User.objects.create_user(username, password=password, is_active=False)
+    user_record = find_user_record_by_id(user.id)
 
-    auth_subject = create_auth_subject_for_user(user)
+    auth_subject = create_auth_subject_for_user(user_record)
     # grant default user permisssions
     grant_permission(auth_subject, AuthScope.READ_JOB.value)
     grant_permission(auth_subject, AuthScope.CALL_JOB.value)
@@ -71,7 +73,7 @@ def change_user_password(username: str, old_password: str, new_password: str):
     logger.debug(f'User {username} changed password')
 
 
-def create_auth_subject_for_user(user_model: User) -> tables.AuthSubject:
+def create_auth_subject_for_user(user_model: tables.User) -> tables.AuthSubject:
     auth_subject = tables.AuthSubject(
         id=new_uuid(),
         user_id=user_model.id,

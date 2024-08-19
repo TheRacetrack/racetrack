@@ -186,6 +186,11 @@ class RecordMapper:
         self,
         record_object: TableModel,
     ) -> None:
+        """
+        Update one existing record
+        :raise NoRowsAffected: if the record was not found
+        :raise TooManyRowsAffected: if more than one record has been updated
+        """
         primary_key_columns = record_object.primary_key_columns()
         primary_keys = record_object.primary_keys()
         filter_kwargs = dict(zip(primary_key_columns, primary_keys))

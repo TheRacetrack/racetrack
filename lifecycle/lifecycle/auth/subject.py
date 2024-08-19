@@ -2,8 +2,6 @@ import os
 import uuid
 from datetime import datetime
 
-from django.contrib.auth.models import User
-
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
 from lifecycle.database.table_model import new_uuid
@@ -16,7 +14,7 @@ from racetrack_client.log.logs import get_logger
 logger = get_logger(__name__)
 
 
-def get_auth_subject_by_user(user_model: User) -> tables.AuthSubject:
+def get_auth_subject_by_user(user_model: tables.User) -> tables.AuthSubject:
     """Get or Create (if not exists) an auth subject for the given User"""
     mapper = LifecycleCache.record_mapper()
     try:
