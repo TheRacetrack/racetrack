@@ -1,13 +1,10 @@
 import json
 from typing import Any
 
-from django.db.models import Q
-
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
 from lifecycle.database.schema.dto_converter import audit_log_event_record_to_dto
 from lifecycle.database.table_model import new_uuid
-from lifecycle.job.dto_converter import audit_log_event_to_dto
 from lifecycle.server.cache import LifecycleCache
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import get_logger
@@ -40,7 +37,7 @@ class AuditLogger:
             job_name=job_name,
             job_version=job_version,
         )
-        LifecycleCache.record_mapper().update(ale)
+        LifecycleCache.record_mapper().create(ale)
 
         traits = properties or {}
         traits['username_executor'] = username_executor
