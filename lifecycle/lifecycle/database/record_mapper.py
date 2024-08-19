@@ -169,6 +169,10 @@ class RecordMapper:
     ) -> None:
         primary_key_columns = record_object.primary_key_columns()
         record_data = _extract_record_data(record_object)
+        # Skip NULL primary keys, let the database auto generate them
+        for primary_key in primary_key_columns:
+            if primary_key in record_data and record_data[primary_key] is None:
+                del record_data[primary_key]
         returning_row = self.query_wrapper.insert_one(
             table=record_object.table_name(),
             data=record_data,
