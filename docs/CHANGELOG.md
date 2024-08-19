@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.32.0] - 2024-08-19
 ### Added
 - A new tab "External Consumers" has been added to the Dashboard.
   It allows to browse, read auth token and create a new ESC.
@@ -23,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#491](https://github.com/TheRacetrack/racetrack/issues/491))
 - Pub's metrics has been revised to detect overloaded jobs easier.
   ([#493](https://github.com/TheRacetrack/racetrack/issues/493))
+
+### Fixed
+- Download button works on Kubernetes clusters.
+  ([#490](https://github.com/TheRacetrack/racetrack/issues/490))
 
 ## [2.31.0] - 2024-07-09
 ### Added
