@@ -45,8 +45,8 @@ class QueryBuilder(BaseQueryBuilder):
         if join_expression:
             query += SQL(' ' + join_expression)
 
-        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
-        if where_clause:
+        where_clause, where_params, where_exists = self._build_where_clause(filter_conditions, filter_params)
+        if where_exists:
             query += SQL(' {}').format(where_clause)
         if order_by:
             order_fields = self._build_order_fields(order_by)
@@ -79,14 +79,14 @@ class QueryBuilder(BaseQueryBuilder):
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
-        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
+        where_clause, where_params, where_exists = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('update {table} set {updated_fields}').format(
             table=Identifier(table),
             updated_fields=SQL(', ').join(
                 [SQL('{} = %s').format(Identifier(field)) for field in new_data.keys()]
             ),
         )
-        if where_clause:
+        if where_exists:
             query += SQL(' {}').format(where_clause)
         params = list(new_data.values()) + where_params
         return query, params
@@ -97,11 +97,11 @@ class QueryBuilder(BaseQueryBuilder):
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
-        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
+        where_clause, where_params, where_exists = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('delete from {table}').format(
             table=Identifier(table),
         )
-        if where_clause:
+        if where_exists:
             query += SQL(' {}').format(where_clause)
         return query, where_params
 
@@ -111,11 +111,11 @@ class QueryBuilder(BaseQueryBuilder):
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
     ) -> QueryWithParams:
-        where_clause, where_params = self._build_where_clause(filter_conditions, filter_params)
+        where_clause, where_params, where_exists = self._build_where_clause(filter_conditions, filter_params)
         query = SQL('select count(*) as count from {table}').format(
             table=Identifier(table),
         )
-        if where_clause:
+        if where_exists:
             query += SQL(' {}').format(where_clause)
         return query, where_params
 
@@ -123,13 +123,13 @@ class QueryBuilder(BaseQueryBuilder):
         self,
         filter_conditions: list[str] | None = None,
         filter_params: list[Any] | None = None,
-    ) -> tuple[Query | None, list]:
+    ) -> tuple[Query, list, bool]:
         if not filter_conditions:
-            return None, []
+            return SQL(''), [], False
         query = SQL('where {}').format(
             SQL(' and ').join(map(SQL, filter_conditions))  # type: ignore
         )
-        return query, filter_params or []
+        return query, filter_params or [], True
 
     def _build_order_fields(self, order_by: list[str] | None) -> Iterable[Composable]:
         for field in order_by or []:
