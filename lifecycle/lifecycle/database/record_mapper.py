@@ -165,12 +165,18 @@ class RecordMapper:
     def create(
         self,
         record_object: TableModel,
+        assign_primary_key: bool = True,
     ) -> None:
+        primary_key_columns = record_object.primary_key_columns()
         record_data = _extract_record_data(record_object)
-        self.query_wrapper.insert_one(
+        returning_row = self.query_wrapper.insert_one(
             table=record_object.table_name(),
             data=record_data,
+            primary_key_columns=primary_key_columns,
         )
+        if assign_primary_key:
+            for primary_key, primary_value in returning_row.items():
+                setattr(record_object, primary_key, primary_value)
 
     def update(
         self,

@@ -87,14 +87,19 @@ class PostgresEngine(DbEngine):
                 check_affected_rows(expected_affected_rows, cursor.rowcount)
 
     def execute_sql_fetch_one(
-        self, query: str | Composed, params: list | None = None
+        self,
+        query: str | Composed,
+        params: list | None = None,
     ) -> dict[str, Any] | None:
         with self.connection_pool.connection() as conn:
             cursor: Cursor
             with conn.cursor() as cursor:
                 sql = self._get_query_bytes(query, conn)
                 self._log_query(sql)
-                cursor.execute(sql, params=params)
+                try:
+                    cursor.execute(sql, params=params)
+                except IntegrityError as e:
+                    raise AlreadyExists(str(e)) from e
                 row = cursor.fetchone()
                 if row is None:
                     return None

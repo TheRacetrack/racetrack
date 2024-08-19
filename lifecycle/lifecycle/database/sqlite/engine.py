@@ -56,12 +56,17 @@ class SQLiteEngine(DbEngine):
             cursor.close()
 
     def execute_sql_fetch_one(
-        self, query: str, params: list | None = None
+        self,
+        query: str,
+        params: list | None = None,
     ) -> dict[str, Any] | None:
         cursor: sqlite3.Cursor = self.connection.cursor()
         try:
             self._log_query(query)
-            cursor.execute(query, params or [])
+            try:
+                cursor.execute(query, params or [])
+            except sqlite3.IntegrityError as e:
+                raise AlreadyExists(str(e)) from e
             row = cursor.fetchone()
             if row is None:
                 return None

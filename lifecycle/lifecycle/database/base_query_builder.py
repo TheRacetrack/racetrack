@@ -41,6 +41,7 @@ class BaseQueryBuilder(ABC):
         self,
         table: str,
         data: dict[str, Any],
+        primary_key_columns: list[str],
     ) -> QueryWithParams:
         raise NotImplementedError
 

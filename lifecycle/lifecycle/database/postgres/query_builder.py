@@ -63,11 +63,13 @@ class QueryBuilder(BaseQueryBuilder):
         self,
         table: str,
         data: dict[str, Any],
+        primary_key_columns: list[str],
     ) -> QueryWithParams:
-        query = SQL('insert into {table} ({fields}) values ({values})').format(
+        query = SQL('insert into {table} ({fields}) values ({values}) returning {returning_fields}').format(
             table=Identifier(table),
             fields=SQL(', ').join(map(Identifier, data.keys())),
             values=SQL(', ').join(Placeholder() * len(data)),
+            returning_fields=SQL(', ').join(map(Identifier, primary_key_columns)),
         )
         params = list(data.values())
         return query, params

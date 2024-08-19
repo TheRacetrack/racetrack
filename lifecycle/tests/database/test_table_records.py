@@ -1,11 +1,12 @@
 from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
-from lifecycle.database.schema.tables import JobFamily, User
+from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject
 from lifecycle.database.table_model import new_uuid
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import configure_logs
+from racetrack_commons.auth.scope import AuthScope
 
 
 def test_record_operations():
@@ -69,15 +70,47 @@ def test_create_or_update():
 
 def test_violate_primary_key():
     configure_logs()
-    object_builder = RecordMapper(create_db_engine())
+    mapper = RecordMapper(create_db_engine())
 
     record: JobFamily = JobFamily(
         id=new_uuid(),
         name='brand-new',
     )
-    object_builder.create(record)
+    mapper.create(record)
     try:
-        object_builder.create(record)
+        mapper.create(record)
         assert False, 'it should raise exception'
     except AlreadyExists:
         pass
+
+
+def test_create_with_auto_increment():
+    configure_logs()
+    mapper = RecordMapper(create_db_engine())
+
+    job_family = JobFamily(
+        id=new_uuid(),
+        name='primer',
+    )
+    mapper.create(job_family)
+    auth_subject: AuthSubject = AuthSubject(
+        id=new_uuid(),
+        job_family_id=job_family.id,
+        user_id=None,
+        esc_id=None,
+    )
+    mapper.create(auth_subject)
+    permission: AuthResourcePermission = AuthResourcePermission(
+        id=None,
+        auth_subject_id=auth_subject.id,
+        scope=AuthScope.CALL_JOB.value,
+        job_family_id=None,
+        job_id=None,
+        endpoint=None,
+    )
+    mapper.create(permission)
+
+    new_id = permission.id
+    assert new_id is not None
+    new_record = mapper.find_one(AuthResourcePermission, auth_subject_id=auth_subject.id)
+    assert new_record.id == new_id

@@ -57,10 +57,12 @@ class QueryBuilder(BaseQueryBuilder):
         self,
         table: str,
         data: dict[str, Any],
+        primary_key_columns: list[str],
     ) -> QueryWithParams:
         fields_joined = ', '.join(data.keys())
         values_joined = ', '.join('?' * len(data))
-        query = f'insert into {table} ({fields_joined}) values ({values_joined})'
+        returning_fields = ', '.join(primary_key_columns)
+        query = f'insert into {table} ({fields_joined}) values ({values_joined}) returning {returning_fields}'
         params = list(data.values())
         return query, params
 
