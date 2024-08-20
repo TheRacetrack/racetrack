@@ -2,9 +2,10 @@ import os
 from typing import Any
 
 from psycopg_pool import ConnectionPool
-from psycopg import Connection, Cursor, IntegrityError
+from psycopg import Connection, Cursor, DatabaseError, IntegrityError, InterfaceError
 from psycopg.sql import SQL, Literal, Composable, Composed
 
+from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.base_engine import DbEngine, check_affected_rows
@@ -69,51 +70,67 @@ class PostgresEngine(DbEngine):
         params: list | None = None,
         expected_affected_rows: int = -1,
     ) -> None:
-        with self.connection_pool.connection() as conn:
-            cursor: Cursor
-            with conn.cursor() as cursor:
-                sql = self._get_query_bytes(query, conn)
-                self._log_query(sql)
-                try:
+        try:
+            with self.connection_pool.connection() as conn:
+                cursor: Cursor
+                with conn.cursor() as cursor:
+                    sql = self._get_query_bytes(query, conn)
+                    self._log_query(sql)
                     cursor.execute(sql, params=params)
-                except IntegrityError as e:
-                    raise AlreadyExists(str(e)) from e
-                check_affected_rows(expected_affected_rows, cursor.rowcount)
+                    check_affected_rows(expected_affected_rows, cursor.rowcount)
+        except IntegrityError as e:
+            raise AlreadyExists(str(e)) from e
+        except DatabaseError as e:
+            raise ContextError(f'Database error {type(e).__name__}') from e
+        except InterfaceError as e:
+            raise ContextError(f'Database interface error {type(e).__name__}') from e
 
     def execute_sql_fetch_one(
         self,
         query: str | Composed,
         params: list | None = None,
     ) -> dict[str, Any] | None:
-        with self.connection_pool.connection() as conn:
-            cursor: Cursor
-            with conn.cursor() as cursor:
-                sql = self._get_query_bytes(query, conn)
-                self._log_query(sql)
-                try:
+        try:
+            with self.connection_pool.connection() as conn:
+                cursor: Cursor
+                with conn.cursor() as cursor:
+                    sql = self._get_query_bytes(query, conn)
+                    self._log_query(sql)
                     cursor.execute(sql, params=params)
-                except IntegrityError as e:
-                    raise AlreadyExists(str(e)) from e
-                row = cursor.fetchone()
-                if row is None:
-                    return None
-                assert cursor.description, 'no column names in the result'
-                col_names = [desc[0] for desc in cursor.description]
-                return dict(zip(col_names, row))
+                    row = cursor.fetchone()
+                    if row is None:
+                        return None
+                    assert cursor.description, 'no column names in the result'
+                    col_names = [desc[0] for desc in cursor.description]
+                    return dict(zip(col_names, row))
+        except IntegrityError as e:
+            raise AlreadyExists(str(e)) from e
+        except DatabaseError as e:
+            raise ContextError(f'Database error {type(e).__name__}') from e
+        except InterfaceError as e:
+            raise ContextError(f'Database interface error {type(e).__name__}') from e
+            
 
     def execute_sql_fetch_all(
         self, query: str | Composed, params: list | None = None
     ) -> list[dict]:
-        with self.connection_pool.connection() as conn:
-            cursor: Cursor
-            with conn.cursor() as cursor:
-                sql = self._get_query_bytes(query, conn)
-                self._log_query(sql)
-                cursor.execute(sql, params=params)
-                rows: list = cursor.fetchall()
-                assert cursor.description, 'no column names in the result'
-                col_names = [desc[0] for desc in cursor.description]
-                return [dict(zip(col_names, row)) for row in rows]
+        try:
+            with self.connection_pool.connection() as conn:
+                cursor: Cursor
+                with conn.cursor() as cursor:
+                    sql = self._get_query_bytes(query, conn)
+                    self._log_query(sql)
+                    cursor.execute(sql, params=params)
+                    rows: list = cursor.fetchall()
+                    assert cursor.description, 'no column names in the result'
+                    col_names = [desc[0] for desc in cursor.description]
+                    return [dict(zip(col_names, row)) for row in rows]
+        except IntegrityError as e:
+            raise AlreadyExists(str(e)) from e
+        except DatabaseError as e:
+            raise ContextError(f'Database error {type(e).__name__}') from e
+        except InterfaceError as e:
+            raise ContextError(f'Database interface error {type(e).__name__}') from e
 
     def _get_query_bytes(self, query: str | Composed, connection: Connection) -> bytes:
         if isinstance(query, Composable):
