@@ -16,15 +16,11 @@ logger = get_logger(__name__)
 class PostgresEngine(DbEngine):
     def __init__(self, max_pool_size: int = 20, log_queries: bool = False):
         super().__init__()
+        conn_params = _get_connection_params()
         self.connection_status: bool | None = None
-        conn_params = {
-            'host': os.environ.get('POSTGRES_HOST'),
-            'port': os.environ.get('POSTGRES_PORT'),
-            'user': os.environ.get('POSTGRES_USER'),
-            'password': os.environ.get('POSTGRES_PASSWORD'),
-            'dbname': get_database_name(),
-        }
-        self.schema = get_schema_name()
+        self.schema: str | None = _get_schema_name()
+        self.log_queries: bool = log_queries
+        self.query_builder: QueryBuilder = QueryBuilder()
         self.connection_pool: ConnectionPool = ConnectionPool(
             min_size=1,  # The minimum number of connection the pool will hold. The pool will actively try to create new connections if some are lost (closed, broken) and will try to never go below min_size
             max_size=max_pool_size,
@@ -40,8 +36,6 @@ class PostgresEngine(DbEngine):
             reconnect_failed=self._on_reconnect_failed,
             num_workers=3,  # Number of background worker threads used to maintain the pool state. Background workers are used for example to create new connections and to clean up connections when they are returned to the pool
         )
-        self.query_builder: QueryBuilder = QueryBuilder()
-        self.log_queries: bool = log_queries
 
     def _on_configure_connection(self, connection: Connection) -> None:
         if self.schema:
@@ -133,7 +127,20 @@ class PostgresEngine(DbEngine):
             logger.debug(f'SQL query: {query.decode()}')
 
 
-def get_database_name() -> str:
+def _get_connection_params() -> dict[str, str]:
+    params = {
+        'host': os.environ.get('POSTGRES_HOST'),
+        'port': os.environ.get('POSTGRES_PORT'),
+        'user': os.environ.get('POSTGRES_USER'),
+        'password': os.environ.get('POSTGRES_PASSWORD'),
+        'dbname': _get_database_name(),
+        'sslmode': os.environ.get('POSTGRES_SSLMODE'),
+        'sslrootcert': os.environ.get('POSTGRES_SSLROOTCERT'),
+    }
+    return {k: v for k, v in params.items() if v is not None}
+
+
+def _get_database_name() -> str:
     database_name = os.environ.get('POSTGRES_DB', '')
     if '{CLUSTER_NAME}' in database_name:  # evaluate templated database name
         cluster_hostname = os.environ.get('CLUSTER_FQDN')
@@ -147,7 +154,7 @@ def get_database_name() -> str:
     return database_name
 
 
-def get_schema_name() -> str | None:
+def _get_schema_name() -> str | None:
     postgres_schema = os.environ.get('POSTGRES_SCHEMA', '')
     if postgres_schema == '{CLUSTER_FQDN}':
         cluster_hostname = os.environ.get('CLUSTER_FQDN')
