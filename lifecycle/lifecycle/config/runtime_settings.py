@@ -1,5 +1,7 @@
-from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
+import json
+from lifecycle.database.schema import tables
+from lifecycle.server.cache import LifecycleCache
+from racetrack_client.log.errors import EntityNotFound
 
 JsonType = dict | list | int | str | bool | None
 
@@ -10,18 +12,20 @@ JsonType = dict | list | int | str | bool | None
 MAINTENANCE_MODE = "maintenance_mode"
 
 
-@db_access
 def read_setting(name: str) -> JsonType:
     try:
-        return models.Setting.objects.get(name=name).value
-    except models.Setting.DoesNotExist:
+        str_val = LifecycleCache.record_mapper().find_one(tables.Setting, name=name).value
+        if not str_val:
+            return None
+        return json.loads(str_val)
+    except EntityNotFound:
         return None
 
 
-@db_access
 def save_setting(name: str, value: JsonType):
-    model = models.Setting(
+    str_val = json.dumps(value) if value else None
+    model = tables.Setting(
         name=name,
-        value=value,
+        value=str_val,
     )
-    model.save()
+    LifecycleCache.record_mapper().create_or_update(model)

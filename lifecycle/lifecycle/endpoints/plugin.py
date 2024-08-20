@@ -1,8 +1,6 @@
 import asyncio
 import collections
-import tempfile
 from typing import List, Optional, Any
-import zipfile
 
 from fastapi.responses import FileResponse
 from lifecycle.database.schema import tables
@@ -14,7 +12,6 @@ from racetrack_commons.deploy.job_type import list_jobtype_names_of_plugins
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
-from lifecycle.django.registry import models
 from lifecycle.job import models_registry
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.job.audit import AuditLogger
