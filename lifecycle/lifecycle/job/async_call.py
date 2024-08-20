@@ -87,7 +87,7 @@ def save_async_job_call(dto: AsyncJobCallDto) -> tables.AsyncJobCall:
     if changed:
         mapper = LifecycleCache.record_mapper()
         try:
-            mapper.update(model)
+            mapper.create_or_update(model)
         except NoRowsAffected:
             raise EntityNotFound(f'Async job call model has gone before updating: {model}')
     return model
