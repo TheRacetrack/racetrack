@@ -33,7 +33,7 @@ class SQLiteEngine(DbEngine):
         self.query_builder: QueryBuilder = QueryBuilder()
         self.log_queries: bool = log_queries
 
-        sqlite3.register_adapter(datetime, adapt_datetime)
+        sqlite3.register_adapter(datetime, _adapt_datetime)
 
     def check_connection(self) -> None:
         self.connection.execute('select 1')
@@ -96,5 +96,5 @@ class SQLiteEngine(DbEngine):
             logger.debug(f'SQL query: {query}')
 
 
-def adapt_datetime(dt):
+def _adapt_datetime(dt):
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
