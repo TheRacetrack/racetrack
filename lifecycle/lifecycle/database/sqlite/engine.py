@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 import sqlite3
 import os
@@ -31,6 +32,8 @@ class SQLiteEngine(DbEngine):
             self.connection = sqlite3.connect(DB_PATH, check_same_thread=False)
         self.query_builder: QueryBuilder = QueryBuilder()
         self.log_queries: bool = log_queries
+
+        sqlite3.register_adapter(datetime, adapt_datetime)
 
     def check_connection(self) -> None:
         self.connection.execute('select 1')
@@ -91,3 +94,7 @@ class SQLiteEngine(DbEngine):
     def _log_query(self, query: str) -> None:
         if self.log_queries:
             logger.debug(f'SQL query: {query}')
+
+
+def adapt_datetime(dt):
+    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
