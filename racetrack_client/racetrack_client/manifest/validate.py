@@ -31,6 +31,9 @@ def load_validated_manifest(
     with wrap_context('validating manifest'):
         validate_manifest(manifest)
 
+    if manifest.lang:
+        logger.warning(f'`lang:` property is deprecated. Use `jobtybe:` instead.')
+
     logger.debug(f'Manifest file "{manifest_path}" is valid')
     return manifest
 
@@ -42,7 +45,7 @@ def validate_manifest(manifest: Manifest):
     with path.open('r') as f:
         schema = json.load(f)
         validate(serialized_manifest, schema=schema)
-        
+
     with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
 
