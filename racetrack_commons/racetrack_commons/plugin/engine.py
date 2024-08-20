@@ -12,7 +12,7 @@ from watchdog.events import FileSystemEventHandler
 from racetrack_commons.plugin.loader import load_plugin_from_zip, load_plugins_from_dir, EXTRACTED_PLUGINS_DIR
 from racetrack_commons.plugin.plugin_data import PluginData
 from racetrack_client.log.context_error import wrap_context, ContextError
-from racetrack_client.log.errors import EntityNotFound
+from racetrack_client.log.errors import EntityNotFound, IncompatibleOptions
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from racetrack_client.plugin.plugin_manifest import PluginManifest
@@ -218,7 +218,8 @@ class PluginEngine:
             if plugin_data.plugin_manifest.category == 'infrastructure':
                 for plugin in self.find_plugins(plugin_name):
                     if plugin.plugin_manifest.category == 'infrastructure':
-                        logger.warning(f'Infrastructure plugin with the same name already exists: {plugin_name}. {plugin_name} will replace the existing one.')
+                        if not replace:
+                            raise IncompatibleOptions('Infrastructure plugin with same name already exists. There can not be multiple infrastructure plugins with the same name. Use --replace if you want to replace the existing infrastructure pluging. ')
                         self._delete_older_plugins(plugin_name)
 
             if replace:
