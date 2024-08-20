@@ -8,6 +8,3 @@ class AlreadyExists(RuntimeError):
 
 class ValidationError(RuntimeError):
     pass
-
-class IncompatibleOptions(RuntimeError):
-    pass
