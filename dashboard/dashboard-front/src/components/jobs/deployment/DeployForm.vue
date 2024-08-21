@@ -26,6 +26,9 @@ function deployJob() {
         if (typeof manifestDict !== 'object') {
             throw new TypeError('Expected mapping object')
         }
+        if ('lang' in manifestDict) {
+            toastService.warning('The "lang" key is deprecated. Use jobtype instead.');
+        }
     } catch(err: any) {
         toastService.showErrorDetails('Invalid Manifest YAML', err)
         return
@@ -61,7 +64,7 @@ function deployJob() {
         <q-card-section class="q-pb-none">
             <div class="text-h6">Deploy a Job</div>
         </q-card-section>
-        
+
         <q-card-section class="q-pt-none">
             <div>
                 <q-input
