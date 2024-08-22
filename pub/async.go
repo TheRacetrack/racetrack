@@ -247,6 +247,10 @@ func makeJobCall(
 		task.ResponseHeaders[k] = strings.Join(v, ",")
 	}
 
+	if res.StatusCode == http.StatusNotFound {
+		return fmt.Errorf("job returned 404 Not Found response: %s", task.ResponseBody), true
+	}
+
 	statusCode := strconv.Itoa(res.StatusCode)
 	metricJobProxyResponseCodes.WithLabelValues(task.JobName, task.JobVersion, statusCode).Inc()
 	jobCallTime := time.Since(jobCallStartTime).Seconds()
