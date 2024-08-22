@@ -94,13 +94,14 @@ class Manifest(BaseModel):
     origin_dict_: Optional[Dict[str, Any]] = Field(None, exclude=True)
 
     # This is the "source of truth for deprications", schema.json has to follow this
-    deprecated_fields: Dict[str, Any] = {
-        'lang': '`jobtype:`',
-        'golang': '`jobtype_extra:`',
-        'python': '`jobtype_extra:`',
-        'docker': '`jobtype_extra:`',
-        'wrapper_properties': '`jobtype_extra:`'
-    }
+    def get_deprecated_fields(self):
+        return {
+            'lang': '`jobtype:`',
+            'golang': '`jobtype_extra:`',
+            'python': '`jobtype_extra:`',
+            'docker': '`jobtype_extra:`',
+            'wrapper_properties': '`jobtype_extra:`'
+        }
 
     def get_jobtype(self):
         return self.jobtype if self.jobtype else self.lang
@@ -113,6 +114,6 @@ class Manifest(BaseModel):
 
 
     def warn_if_using_deprecated_fields(self, logger: Logger):
-        for field, replacement in self.deprecated_fields.items():
+        for field, replacement in self.get_deprecated_fields().items():
             if getattr(self, field) is not None:
                 logger.warning(f'`{field}:` is deprecated. Use {replacement} instead.')

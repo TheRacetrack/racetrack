@@ -1,6 +1,6 @@
 name: adder
 owner_email: sample@example.com
-jobtype: python3:latest
+lang: python3:latest
 version: 0.0.2
 
 git:
