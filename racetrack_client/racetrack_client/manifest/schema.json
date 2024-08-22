@@ -77,11 +77,15 @@
             "deprecated": true
         },
         "docker": {
+            "deprecated": true,
             "properties": {
                 "dockerfile_path": {
                     "type": "string"
                 }
             }
+        },
+        "deprecated_fields": {
+            "type": "object"
         },
         "build_env": {
             "type": "object",

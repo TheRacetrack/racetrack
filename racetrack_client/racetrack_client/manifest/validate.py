@@ -31,9 +31,6 @@ def load_validated_manifest(
     with wrap_context('validating manifest'):
         validate_manifest(manifest)
 
-    if manifest.lang:
-        logger.warning(f'`lang:` property is deprecated. Use `jobtybe:` instead.')
-
     logger.debug(f'Manifest file "{manifest_path}" is valid')
     return manifest
 
@@ -48,6 +45,8 @@ def validate_manifest(manifest: Manifest):
 
     with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
+
+    manifest.warn_if_using_deprecated_fields(logger)
 
 
 def validate_and_show_manifest(

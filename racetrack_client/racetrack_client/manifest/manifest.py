@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from racetrack_client.utils.quantity import AnnotatedQuantity
 
+from logging import Logger
 
 class GitManifest(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -92,10 +93,26 @@ class Manifest(BaseModel):
     # original dictionary from which the manifest was parsed, field for internal use only
     origin_dict_: Optional[Dict[str, Any]] = Field(None, exclude=True)
 
+    # This is the "source of truth for deprications", schema.json has to follow this
+    deprecated_fields: Dict[str, Any] = {
+        'lang': '`jobtype:`',
+        'golang': '`jobtype_extra:`',
+        'python': '`jobtype_extra:`',
+        'docker': '`jobtype_extra:`',
+        'wrapper_properties': '`jobtype_extra:`'
+    }
+
     def get_jobtype(self):
         return self.jobtype if self.jobtype else self.lang
+
 
     def get_jobtype_extra(self):
         for field in [self.jobtype_extra, self.golang, self.python, self.wrapper_properties]:
             if field is not None:
                 return field
+
+
+    def warn_if_using_deprecated_fields(self, logger: Logger):
+        for field, replacement in self.deprecated_fields.items():
+            if getattr(self, field) is not None:
+                logger.warning(f'`{field}:` is deprecated. Use {replacement} instead.')
