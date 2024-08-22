@@ -8,7 +8,7 @@ from prometheus_client.core import REGISTRY
 from prometheus_client.metrics_core import GaugeMetricFamily, Metric
 from prometheus_client.registry import Collector
 
-from lifecycle.server.db_status import database_status
+from lifecycle.server.cache import LifecycleCache
 
 metric_requested_job_deployments = Counter(
     'requested_job_deployments',
@@ -47,8 +47,8 @@ metric_database_connection_closed = Counter(
     'lifecycle_database_connection_closed',
     'Number of times connection to a database has been closed',
 )
-metric_database_cursor_created = Counter(
-    'lifecycle_database_cursor_created',
+metric_database_queries_executed = Counter(
+    'lifecycle_database_queries_executed',
     'Number of times database cursor has been created',
 )
 
@@ -105,7 +105,10 @@ def collect_tcp_connections_metric() -> Iterator[Metric]:
     remote_ports = [c.raddr.port for c in net_connections if c.status == 'ESTABLISHED' and c.raddr.port < max_remote_port]
     established_port_conns = collections.Counter(remote_ports)
     metric_name = 'lifecycle_established_connections_count'
-    prometheus_metric = GaugeMetricFamily(metric_name, f'Number of Established TCP connections by remote port (below {max_remote_port})')
+    prometheus_metric = GaugeMetricFamily(
+        metric_name,
+        f'Number of Established TCP connections by remote port (below {max_remote_port})',
+    )
     for port, count in established_port_conns.items():
         prometheus_metric.add_sample(metric_name, {
             'port': str(port),
@@ -114,8 +117,62 @@ def collect_tcp_connections_metric() -> Iterator[Metric]:
 
 
 def collect_database_connection_metric() -> Iterator[Metric]:
-    metric_name = 'lifecycle_database_connected'
-    metric_value = 1 if database_status.connected else 0
-    prometheus_metric = GaugeMetricFamily(metric_name, 'Status of database connection')
-    prometheus_metric.add_sample(metric_name, {}, metric_value)
-    yield prometheus_metric
+    database_status = LifecycleCache.db_engine().database_status()
+
+    if database_status.connected is not None:
+        metric_value = 1 if database_status.connected is True else 0
+        yield make_metric_sample(
+            'lifecycle_database_connected',
+            'Status of database connection',
+            metric_value)
+
+    yield make_metric_sample(
+        'lifecycle_database_pool_size',
+        'Number of connections currently managed by the pool (in the pool, given to clients, being prepared)',
+        database_status.pool_size)
+    yield make_metric_sample(
+        'lifecycle_database_pool_available',
+        'Number of connections currently idle in the pool',
+        database_status.pool_available)
+    yield make_metric_sample(
+        'lifecycle_database_requests_waiting',
+        'Number of requests currently waiting in a queue to receive a connection',
+        database_status.requests_waiting)
+    yield make_metric_sample(
+        'lifecycle_database_usage_ms',
+        'Total usage time of the connections outside the pool',
+        database_status.usage_ms)
+    yield make_metric_sample(
+        'lifecycle_database_requests_num',
+        'Number of connections requested to the pool',
+        database_status.requests_num)
+    yield make_metric_sample(
+        'lifecycle_database_requests_queued',
+        'Number of requests queued because a connection wasn’t immediately available in the pool',
+        database_status.requests_queued)
+    yield make_metric_sample(
+        'lifecycle_database_requests_wait_ms',
+        'Total time in the queue for the clients waiting',
+        database_status.requests_wait_ms)
+    yield make_metric_sample(
+        'lifecycle_database_requests_errors',
+        'Number of connection requests resulting in an error (timeouts, queue full)',
+        database_status.requests_errors)
+    yield make_metric_sample(
+        'lifecycle_database_connections_num',
+        'Number of connection attempts made by the pool to the server',
+        database_status.connections_num)
+    yield make_metric_sample(
+        'lifecycle_database_connections_ms',
+        'Total time spent to establish connections with the server',
+        database_status.connections_ms)
+    yield make_metric_sample(
+        'lifecycle_database_connections_errors',
+        'Number of failed connection attempts',
+        database_status.connections_errors)
+
+
+def make_metric_sample(metric_name: str, description: str, value: float) -> GaugeMetricFamily:
+    prometheus_metric = GaugeMetricFamily(metric_name, description)
+    prometheus_metric.add_sample(metric_name, {}, value)
+    return prometheus_metric

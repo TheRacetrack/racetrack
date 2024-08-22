@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 from abc import ABC, abstractmethod
 
@@ -5,6 +6,22 @@ from lifecycle.database.base_query_builder import BaseQueryBuilder
 from racetrack_client.log.logs import get_logger
 
 logger = get_logger(__name__)
+
+
+@dataclass
+class DatabaseStatus:
+    connected: bool | None = None
+    pool_size: int = 0  # Number of connections currently managed by the pool (in the pool, given to clients, being prepared)
+    pool_available: int = 0  # Number of connections currently idle in the pool
+    requests_waiting: int = 0  # Number of requests currently waiting in a queue to receive a connection
+    usage_ms: float = 0  # Total usage time of the connections outside the pool
+    requests_num: int = 0  # Number of connections requested to the pool
+    requests_queued: int = 0  # Number of requests queued because a connection wasn’t immediately available in the pool
+    requests_wait_ms: float = 0  # Total time in the queue for the clients waiting
+    requests_errors: int = 0  # Number of connection requests resulting in an error (timeouts, queue full)
+    connections_num: int = 0  # Number of connection attempts made by the pool to the server
+    connections_ms: float = 0  # Total time spent to establish connections with the server
+    connections_errors: int = 0  # Number of failed connection attempts
 
 
 class DbEngine(ABC):
@@ -17,8 +34,9 @@ class DbEngine(ABC):
     def close(self):
         pass
 
-    def get_stats(self) -> dict[str, Any]:
-        return {}
+    @abstractmethod
+    def database_status(self) -> DatabaseStatus:
+        raise NotImplementedError
 
     @abstractmethod
     def execute_sql(

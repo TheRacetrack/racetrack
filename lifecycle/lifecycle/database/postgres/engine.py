@@ -5,11 +5,14 @@ from psycopg_pool import ConnectionPool
 from psycopg import Connection, Cursor, DatabaseError, IntegrityError, InterfaceError
 from psycopg.sql import SQL, Literal, Composable, Composed
 
+from lifecycle.server.metrics import metric_database_connection_failed, metric_database_connection_opened, \
+    metric_database_connection_closed, metric_database_queries_executed
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.base_engine import DbEngine, check_affected_rows
+from lifecycle.database.base_engine import DbEngine, check_affected_rows, DatabaseStatus
 from lifecycle.database.postgres.query_builder import QueryBuilder
+from racetrack_client.utils.shell import shell, CommandError
 
 logger = get_logger(__name__)
 
@@ -17,11 +20,12 @@ logger = get_logger(__name__)
 class PostgresEngine(DbEngine):
     def __init__(self, max_pool_size: int = 20, log_queries: bool = False):
         super().__init__()
-        conn_params = _get_connection_params()
+        conn_params = get_connection_params()
         self.connection_status: bool | None = None
         self.schema: str | None = _get_schema_name()
         self.log_queries: bool = log_queries
         self.query_builder: QueryBuilder = QueryBuilder()
+        self._database_status: DatabaseStatus = DatabaseStatus()
         self.connection_pool: ConnectionPool = ConnectionPool(
             min_size=1,  # The minimum number of connection the pool will hold. The pool will actively try to create new connections if some are lost (closed, broken) and will try to never go below min_size
             max_size=max_pool_size,
@@ -35,6 +39,7 @@ class PostgresEngine(DbEngine):
             reconnect_timeout=60,  # Maximum time, in seconds, the pool will try to create a connection. If a connection attempt fails, the pool will try to reconnect a few times, using an exponential backoff and some random factor to avoid mass attempts. If repeated attempts fail, after reconnect_timeout second the connection attempt is aborted and the reconnect_failed() callback invoked
             configure=self._on_configure_connection,  # A callback to configure a connection after creation
             reconnect_failed=self._on_reconnect_failed,
+            reset=self._on_reset_connection,
             num_workers=3,  # Number of background worker threads used to maintain the pool state. Background workers are used for example to create new connections and to clean up connections when they are returned to the pool
         )
 
@@ -44,25 +49,62 @@ class PostgresEngine(DbEngine):
                 query = SQL('SET search_path TO {schema}').format(schema=Literal(self.schema))
                 cursor.execute(query)
             connection.commit()
+        metric_database_connection_opened.inc()
         self.connection_status = True
 
     def _on_reconnect_failed(self, _: ConnectionPool) -> None:
         self.connection_status = False
+        metric_database_connection_failed.inc()
         logger.error('Connection to database failed')
+
+    def _on_reset_connection(self, _: Connection) -> None:
+        metric_database_connection_closed.inc()
     
     def check_connection(self) -> None:
-        self.connection_pool.check()
+        try:
+            conn_params = get_connection_params()
+            dbname = conn_params['dbname']
+            user = conn_params['user']
+            host = conn_params['host']
+            port = conn_params['port']
+            shell(f'pg_isready -h {host} -p {port} -U {user} -d {dbname}', print_stdout=False, print_log=False)
+        except CommandError as e:
+            self._database_status.connected = False
+            raise ContextError('Connection to database failed (pg_isready failed)') from e
+
+        try:
+            self.connection_pool.check()
+        except BaseException as e:
+            self._database_status.connected = False
+            raise ContextError(f'Database connection pool failed') from e
+
+        try:
+            self.execute_sql('select 1')
+        except BaseException as e:
+            self._database_status.connected = False
+            raise ContextError(f'Connection to database failed ({type(e).__name__})') from e
+
+        self._database_status.connected = True
 
     def close(self):
         self.connection_pool.close()
+        self._database_status.connected = False
 
-    def get_stats(self) -> dict[str, Any]:
+    def database_status(self) -> DatabaseStatus:
         # https://www.psycopg.org/psycopg3/docs/advanced/pool.html#pool-stats
-        return self.connection_pool.get_stats()
-
-    @property
-    def connection_pool_size(self) -> int:
-        return self.connection_pool.get_stats()['pool_size']
+        stats: dict[str, int] = self.connection_pool.get_stats()
+        self._database_status.pool_size = stats['pool_size']
+        self._database_status.pool_available = stats['pool_available']
+        self._database_status.requests_waiting = stats['requests_waiting']
+        self._database_status.usage_ms = stats['usage_ms']
+        self._database_status.requests_num = stats['requests_num']
+        self._database_status.requests_queued = stats['requests_queued']
+        self._database_status.requests_wait_ms = stats['requests_wait_ms']
+        self._database_status.requests_errors = stats['requests_errors']
+        self._database_status.connections_num = stats['connections_num']
+        self._database_status.connections_ms = stats['connections_ms']
+        self._database_status.connections_errors = stats['connections_errors']
+        return self._database_status
 
     def execute_sql(
         self,
@@ -77,6 +119,7 @@ class PostgresEngine(DbEngine):
                     sql = self._get_query_bytes(query, conn)
                     self._log_query(sql)
                     cursor.execute(sql, params=params)
+                    metric_database_queries_executed.inc()
                     check_affected_rows(expected_affected_rows, cursor.rowcount)
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
@@ -97,6 +140,7 @@ class PostgresEngine(DbEngine):
                     sql = self._get_query_bytes(query, conn)
                     self._log_query(sql)
                     cursor.execute(sql, params=params)
+                    metric_database_queries_executed.inc()
                     row = cursor.fetchone()
                     if row is None:
                         return None
@@ -109,7 +153,6 @@ class PostgresEngine(DbEngine):
             raise ContextError(f'Database error {type(e).__name__}') from e
         except InterfaceError as e:
             raise ContextError(f'Database interface error {type(e).__name__}') from e
-            
 
     def execute_sql_fetch_all(
         self, query: str | Composed, params: list | None = None
@@ -121,6 +164,7 @@ class PostgresEngine(DbEngine):
                     sql = self._get_query_bytes(query, conn)
                     self._log_query(sql)
                     cursor.execute(sql, params=params)
+                    metric_database_queries_executed.inc()
                     rows: list = cursor.fetchall()
                     assert cursor.description, 'no column names in the result'
                     col_names = [desc[0] for desc in cursor.description]
@@ -144,7 +188,7 @@ class PostgresEngine(DbEngine):
             logger.debug(f'SQL query: {query.decode()}')
 
 
-def _get_connection_params() -> dict[str, str]:
+def get_connection_params() -> dict[str, str]:
     params = {
         'host': os.environ.get('POSTGRES_HOST'),
         'port': os.environ.get('POSTGRES_PORT'),

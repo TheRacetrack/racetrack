@@ -5,7 +5,7 @@ import os
 
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.base_engine import DbEngine, check_affected_rows
+from lifecycle.database.base_engine import DbEngine, check_affected_rows, DatabaseStatus
 from lifecycle.database.sqlite.query_builder import QueryBuilder
 
 logger = get_logger(__name__)
@@ -32,14 +32,25 @@ class SQLiteEngine(DbEngine):
             self.connection = sqlite3.connect(DB_PATH, check_same_thread=False)
         self.query_builder: QueryBuilder = QueryBuilder()
         self.log_queries: bool = log_queries
+        self._database_status: DatabaseStatus = DatabaseStatus(connected=True, pool_size=1)
 
         sqlite3.register_adapter(datetime, _adapt_datetime)
 
     def check_connection(self) -> None:
-        self.connection.execute('select 1')
+        try:
+            self.connection.execute('select 1')
+        except BaseException as e:
+            self._database_status.connected = False
+            raise e
+        else:
+            self._database_status.connected = True
 
     def close(self):
         self.connection.close()
+        self._database_status.connected = False
+
+    def database_status(self) -> DatabaseStatus:
+        return self._database_status
 
     def execute_sql(
         self,
