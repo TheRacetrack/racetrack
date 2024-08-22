@@ -36,7 +36,7 @@ def test_serialize_manifest_to_json():
         },
         'image_type': 'docker',  # default values applied
         'replicas': 1,
-        'version': '0.0.1',1
+        'version': '0.0.1',
     }
     encoded_json: str = manifest.model_dump_json()
     assert json.loads(encoded_json) == manifest.model_dump()
