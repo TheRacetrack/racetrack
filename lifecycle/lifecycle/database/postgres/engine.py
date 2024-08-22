@@ -93,17 +93,17 @@ class PostgresEngine(DbEngine):
     def database_status(self) -> DatabaseStatus:
         # https://www.psycopg.org/psycopg3/docs/advanced/pool.html#pool-stats
         stats: dict[str, int] = self.connection_pool.get_stats()
-        self._database_status.pool_size = stats['pool_size']
-        self._database_status.pool_available = stats['pool_available']
-        self._database_status.requests_waiting = stats['requests_waiting']
-        self._database_status.usage_ms = stats['usage_ms']
-        self._database_status.requests_num = stats['requests_num']
-        self._database_status.requests_queued = stats['requests_queued']
-        self._database_status.requests_wait_ms = stats['requests_wait_ms']
-        self._database_status.requests_errors = stats['requests_errors']
-        self._database_status.connections_num = stats['connections_num']
-        self._database_status.connections_ms = stats['connections_ms']
-        self._database_status.connections_errors = stats['connections_errors']
+        self._database_status.pool_size = stats.get('pool_size', 0)
+        self._database_status.pool_available = stats.get('pool_available', 0)
+        self._database_status.requests_waiting = stats.get('requests_waiting', 0)
+        self._database_status.usage_ms = stats.get('usage_ms', 0)
+        self._database_status.requests_num = stats.get('requests_num', 0)
+        self._database_status.requests_queued = stats.get('requests_queued', 0)
+        self._database_status.requests_wait_ms = stats.get('requests_wait_ms', 0)
+        self._database_status.requests_errors = stats.get('requests_errors', 0)
+        self._database_status.connections_num = stats.get('connections_num', 0)
+        self._database_status.connections_ms = stats.get('connections_ms', 0)
+        self._database_status.connections_errors = stats.get('connections_errors', 0)
         return self._database_status
 
     def execute_sql(

@@ -20,7 +20,7 @@ from lifecycle.endpoints.deploy import setup_deploy_endpoints
 from lifecycle.endpoints.esc import setup_esc_endpoints
 from lifecycle.endpoints.job import setup_job_endpoints
 from lifecycle.endpoints.user import setup_user_endpoints
-from lifecycle.server.metrics import setup_lifecycle_metrics
+from lifecycle.server.metrics_collector import setup_lifecycle_metrics
 from lifecycle.server.socketio import SocketIOServer, RegistryJobRetriever
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app

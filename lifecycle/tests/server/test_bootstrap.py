@@ -2,7 +2,7 @@ import backoff
 
 from lifecycle.config import Config
 from lifecycle.server.api import create_fastapi_app
-from lifecycle.server.metrics import unregister_metrics
+from lifecycle.server.metrics_collector import unregister_metrics
 from racetrack_client.utils.request import Requests, RequestError
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_in_background
 from racetrack_commons.plugin.engine import PluginEngine
