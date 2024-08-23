@@ -36,7 +36,7 @@ class PostgresEngine(DbEngine):
             check=None,  # A callback to check that a connection is working correctly when obtained by the pool.
             reset=self._on_reset_connection,  # A callback to reset a function after it has been returned to the pool
             name='lifecycle',  # name to give to the pool, useful, for instance, to identify it in the logs
-            timeout=30,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
+            timeout=10,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
             max_waiting=0,  # Maximum number of requests that can be queued to the pool, after which new requests will fail, raising TooManyRequests. 0 means no queue limit.
             max_lifetime=300,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
             max_idle=25,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
@@ -72,19 +72,21 @@ class PostgresEngine(DbEngine):
             shell(f'pg_isready -h {host} -p {port} -U {user} -d {dbname}', print_stdout=False, print_log=False)
         except CommandError as e:
             self._database_status.connected = False
+            metric_database_connection_failed.inc()
             raise ContextError('Connection to database failed (pg_isready failed)') from e
 
         try:
             self.connection_pool.check()
         except BaseException as e:
             self._database_status.connected = False
-            raise ContextError(f'Database connection pool failed') from e
+            metric_database_connection_failed.inc()
+            raise ContextError(f'Database connection pool check failed') from e
 
         try:
             self.execute_sql('select 1')
         except BaseException as e:
             self._database_status.connected = False
-            raise ContextError(f'Connection to database failed') from e
+            raise ContextError(f'Database query failed') from e
 
         self._database_status.connected = True
 
@@ -126,6 +128,7 @@ class PostgresEngine(DbEngine):
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
         except PoolTimeout as e:
+            metric_database_connection_failed.inc()
             raise ContextError(f'Database connection pool error {type(e).__name__}') from e
         except DatabaseError as e:
             raise ContextError(f'Database error {type(e).__name__}') from e
@@ -154,6 +157,7 @@ class PostgresEngine(DbEngine):
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
         except PoolTimeout as e:
+            metric_database_connection_failed.inc()
             raise ContextError(f'Database connection pool error {type(e).__name__}') from e
         except DatabaseError as e:
             raise ContextError(f'Database error {type(e).__name__}') from e
@@ -178,6 +182,7 @@ class PostgresEngine(DbEngine):
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
         except PoolTimeout as e:
+            metric_database_connection_failed.inc()
             raise ContextError(f'Database connection pool error {type(e).__name__}') from e
         except DatabaseError as e:
             raise ContextError(f'Database error {type(e).__name__}') from e
