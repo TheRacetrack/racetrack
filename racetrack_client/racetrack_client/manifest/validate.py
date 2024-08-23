@@ -42,9 +42,11 @@ def validate_manifest(manifest: Manifest):
     with path.open('r') as f:
         schema = json.load(f)
         validate(serialized_manifest, schema=schema)
-        
+
     with wrap_context('parsing Job version'):
         SemanticVersion(manifest.version)
+
+    manifest.warn_if_using_deprecated_fields(logger)
 
 
 def validate_and_show_manifest(
