@@ -204,6 +204,7 @@ class RecordMapper:
             update_data = _extract_changed_data(record_object)
             if not update_data:
                 return
+            setattr(record_object, '_original_fields', record_object.to_row())
         else:
             update_data = _extract_record_data(record_object)
         self.query_wrapper.update_one(
@@ -275,7 +276,9 @@ def _convert_row_to_record_model(
             column in valid_fields
         ), f'retrieved column "{column}" is not a valid field for the model {type(table_type)}'
     record_model = parse_typed_object(row, table_type)
-    record_model._original_fields = record_model.to_row()
+
+    # remember original values to keep track of changed fields
+    setattr(record_model, '_original_fields', record_model.to_row())
     return record_model
 
 
@@ -292,7 +295,7 @@ def _extract_record_data(record_model: TableModel) -> dict[str, Any]:
 
 
 def _extract_changed_data(record_model: TableModel) -> dict[str, Any]:
-    originals: dict[str, Any] = record_model._original_fields
+    originals: dict[str, Any] = getattr(record_model, '_original_fields', {})
     new_data = _extract_record_data(record_model)
     if not originals:
         logger.warning(f'could not read original fields from record {record_model.type_name()}')

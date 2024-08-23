@@ -126,9 +126,10 @@ def test_update_only_changed_fields():
     job_family = JobFamily(id=family_id, name='primer')
     mapper.create(job_family)
 
+    job_family = mapper.find_one(JobFamily, id=family_id)
     job_family.name = 'updated'
     mapper.update(job_family, only_changed=True)
-    assert db_engine.last_query() == 'update job_family set name = ? where id = ?'
+    assert db_engine.last_query() == 'update registry_jobfamily set name = ? where id = ?'
     assert db_engine.last_query() is None
 
     mapper.update(job_family, only_changed=True)
@@ -137,5 +138,5 @@ def test_update_only_changed_fields():
 
     job_family.name = 'fresher'
     mapper.update(job_family, only_changed=False)
-    assert db_engine.last_query() == 'update job_family set id = ?, name = ? where id = ?'
+    assert db_engine.last_query() == 'update registry_jobfamily set id = ?, name = ? where id = ?'
     assert mapper.find_one(JobFamily, id=family_id).name == 'fresher'

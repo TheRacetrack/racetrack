@@ -14,8 +14,6 @@ class IsDataclass(Protocol):
 
 
 class TableModel(ABC):
-    def __init__(self):
-        self._original_fields: dict[str, Any] = {}  # original values to keep track of changed fields
 
     @classmethod
     def table_name(cls) -> str:
