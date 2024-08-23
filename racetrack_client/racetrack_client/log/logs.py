@@ -9,12 +9,13 @@ from racetrack_client.utils.strings import strip_ansi_colors
 from racetrack_client.utils.time import timestamp_to_iso8601
 
 LOG_FORMAT = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(message)s'
-LOG_FORMAT_DEBUG = '\033[2m[%(asctime)s]\033[0m %(name)s %(filename)s %(lineno)s %(levelname)s %(message)s'
+LOG_FORMAT_DEBUG = '\033[2m[%(asctime)s]\033[0m %(levelname)s %(name)s:%(lineno)s %(message)s'
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 ISO_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 structured_logs_on: bool = is_env_flag_enabled('LOG_STRUCTURED', 'false')
 log_caller_enabled: bool = is_env_flag_enabled('LOG_CALLER_NAME', 'false')
+debug_format_enabled: bool = is_env_flag_enabled('LOG_FORMAT_DEBUG', 'false')
 
 logger: logging.Logger = logging.getLogger('racetrack')
 
@@ -24,7 +25,8 @@ def configure_logs(log_level: Optional[str] = None):
     log_level = log_level or os.environ.get('LOG_LEVEL', 'debug')
     level = _parse_logging_level(log_level)
     # Set root level to INFO to avoid printing a ton of garbage DEBUG logs from imported libraries
-    logging.basicConfig(stream=sys.stdout, format=LOG_FORMAT, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
+    log_format = LOG_FORMAT_DEBUG if debug_format_enabled else LOG_FORMAT
+    logging.basicConfig(stream=sys.stdout, format=log_format, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
 
     original_formatter = logging.getLogger().handlers[0].formatter
     if structured_logs_on:

@@ -9,9 +9,9 @@ def test_deploy_model():
 
     _install_plugin(f'github.com/TheRacetrack/plugin-python-job-type=={PYTHON_PLUGIN_VERSION}')
     if environment == 'docker':
-        _install_plugin(f'github.com/TheRacetrack/plugin-docker-infrastructure=={DOCKER_PLUGIN_VERSION}')
+        _install_plugin(f'github.com/TheRacetrack/plugin-docker-infrastructure=={DOCKER_PLUGIN_VERSION}', replace=True)
     elif environment == 'kind':
-        _install_plugin(f'github.com/TheRacetrack/plugin-kubernetes-infrastructure=={K8S_PLUGIN_VERSION}')
+        _install_plugin(f'github.com/TheRacetrack/plugin-kubernetes-infrastructure=={K8S_PLUGIN_VERSION}', replace=True)
 
     esc = _create_esc()
 
