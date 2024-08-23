@@ -3,7 +3,7 @@ infrastructure_targets:
     remote_gateway_url: 'http://${public_ip}:7105/pub'
     remote_gateway_token: '${remote_gateway_token}'
 
-docker:
+jobtype_extra:
   docker_registry: '${registry_hostname}'
   username: '${registry_username}'
   password: '${write_registry_token}'

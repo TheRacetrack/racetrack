@@ -4,7 +4,7 @@ infrastructure_targets:
     remote_gateway_token: '${remote_gateway_token}'
     job_k8s_namespace: '${kubernetes_namespace}'
 
-docker:
+jobtype_extra:
   docker_registry: '${registry_hostname}'
   username: '${registry_username}'
   password: '${write_registry_token}'

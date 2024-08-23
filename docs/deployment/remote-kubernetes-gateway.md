@@ -29,7 +29,7 @@ Choose `remote-kubernetes` infrastructure target.
 
 ## Install plugin
 
-On your Racetrack's "Main Hub", install 
+On your Racetrack's "Main Hub", install
 [remote Kubernetes plugin](https://github.com/TheRacetrack/plugin-remote-kubernetes).
 You can do it with:
 ```
@@ -44,7 +44,7 @@ infrastructure_targets:
     remote_gateway_token: '5tr0nG_PA55VoRD'
     job_k8s_namespace: 'racetrack'
 
-docker: 
+jobtype_extra:
   docker_registry: 'docker.registry.example.com'
   username: 'DOCKER_USERNAME'
   password: 'READ_WRITE_TOKEN'
