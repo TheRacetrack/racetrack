@@ -129,11 +129,11 @@ class PostgresEngine(DbEngine):
             raise AlreadyExists(str(e)) from e
         except PoolTimeout as e:
             metric_database_connection_failed.inc()
-            raise ContextError(f'Database connection pool error {type(e).__name__}') from e
+            raise ContextError(f'Database connection pool error: {type(e).__name__}') from e
         except DatabaseError as e:
-            raise ContextError(f'Database error {type(e).__name__}') from e
+            raise ContextError(f'Database error: {type(e).__name__}') from e
         except InterfaceError as e:
-            raise ContextError(f'Database interface error {type(e).__name__}') from e
+            raise ContextError(f'Database interface error: {type(e).__name__}') from e
 
     def execute_sql_fetch_one(
         self,
@@ -158,11 +158,11 @@ class PostgresEngine(DbEngine):
             raise AlreadyExists(str(e)) from e
         except PoolTimeout as e:
             metric_database_connection_failed.inc()
-            raise ContextError(f'Database connection pool error {type(e).__name__}') from e
+            raise ContextError(f'Database connection pool error: {type(e).__name__}') from e
         except DatabaseError as e:
-            raise ContextError(f'Database error {type(e).__name__}') from e
+            raise ContextError(f'Database error: {type(e).__name__}') from e
         except InterfaceError as e:
-            raise ContextError(f'Database interface error {type(e).__name__}') from e
+            raise ContextError(f'Database interface error: {type(e).__name__}') from e
 
     def execute_sql_fetch_all(
         self, query: str | Composed, params: list | None = None
@@ -183,11 +183,11 @@ class PostgresEngine(DbEngine):
             raise AlreadyExists(str(e)) from e
         except PoolTimeout as e:
             metric_database_connection_failed.inc()
-            raise ContextError(f'Database connection pool error {type(e).__name__}') from e
+            raise ContextError(f'Database connection pool error: {type(e).__name__}') from e
         except DatabaseError as e:
-            raise ContextError(f'Database error {type(e).__name__}') from e
+            raise ContextError(f'Database error: {type(e).__name__}') from e
         except InterfaceError as e:
-            raise ContextError(f'Database interface error {type(e).__name__}') from e
+            raise ContextError(f'Database interface error: {type(e).__name__}') from e
 
     def _get_query_bytes(self, query: str | Composed, connection: Connection) -> bytes:
         if isinstance(query, Composable):

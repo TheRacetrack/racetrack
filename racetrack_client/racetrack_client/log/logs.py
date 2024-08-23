@@ -130,7 +130,7 @@ class ColoredFormatter(logging.Formatter):
 
     def _logger_details(self, record: logging.LogRecord) -> Optional[str]:
         logger_name = record.name
-        if debug_format_enabled or logger_name.startswith('racetrack'):
+        if debug_format_enabled or not logger_name.startswith('racetrack'):
             return f'{logger_name}:{record.lineno}'
         else:
             return None
