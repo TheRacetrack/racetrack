@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from psycopg_pool import ConnectionPool
+from psycopg_pool import ConnectionPool, PoolTimeout
 from psycopg import Connection, Cursor, DatabaseError, IntegrityError, InterfaceError
 from psycopg.sql import SQL, Literal, Composable, Composed
 
@@ -26,20 +26,22 @@ class PostgresEngine(DbEngine):
         self.log_queries: bool = log_queries
         self.query_builder: QueryBuilder = QueryBuilder()
         self._database_status: DatabaseStatus = DatabaseStatus()
+        # https://www.psycopg.org/psycopg3/docs/api/pool.html#psycopg_pool.ConnectionPool
         self.connection_pool: ConnectionPool = ConnectionPool(
-            min_size=1,  # The minimum number of connection the pool will hold. The pool will actively try to create new connections if some are lost (closed, broken) and will try to never go below min_size
-            max_size=max_pool_size,
             kwargs=conn_params,
+            min_size=1,  # The minimum number of connection the pool will hold. The pool will actively try to create new connections if some are lost (closed, broken) and will try to never go below min_size
+            max_size=max_pool_size,  # The maximum number of connections the pool will hold
             open=True,  # open the pool, creating the required connections, on init
-            name='lifecycle',
-            timeout=10,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
-            max_waiting=0,
-            max_lifetime=60,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
-            max_idle=600,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
-            reconnect_timeout=60,  # Maximum time, in seconds, the pool will try to create a connection. If a connection attempt fails, the pool will try to reconnect a few times, using an exponential backoff and some random factor to avoid mass attempts. If repeated attempts fail, after reconnect_timeout second the connection attempt is aborted and the reconnect_failed() callback invoked
             configure=self._on_configure_connection,  # A callback to configure a connection after creation
-            reconnect_failed=self._on_reconnect_failed,
-            reset=self._on_reset_connection,
+            check=None,  # A callback to check that a connection is working correctly when obtained by the pool.
+            reset=self._on_reset_connection,  # A callback to reset a function after it has been returned to the pool
+            name='lifecycle',  # name to give to the pool, useful, for instance, to identify it in the logs
+            timeout=30,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
+            max_waiting=0,  # Maximum number of requests that can be queued to the pool, after which new requests will fail, raising TooManyRequests. 0 means no queue limit.
+            max_lifetime=300,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
+            max_idle=25,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
+            reconnect_timeout=5,  # Maximum time, in seconds, the pool will try to create a connection. If a connection attempt fails, the pool will try to reconnect a few times, using an exponential backoff and some random factor to avoid mass attempts. If repeated attempts fail, after reconnect_timeout second the connection attempt is aborted and the reconnect_failed() callback invoked
+            reconnect_failed=self._on_reconnect_failed,  # Callback invoked if an attempt to create a new connection fails for more than reconnect_timeout seconds
             num_workers=3,  # Number of background worker threads used to maintain the pool state. Background workers are used for example to create new connections and to clean up connections when they are returned to the pool
         )
 
@@ -82,7 +84,7 @@ class PostgresEngine(DbEngine):
             self.execute_sql('select 1')
         except BaseException as e:
             self._database_status.connected = False
-            raise ContextError(f'Connection to database failed ({type(e).__name__})') from e
+            raise ContextError(f'Connection to database failed') from e
 
         self._database_status.connected = True
 
@@ -123,6 +125,8 @@ class PostgresEngine(DbEngine):
                     check_affected_rows(expected_affected_rows, cursor.rowcount)
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
+        except PoolTimeout as e:
+            raise ContextError(f'Database connection pool error {type(e).__name__}') from e
         except DatabaseError as e:
             raise ContextError(f'Database error {type(e).__name__}') from e
         except InterfaceError as e:
@@ -149,6 +153,8 @@ class PostgresEngine(DbEngine):
                     return dict(zip(col_names, row))
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
+        except PoolTimeout as e:
+            raise ContextError(f'Database connection pool error {type(e).__name__}') from e
         except DatabaseError as e:
             raise ContextError(f'Database error {type(e).__name__}') from e
         except InterfaceError as e:
@@ -171,6 +177,8 @@ class PostgresEngine(DbEngine):
                     return [dict(zip(col_names, row)) for row in rows]
         except IntegrityError as e:
             raise AlreadyExists(str(e)) from e
+        except PoolTimeout as e:
+            raise ContextError(f'Database connection pool error {type(e).__name__}') from e
         except DatabaseError as e:
             raise ContextError(f'Database error {type(e).__name__}') from e
         except InterfaceError as e:

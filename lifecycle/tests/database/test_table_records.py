@@ -1,3 +1,4 @@
+from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
@@ -11,8 +12,7 @@ from racetrack_commons.auth.scope import AuthScope
 
 def test_record_operations():
     configure_logs()
-    engine = create_db_engine()
-    mapper = RecordMapper(engine)
+    mapper = RecordMapper(create_db_engine(Config()))
 
     records = mapper.find_all(User)
     assert len(records) == 1
@@ -52,7 +52,7 @@ def test_record_operations():
 
 def test_create_or_update():
     configure_logs()
-    mapper = RecordMapper(create_db_engine())
+    mapper = RecordMapper(create_db_engine(Config()))
 
     record: JobFamily = JobFamily(
         id=new_uuid(),
@@ -70,7 +70,7 @@ def test_create_or_update():
 
 def test_violate_primary_key():
     configure_logs()
-    mapper = RecordMapper(create_db_engine())
+    mapper = RecordMapper(create_db_engine(Config()))
 
     record: JobFamily = JobFamily(
         id=new_uuid(),
@@ -86,7 +86,7 @@ def test_violate_primary_key():
 
 def test_create_with_auto_increment():
     configure_logs()
-    mapper = RecordMapper(create_db_engine())
+    mapper = RecordMapper(create_db_engine(Config()))
 
     job_family = JobFamily(
         id=new_uuid(),

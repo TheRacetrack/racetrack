@@ -30,7 +30,7 @@ class LifecycleCache:
     @classmethod
     def db_engine(cls) -> DbEngine:
         if cls._db_engine is None:
-            cls._db_engine = create_db_engine()
+            cls._db_engine = create_db_engine(cls.config)
         return cls._db_engine
 
     @classmethod

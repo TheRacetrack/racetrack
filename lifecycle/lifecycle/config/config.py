@@ -61,6 +61,10 @@ class Config(BaseModel):
 
     # How often (in seconds) to check if there is vital connection to database. 0 value disables this check.
     database_status_refresh_interval: float = 60
+    # Maximum number of connections in the datbase connection pool
+    database_connection_pool: int = 20
+    # Whether to print logs about every executed SQL query
+    database_log_queries: bool = False
 
     # Whether to allow overwriting existing jobs by deploying the same version once again
     allow_job_overwrite: bool = False
