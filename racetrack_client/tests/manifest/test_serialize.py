@@ -24,7 +24,7 @@ def test_serialize_manifest_to_json():
     assert remove_none(model_dict) == {
         'name': "golang-function",
         'owner_email': "nobody@example.com",
-        'lang': "golang:latest",
+        'jobtype': "golang:latest",
         'git': {
             'remote': 'https://github.com/TheRacetrack/racetrack',
             'directory': 'sample/golang-function',

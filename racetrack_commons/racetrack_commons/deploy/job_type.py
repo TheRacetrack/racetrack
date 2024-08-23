@@ -49,7 +49,7 @@ class JobType:
 @backoff.on_exception(backoff.fibo, AssertionError, max_value=1, max_time=5, jitter=None, logger=None)
 def load_job_type(
     plugin_engine: PluginEngine,
-    lang: str,
+    jobtype: str,
 ) -> JobType:
     """
     Load job type.
@@ -57,9 +57,9 @@ def load_job_type(
     """
     with wrap_context('gathering available job types'):
         job_types = gather_job_types(plugin_engine)
-    assert job_types, f'language {lang} is not supported here. No job type plugins are currently installed to Racetrack.'
+    assert job_types, f'language {jobtype} is not supported here. No job type plugins are currently installed to Racetrack.'
     all_languages = sorted(job_types.keys())
-    selected_version = match_job_type_version(lang, all_languages)
+    selected_version = match_job_type_version(jobtype, all_languages)
     job_type = job_types[selected_version]
     _validate_job_type(job_type)
     return job_type

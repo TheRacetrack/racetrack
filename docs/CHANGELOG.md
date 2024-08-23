@@ -668,7 +668,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - One job type can be installed in multiple versions at the same time.
   Users have to pick one of these versions and specify it in the manifest of their fatman,
-  eg. `lang: python3:2.4.0`.
+  eg. `jobtype: python3:2.4.0`.
   Version of a job type is now required in the `lang` field of Manifest in a manner `name:version`.
   `latest` version can be used (resolving to the highest semantic version), though it's discouraged.
 - Plugin bundler has been moved to racetrack-client.

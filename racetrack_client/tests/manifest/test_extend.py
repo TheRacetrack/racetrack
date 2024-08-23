@@ -12,7 +12,7 @@ def test_extend_base_manifest():
         (Path(path) / 'job-base.yaml').write_text("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang:latest
+jobtype: golang:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack
