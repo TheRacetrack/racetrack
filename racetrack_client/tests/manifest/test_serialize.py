@@ -9,7 +9,7 @@ def test_serialize_manifest_to_json():
     manifest = Manifest(
         name="golang-function",
         owner_email="nobody@example.com",
-        lang="golang:latest",
+        jobtype="golang:latest",
         git=GitManifest(
             remote='https://github.com/TheRacetrack/racetrack',
             directory='sample/golang-function',
