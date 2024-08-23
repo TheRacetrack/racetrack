@@ -4,11 +4,13 @@ from typing import Any
 from psycopg_pool import ConnectionPool, PoolTimeout
 from psycopg import Connection, Cursor, DatabaseError, IntegrityError, InterfaceError
 from psycopg.sql import SQL, Literal, Composable, Composed
+from psycopg.rows import Row
 
 from lifecycle.server.metrics import metric_database_connection_failed, metric_database_connection_opened, \
     metric_database_connection_closed, metric_database_queries_executed
 from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.errors import AlreadyExists
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.base_engine import DbEngine, check_affected_rows, DatabaseStatus
 from lifecycle.database.postgres.query_builder import QueryBuilder
@@ -28,6 +30,7 @@ class PostgresEngine(DbEngine):
         self._database_status: DatabaseStatus = DatabaseStatus()
         # https://www.psycopg.org/psycopg3/docs/api/pool.html#psycopg_pool.ConnectionPool
         self.connection_pool: ConnectionPool = ConnectionPool(
+            connection_class=PgConnection,
             kwargs=conn_params,
             min_size=1,  # The minimum number of connection the pool will hold. The pool will actively try to create new connections if some are lost (closed, broken) and will try to never go below min_size
             max_size=max_pool_size,  # The maximum number of connections the pool will hold
@@ -36,7 +39,7 @@ class PostgresEngine(DbEngine):
             check=None,  # A callback to check that a connection is working correctly when obtained by the pool.
             reset=self._on_reset_connection,  # A callback to reset a function after it has been returned to the pool
             name='lifecycle',  # name to give to the pool, useful, for instance, to identify it in the logs
-            timeout=10,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
+            timeout=5,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
             max_waiting=0,  # Maximum number of requests that can be queued to the pool, after which new requests will fail, raising TooManyRequests. 0 means no queue limit.
             max_lifetime=300,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
             max_idle=25,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
@@ -199,6 +202,20 @@ class PostgresEngine(DbEngine):
     def _log_query(self, query: bytes) -> None:
         if self.log_queries:
             logger.debug(f'SQL query: {query.decode()}')
+
+
+class PgConnection(Connection):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def connect(cls, *args, **kwargs) -> "Connection[Row]":
+        try:
+            return Connection.connect(*args, **kwargs)
+        except BaseException as e:
+            metric_database_connection_failed.inc()
+            log_exception(ContextError('Connection to database failed', e))
+            raise
 
 
 def get_connection_params() -> dict[str, str]:

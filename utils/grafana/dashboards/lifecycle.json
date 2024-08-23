@@ -684,33 +684,7 @@
           },
           "unit": "short"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "idle in pool, lifecycle:7102",
-                  "open connections in pool, lifecycle:7102"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -867,19 +841,6 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "rate(lifecycle_database_connection_failed_total[$__interval]) * 60",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "failed, {{instance}}",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
           "expr": "rate(lifecycle_database_queries_executed_total[$__interval]) * 60",
           "hide": false,
           "instant": false,
@@ -999,8 +960,8 @@
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
+          "sortBy": "Max",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
@@ -1021,6 +982,19 @@
           "legendFormat": "request errors, {{instance}}",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "rate(lifecycle_database_connection_failed_total[$__interval]) * 60",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "failed connections, {{instance}}",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Database errors",
@@ -2575,6 +2549,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 11,
+  "version": 13,
   "weekStart": ""
 }
