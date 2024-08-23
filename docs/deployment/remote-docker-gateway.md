@@ -44,7 +44,7 @@ infrastructure_targets:
     remote_gateway_url: 'http://1.2.3.4:7105/pub'
     remote_gateway_token: '5tr0nG_PA55VoRD'
 
-jobtype_extra:
+docker:
   docker_registry: 'docker.registry.example.com'
   username: 'DOCKER_USERNAME'
   password: 'READ_WRITE_TOKEN'
