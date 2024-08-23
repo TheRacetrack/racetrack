@@ -44,7 +44,7 @@ infrastructure_targets:
     remote_gateway_token: '5tr0nG_PA55VoRD'
     job_k8s_namespace: 'racetrack'
 
-jobtype_extra:
+docker:
   docker_registry: 'docker.registry.example.com'
   username: 'DOCKER_USERNAME'
   password: 'READ_WRITE_TOKEN'
