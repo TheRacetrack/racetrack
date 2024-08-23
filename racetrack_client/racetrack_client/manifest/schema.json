@@ -84,9 +84,6 @@
                 }
             }
         },
-        "deprecated_fields": {
-            "type": "object"
-        },
         "build_env": {
             "type": "object",
             "patternProperties": {

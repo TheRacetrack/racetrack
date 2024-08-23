@@ -14,11 +14,18 @@ const loading = ref(false)
 
 const router = useRouter()
 
+const deprecatedKeysMap = {
+    'lang': 'jobtype',
+    'golang': 'jobtype_extra',
+    'python': 'jobtype_extra',
+    'docker': 'jobtype_extra',
+    'wrapper_properties': 'jobtype_extra'
+}
+
 interface CredentialsModel {
     username: string
     password: string
 }
-
 function deployJob() {
     let manifestDict: Record<string, any>
     try {
@@ -26,8 +33,10 @@ function deployJob() {
         if (typeof manifestDict !== 'object') {
             throw new TypeError('Expected mapping object')
         }
-        if ('lang' in manifestDict) {
-            toastService.warning('The "lang" key is deprecated. Use jobtype instead.');
+        for (const [deprecatedKey, replacementKey] of Object.entries(deprecatedKeysMap)) {
+            if (deprecatedKey in manifestDict) {
+                toastService.warning(`${deprecatedKey}: is deprecated. Use ${replacementKey} instead.`);
+            }
         }
     } catch(err: any) {
         toastService.showErrorDetails('Invalid Manifest YAML', err)

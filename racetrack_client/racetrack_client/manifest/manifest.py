@@ -93,14 +93,14 @@ class Manifest(BaseModel):
     # original dictionary from which the manifest was parsed, field for internal use only
     origin_dict_: Optional[Dict[str, Any]] = Field(None, exclude=True)
 
-    # This is the "source of truth for deprications", schema.json has to follow this
+    # This is the "source of truth for deprications", schema.json and DeployForm.vue has to follow this.
     def get_deprecated_fields(self):
         return {
-            'lang': '`jobtype:`',
-            'golang': '`jobtype_extra:`',
-            'python': '`jobtype_extra:`',
-            'docker': '`jobtype_extra:`',
-            'wrapper_properties': '`jobtype_extra:`'
+            'lang': 'jobtype:',
+            'golang': 'jobtype_extra:',
+            'python': 'jobtype_extra:',
+            'docker': 'jobtype_extra:',
+            'wrapper_properties': 'jobtype_extra:'
         }
 
     def get_jobtype(self):
@@ -116,4 +116,4 @@ class Manifest(BaseModel):
     def warn_if_using_deprecated_fields(self, logger: Logger):
         for field, replacement in self.get_deprecated_fields().items():
             if getattr(self, field) is not None:
-                logger.warning(f'`{field}:` is deprecated. Use {replacement} instead.')
+                logger.warning(f'{field}: is deprecated. Use {replacement}: instead.')
