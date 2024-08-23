@@ -7,6 +7,7 @@ logger = get_logger(__name__)
 
 
 class QueryBuilder(BaseQueryBuilder):
+
     def placeholder(self) -> str:
         return '?'
 

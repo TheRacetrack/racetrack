@@ -43,7 +43,7 @@ class RecordMapper:
             filtered_by = ', '.join(filter_kwargs.keys())
             raise EntityNotFound(f'{table_type.__name__} record not found for given {filtered_by}')
 
-        return _convert_row_to_object(row, table_type)
+        return _convert_row_to_record_model(row, table_type)
 
     def find_many(
         self,
@@ -60,7 +60,7 @@ class RecordMapper:
             filter_params=filter_params,
             order_by=order_by,
         )
-        return [_convert_row_to_object(row, table_type) for row in rows]
+        return [_convert_row_to_record_model(row, table_type) for row in rows]
     
     def filter(
         self,
@@ -80,9 +80,9 @@ class RecordMapper:
             order_by=order_by,
             limit=limit,
         )
-        return [_convert_row_to_object(row, table_type) for row in rows]
+        return [_convert_row_to_record_model(row, table_type) for row in rows]
 
-    def find_all(
+    def list_all(
         self,
         table_type: Type[T],
         order_by: list[str] | None = None,
@@ -95,7 +95,7 @@ class RecordMapper:
             order_by=order_by,
             limit=limit,
         )
-        return [_convert_row_to_object(row, table_type) for row in rows]
+        return [_convert_row_to_record_model(row, table_type) for row in rows]
 
     def count(
         self,
@@ -185,9 +185,12 @@ class RecordMapper:
     def update(
         self,
         record_object: TableModel,
+        only_changed: bool = True,
     ) -> None:
         """
         Update one existing record
+        :param record_object: record object to update
+        :param only_changed: only update fields that have changed. If nothing changed, do nothing
         :raise NoRowsAffected: if the record was not found
         :raise TooManyRowsAffected: if more than one record has been updated
         """
@@ -197,12 +200,17 @@ class RecordMapper:
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
         )
-        new_record_data = _extract_record_data(record_object)
+        if only_changed:
+            update_data = _extract_changed_data(record_object)
+            if not update_data:
+                return
+        else:
+            update_data = _extract_record_data(record_object)
         self.query_wrapper.update_one(
             table=record_object.table_name(),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
-            new_data=new_record_data,
+            new_data=update_data,
         )
 
     def create_or_update(
@@ -210,7 +218,7 @@ class RecordMapper:
         record_object: TableModel,
     ) -> None:
         if self.exists_record(record_object):
-            self.update(record_object)
+            self.update(record_object, only_changed=False)
         else:
             self.create(record_object)
 
@@ -257,7 +265,7 @@ class RecordMapper:
         return filter_conditions, filter_params
 
 
-def _convert_row_to_object(
+def _convert_row_to_record_model(
     row: dict[str, Any],
     table_type: Type[T],
 ) -> T:
@@ -266,16 +274,32 @@ def _convert_row_to_object(
         assert (
             column in valid_fields
         ), f'retrieved column "{column}" is not a valid field for the model {type(table_type)}'
-    return parse_typed_object(row, table_type)
+    record_model = parse_typed_object(row, table_type)
+    record_model._original_fields = record_model.to_row()
+    return record_model
 
 
-def _extract_record_data(record_object: TableModel) -> dict[str, Any]:
-    fields: list[str] = record_object.fields()
+def _extract_record_data(record_model: TableModel) -> dict[str, Any]:
+    fields: list[str] = record_model.fields()
     data = {}
     for field in fields:
-        if not hasattr(record_object, field):
+        if not hasattr(record_model, field):
             raise ValueError(
-                f'given table model {type(record_object).__name__} has no field {field}'
+                f'given table model {record_model.type_name()} has no field {field}'
             )
-        data[field] = getattr(record_object, field)
+        data[field] = getattr(record_model, field)
     return data
+
+
+def _extract_changed_data(record_model: TableModel) -> dict[str, Any]:
+    originals: dict[str, Any] = record_model._original_fields
+    new_data = _extract_record_data(record_model)
+    if not originals:
+        logger.warning(f'could not read original fields from record {record_model.type_name()}')
+        return new_data
+    
+    changed_data = {}
+    for field, new_value in new_data.items():
+        if field not in originals or new_value != originals.get(field):
+            changed_data[field] = new_value
+    return changed_data

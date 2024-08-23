@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import asdict, is_dataclass
 import json
-from typing import Any, ClassVar, Dict, Protocol
+from typing import Any, ClassVar, Protocol
 import uuid
 
 from racetrack_client.log.context_error import ContextError
@@ -10,13 +10,12 @@ from racetrack_client.log.context_error import ContextError
 class IsDataclass(Protocol):
     """Type alias for a dataclass instance"""
 
-    __dataclass_fields__: ClassVar[Dict[str, Any]]
+    __dataclass_fields__: ClassVar[dict[str, Any]]
 
 
 class TableModel(ABC):
-    def __init__(self, **row_data):
-        for field_name, value in row_data.items():
-            setattr(self, field_name, value)
+    def __init__(self):
+        self._original_fields: dict[str, Any] = {}  # original values to keep track of changed fields
 
     @classmethod
     def table_name(cls) -> str:
@@ -25,6 +24,10 @@ class TableModel(ABC):
         table_name = getattr(metadata, 'table_name')
         assert metadata is not None, f'table_name not specified in {cls}.Metadata'
         return table_name
+    
+    @classmethod
+    def type_name(cls) -> str:
+        return cls.__name__
 
     @classmethod
     def primary_key_columns(cls) -> list[str]:

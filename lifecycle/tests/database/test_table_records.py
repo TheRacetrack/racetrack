@@ -1,5 +1,6 @@
 from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
+from lifecycle.database.base_query_builder import BaseQueryBuilder
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject
@@ -14,7 +15,7 @@ def test_record_operations():
     configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
-    records = mapper.find_all(User)
+    records = mapper.list_all(User)
     assert len(records) == 1
 
     user: User = mapper.find_one(User, id=1)
@@ -28,7 +29,7 @@ def test_record_operations():
         name='primer',
     ))
     assert mapper.count(JobFamily) == 1
-    family_records: list[JobFamily] = mapper.find_all(JobFamily)
+    family_records: list[JobFamily] = mapper.list_all(JobFamily)
     assert len(family_records) == 1
     assert family_records[0].name == 'primer'
 
@@ -114,3 +115,27 @@ def test_create_with_auto_increment():
     assert new_id is not None
     new_record = mapper.find_one(AuthResourcePermission, auth_subject_id=auth_subject.id)
     assert new_record.id == new_id
+
+
+def test_update_only_changed_fields():
+    configure_logs()
+    db_engine = create_db_engine(Config(database_log_queries=True))
+    mapper = RecordMapper(db_engine)
+
+    family_id = new_uuid()
+    job_family = JobFamily(id=family_id, name='primer')
+    mapper.create(job_family)
+
+    job_family.name = 'updated'
+    mapper.update(job_family, only_changed=True)
+    assert db_engine.last_query() == 'update job_family set name = ? where id = ?'
+    assert db_engine.last_query() is None
+
+    mapper.update(job_family, only_changed=True)
+    assert db_engine.last_query() is None
+    assert mapper.find_one(JobFamily, id=family_id).name == 'updated'
+
+    job_family.name = 'fresher'
+    mapper.update(job_family, only_changed=False)
+    assert db_engine.last_query() == 'update job_family set id = ?, name = ? where id = ?'
+    assert mapper.find_one(JobFamily, id=family_id).name == 'fresher'

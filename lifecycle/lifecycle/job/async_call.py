@@ -25,6 +25,7 @@ def save_async_job_call(dto: AsyncJobCallDto) -> tables.AsyncJobCall:
     changed = False
     try:
         model = get_async_job_call(dto.id)
+        existed = True
     except EntityNotFound:
         model = tables.AsyncJobCall(
             id=dto.id,
@@ -47,6 +48,7 @@ def save_async_job_call(dto: AsyncJobCallDto) -> tables.AsyncJobCall:
             retriable_error=dto.retriable_error,
         )
         changed = True
+        existed = False
 
     if model.status != dto.status \
             or model.started_at != new_started_at \
@@ -86,10 +88,13 @@ def save_async_job_call(dto: AsyncJobCallDto) -> tables.AsyncJobCall:
 
     if changed:
         mapper = LifecycleCache.record_mapper()
-        try:
-            mapper.create_or_update(model)
-        except NoRowsAffected:
-            raise EntityNotFound(f'Async job call model has gone before updating: {model}')
+        if not existed:
+            mapper.create(model)
+        else:
+            try:
+                mapper.update(model)
+            except NoRowsAffected:
+                raise EntityNotFound(f'Async job call model has gone before updating: {model}')
     return model
 
 

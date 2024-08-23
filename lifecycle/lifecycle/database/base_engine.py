@@ -63,6 +63,9 @@ class DbEngine(ABC):
     ) -> list[dict]:
         raise NotImplementedError
 
+    def last_query(self) -> str | None:
+        return None
+
 
 class NoRowsAffected(RuntimeError):
     pass

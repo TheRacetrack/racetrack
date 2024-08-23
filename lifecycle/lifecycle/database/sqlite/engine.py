@@ -14,6 +14,7 @@ DB_PATH: str = os.environ.get('DB_PATH', 'lifecycle/django/db.sqlite3')
 
 
 class SQLiteEngine(DbEngine):
+
     def __init__(self, copy: bool = True, log_queries: bool = True) -> None:
         super().__init__()
         if copy:
@@ -33,6 +34,7 @@ class SQLiteEngine(DbEngine):
         self.query_builder: QueryBuilder = QueryBuilder()
         self.log_queries: bool = log_queries
         self._database_status: DatabaseStatus = DatabaseStatus(connected=True, pool_size=1)
+        self._last_query: str | None = None
 
         sqlite3.register_adapter(datetime, _adapt_datetime)
 
@@ -102,7 +104,13 @@ class SQLiteEngine(DbEngine):
         finally:
             cursor.close()
 
+    def last_query(self) -> str | None:
+        result = self._last_query
+        self._last_query = None
+        return result
+
     def _log_query(self, query: str) -> None:
+        self._last_query = query
         if self.log_queries:
             logger.debug(f'SQL query: {query}')
 
