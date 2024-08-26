@@ -5,9 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.32.1] - 2024-08-26
+### Added
+- `sslmode` and `sslrootcert` is supported in database connector for PostgreSQL
+  ([#509](https://github.com/TheRacetrack/racetrack/issues/509))
+- Deprecated fields in the manifest trigger a warning.
+  ([#482](https://github.com/TheRacetrack/racetrack/issues/482))
+
 ### Changed
 - "404 Not Found" responses are treated as errors in Async Job calls.
   ([#508](https://github.com/TheRacetrack/racetrack/issues/508))
+- Attempting to install multiple versions of the same infrastructure plugin causes an error.
+  ([#489](https://github.com/TheRacetrack/racetrack/issues/489))
 
 ## [2.32.0] - 2024-08-19
 ### Added

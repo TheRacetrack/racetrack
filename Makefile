@@ -1,7 +1,7 @@
 .PHONY: setup test clean registry
 
 # docker tag of images
-TAG ?= 2.32.0
+TAG ?= 2.32.1
 DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
 GHCR_PREFIX = ghcr.io/theracetrack/racetrack
@@ -288,6 +288,8 @@ version-bump-minor:
 	./utils/version_bumper.py --part=minor
 version-bump-major:
 	./utils/version_bumper.py --part=major
+version-bump-exact:
+	./utils/version_bumper.py --exact=$(VERSION)
 
 # show current version
 version-current:

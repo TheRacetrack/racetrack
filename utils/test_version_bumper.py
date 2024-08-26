@@ -2,11 +2,11 @@ import tempfile
 import shutil
 from pathlib import Path
 
-from version_bumper import parse_version, replace_in_files, read_current_version, Version, bump_version_in_files
+from version_bumper import parse_makefile_version, replace_in_files, read_current_version, Version, bump_version_in_files
 
 
 def test_basic():
-    ver: Version = parse_version('TAG?=1.2.16')
+    ver: Version = parse_makefile_version('TAG?=1.2.16')
     assert ver
     assert ver.major == 1
     assert ver.minor == 2
@@ -17,7 +17,7 @@ def test_basic():
 
 
 def test_whitespace():
-    ver: Version = parse_version('TAG  ?=  1.2.16  ')
+    ver: Version = parse_makefile_version('TAG  ?=  1.2.16  ')
     assert ver
     assert ver.major == 1
     assert ver.minor == 2
@@ -28,7 +28,7 @@ def test_whitespace():
 
 
 def test_mr_dev():
-    ver: Version = parse_version('TAG ?= 1.2.16-123-456')
+    ver: Version = parse_makefile_version('TAG ?= 1.2.16-123-456')
     assert ver
     assert ver.major == 1
     assert ver.minor == 2
@@ -39,7 +39,7 @@ def test_mr_dev():
 
 
 def test_bump_major():
-    ver: Version = parse_version('TAG ?= 1.2.16-123-456')
+    ver: Version = parse_makefile_version('TAG ?= 1.2.16-123-456')
     assert ver.major == 1
     ver.bump("major")
 
@@ -52,7 +52,7 @@ def test_bump_major():
 
 
 def test_bump_minor():
-    ver: Version = parse_version('TAG ?= 1.2.16-123-456')
+    ver: Version = parse_makefile_version('TAG ?= 1.2.16-123-456')
     assert ver.minor == 2
     ver.bump("minor")
 
@@ -65,7 +65,7 @@ def test_bump_minor():
 
 
 def test_bump_patch():
-    ver: Version = parse_version('TAG ?= 1.2.16-123-456')
+    ver: Version = parse_makefile_version('TAG ?= 1.2.16-123-456')
     assert ver.patch == 16
     ver.bump("patch")
 
@@ -78,7 +78,7 @@ def test_bump_patch():
 
 
 def test_bump_dev():
-    ver: Version = parse_version('TAG ?= 1.2.16-123-456')
+    ver: Version = parse_makefile_version('TAG ?= 1.2.16-123-456')
     assert ver.minor == 2
     ver.bump("dev")
 
@@ -155,6 +155,7 @@ TAG?=1.2.1
         args.mr = 87
         args.current = None
         args.part = 'patch'
+        args.exact = None
 
         lifecycle = (Path(path) / 'lifecycle.yaml')
         lc_pre = """
