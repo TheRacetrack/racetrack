@@ -67,7 +67,7 @@ class Version:
 
 def read_current_version(filepath: Path) -> Version:
     for line in filepath.read_text().splitlines():
-        ver = parse_version(line)
+        ver = parse_makefile_version(line)
         if ver is not None:
             return ver
     raise RuntimeError('version could not be parsed from ' + str(filepath))
@@ -75,12 +75,27 @@ def read_current_version(filepath: Path) -> Version:
 
 # match X.Y.Z or X.Y.Z-W
 # broken down at https://regex101.com/r/IAccOs/3
-main_regex = r'TAG\s*\?=\s*?(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)[\-\.]?(?P<details>[\-\w]+)?'
-main_pattern = re.compile(main_regex)
+makefile_pattern = re.compile(r'TAG\s*\?=\s*?(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)[\-\.]?(?P<details>[\-\w]+)?')
+version_pattern = re.compile(r'(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)[\-\.]?(?P<details>[\-\w]+)?')
+
+
+def parse_makefile_version(line: str) -> Optional[Version]:
+    match = makefile_pattern.match(line)
+    if not match:
+        return None
+    ver = Version(major=int(match.group('major')),
+                  minor=int(match.group('minor')),
+                  patch=int(match.group('patch')),
+                  mr=0,
+                  dev=0)
+    details = match.group('details')
+    if details is not None:
+        parse_details(details, ver)
+    return ver
 
 
 def parse_version(line: str) -> Optional[Version]:
-    match = main_pattern.match(line)
+    match = version_pattern.fullmatch(line)
     if not match:
         return None
     ver = Version(major=int(match.group('major')),
@@ -137,9 +152,15 @@ def bump_version_in_files(version_path: Path, _args, files: List[Path], prod_fil
     new_version = orig_version.clone()
     if _args.mr and int(_args.mr) != 0:
         new_version.mr = int(_args.mr)
+    if _args.exact:
+        exact_version = parse_version(_args.exact)
+        assert exact_version is not None
+        new_version = exact_version
 
     if new_version.mr != 0:
         new_version.bump('dev')
+    elif _args.exact:
+        files += prod_files
     else:
         new_version.bump(_args.part)
         files += prod_files
@@ -150,6 +171,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--current', action='store_true', help='print current version')
     parser.add_argument('--mr', help='set merge request number')
+    parser.add_argument('--exact', help='set version to exact value')
     parser.add_argument('--part', help='defines which part to bump: major, minor, patch, dev', default="patch")
 
     files_with_version = [

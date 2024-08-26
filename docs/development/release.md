@@ -35,45 +35,36 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
 1. Make sure [CHANGELOG.md](../CHANGELOG.md) has all
    [additions and changes](https://github.com/TheRacetrack/racetrack/commits/master) since latest release.
 1. Determine new version number `x.y.z` according to [Semver](https://semver.org/) and latest changes:
-   ```
+   ```sh
    VERSION=x.y.z
    ```
 1. In changelog rename section "Unreleased" to `x.y.z` and add date, then
    add a new empty "Unreleased" section.
 1. Create release branch ie. `release-x.y.z`:
-   ```
+   ```sh
    git checkout -b release-$VERSION
    ```
 1. Increment version:
-    - bump major version:
-      ```
-      make version-bump-major
-      ```
-    - bump minor version:
-      ```
-      make version-bump-minor
-      ```
-    - or bump patch version:
-      ```
-      make version-bump
-      ```
-1. Commit and push all changes from previous points:
+   ```sh
+   make version-bump-exact VERSION=$VERSION
    ```
+1. Commit and push all changes from previous points:
+   ```sh
    git commit -am "Release version $VERSION"
    ```
 1. Merge `release-x.y.z` branch to `master`:
-   ```
+   ```sh
    git checkout master && git merge release-$VERSION && git push
    ```
 1. Tag the resulting commit and push tag:
-   ```
+   ```sh
    git tag $VERSION && git push origin $VERSION
    ```
 1. Release racetrack client (if needed) with
-   ```
+   ```sh
    (cd racetrack_client && make release-pypi)
    ```
 1. Build & push docker images by running:
-   ```
+   ```sh
    make version-release-private version-release-public
    ```
