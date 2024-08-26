@@ -155,6 +155,7 @@ TAG?=1.2.1
         args.mr = 87
         args.current = None
         args.part = 'patch'
+        args.exact = None
 
         lifecycle = (Path(path) / 'lifecycle.yaml')
         lc_pre = """

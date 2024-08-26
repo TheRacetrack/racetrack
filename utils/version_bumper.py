@@ -164,6 +164,9 @@ def bump_version_in_files(version_path: Path, _args, files: List[Path], prod_fil
     else:
         new_version.bump(_args.part)
         files += prod_files
+    if new_version == orig_version:
+        print(f'Version {new_version} is already set')
+        return
     replace_in_files(orig_version, new_version, files)
 
 
