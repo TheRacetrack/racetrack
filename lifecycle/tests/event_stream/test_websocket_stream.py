@@ -7,7 +7,7 @@ from lifecycle.event_stream.client import EventStreamClient
 from lifecycle.event_stream.server import EventStreamServer
 from lifecycle.job.models_registry import create_job_model
 from lifecycle.server.api import create_fastapi_app
-from lifecycle.server.metrics import unregister_metrics
+from lifecycle.server.metrics_collector import unregister_metrics
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.manifest import Manifest
 from racetrack_client.manifest.manifest import GitManifest

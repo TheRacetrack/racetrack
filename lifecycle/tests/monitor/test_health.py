@@ -6,6 +6,7 @@ from lifecycle.monitor.health import check_until_job_is_operational
 _base_url = 'http://127.0.0.1'
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_liveness_readiness_fine():
     httpretty.register_uri(
@@ -26,6 +27,7 @@ def test_liveness_readiness_fine():
     check_until_job_is_operational(_base_url, deployment_timestamp=1000)
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_liveness_error():
     httpretty.register_uri(
