@@ -18,7 +18,7 @@ operationally sound and effective workloads without understanding the underlying
 infrastructure.
 
 It makes extensive use of plugins. Thus, the type of code which it can accept is
-broad and covers languages such as Python 3 or Go, 
+broad and covers languages such as Python 3 or Go,
 and actual applications such as Sphinx, Drupal or even Quake 3.
 
 These "jobs", in Racetrack lingo, can be deployed to different
@@ -29,7 +29,7 @@ Code deployed via Racetrack gets free Swagger pages and Prometheus metrics endpo
 
 What distinguishes Racetrack is:
 
-- You only supply your **function's logic**. No need to write repetitive API code, setting up 
+- You only supply your **function's logic**. No need to write repetitive API code, setting up
   webservers, creating dockerfiles, kubernetes YAMLs, and so on. Racetrack takes care of that for you.
 - **Language agnostic**. Deploy code written in Python 3, Go, Rust,
   or anything else encapsulated in a Dockerfile.
@@ -52,7 +52,7 @@ And a YAML file like this:
 ```yaml
 name: adder
 owner_email: meowmeow@example.com
-lang: python3:latest
+jobtype: python3:latest
 
 git:
   remote: https://www.github.com/path/to-repo.git

@@ -7,5 +7,5 @@ git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/docker-python-flask
 
-docker:
+jobtype_extra:
   dockerfile_path: Dockerfile
