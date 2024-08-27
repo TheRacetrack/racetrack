@@ -18,7 +18,7 @@ class ContextError(RuntimeError):
             raise ContextError('loading config') from e
     """
 
-    def __init__(self, context_message: str, cause: BaseException = None):
+    def __init__(self, context_message: str, cause: BaseException | None = None):
         super().__init__()
         self.context_message = context_message
         if cause is not None:

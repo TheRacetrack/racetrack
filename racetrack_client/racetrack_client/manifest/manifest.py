@@ -103,15 +103,14 @@ class Manifest(BaseModel):
             'wrapper_properties': 'jobtype_extra:'
         }
 
-    def get_jobtype(self):
+    def get_jobtype(self) -> str:
         return self.jobtype if self.jobtype else self.lang
 
-
-    def get_jobtype_extra(self):
+    def get_jobtype_extra(self) -> Dict[str, Any]:
         for field in [self.jobtype_extra, self.golang, self.python, self.wrapper_properties]:
             if field is not None:
                 return field
-
+        return {}
 
     def warn_if_using_deprecated_fields(self, logger: Logger):
         for field, replacement in self.get_deprecated_fields().items():
