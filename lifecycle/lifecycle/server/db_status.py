@@ -1,6 +1,7 @@
 from threading import Thread
 import time
 
+from racetrack_client.log.context_error import ContextError
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 from lifecycle.config import Config
@@ -20,6 +21,6 @@ def _monitor_database_status_sync(refresh_interval: float):
         try:
             LifecycleCache.db_engine().check_connection()
         except BaseException as e:
-            log_exception(e)
+            log_exception(ContextError('Database is not available', e))
 
         time.sleep(refresh_interval)

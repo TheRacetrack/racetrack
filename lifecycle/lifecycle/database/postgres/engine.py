@@ -4,7 +4,6 @@ from typing import Any
 from psycopg_pool import ConnectionPool, PoolTimeout
 from psycopg import Connection, Cursor, DatabaseError, IntegrityError, InterfaceError
 from psycopg.sql import SQL, Literal, Composable, Composed
-from psycopg.rows import Row
 
 from lifecycle.server.metrics import metric_database_connection_failed, metric_database_connection_opened, \
     metric_database_connection_closed, metric_database_queries_executed
@@ -60,7 +59,7 @@ class PostgresEngine(DbEngine):
     def _on_reconnect_failed(self, _: ConnectionPool) -> None:
         self.connection_status = False
         metric_database_connection_failed.inc()
-        logger.error('Connection to database failed')
+        logger.error('Failed to reconnect to database')
 
     def _on_reset_connection(self, _: Connection) -> None:
         metric_database_connection_closed.inc()
@@ -83,13 +82,13 @@ class PostgresEngine(DbEngine):
         except BaseException as e:
             self._database_status.connected = False
             metric_database_connection_failed.inc()
-            raise ContextError(f'Database connection pool check failed') from e
+            raise ContextError('Connection pool check failed') from e
 
         try:
             self.execute_sql('select 1')
         except BaseException as e:
             self._database_status.connected = False
-            raise ContextError(f'Database query failed') from e
+            raise ContextError('Test query failed') from e
 
         self._database_status.connected = True
 
@@ -197,7 +196,6 @@ class PostgresEngine(DbEngine):
             return query.as_bytes(connection)
         if isinstance(query, str):
             return query.encode()
-        raise ValueError(f'Unsupported query type: {type(query)}')
 
     def _log_query(self, query: bytes) -> None:
         if self.log_queries:
@@ -209,7 +207,7 @@ class PgConnection(Connection):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def connect(cls, *args, **kwargs) -> "Connection[Row]":
+    def connect(cls, *args, **kwargs) -> "Connection":
         try:
             return Connection.connect(*args, **kwargs)
         except BaseException as e:
@@ -219,46 +217,39 @@ class PgConnection(Connection):
 
 
 def get_connection_params() -> dict[str, str]:
+    database_name = os.environ.get('POSTGRES_DB', '')
+    database_name = _evaluate_cluster_name(database_name)
     params = {
         'host': os.environ.get('POSTGRES_HOST'),
         'port': os.environ.get('POSTGRES_PORT'),
         'user': os.environ.get('POSTGRES_USER'),
         'password': os.environ.get('POSTGRES_PASSWORD'),
-        'dbname': _get_database_name(),
+        'dbname': database_name,
         'sslmode': os.environ.get('POSTGRES_SSLMODE'),
         'sslrootcert': os.environ.get('POSTGRES_SSLROOTCERT'),
     }
     return {k: v for k, v in params.items() if v is not None}
 
 
-def _get_database_name() -> str:
-    database_name = os.environ.get('POSTGRES_DB', '')
-    if '{CLUSTER_NAME}' in database_name:  # evaluate templated database name
-        cluster_hostname = os.environ.get('CLUSTER_FQDN')
-        assert cluster_hostname, 'CLUSTER_FQDN is not set'
-        parts = cluster_hostname.split('.')
-        if parts[0] == os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack'):
-            cluster_name = parts[1]
-        else:
-            cluster_name = parts[0]
-        database_name = database_name.replace('{CLUSTER_NAME}', cluster_name)
-    return database_name
-
-
 def _get_schema_name() -> str | None:
     postgres_schema = os.environ.get('POSTGRES_SCHEMA', '')
-    if postgres_schema == '{CLUSTER_FQDN}':
-        cluster_hostname = os.environ.get('CLUSTER_FQDN')
-        racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
-        assert cluster_hostname, 'CLUSTER_FQDN is not set'
-        parts = cluster_hostname.split('.')
-        if parts[0] == racetrack_subdomain:
-            postgres_schema = parts[1]
-        else:
-            postgres_schema = parts[0]
-
+    postgres_schema = _evaluate_cluster_name(postgres_schema)
     if not postgres_schema:
         return None
     assert not postgres_schema.startswith('"'), "POSTGRES_SCHEMA should not start with '\"'"
     assert not postgres_schema.startswith("'"), "POSTGRES_SCHEMA should not start with '''"
     return postgres_schema
+
+
+def _evaluate_cluster_name(name: str) -> str:
+    if '{CLUSTER_NAME}' not in name:
+        return name
+    cluster_hostname = os.environ.get('CLUSTER_FQDN')
+    assert cluster_hostname, 'CLUSTER_FQDN is not set'
+    cluster_parts = cluster_hostname.split('.')
+    racetrack_subdomain = os.environ.get('RACETRACK_SUBDOMAIN', 'racetrack')
+    if cluster_parts[0] == racetrack_subdomain:
+        cluster_name = cluster_parts[1]
+    else:
+        cluster_name = cluster_parts[0]
+    return name.replace('{CLUSTER_NAME}', cluster_name)
