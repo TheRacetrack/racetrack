@@ -1,4 +1,3 @@
-version: '3.7'
 services:
 
   lifecycle:
@@ -76,6 +75,8 @@ services:
       DOCKER_HOST: tcp://docker-engine:2375
       CONFIG_FILE: /etc/racetrack/image-builder/config.yaml
       LIFECYCLE_AUTH_TOKEN: '${IMAGE_BUILDER_AUTH_TOKEN}'
+    stdin_open: true
+    tty: true
 
   dashboard:
     container_name: dashboard
@@ -97,6 +98,8 @@ services:
       EXTERNAL_GRAFANA_URL: '${EXTERNAL_ADDRESS}:3100'
       AUTH_REQUIRED: 'true'
       SITE_NAME: ''
+    stdin_open: true
+    tty: true
 
   pub:
     container_name: pub
@@ -151,7 +154,7 @@ services:
       CLIENT_IDLE_TIMEOUT: 90
       SERVER_CONNECT_TIMEOUT: 10
       CLIENT_LOGIN_TIMEOUT: 10
-      QUERY_WAIT_TIMEOUT: 30
+      QUERY_WAIT_TIMEOUT: 90
       ADMIN_USERS: postgres,admin,racetrack
       AUTH_TYPE: scram-sha-256
 
@@ -204,7 +207,7 @@ services:
       driver: none
 
   grafana:
-    image: grafana/grafana:10.1.4
+    image: grafana/grafana:10.4.4
     container_name: grafana
     ports:
       - "3100:3000"
