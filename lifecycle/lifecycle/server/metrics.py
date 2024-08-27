@@ -37,8 +37,8 @@ metric_database_connection_closed = Counter(
     'lifecycle_database_connection_closed',
     'Number of times connection to a database has been closed',
 )
-metric_database_cursor_created = Counter(
-    'lifecycle_database_cursor_created',
+metric_database_queries_executed = Counter(
+    'lifecycle_database_queries_executed',
     'Number of times database cursor has been created',
 )
 

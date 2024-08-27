@@ -68,11 +68,13 @@ def collect_tcp_connections_metric() -> Iterator[Metric]:
 
 
 def collect_database_connection_metric() -> Iterator[Metric]:
-    metric_name = 'lifecycle_database_connected'
-    metric_value = 1 if database_status.connected else 0
-    prometheus_metric = GaugeMetricFamily(metric_name, 'Status of database connection')
-    prometheus_metric.add_sample(metric_name, {}, metric_value)
-    yield prometheus_metric
+    if database_status.connected is not None:
+        metric_value = 1 if database_status.connected is True else 0
+        yield make_metric_sample(
+            'lifecycle_database_connected',
+            'Status of database connection',
+            metric_value)
+
 
 
 def make_metric_sample(metric_name: str, description: str, value: float) -> GaugeMetricFamily:
