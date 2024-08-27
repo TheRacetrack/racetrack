@@ -11,7 +11,7 @@ def test_override_manifest_with_extra_vars():
         (Path(path) / 'job.yaml').write_text("""
 name: golang-function
 owner_email: nobody@example.com
-lang: golang:latest
+jobtype: golang:latest
 replicas: 3
 git:
   remote: https://github.com/TheRacetrack/racetrack

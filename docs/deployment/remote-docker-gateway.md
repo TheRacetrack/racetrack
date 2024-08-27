@@ -30,7 +30,7 @@ Choose `remote-docker` infrastructure target.
 
 ## Install plugin
 
-On your Racetrack's "Main Hub", install 
+On your Racetrack's "Main Hub", install
 [remote Docker plugin](https://github.com/TheRacetrack/plugin-remote-docker).
 You can do it with:
 ```
@@ -44,7 +44,7 @@ infrastructure_targets:
     remote_gateway_url: 'http://1.2.3.4:7105/pub'
     remote_gateway_token: '5tr0nG_PA55VoRD'
 
-docker: 
+docker:
   docker_registry: 'docker.registry.example.com'
   username: 'DOCKER_USERNAME'
   password: 'READ_WRITE_TOKEN'

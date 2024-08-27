@@ -7,5 +7,5 @@ git:
   remote: https://github.com/TheRacetrack/racetrack
   directory: sample/docker-golang-http
 
-docker:
+jobtype_extra:
   dockerfile_path: Dockerfile

@@ -1,7 +1,7 @@
 name: python-logger
 version: 0.0.1
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
 
 git:
   remote: https://github.com/TheRacetrack/racetrack

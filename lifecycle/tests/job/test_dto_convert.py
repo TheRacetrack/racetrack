@@ -19,7 +19,7 @@ def test_convert_json_to_job_dto():
                 'git': {
                     'remote': 'https://github.com',
                 },
-                'lang': 'python3',
+                'jobtype': 'python3',
                 'resources': {
                     'memory_min': '1Gi',
                     'cpu_min': 1,

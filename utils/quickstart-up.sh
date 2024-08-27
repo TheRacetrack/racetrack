@@ -54,7 +54,7 @@ EOF
 cat << EOF > sample/job.yaml
 name: adder
 owner_email: sample@example.com
-lang: python3:latest
+jobtype: python3:latest
 git:
     remote: https://github.com/TheRacetrack/racetrack
 jobtype_extra:
