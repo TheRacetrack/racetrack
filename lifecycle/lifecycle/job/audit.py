@@ -4,7 +4,6 @@ from typing import Any
 from django.db.models import Q
 
 from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
 from lifecycle.job.dto_converter import audit_log_event_to_dto
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import get_logger
@@ -46,7 +45,6 @@ class AuditLogger:
         logger.info(f'Audit log event saved: {event_type.value}, {traits_str}')
 
 
-@db_access
 def read_audit_log_user_events(
     username: str | None = None,
     job_name: str | None = None,
