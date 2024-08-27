@@ -12,7 +12,3 @@ def db_access(function):
         return function(*args, **kwargs)
 
     return wrapper
-
-
-def before_db_access():
-    close_old_connections()

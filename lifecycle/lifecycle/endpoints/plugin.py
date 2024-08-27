@@ -1,8 +1,6 @@
 import asyncio
 import collections
-import tempfile
 from typing import List, Optional, Any
-import zipfile
 
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -150,7 +148,8 @@ def _get_plugins_data(plugin_engine: PluginEngine) -> PluginsData:
     infrastructure_usage: dict[str, int] = collections.defaultdict(int)
     for job_model in job_models:
         jobtypes_usage[job_model.job_type_version] += 1
-        infrastructure_usage[job_model.infrastructure_target] += 1
+        if job_model.infrastructure_target:
+            infrastructure_usage[job_model.infrastructure_target] += 1
 
     jobtype_names_by_plugins: dict[tuple[str, str], list[str]] = collections.defaultdict(list)
     for plugin, jobtype_name in list_jobtype_names_of_plugins(plugin_engine):

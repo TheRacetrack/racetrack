@@ -6,12 +6,10 @@ import backoff
 from lifecycle.config import Config
 from lifecycle.infrastructure.infra_target import determine_infrastructure_name
 from lifecycle.deployer.secrets import JobSecrets
-from lifecycle.django.registry.database import db_access
 from lifecycle.job.deployment import create_deployment, save_deployment_build_logs, save_deployment_image_name, save_deployment_result, save_deployment_phase
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.client.env import SecretVars
 from racetrack_client.utils.request import Requests, RequestError
-from racetrack_client.utils.datamodel import datamodel_to_dict
 from racetrack_client.utils.time import now
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.exception import log_exception
@@ -89,7 +87,6 @@ def _build_image_request_payload(
     }
 
 
-@db_access
 def build_job_in_background(
     config: Config,
     manifest: Manifest,
@@ -109,7 +106,6 @@ def build_job_in_background(
     return deployment.id
 
 
-@db_access
 def _build_job_saving_result(
     config: Config,
     manifest: Manifest,
