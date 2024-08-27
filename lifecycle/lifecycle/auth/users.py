@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser, User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
-from lifecycle.auth.subject import create_auth_token, get_auth_token_by_subject
+from lifecycle.auth.subject import create_auth_token, get_auth_token_by_subject, get_description_from_auth_subject
 from lifecycle.auth.subject import get_auth_subject_by_user
 from lifecycle.database.schema import tables
 from lifecycle.database.table_model import new_uuid
@@ -98,7 +98,8 @@ def grant_permission(
         endpoint=None,
     )
     LifecycleCache.record_mapper().create(permission)
-    logger.info(f'"{auth_subject}" has been granted permission to all jobs within {scope} scope')
+    subject_info = get_description_from_auth_subject(auth_subject)
+    logger.info(f'"{subject_info}" has been granted permission to all jobs within {scope} scope')
 
 
 def find_user_record_by_id(user_id: int) -> tables.User:

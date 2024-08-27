@@ -99,7 +99,8 @@ def create_auth_token(auth_subject: tables.AuthSubject, expiry_time: datetime | 
         last_use_time=None,
     )
     LifecycleCache.record_mapper().create(auth_token)
-    logger.info(f'Auth Token created for auth subject: {auth_subject}')
+    subject_info = get_description_from_auth_subject(auth_subject)
+    logger.info(f'Auth Token created for auth subject: {subject_info}')
     return auth_token
 
 

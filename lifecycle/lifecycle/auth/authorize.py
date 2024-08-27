@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from lifecycle.auth.subject import get_description_from_auth_subject
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
 from lifecycle.server.cache import LifecycleCache
@@ -51,16 +52,18 @@ def authorize_resource_access(
 
     if endpoint:
         if not has_endpoint_permission(auth_subject, job_name, resolved_version, endpoint, scope):
+            subject_info = get_description_from_auth_subject(auth_subject)
             raise UnauthorizedError(
                 'no permission to do this operation',
-                f'auth subject "{auth_subject}" does not have permission to access '
+                f'auth subject "{subject_info}" does not have permission to access '
                 f'endpoint {endpoint} at resource "{job_name} v{resolved_version}" with scope "{scope}"'
             )
     else:
         if not has_resource_permission(auth_subject, job_name, resolved_version, scope):
+            subject_info = get_description_from_auth_subject(auth_subject)
             raise UnauthorizedError(
                 'no permission to do this operation',
-                f'auth subject "{auth_subject}" does not have permission to access '
+                f'auth subject "{subject_info}" does not have permission to access '
                 f'resource "{job_name} v{resolved_version}" with scope "{scope}"'
             )
 
@@ -74,9 +77,10 @@ def authorize_scope_access(
     :raise UnauthorizedError: If auth subject doesn't have required permission
     """
     if not has_scope_permission(auth_subject, scope):
+        subject_info = get_description_from_auth_subject(auth_subject)
         raise UnauthorizedError(
             f'permission scope "{scope}" is required to do this operation',
-            f'auth subject "{auth_subject}" does not have permission with scope "{scope}"'
+            f'auth subject "{subject_info}" does not have permission with scope "{scope}"'
         )
 
 
@@ -304,7 +308,8 @@ def grant_permission(
     :param scope: name of allowed operation type (see AuthScope)
     """
     if permission_exists(auth_subject, job_name, job_version, scope):
-        logger.warning(f'Permission for {auth_subject} to {job_name} {job_version} (scope {scope}) is already granted')
+        subject_info = get_description_from_auth_subject(auth_subject)
+        logger.warning(f'Permission for {subject_info} to {job_name} {job_version} (scope {scope}) is already granted')
         return
 
     mapper = LifecycleCache.record_mapper()
@@ -342,7 +347,8 @@ def grant_permission(
         resource_description = 'all jobs'
 
     mapper.create(permission)
-    logger.info(f'"{auth_subject}" has been granted permission to {resource_description} within {scope} scope')
+    subject_info = get_description_from_auth_subject(auth_subject)
+    logger.info(f'"{subject_info}" has been granted permission to {resource_description} within {scope} scope')
 
 
 def permission_exists(
