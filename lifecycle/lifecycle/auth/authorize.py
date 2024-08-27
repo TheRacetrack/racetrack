@@ -177,9 +177,6 @@ def has_resource_permission(
         scope_filter,
     )
 
-    logger.debug(f'filter filter_conditions: {filter_condition.filter_conditions}')
-    logger.debug(f'filter params: {filter_condition.filter_params}')
-
     return mapper.exists_on_condition(
         tables.AuthResourcePermission, join_expression=join_expression, condition=filter_condition,
     )
