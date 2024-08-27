@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 
 class PostgresEngine(DbEngine):
-    def __init__(self, max_pool_size: int = 20, log_queries: bool = False):
+    def __init__(self, max_pool_size: int, log_queries: bool):
         super().__init__()
         conn_params = get_connection_params()
         self.connection_status: bool | None = None
@@ -40,8 +40,8 @@ class PostgresEngine(DbEngine):
             name='lifecycle',  # name to give to the pool, useful, for instance, to identify it in the logs
             timeout=5,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
             max_waiting=0,  # Maximum number of requests that can be queued to the pool, after which new requests will fail, raising TooManyRequests. 0 means no queue limit.
-            max_lifetime=300,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
-            max_idle=25,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
+            max_lifetime=10*60,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
+            max_idle=60,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
             reconnect_timeout=5,  # Maximum time, in seconds, the pool will try to create a connection. If a connection attempt fails, the pool will try to reconnect a few times, using an exponential backoff and some random factor to avoid mass attempts. If repeated attempts fail, after reconnect_timeout second the connection attempt is aborted and the reconnect_failed() callback invoked
             reconnect_failed=self._on_reconnect_failed,  # Callback invoked if an attempt to create a new connection fails for more than reconnect_timeout seconds
             num_workers=3,  # Number of background worker threads used to maintain the pool state. Background workers are used for example to create new connections and to clean up connections when they are returned to the pool
