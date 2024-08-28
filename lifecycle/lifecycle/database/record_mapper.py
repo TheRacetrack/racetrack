@@ -331,6 +331,8 @@ class RecordMapper:
             dep_records = self.find_many(dep_table, **filter_kwargs)
             for dep_record in dep_records:
                 self.delete_record(dep_record, cascade=True)
+                dep_record_info = f'{dep_record.primary_key_column()} = {dep_record.primary_key_value()}'
+                logger.debug(f'Cascade delete on record {dep_record.type_name()} {dep_record_info}')
 
 
 def _convert_row_to_record_model(
