@@ -9,7 +9,7 @@ class JobFamily(TableModel):
     """Collection of Jobs generations with the same name (family name)"""
     class Metadata:
         table_name = 'registry_jobfamily'
-        primary_key = ['id']
+        primary_key = 'id'
 
     id: str
     name: str
@@ -22,7 +22,10 @@ class JobFamily(TableModel):
 class Job(TableModel):
     class Metadata:
         table_name = 'registry_job'
-        primary_key = ['id']
+        primary_key = 'id'
+        on_delete_cascade = {
+            'family_id': JobFamily,
+        }
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -54,7 +57,7 @@ class Job(TableModel):
 class Deployment(TableModel):
     class Metadata:
         table_name = 'registry_deployment'
-        primary_key = ['id']
+        primary_key = 'id'
 
     id: str
     status: str
@@ -79,7 +82,7 @@ class Deployment(TableModel):
 class Esc(TableModel):
     class Metadata:
         table_name = 'registry_esc'
-        primary_key = ['id']
+        primary_key = 'id'
 
     id: str
     name: str
@@ -92,7 +95,10 @@ class Esc(TableModel):
 class PublicEndpointRequest(TableModel):
     class Metadata:
         table_name = 'registry_publicendpointrequest'
-        primary_key = ['id']
+        primary_key = 'id'
+        on_delete_cascade = {
+            'job_id': Job,
+        }
 
     id: str
     job_id: str  # foreign key: Job
@@ -104,7 +110,7 @@ class PublicEndpointRequest(TableModel):
 class TrashJob(TableModel):
     class Metadata:
         table_name = 'registry_trashjob'
-        primary_key = ['id']
+        primary_key = 'id'
 
     id: str
     name: str
@@ -127,7 +133,7 @@ class TrashJob(TableModel):
 class AuditLogEvent(TableModel):
     class Metadata:
         table_name = 'registry_auditlogevent'
-        primary_key = ['id']
+        primary_key = 'id'
 
     id: str
     version: int  # data structure version
@@ -141,13 +147,37 @@ class AuditLogEvent(TableModel):
 
 
 @dataclass
+class User(TableModel):
+    class Metadata:
+        table_name = 'auth_user'
+        primary_key = 'id'
+
+    id: int
+    password: str
+    last_login: datetime | None
+    is_superuser: bool
+    username: str
+    last_name: str
+    email: str
+    is_staff: bool
+    is_active: bool
+    date_joined: datetime
+    first_name: str
+
+
+@dataclass
 class AuthSubject(TableModel):
     class Metadata:
         table_name = 'registry_authsubject'
-        primary_key = ['id']
+        primary_key = 'id'
+        on_delete_cascade = {
+            'user_id': User,
+            'esc_id': Esc,
+            'job_family_id': JobFamily,
+        }
 
     id: str
-    user_id: int | None  # foreign key: AuthUser
+    user_id: int | None  # foreign key: User
     esc_id: str | None  # foreign key: Esc
     job_family_id: str | None  # foreign key: JobFamily
 
@@ -174,7 +204,10 @@ class AuthSubject(TableModel):
 class AuthToken(TableModel):
     class Metadata:
         table_name = 'registry_authtoken'
-        primary_key = ['id']
+        primary_key = 'id'
+        on_delete_cascade = {
+            'auth_subject_id': AuthSubject,
+        }
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubject
@@ -189,7 +222,12 @@ class AuthToken(TableModel):
 class AuthResourcePermission(TableModel):
     class Metadata:
         table_name = 'registry_authresourcepermission'
-        primary_key = ['id']
+        primary_key = 'id'
+        on_delete_cascade = {
+            'auth_subject_id': AuthSubject,
+            'job_family_id': JobFamily,
+            'job_id': Job,
+        }
 
     id: int | None
     auth_subject_id: str  # foreign key: AuthSubject
@@ -205,7 +243,7 @@ class AuthResourcePermission(TableModel):
 class Setting(TableModel):
     class Metadata:
         table_name = 'registry_setting'
-        primary_key = ['name']
+        primary_key = 'name'
 
     name: str
     value: str | None  # JSON
@@ -215,7 +253,7 @@ class Setting(TableModel):
 class AsyncJobCall(TableModel):
     class Metadata:
         table_name = 'registry_asyncjobcall'
-        primary_key = ['id']
+        primary_key = 'id'
 
     id: str
     status: str
@@ -240,20 +278,18 @@ class AsyncJobCall(TableModel):
         return self.id
 
 
-@dataclass
-class User(TableModel):
-    class Metadata:
-        table_name = 'auth_user'
-        primary_key = ['id']
-
-    id: int
-    password: str
-    last_login: datetime | None
-    is_superuser: bool
-    username: str
-    last_name: str
-    email: str
-    is_staff: bool
-    is_active: bool
-    date_joined: datetime
-    first_name: str
+all_tables: list[type[TableModel]] = [
+    JobFamily,
+    Job,
+    Deployment,
+    Esc,
+    PublicEndpointRequest,
+    TrashJob,
+    AuditLogEvent,
+    User,
+    AuthSubject,
+    AuthToken,
+    AuthResourcePermission,
+    Setting,
+    AsyncJobCall,
+]

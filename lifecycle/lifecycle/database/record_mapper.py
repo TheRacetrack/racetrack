@@ -1,12 +1,12 @@
 from typing import Any, Type, TypeVar
 
 from lifecycle.database.base_engine import DbEngine
-
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.schema.tables import TableModel
+from lifecycle.database.table_model import TableModel
+from lifecycle.database.schema.tables import all_tables
 from lifecycle.database.type_parser import parse_typed_object
 
 logger = get_logger(__name__)
@@ -29,6 +29,7 @@ class RecordMapper:
         :param table_type: table model class
         :param filter_kwargs: key-value pairs of filter criteria
         :raise EntityNotFound: if record is not found
+        :return: record object
         """
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
@@ -51,6 +52,13 @@ class RecordMapper:
         order_by: list[str] | None = None,
         **filter_kwargs: Any,
     ) -> list[T]:
+        """
+        Find multiple records based on the given filter criteria (exact match only)
+        :param table_type: table model class
+        :param order_by: list of columns to order by, for descending order prepend column name with '-'
+        :param filter_kwargs: key-value pairs of exact filter criteria
+        :return: list of record objects
+        """
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         rows = self.query_wrapper.select_many(
@@ -70,7 +78,15 @@ class RecordMapper:
         order_by: list[str] | None = None,
         limit: int | None = None,
     ) -> list[T]:
-        """Filter by more sophisticated SQL condition"""
+        """
+        Filter by more sophisticated SQL condition (OR, AND, IS NULL, <, >= operators, etc.)
+        :param table_type: table model class
+        :param condition: query condition containing SQL where clause text with query parameters
+        :param join_expression: SQL expression to append to FROM clause
+        :param order_by: list of columns to order by, for descending order prepend column name with '-'
+        :param limit: maximum number of records to return. None is no limit
+        :return: list of record objects
+        """
         rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.fields(),
@@ -88,7 +104,13 @@ class RecordMapper:
         order_by: list[str] | None = None,
         limit: int | None = None,
     ) -> list[T]:
-        """List all objects without filtering"""
+        """
+        List all objects from a table
+        :param table_type: table model class
+        :param order_by: list of columns to order by, for descending order prepend column name with '-'
+        :param limit: maximum number of records to return. None is no limit
+        :return: list of record objects
+        """
         rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
             fields=table_type.fields(),
@@ -102,6 +124,12 @@ class RecordMapper:
         table_type: Type[T],
         **filter_kwargs: Any,
     ) -> int:
+        """
+        Count records based on the given filter criteria
+        :param table_type: table model class
+        :param filter_kwargs: key-value pairs of exact filter criteria
+        :return: number of records
+        """
         if not filter_kwargs:
             return self.query_wrapper.count(table=table_type.table_name())
 
@@ -117,11 +145,16 @@ class RecordMapper:
         table_type: Type[T],
         **filter_kwargs: Any,
     ) -> bool:
+        """
+        Check if any record exists based on the given filter criteria
+        :param table_type: table model class
+        :param filter_kwargs: key-value pairs of exact filter criteria
+        """
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         row = self.query_wrapper.select_one(
             table=table_type.table_name(),
-            fields=table_type.primary_key_columns(),
+            fields=[table_type.primary_key_column()],
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -131,15 +164,16 @@ class RecordMapper:
         self,
         record_object: TableModel,
     ) -> bool:
-        primary_key_columns = record_object.primary_key_columns()
-        primary_keys = record_object.primary_keys()
-        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        primary_key_column = record_object.primary_key_column()
+        filter_kwargs = {
+            primary_key_column: record_object.primary_key_value()
+        }
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
         )
         row = self.query_wrapper.select_one(
             table=record_object.table_name(),
-            fields=primary_key_columns,
+            fields=[primary_key_column],
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -154,7 +188,7 @@ class RecordMapper:
         """Check if any record matches the SQL condition"""
         rows = self.query_wrapper.select_many(
             table=table_type.table_name(),
-            fields=table_type.primary_key_columns(),
+            fields=[table_type.primary_key_column()],
             join_expression=join_expression,
             filter_conditions=condition.filter_conditions,
             filter_params=condition.filter_params,
@@ -167,16 +201,20 @@ class RecordMapper:
         record_object: TableModel,
         assign_primary_key: bool = True,
     ) -> None:
-        primary_key_columns = record_object.primary_key_columns()
+        """
+        Create a new record
+        :param record_object: record object to create
+        :param assign_primary_key: reassign returned primary key to the original object
+        """
+        primary_key_column = record_object.primary_key_column()
         record_data = _extract_record_data(record_object)
         # Skip NULL primary keys, let the database auto generate them
-        for primary_key in primary_key_columns:
-            if primary_key in record_data and record_data[primary_key] is None:
-                del record_data[primary_key]
+        if primary_key_column in record_data and record_data[primary_key_column] is None:
+            del record_data[primary_key_column]
         returning_row = self.query_wrapper.insert_one(
             table=record_object.table_name(),
             data=record_data,
-            primary_key_columns=primary_key_columns,
+            primary_key_columns=[primary_key_column],
         )
         if assign_primary_key:
             for primary_key, primary_value in returning_row.items():
@@ -194,9 +232,10 @@ class RecordMapper:
         :raise NoRowsAffected: if the record was not found
         :raise TooManyRowsAffected: if more than one record has been updated
         """
-        primary_key_columns = record_object.primary_key_columns()
-        primary_keys = record_object.primary_keys()
-        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        primary_key_column = record_object.primary_key_column()
+        filter_kwargs = {
+            primary_key_column: record_object.primary_key_value()
+        }
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
         )
@@ -218,6 +257,9 @@ class RecordMapper:
         self,
         record_object: TableModel,
     ) -> None:
+        """
+        If a record already exists, update it, otherwise create it.
+        """
         if self.exists_record(record_object):
             self.update(record_object, only_changed=False)
         else:
@@ -239,13 +281,17 @@ class RecordMapper:
     def delete_record(
         self,
         record_object: TableModel,
+        cascade: bool = True,
     ) -> None:
-        primary_key_columns = record_object.primary_key_columns()
-        primary_keys = record_object.primary_keys()
-        filter_kwargs = dict(zip(primary_key_columns, primary_keys))
+        primary_key_column = record_object.primary_key_column()
+        filter_kwargs = {
+            primary_key_column: record_object.primary_key_value()
+        }
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
         )
+        if cascade:
+            self._delete_cascade_dependencies(record_object)
         self.query_wrapper.delete_one(
             table=record_object.table_name(),
             filter_conditions=filter_conditions,
@@ -264,6 +310,27 @@ class RecordMapper:
         filter_conditions: list[str] = [f'{field} = {self.placeholder}' for field in filter_keys]
         filter_params = list(filter_kwargs.values())
         return filter_conditions, filter_params
+
+    def _delete_cascade_dependencies(
+        self,
+        record_object: TableModel,
+    ) -> None:
+        origin_primary_key = record_object.primary_key_value()
+
+        dependent_columns: dict[Type[TableModel], str] = {}
+        for dependent_table in all_tables:
+            on_delete_cascade = dependent_table.on_delete_cascade()
+            for column, origin_table in on_delete_cascade.items():
+                if origin_table is type(record_object):
+                    dependent_columns[dependent_table] = column
+
+        for dep_table, dep_column in dependent_columns.items():
+            filter_kwargs = {
+                dep_column: origin_primary_key
+            }
+            dep_records = self.find_many(dep_table, **filter_kwargs)
+            for dep_record in dep_records:
+                self.delete_record(dep_record, cascade=True)
 
 
 def _convert_row_to_record_model(

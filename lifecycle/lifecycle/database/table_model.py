@@ -28,20 +28,26 @@ class TableModel(ABC):
         return cls.__name__
 
     @classmethod
-    def primary_key_columns(cls) -> list[str]:
+    def primary_key_column(cls) -> str:
         metadata = getattr(cls, 'Metadata')
         assert metadata is not None, f'Metadata class not specified in {cls}'
         primary_key = getattr(metadata, 'primary_key')
         assert metadata is not None, f'primary_key not specified in {cls}.Metadata'
-        assert len(primary_key), f'primary_key of {cls} should consist of at least one column'
+        assert isinstance(primary_key, str), f'primary_key of {cls} should be a string column name'
         return primary_key
+    
+    @classmethod
+    def on_delete_cascade(cls) -> dict[str, type['TableModel']]:
+        metadata = getattr(cls, 'Metadata')
+        assert metadata is not None, f'Metadata class not specified in {cls}'
+        return getattr(metadata, 'on_delete_cascade', {})
 
-    def primary_keys(self) -> list:
-        columns = self.primary_key_columns()
-        for column in columns:
-            if not hasattr(self, column):
-                raise ValueError(f'record has no field {column}')
-        return [getattr(self, column) for column in columns]
+    def primary_key_value(self) -> Any:
+        """Return the value of the primary key field"""
+        column = self.primary_key_column()
+        if not hasattr(self, column):
+            raise ValueError(f'record has no primary key field {column}')
+        return getattr(self, column)
 
     @classmethod
     def fields(cls) -> list[str]:

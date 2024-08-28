@@ -1,14 +1,14 @@
 from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
-from lifecycle.database.base_query_builder import BaseQueryBuilder
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
-from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject
+from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject, Job
 from lifecycle.database.table_model import new_uuid
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import configure_logs
 from racetrack_commons.auth.scope import AuthScope
+from racetrack_commons.entities.dto import JobStatus
 
 
 def test_record_operations():
@@ -140,3 +140,38 @@ def test_update_only_changed_fields():
     mapper.update(job_family, only_changed=False)
     assert db_engine.last_query() == 'update registry_jobfamily set id = ?, name = ? where id = ?'
     assert mapper.find_one(JobFamily, id=family_id).name == 'fresher'
+
+
+def test_delete_cascade():
+    configure_logs()
+    mapper = RecordMapper(create_db_engine(Config(database_log_queries=True)))
+
+    job_family = JobFamily(id=new_uuid(), name='primer')
+    mapper.create(job_family)
+    job = Job(
+        id=new_uuid(),
+        family_id=job_family.id,
+        name='primer',
+        version='0.0.0',
+        status=JobStatus.RUNNING.value,
+        create_time=now(),
+        update_time=now(),
+        manifest=None,
+        internal_name=None,
+        error=None,
+        notice=None,
+        image_tag=None,
+        deployed_by=None,
+        last_call_time=None,
+        infrastructure_target=None,
+        replica_internal_names=None,
+        job_type_version='python3:1.0.0',
+        infrastructure_stats=None,
+    )
+    mapper.create(job)
+    assert mapper.count(Job) == 1
+    assert mapper.count(JobFamily) == 1
+
+    mapper.delete_record(job_family)
+    assert mapper.count(Job) == 0
+    assert mapper.count(JobFamily) == 0
