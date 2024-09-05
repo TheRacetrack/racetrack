@@ -1,3 +1,5 @@
+import json
+
 from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.engine_factory import create_db_engine
@@ -156,7 +158,7 @@ def test_delete_cascade():
         status=JobStatus.RUNNING.value,
         create_time=now(),
         update_time=now(),
-        manifest=None,
+        manifest='',
         internal_name=None,
         error=None,
         notice=None,
@@ -175,3 +177,35 @@ def test_delete_cascade():
     mapper.delete_record(job_family)
     assert mapper.count(Job) == 0
     assert mapper.count(JobFamily) == 0
+
+
+def test_json_column():
+    mapper = RecordMapper(create_db_engine(Config(database_log_queries=True)))
+
+    job_family = JobFamily(id=new_uuid(), name='primer')
+    mapper.create(job_family)
+    stats_content = json.dumps({"number_of_restarts": 2})
+    job = Job(
+        id=new_uuid(),
+        family_id=job_family.id,
+        name='primer',
+        version='0.0.0',
+        status=JobStatus.RUNNING.value,
+        create_time=now(),
+        update_time=now(),
+        manifest=None,
+        internal_name=None,
+        error=None,
+        notice=None,
+        image_tag=None,
+        deployed_by=None,
+        last_call_time=None,
+        infrastructure_target=None,
+        replica_internal_names=None,
+        job_type_version='python3:1.0.0',
+        infrastructure_stats=stats_content,
+    )
+    mapper.create(job)
+
+    job: Job = mapper.find_one(Job, id=job.id)
+    assert job.infrastructure_stats == '{"number_of_restarts": 2}'

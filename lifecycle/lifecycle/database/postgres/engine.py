@@ -1,6 +1,7 @@
 import os
 from typing import Any
 
+from psycopg.types.json import set_json_loads, set_json_dumps
 from psycopg_pool import ConnectionPool, PoolTimeout
 from psycopg import Connection, Cursor, DatabaseError, IntegrityError, InterfaceError
 from psycopg.sql import SQL, Literal, Composable, Composed
@@ -46,6 +47,19 @@ class PostgresEngine(DbEngine):
             reconnect_failed=self._on_reconnect_failed,  # Callback invoked if an attempt to create a new connection fails for more than reconnect_timeout seconds
             num_workers=3,  # Number of background worker threads used to maintain the pool state. Background workers are used for example to create new connections and to clean up connections when they are returned to the pool
         )
+
+        def json_loads(inlet: str | bytes) -> Any:
+            if isinstance(inlet, bytes):
+                return inlet.decode()
+            return inlet
+
+        def json_dumps(inlet: Any) -> str | bytes:
+            if isinstance(inlet, str):
+                return inlet.encode()
+            return inlet
+
+        set_json_loads(json_loads)
+        set_json_dumps(json_dumps)
 
     def _on_configure_connection(self, connection: Connection) -> None:
         if self.schema:

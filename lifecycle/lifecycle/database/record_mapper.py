@@ -341,9 +341,8 @@ def _convert_row_to_record_model(
 ) -> T:
     valid_fields = table_type.fields()
     for column in row.keys():
-        assert (
-            column in valid_fields
-        ), f'retrieved column "{column}" is not a valid field for the model {type(table_type)}'
+        assert column in valid_fields, \
+            f'retrieved column "{column}" is not a valid field for the model {type(table_type)}'
     record_model = parse_typed_object(row, table_type)
 
     # remember original values to keep track of changed fields
@@ -364,6 +363,7 @@ def _extract_record_data(record_model: TableModel) -> dict[str, Any]:
 
 
 def _extract_changed_data(record_model: TableModel) -> dict[str, Any]:
+    """Compare with original data and return only the fields that has been modified"""
     originals: dict[str, Any] = getattr(record_model, '_original_fields', {})
     new_data = _extract_record_data(record_model)
     if not originals:
