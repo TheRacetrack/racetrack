@@ -42,7 +42,7 @@ class Job(TableModel):
     deployed_by: str | None
     last_call_time: datetime | None
     infrastructure_target: str | None
-    # internal hostnames of the job replicas (eg. pods)
+    # internal hostnames of the job replicas (e.g. pods)
     replica_internal_names: str | None
     # exact name and version of a job type used to build this job
     job_type_version: str
