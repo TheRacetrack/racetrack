@@ -34,6 +34,7 @@ class DockerBuilder(ImageBuilder):
         tag: str,
         git_version: str,
         env_vars: dict[str, str],
+        secret_build_env: dict[str, str],
         deployment_id: str,
         plugin_engine: PluginEngine,
         build_flags: list[str]
@@ -60,7 +61,7 @@ class DockerBuilder(ImageBuilder):
 
             try:
                 _build_job_image(
-                    config, manifest, workspace, tag, git_version, env_vars, deployment_id, job_type,
+                    config, manifest, workspace, tag, git_version, env_vars, secret_build_env, deployment_id, job_type,
                     metric_labels, image_index, images_num, logs_filename, logs, built_images, build_flags
                 )
                 metric_images_built.inc()
@@ -85,6 +86,7 @@ def _build_job_image(
     tag: str,
     git_version: str,
     env_vars: dict[str, str],
+    secret_build_env: dict[str, str],
     deployment_id: str,
     job_type: JobType,
     metric_labels: dict[str, str],
@@ -125,7 +127,7 @@ def _build_job_image(
         image_name = get_job_image(config.docker_registry, config.docker_registry_namespace, manifest.name, tag, image_index)
         logger.info(f'building Job image {progress}: {image_name}, deployment ID: {deployment_id}, keeping logs in {logs_filename}')
         build_logs = _build_container_image(
-            image_name, dst_dockerfile_path, job_workspace, job_type.jobtype_dir, logs_filename, build_flags,
+            image_name, dst_dockerfile_path, job_workspace, job_type.jobtype_dir, logs_filename, build_flags, secret_build_env,
         )
         logs.append(build_logs)
 
@@ -143,6 +145,7 @@ def _build_container_image(
     jobtype_dir: Path,
     logs_filename: str,
     build_flags: list[str],
+    secret_build_env: dict[str, str],
 ) -> str:
     """Build OCI container image from Dockerfile and push it to registry. Return build logs output"""
     # Build with host network to propagate DNS settings (network is still isolated within an image-builder pod).
@@ -153,15 +156,34 @@ def _build_container_image(
     for flag in build_flags:
         if flag not in approved_flags:
             raise ValueError(f"Flag '{flag}' is not approved for use.")
-    build_flags_str = ' '.join(build_flags)
 
-    logs = shell_output(
-        f'DOCKER_BUILDKIT=1 docker build -t {image_name} -f {dockerfile_path} --network=host '
-        f'--build-context {JOBTYPE_BUILD_CONTEXT}="{jobtype_dir}" {job_workspace} '
-        f'{build_flags_str} ',
-        print_stdout=False,
-        output_filename=logs_filename,
-    )
+    cmd_parts = [
+        'DOCKER_BUILDKIT=1 docker buildx build',
+        f'-t {image_name}',
+        f'-f {dockerfile_path}',
+        f'--network=host',
+        f'--build-context {JOBTYPE_BUILD_CONTEXT}="{jobtype_dir}"',
+    ]
+    cmd_parts.extend(build_flags)
+
+    build_secrets_path: Path | None = None
+    if secret_build_env:
+        build_secrets_path = job_workspace / 'build_secrets.env'
+        secrets_txt = '\n'.join(f'{key}="{value}"' for key, value in secret_build_env.items())
+        build_secrets_path.write_text(secrets_txt)
+        cmd_parts.append(f'--secret id=build_secrets,src={build_secrets_path.absolute()}')
+
+    cmd_parts.append(str(job_workspace))
+
+    try:
+        logs = shell_output(
+            ' '.join(cmd_parts),
+            print_stdout=False,
+            output_filename=logs_filename,
+        )
+    finally:
+        if build_secrets_path:
+            build_secrets_path.unlink()
     return logs
 
 

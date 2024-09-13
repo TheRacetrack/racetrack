@@ -73,9 +73,8 @@ def build_job_image(
 
         logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
                     f'deployment ID: {deployment_id}, git version: {git_version}')
-        build_env_vars = merge_env_vars(manifest.build_env, secret_build_env)
-        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version,
-                                                       build_env_vars, deployment_id, plugin_engine, build_flags)
+        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version, manifest.build_env,
+                                                       secret_build_env, deployment_id, plugin_engine, build_flags)
 
         if config.clean_up_workspaces:
             with phase_context('cleaning up the workspace', metric_labels, deployment_id, config):
