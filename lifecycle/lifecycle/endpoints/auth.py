@@ -8,6 +8,7 @@ from lifecycle.auth.cookie import set_auth_token_cookie
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_job_family, get_auth_token_by_subject, get_description_from_auth_subject, regenerate_all_esc_tokens, regenerate_all_job_family_tokens, regenerate_all_user_tokens, regenerate_specific_user_token
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
+from lifecycle.config.maintenance import is_maintenance_mode
 from lifecycle.infrastructure.model import InfrastructureTarget
 from lifecycle.django.registry import models
 from lifecycle.job import models_registry
@@ -87,6 +88,9 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         Check if auth subject (read from token) is allowed to call an endpoint of a job.
         This is intended to check all permissions with a single request made by PUB.
         """
+        if is_maintenance_mode():
+            return JSONResponse(content={'error': 'Racetrack is currently in maintenance mode. Please try again later.'}, status_code=503)
+
         endpoint = _normalize_endpoint_path(endpoint)
         job_model = models_registry.resolve_job_model(job_name, job_version)
         

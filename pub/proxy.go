@@ -267,6 +267,8 @@ func getAuthorizedJobDetails(
 			}
 		} else if errors.As(err, &NotFoundError{}) {
 			return nil, nil, "", http.StatusNotFound, errors.Wrap(err, "Job was not found")
+		} else if errors.As(err, &ServiceUnavailableError{}) {
+			return nil, nil, "", http.StatusServiceUnavailable, err
 		}
 		return nil, nil, "", http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
 	}
