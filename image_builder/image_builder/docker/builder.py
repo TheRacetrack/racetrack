@@ -166,12 +166,13 @@ def _build_container_image(
     ]
     cmd_parts.extend(build_flags)
 
-    build_secrets_path: Path | None = None
+    build_secrets_path = job_workspace / 'build_secrets.env'
     if secret_build_env:
-        build_secrets_path = job_workspace / 'build_secrets.env'
         secrets_txt = '\n'.join(f'{key}="{value}"' for key, value in secret_build_env.items())
         build_secrets_path.write_text(secrets_txt)
         cmd_parts.append(f'--secret id=build_secrets,src={build_secrets_path.absolute()}')
+    else:
+        build_secrets_path.write_text('')
 
     cmd_parts.append(str(job_workspace))
 
