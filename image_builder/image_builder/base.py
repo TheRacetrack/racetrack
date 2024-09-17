@@ -16,7 +16,7 @@ class ImageBuilder(ABC):
         tag: str,
         git_version: str,
         env_vars: dict[str, str],
-        secret_build_env: dict[str, str],
+        secret_env_vars: dict[str, str],
         deployment_id: str,
         plugin_engine: PluginEngine,
         build_flags: list[str],
@@ -29,7 +29,7 @@ class ImageBuilder(ABC):
         :param tag: Image tag
         :param git_version: version name from Job git history
         :param env_vars: environment variables that should be set during building
-        :param secret_build_env: secret variables that should be set during building
+        :param secret_env_vars: secret environment variables that should be set during building
         :param deployment_id: unique deployment id (UUID4)
         :param plugin_engine: plugins store for calling plugin-defined hooks
         :param build_flags: list of build flags

@@ -38,7 +38,7 @@ def build_job_image(
     config: Config,
     manifest: Manifest,
     git_credentials: Optional[Credentials],
-    secret_build_env: Dict[str, str],
+    secret_env_vars: Dict[str, str],
     tag: str,
     build_context: Optional[str],
     deployment_id: str,
@@ -50,6 +50,7 @@ def build_job_image(
         'job_name': manifest.name,
         'job_version': manifest.version,
     }
+    env_vars = manifest.build_env or {}
     metric_image_building_requests.labels(**metric_labels).inc()
     metric_active_building_tasks.inc()
     start_time = time.time()
@@ -73,8 +74,8 @@ def build_job_image(
 
         logger.info(f'building image {manifest.name} from manifest in workspace {workspace}, '
                     f'deployment ID: {deployment_id}, git version: {git_version}')
-        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version, manifest.build_env,
-                                                       secret_build_env, deployment_id, plugin_engine, build_flags)
+        image_names, logs, error = image_builder.build(config, manifest, workspace, tag, git_version, env_vars,
+                                                       secret_env_vars, deployment_id, plugin_engine, build_flags)
 
         if config.clean_up_workspaces:
             with phase_context('cleaning up the workspace', metric_labels, deployment_id, config):

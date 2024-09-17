@@ -9,6 +9,7 @@ from image_builder.build import build_job_image
 from image_builder.health import health_response
 from image_builder.scheduler import schedule_tasks_async
 from racetrack_client.client_config.io import load_credentials_from_dict
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.manifest.load import load_manifest_from_dict
 from racetrack_client.utils.config import load_config
@@ -167,6 +168,8 @@ def _setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEn
                 config, manifest, git_credentials, secret_build_env, tag,
                 build_context, deployment_id, plugin_engine, build_flags,
             )
+            if error:
+                logger.error(f'failed to build the image: {error}')
             return {
                 'image_names': image_names,
                 'logs': logs,
