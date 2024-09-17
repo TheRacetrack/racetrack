@@ -35,18 +35,6 @@ func ListenAndServe(cfg *Config) error {
 		initRemoteGateway(router, cfg)
 	}
 
-	if cfg.OpenTelemetryEndpoint != "" {
-		tp, err := SetupOpenTelemetry(router, cfg)
-		if err != nil {
-			return errors.Wrap(err, "Failed to setup OpenTelemetry")
-		}
-		defer func() {
-			if err := tp.Shutdown(context.Background()); err != nil {
-				log.Error("Shutting down OpenTelemetry", log.Ctx{"error": err})
-			}
-		}()
-	}
-
 	listenAddress := "0.0.0.0:" + cfg.ListenPort
 	server := &http.Server{
 		Addr:    listenAddress,

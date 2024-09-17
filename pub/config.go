@@ -16,7 +16,6 @@ type Config struct {
 	LifecycleToken           string `env:"LIFECYCLE_AUTH_TOKEN"` // Used to authenticate to Lifecycle for User endpoints
 	RequestTracingHeader     string `env:"REQUEST_TRACING_HEADER" envDefault:"X-Request-Tracing-Id"`
 	CallerNameHeader         string `env:"CALLER_NAME_HEADER" envDefault:"X-Caller-Name"`
-	OpenTelemetryEndpoint    string `env:"OPENTELEMETRY_ENDPOINT" envDefault:""`
 	RemoteGatewayMode        bool   `env:"REMOTE_GATEWAY_MODE" envDefault:"false"`
 	RemoteGatewayToken       string `env:"REMOTE_GATEWAY_TOKEN" envDefault:""`
 	ServiceName              string `env:"SERVICE_NAME" envDefault:"pub"`

@@ -207,14 +207,6 @@ These files are available under BSD 2-Clause License, which you can find at http
 
 ----------------------------------------------------------------------
 
-This project uses OpenTelemetry-Go (unmodified)
-
-https://github.com/open-telemetry/opentelemetry-go
-
-These files are available under Apache License 2.0 License, which you can find at https://github.com/open-telemetry/opentelemetry-go/blob/main/LICENSE
-
-----------------------------------------------------------------------
-
 This project uses PyJWT (unmodified)
 
 https://github.com/jpadilla/pyjwt

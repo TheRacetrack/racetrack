@@ -36,7 +36,6 @@ The columns are:
 | [log15](https://github.com/inconshreveable/log15)                                                          | 3.0.0       | 3.0.0          | structured logging in Go                        | 
 | [Node.js](https://github.com/nodejs/node)                                                                  | 18.16       | 20.1.0         | Dashboard's development environment             |
 | [nvm](https://github.com/nvm-sh/nvm)                                                                       | 0.39.3      | 0.39.3         | Management of Node versions                     |
-| [opentelemetry-exporter-otlp-proto-http](https://pypi.org/project/opentelemetry-exporter-otlp-proto-http/) | 1.16.0      | 1.16.0         | sending traces to OpenTelemetry                 |
 | [pkg/errors](https://github.com/pkg/errors) (**archived repository**)                                      | 0.9.1       | 0.9.1          | wrapping errors context                         | 
 | [PostgreSQL](https://www.postgresql.org/docs/release/)                                                     | 16.0        | 16.0           | Database for jobs and users                     |
 | [PostgreSQL Server Exporter](https://github.com/prometheus-community/postgres_exporter)                    | 0.14.0      | 0.14.0         | PostgreSQL metrics                              |
@@ -45,7 +44,6 @@ The columns are:
 | [Prometheus](https://github.com/prometheus/prometheus)                                                     | 2.47.1      | 2.47.1         | collecting metrics                              |
 | [Prometheus Go client library](https://github.com/prometheus/client_golang)                                | 1.14.0      | 1.14.0         | metrics exposure in Go                          |
 | [prometheus-client](https://pypi.org/project/prometheus-client/)                                           | 0.16.0      | 0.16.0         | metrics exposure                                |
-| [protobuf](https://pypi.org/project/protobuf/)                                                             | 4.22.0      | 4.22.0         | handling OTLP                                   |
 | [psutil](https://pypi.org/project/psutil/)                                                                 | 5.9.4       | 5.9.4          | monitoring running processes                    |
 | [psycopg](https://pypi.org/project/psycopg)                                                                | 3.1.12      | 3.1.12         | connecting to PostgreSQL                        |
 | [pydantic](https://pypi.org/project/pydantic/)                                                             | 1.10.5      | 1.10.5         | schema validation                               |
