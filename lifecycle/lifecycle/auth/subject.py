@@ -5,7 +5,6 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db.models import Q, QuerySet
 
-from lifecycle.django.registry.database import db_access
 from lifecycle.django.registry import models
 from racetrack_commons.auth.auth import AuthSubjectType
 from racetrack_commons.auth.token import AuthTokenPayload, encode_jwt
@@ -15,7 +14,6 @@ from racetrack_client.log.logs import get_logger
 logger = get_logger(__name__)
 
 
-@db_access
 def get_auth_subject_by_user(user_model: User) -> models.AuthSubject:
     """Get or Create (if not exists) an auth subject for the given User"""
     try:
@@ -31,7 +29,6 @@ def get_auth_subject_by_user(user_model: User) -> models.AuthSubject:
     return auth_subject
 
 
-@db_access
 def get_auth_subject_by_esc(esc_model: models.Esc) -> models.AuthSubject:
     """Get or Create (if not exists) an auth subject for the given ESC"""
     try:
@@ -46,7 +43,6 @@ def get_auth_subject_by_esc(esc_model: models.Esc) -> models.AuthSubject:
     return auth_subject
 
 
-@db_access
 def get_auth_subject_by_job_family(job_family: models.JobFamily) -> models.AuthSubject:
     """Get or Create (if not exists) an auth subject for the given Job Family"""
     try:
@@ -62,7 +58,6 @@ def get_auth_subject_by_job_family(job_family: models.JobFamily) -> models.AuthS
     return auth_subject
 
 
-@db_access
 def get_auth_token_by_subject(auth_subject: models.AuthSubject) -> models.AuthToken:
     """Return FIRST auth token associated with the given auth subject. Create if missing."""
     auth_tokens_queryset: QuerySet = models.AuthToken.objects.filter(auth_subject=auth_subject)
@@ -72,7 +67,6 @@ def get_auth_token_by_subject(auth_subject: models.AuthSubject) -> models.AuthTo
     return auth_token
 
 
-@db_access
 def get_auth_tokens_by_subject(auth_subject: models.AuthSubject) -> list[models.AuthToken]:
     """Return all auth token associated with the given auth subject"""
     auth_tokens_queryset: QuerySet = models.AuthToken.objects.filter(auth_subject=auth_subject)
@@ -91,7 +85,6 @@ def create_auth_token(auth_subject: models.AuthSubject, expiry_time: datetime | 
     return auth_token
 
 
-@db_access
 def find_auth_subject_by_job_family_name(job_name: str) -> models.AuthSubject:
     try:
         return models.AuthSubject.objects.get(job_family__name=job_name)
@@ -99,7 +92,6 @@ def find_auth_subject_by_job_family_name(job_name: str) -> models.AuthSubject:
         raise EntityNotFound(f'Auth subject for Job family {job_name} not found')
 
 
-@db_access
 def find_auth_subject_by_esc_id(esc_id: str) -> models.AuthSubject:
     try:
         return models.AuthSubject.objects.get(esc__id=esc_id)
@@ -168,7 +160,6 @@ def get_description_from_auth_subject(auth_subject: models.AuthSubject) -> str:
         raise ValueError("Unknown auth_subject type")
 
 
-@db_access
 def regenerate_specific_user_token(auth_subject: models.AuthSubject) -> str:
     regenerate_auth_tokens(auth_subject)
     logger.info(f'Regenerated token of User {auth_subject.user.username}')
@@ -176,7 +167,6 @@ def regenerate_specific_user_token(auth_subject: models.AuthSubject) -> str:
     return auth_token.token
 
 
-@db_access
 def regenerate_all_user_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(user__isnull=False))
     for auth_subject in auth_subject_queryset:
@@ -185,7 +175,6 @@ def regenerate_all_user_tokens():
     logger.info(f'Regenerated tokens of all {count} Users')
 
 
-@db_access
 def regenerate_all_job_family_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(job_family__isnull=False))
     for auth_subject in auth_subject_queryset:
@@ -194,7 +183,6 @@ def regenerate_all_job_family_tokens():
     logger.info(f'Regenerated tokens of all {count} Job Families')
 
 
-@db_access
 def regenerate_all_esc_tokens():
     auth_subject_queryset = models.AuthSubject.objects.filter(Q(esc__isnull=False))
     for auth_subject in auth_subject_queryset:
@@ -203,7 +191,6 @@ def regenerate_all_esc_tokens():
     logger.info(f'Regenerated tokens of all {count} ESCs')
 
 
-@db_access
 def revoke_token(token_id: str):
     auth_token = models.AuthToken.objects.get(id=token_id)
     subject_info = str(auth_token.auth_subject)

@@ -1,5 +1,6 @@
+import json
 from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
+from racetrack_client.log.errors import EntityNotFound
 
 JsonType = dict | list | int | str | bool | None
 
@@ -10,7 +11,6 @@ JsonType = dict | list | int | str | bool | None
 MAINTENANCE_MODE = "maintenance_mode"
 
 
-@db_access
 def read_setting(name: str) -> JsonType:
     try:
         return models.Setting.objects.get(name=name).value
@@ -18,7 +18,6 @@ def read_setting(name: str) -> JsonType:
         return None
 
 
-@db_access
 def save_setting(name: str, value: JsonType):
     model = models.Setting(
         name=name,

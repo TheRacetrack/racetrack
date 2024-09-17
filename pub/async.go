@@ -94,10 +94,10 @@ func handleTaskStartRequest(
 		doneChannel:        make(chan string),
 		quitChannel:        make(chan bool, 1),
 	})
-	logger = logger.New(log.Ctx{"taskId": task.Id})
 	if err != nil {
 		return http.StatusInternalServerError, WrapError("failed to create async task", err)
 	}
+	logger = logger.New(log.Ctx{"taskId": task.Id})
 	logger.Info("Async Job Call task created", log.Ctx{
 		"jobName":    job.Name,
 		"jobVersion": job.Version,

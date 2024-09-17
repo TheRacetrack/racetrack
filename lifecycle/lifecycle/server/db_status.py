@@ -1,12 +1,13 @@
 import os
-import time
 from threading import Thread
+import time
 from dataclasses import dataclass
 
 from django.conf import settings
 from django.db import connection, DatabaseError, close_old_connections
 from django.db.backends.utils import CursorWrapper
 
+from racetrack_client.log.context_error import ContextError
 from racetrack_client.utils.shell import shell, CommandError
 from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
@@ -31,7 +32,11 @@ def monitor_database_status(config: Config):
 
 def _monitor_database_status_sync(refresh_interval: float):
     while True:
-        database_status.connected = is_database_connected()
+        try:
+            database_status.connected = is_database_connected()
+        except BaseException as e:
+            log_exception(ContextError('Database is not available', e))
+
         time.sleep(refresh_interval)
 
 

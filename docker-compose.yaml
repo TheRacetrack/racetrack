@@ -173,7 +173,7 @@ services:
       CLIENT_IDLE_TIMEOUT: 90
       SERVER_CONNECT_TIMEOUT: 10
       CLIENT_LOGIN_TIMEOUT: 10
-      QUERY_WAIT_TIMEOUT: 30
+      QUERY_WAIT_TIMEOUT: 90
       ADMIN_USERS: postgres,admin,racetrack
       AUTH_TYPE: scram-sha-256
 
@@ -243,21 +243,6 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    logging:
-      driver: none
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.37
-    container_name: jaeger
-    ports:
-      - "16686:16686" # UI
-      - "4318:4318" # OpenTelemetry Protocol collector over HTTP
-    networks:
-      - racetrack_default
-    restart: unless-stopped
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    profiles: ["dev"]
     logging:
       driver: none
 

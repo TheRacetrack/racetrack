@@ -20,7 +20,7 @@ from lifecycle.endpoints.deploy import setup_deploy_endpoints
 from lifecycle.endpoints.esc import setup_esc_endpoints
 from lifecycle.endpoints.job import setup_job_endpoints
 from lifecycle.endpoints.user import setup_user_endpoints
-from lifecycle.server.metrics import setup_lifecycle_metrics
+from lifecycle.server.metrics_collector import setup_lifecycle_metrics
 from lifecycle.server.socketio import SocketIOServer, RegistryJobRetriever
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.api.asgi.asgi_server import serve_asgi_app
@@ -31,7 +31,6 @@ from racetrack_commons.api.asgi.proxy import mount_at_base_path
 from racetrack_commons.api.metrics import setup_metrics_endpoint
 from racetrack_commons.auth.methods import get_racetrack_authorizations_methods
 from racetrack_commons.plugin.engine import PluginEngine
-from racetrack_commons.telemetry.otlp import setup_opentelemetry
 
 logger = get_logger(__name__)
 
@@ -69,10 +68,6 @@ def create_fastapi_app(config: Config, plugin_engine: PluginEngine, service_name
     fastapi_app.include_router(api_router, prefix="/api/v1")
 
     sio_wsgi_app = setup_socket_io_server(config)
-
-    if config.open_telemetry_enabled:
-        # opentelemetry middleware prior to error handlers in order to catch errors before the latter intercept it
-        setup_opentelemetry(fastapi_app, config.open_telemetry_endpoint, 'lifecycle', {})
 
     register_error_handlers(fastapi_app)
 
