@@ -85,9 +85,9 @@ def setup_esc_endpoints(api: APIRouter):
     def _add_new_esc_token(esc_id: str, payload: CreateTokenPayload, request: Request) -> AuthTokenData:
         check_staff_user(request)
         esc_model = read_esc_model(esc_id)
-        auth_subject: models.AuthSubject = get_auth_subject_by_esc(esc_model)
+        auth_subject = get_auth_subject_by_esc(esc_model)
         expiry_time = timestamp_to_datetime(payload.expiry_time) if payload.expiry_time is not None else None
-        auth_token: models.AuthToken = create_auth_token(auth_subject, expiry_time=expiry_time)
+        auth_token = create_auth_token(auth_subject, expiry_time=expiry_time)
         return AuthTokenData(
             id=auth_token.id,
             token=auth_token.token,

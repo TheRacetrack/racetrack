@@ -25,7 +25,7 @@ def check_auth(
     job_name: str | None = None,
     job_version: str | None = None,
     scope: AuthScope | None = None,
-) -> models.AuthSubject:
+) -> models.AuthSubject | None:
     """
     Authenticate and authorize the request
     :raise UnauthorizedError: If auth subject has no sufficient permissions
@@ -39,6 +39,7 @@ def check_auth(
         scope_str = scope.value if scope else None
         authorize_internal_token(token_payload, scope_str)
     else:
+        assert auth_subject is not None
         if job_name:
             assert job_version, 'job_version is required when job_name is specified'
             assert scope is not None, 'scope is required when job_name is specified'
@@ -52,8 +53,8 @@ def check_auth(
 def check_auth_decorator(
     request: Request,
     config: Config,
-    subject_types: List[AuthSubjectType] = None,
-    scope: AuthScope = None,
+    subject_types: List[AuthSubjectType] | None = None,
+    scope: AuthScope | None = None,
 ):
     """Decorator builder verifying auth token and type of logged auth subject"""
     def auth_decorator(f):
@@ -72,6 +73,7 @@ def check_auth_decorator(
                     scope_str = scope.value if scope else None
                     authorize_internal_token(token_payload, scope_str)
                 elif scope:
+                    assert auth_subject is not None
                     authorize_scope_access(auth_subject, scope.value)
 
             except UnauthorizedError as e:
@@ -95,6 +97,7 @@ def check_staff_user(
     """
     token_payload, auth_subject = authenticate_token(request)
     authorize_subject_type(token_payload, [AuthSubjectType.USER])
+    assert auth_subject is not None
     username = token_payload.subject
 
     try:

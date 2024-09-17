@@ -135,9 +135,9 @@ def _verify_job_logs(job_name: str, user_auth: str):
     assert len(logs) > 1, 'Unexpected short log from Job'
 
 
-def _install_plugin(plugin_uri: str):
+def _install_plugin(plugin_uri: str, replace: bool = False):
     lifecycle_url = os.environ['LIFECYCLE_URL']
     client_config = ClientConfig()
     set_user_auth(client_config, lifecycle_url, ADMIN_AUTH_TOKEN)
     print(f'Installing plugin {plugin_uri}...')
-    install_plugin(plugin_uri, lifecycle_url, client_config)
+    install_plugin(plugin_uri, lifecycle_url, client_config, replace=replace)

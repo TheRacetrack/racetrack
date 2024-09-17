@@ -138,6 +138,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
     def _generate_tokens_for_user(request: Request) -> JSONResponse:
         """Generate new token for a User"""
         auth_subject = check_auth(request, subject_types=[AuthSubjectType.USER])
+        assert auth_subject is not None
         new_token = regenerate_specific_user_token(auth_subject)
         response = JSONResponse({
             'new_token': new_token,

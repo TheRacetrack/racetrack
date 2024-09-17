@@ -1,14 +1,4 @@
-import collections
-import threading
-from typing import Iterator
-
-import psutil
 from prometheus_client import Counter, Gauge, Histogram
-from prometheus_client.core import REGISTRY
-from prometheus_client.metrics_core import GaugeMetricFamily, Metric
-from prometheus_client.registry import Collector
-
-from lifecycle.server.db_status import database_status
 
 metric_requested_job_deployments = Counter(
     'requested_job_deployments',
@@ -47,8 +37,8 @@ metric_database_connection_closed = Counter(
     'lifecycle_database_connection_closed',
     'Number of times connection to a database has been closed',
 )
-metric_database_cursor_created = Counter(
-    'lifecycle_database_cursor_created',
+metric_database_queries_executed = Counter(
+    'lifecycle_database_queries_executed',
     'Number of times database cursor has been created',
 )
 
@@ -58,64 +48,3 @@ metric_job_model_fetch_duration = Histogram(
     buckets=(.001, .0025, .005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5,
              10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, float("inf")),
 )
-
-
-def setup_lifecycle_metrics():
-    REGISTRY.register(ServerResourcesCollector())
-
-
-def unregister_metrics():
-    """
-    Clean up Prometheus metrics registered by this app.
-    It's important if you want to run the server more than once, eg. in tests.
-    """
-    collectors = list(REGISTRY._collector_to_names.keys())
-    for collector in collectors:
-        REGISTRY.unregister(collector)
-
-
-class ServerResourcesCollector(Collector):
-    def collect(self):
-        metric_metrics_scrapes.inc()
-        yield from collect_active_threads_metric()
-        yield from collect_tcp_connections_metric()
-        yield from collect_database_connection_metric()
-
-
-def collect_active_threads_metric() -> Iterator[Metric]:
-    metric_name = 'lifecycle_active_threads_count'
-    metric_value = threading.active_count()
-    prometheus_metric = GaugeMetricFamily(metric_name, 'Number of Thread objects currently alive')
-    prometheus_metric.add_sample(metric_name, {}, metric_value)
-    yield prometheus_metric
-
-
-def collect_tcp_connections_metric() -> Iterator[Metric]:
-    net_connections = psutil.net_connections(kind='tcp')
-    tcp_connections = collections.Counter(conn.status for conn in net_connections)
-    metric_name = 'lifecycle_tcp_connections_count'
-    prometheus_metric = GaugeMetricFamily(metric_name, 'Number of open TCP connections by status')
-    for status, count in tcp_connections.items():
-        prometheus_metric.add_sample(metric_name, {
-            'status': status,
-        }, count)
-    yield prometheus_metric
-
-    max_remote_port = 10000
-    remote_ports = [c.raddr.port for c in net_connections if c.status == 'ESTABLISHED' and c.raddr.port < max_remote_port]
-    established_port_conns = collections.Counter(remote_ports)
-    metric_name = 'lifecycle_established_connections_count'
-    prometheus_metric = GaugeMetricFamily(metric_name, f'Number of Established TCP connections by remote port (below {max_remote_port})')
-    for port, count in established_port_conns.items():
-        prometheus_metric.add_sample(metric_name, {
-            'port': str(port),
-        }, count)
-    yield prometheus_metric
-
-
-def collect_database_connection_metric() -> Iterator[Metric]:
-    metric_name = 'lifecycle_database_connected'
-    metric_value = 1 if database_status.connected else 0
-    prometheus_metric = GaugeMetricFamily(metric_name, 'Status of database connection')
-    prometheus_metric.add_sample(metric_name, {}, metric_value)
-    yield prometheus_metric

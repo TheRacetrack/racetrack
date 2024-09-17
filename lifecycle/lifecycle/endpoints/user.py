@@ -10,6 +10,7 @@ from lifecycle.auth.subject import get_auth_token_by_subject
 from lifecycle.auth.users import authenticate_username_with_password, register_user_account
 from lifecycle.auth.users import change_user_password
 from racetrack_client.log.errors import ValidationError
+from racetrack_commons.auth.auth import AuthSubjectType
 from racetrack_commons.entities.dto import UserProfileDto
 
 
@@ -26,7 +27,9 @@ def setup_user_endpoints(api: APIRouter):
     @api.get('/users/validate_user_auth')
     def _validate_user_auth(request: Request) -> UserProfileDto:
         """Validate auth token and return corresponding username"""
-        auth_subject = check_auth(request)
+        auth_subject = check_auth(request, subject_types=[AuthSubjectType.USER])
+        assert auth_subject is not None
+        assert auth_subject.user_id is not None
         username = get_username_from_token(request)
         user: User = auth_subject.user
         auth_token = get_auth_token_by_subject(auth_subject)

@@ -1,5 +1,5 @@
 from django.contrib import auth as django_auth
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser, User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
@@ -55,7 +55,7 @@ def register_user_account(username: str, password: str) -> User:
 
 @db_access
 def change_user_password(username: str, old_password: str, new_password: str):
-    user: User = django_auth.authenticate(username=username, password=old_password)
+    user: AbstractUser | None = django_auth.authenticate(username=username, password=old_password)
     if user is None:
         raise UnauthorizedError('Passed password is incorrect.')
 

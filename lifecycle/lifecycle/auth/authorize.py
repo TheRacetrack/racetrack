@@ -6,7 +6,6 @@ from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.auth.token import AuthTokenPayload
 from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
 from lifecycle.job.models_registry import resolve_job_model
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto
 from racetrack_client.log.logs import get_logger
@@ -95,7 +94,6 @@ def authorize_internal_token(
             )
 
 
-@db_access
 def has_endpoint_permission(
     auth_subject: models.AuthSubject,
     job_name: str,
@@ -115,7 +113,6 @@ def has_endpoint_permission(
     return queryset.exists()
 
 
-@db_access
 def has_resource_permission(
     auth_subject: models.AuthSubject,
     job_name: str,
@@ -133,7 +130,6 @@ def has_resource_permission(
     return queryset.exists()
 
 
-@db_access
 def has_scope_permission(
     auth_subject: models.AuthSubject,
     scope: str,
@@ -146,7 +142,6 @@ def has_scope_permission(
     return queryset.exists()
 
 
-@db_access
 def list_permitted_jobs(
     auth_subject: models.AuthSubject,
     scope: str,
@@ -186,7 +181,6 @@ def list_permitted_jobs(
     return [id_to_job[fid] for fid in sorted(job_ids)]
 
 
-@db_access
 def list_permitted_families(
     auth_subject: models.AuthSubject,
     scope: str,
@@ -217,7 +211,6 @@ def list_permitted_families(
     return [name_to_family[name] for name in sorted(family_names)]
 
 
-@db_access
 def grant_permission(
     auth_subject: models.AuthSubject,
     job_name: str | None,

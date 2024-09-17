@@ -2,7 +2,6 @@ from typing import Iterable
 from lifecycle.auth.subject import get_auth_subject_by_esc, create_auth_token
 
 from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
 from lifecycle.job.dto_converter import esc_model_to_dto
 from racetrack_client.log.errors import EntityNotFound, AlreadyExists
 from racetrack_client.log.logs import get_logger
@@ -17,7 +16,6 @@ def read_esc(esc_id: str) -> EscDto:
     return esc_model_to_dto(esc)
 
 
-@db_access
 def read_esc_model(esc_id: str) -> models.Esc:
     try:
         return models.Esc.objects.get(id=esc_id)
@@ -25,7 +23,6 @@ def read_esc_model(esc_id: str) -> models.Esc:
         raise EntityNotFound(f'ESC with ID {esc_id} was not found')
 
 
-@db_access
 def create_esc(esc_dto: EscDto) -> EscDto:
     assert esc_dto.name, 'ESC name can not be empty'
     esc_model = models.Esc()
@@ -43,7 +40,6 @@ def create_esc(esc_dto: EscDto) -> EscDto:
     return esc_model_to_dto(esc_model)
 
 
-@db_access
 def list_escs() -> Iterable[EscDto]:
     all_esc = models.Esc.objects.all()
     for esc_model in all_esc:

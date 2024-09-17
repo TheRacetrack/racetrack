@@ -78,6 +78,7 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         """Start deployment of Job"""
         ensure_no_maintenance()
         auth_subject = check_auth(request)
+        assert auth_subject is not None
         metric_requested_job_deployments.inc()
 
         manifest = load_manifest_from_dict(payload.manifest)

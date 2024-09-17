@@ -4,7 +4,6 @@ from typing import Tuple
 from fastapi import Request
 
 from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.auth import RT_AUTH_HEADER
@@ -51,7 +50,6 @@ def read_auth_token_header(request: Request) -> str | None:
     return auth_token
 
 
-@db_access
 def find_auth_subject_by_token(token: str) -> tuple[models.AuthSubject, models.AuthToken]:
     try:
         auth_token: models.AuthToken = models.AuthToken.objects.get(token=token)
