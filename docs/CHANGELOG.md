@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- Most database operations are now handled by the new database access layer.
-  It has a configurable connection pool to reduce the number of open connections.
+- Most database operations are now handled by the new database access layer, making direct SQL queries.
+  It has a configurable connection pool that reduces the number of open connections.
   ([#480](https://github.com/TheRacetrack/racetrack/issues/480))
 
 ## [2.32.1] - 2024-08-26
