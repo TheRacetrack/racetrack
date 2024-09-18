@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   If turned on, it responds with "503 Service Unavailable".
   ([#517](https://github.com/TheRacetrack/racetrack/issues/517))
 
+### Removed
+- Support for OpenTelemetry exporters has been dropped.
+
 ## [2.32.1] - 2024-08-26
 ### Added
 - `sslmode` and `sslrootcert` is supported in database connector for PostgreSQL
