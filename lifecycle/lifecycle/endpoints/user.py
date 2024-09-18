@@ -1,13 +1,13 @@
-from django.contrib.auth.models import User
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
+from lifecycle.database.schema import tables
 from pydantic import BaseModel
 
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.auth.check import check_auth
 from lifecycle.auth.cookie import set_auth_token_cookie, delete_auth_cookie
 from lifecycle.auth.subject import get_auth_token_by_subject
-from lifecycle.auth.users import authenticate_username_with_password, register_user_account
+from lifecycle.auth.users import authenticate_username_with_password, find_user_record_by_id, register_user_account
 from lifecycle.auth.users import change_user_password
 from racetrack_client.log.errors import ValidationError
 from racetrack_commons.auth.auth import AuthSubjectType
@@ -31,7 +31,7 @@ def setup_user_endpoints(api: APIRouter):
         assert auth_subject is not None
         assert auth_subject.user_id is not None
         username = get_username_from_token(request)
-        user: User = auth_subject.user
+        user: tables.User = find_user_record_by_id(auth_subject.user_id)
         auth_token = get_auth_token_by_subject(auth_subject)
         return UserProfileDto(
             username=username,

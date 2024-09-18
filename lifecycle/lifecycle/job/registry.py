@@ -1,12 +1,13 @@
-from typing import Iterable, Optional, List
+from typing import Iterable
 from collections import defaultdict
 from lifecycle.auth.authorize import list_permitted_families, list_permitted_jobs
 
 from lifecycle.config import Config
+from lifecycle.database.schema import tables
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.job import models_registry
 from lifecycle.job.audit import AuditLogger
-from lifecycle.job.dto_converter import job_model_to_dto, job_family_model_to_dto
+from lifecycle.database.schema.dto_converter import job_family_record_to_dto, job_record_to_dto
 from lifecycle.monitor.monitors import list_infrastructure_jobs
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import metric_jobs_count_by_status
@@ -16,35 +17,34 @@ from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.deploy.resource import job_resource_name
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
-from lifecycle.django.registry import models
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
 
 logger = get_logger(__name__)
 
 
-def list_job_registry(config: Config, auth_subject: Optional[models.AuthSubject] = None) -> List[JobDto]:
+def list_job_registry(config: Config, auth_subject: tables.AuthSubject | None = None) -> list[JobDto]:
     """List jobs getting results from registry (Database)"""
     if auth_subject is None:
-        return [job_model_to_dto(job, config) for job in models_registry.list_job_models()]
+        return [job_record_to_dto(job, config) for job in models_registry.list_job_models()]
     else:
-        jobs = [job_model_to_dto(job, config) for job in models_registry.list_job_models()]
+        jobs = [job_record_to_dto(job, config) for job in models_registry.list_job_models()]
         return list_permitted_jobs(auth_subject, AuthScope.READ_JOB.value, jobs)
 
 
-def list_job_families(auth_subject: Optional[models.AuthSubject] = None) -> List[JobFamilyDto]:
+def list_job_families(auth_subject: tables.AuthSubject | None = None) -> list[JobFamilyDto]:
     """List jobs getting results from registry (Database)"""
     if auth_subject is None:
-        return [job_family_model_to_dto(family) for family in models_registry.list_job_family_models()]
+        return [job_family_record_to_dto(family) for family in models_registry.list_job_family_models()]
     else:
-        families = [job_family_model_to_dto(family) for family in models_registry.list_job_family_models()]
+        families = [job_family_record_to_dto(family) for family in models_registry.list_job_family_models()]
         return list_permitted_families(auth_subject, AuthScope.READ_JOB.value, families)
 
 
 def read_job_family(job_family: str) -> JobFamilyDto:
     """Read job family from registry (Database)"""
     family_model = models_registry.read_job_family_model(job_family)
-    return job_family_model_to_dto(family_model)
+    return job_family_record_to_dto(family_model)
 
 
 def read_job(job_name: str, job_version: str, config: Config) -> JobDto:
@@ -57,13 +57,13 @@ def read_job(job_name: str, job_version: str, config: Config) -> JobDto:
     :raise EntityNotFound if job with given name doesn't exist
     """
     job_model = models_registry.read_job_model(job_name, job_version)
-    return job_model_to_dto(job_model, config)
+    return job_record_to_dto(job_model, config)
 
 
 def read_versioned_job(job_name: str, job_version: str, config: Config) -> JobDto:
     """Find job by name and version, accepting version aliases"""
     job_model = models_registry.resolve_job_model(job_name, job_version)
-    return job_model_to_dto(job_model, config)
+    return job_record_to_dto(job_model, config)
 
 
 def delete_job(

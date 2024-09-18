@@ -2,6 +2,7 @@ import logging
 import threading
 from typing import Optional
 
+from lifecycle.database.schema import tables
 from racetrack_client.client.env import SecretVars
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.log.context_error import wrap_context
@@ -19,7 +20,6 @@ from lifecycle.infrastructure.infra_target import determine_infrastructure_name
 from lifecycle.deployer.permissions import check_deploy_permissions
 from lifecycle.deployer.provision import provision_job
 from lifecycle.deployer.secrets import JobSecrets
-from lifecycle.django.registry import models
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import create_deployment, save_deployment_result
 from lifecycle.job.models_registry import job_exists, find_deleted_job
@@ -36,7 +36,7 @@ def deploy_new_job(
     deployment: DeploymentDto,
     build_context: Optional[str],
     force: bool,
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     plugin_engine: PluginEngine,
     build_flags: list[str],
 ):
@@ -69,7 +69,7 @@ def build_and_provision(
     job_secrets: JobSecrets,
     deployment: DeploymentDto,
     build_context: Optional[str],
-    auth_subject: Optional[models.AuthSubject],
+    auth_subject: Optional[tables.AuthSubject],
     previous_job: Optional[JobDto],
     plugin_engine: PluginEngine,
     build_flags: list[str],
@@ -93,7 +93,7 @@ def deploy_job_in_background(
     force: bool,
     plugin_engine: PluginEngine,
     username: str,
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     build_flags: list[str],
 ) -> str:
     """
@@ -123,7 +123,7 @@ def deploy_job_saving_result(
     build_context: Optional[str],
     force: bool,
     plugin_engine: PluginEngine,
-    auth_subject: models.AuthSubject,
+    auth_subject: tables.AuthSubject,
     build_flags: list[str],
 ):
     """Deploy a Job storing its faulty or successful result in DB"""

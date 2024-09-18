@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import Response, JSONResponse
+from lifecycle.database.schema import tables
+from lifecycle.database.schema.dto_converter import job_record_to_dto
 from pydantic import BaseModel
 
 from lifecycle.auth.authenticate import authenticate_token
@@ -9,9 +11,7 @@ from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_subject_by_
 from lifecycle.config import Config
 from lifecycle.auth.check import check_auth
 from lifecycle.infrastructure.model import InfrastructureTarget
-from lifecycle.django.registry import models
 from lifecycle.job import models_registry
-from lifecycle.job.dto_converter import job_model_to_dto
 from lifecycle.job.esc import read_esc_model
 from lifecycle.job.models_registry import read_job_family_model
 from lifecycle.job.public_endpoints import read_job_model_public_endpoints
@@ -92,8 +92,8 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         
         try:
             auth_subject = _authorize_job_caller(job_model, endpoint, request)
-            caller = get_description_from_auth_subject(auth_subject) if auth_subject else None
-            job = job_model_to_dto(job_model, config)
+            caller: str | None = get_description_from_auth_subject(auth_subject) if auth_subject else None
+            job = job_record_to_dto(job_model, config)
             auth_data = JobCallAuthData(job=job, caller=caller)
 
             if job.infrastructure_target is not None:
@@ -173,7 +173,7 @@ def _normalize_endpoint_path(endpoint: str) -> str:
     return endpoint
 
 
-def _authorize_job_caller(job_model: models.Job, endpoint: str, request: Request) -> models.AuthSubject | None:
+def _authorize_job_caller(job_model: tables.Job, endpoint: str, request: Request) -> tables.AuthSubject | None:
     """
     Check if auth subject (read from request header's token) is allowed to call an endpoint of a job.
     In case it's not allowed, raise UnauthorizedError.
