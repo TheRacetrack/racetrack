@@ -7,7 +7,7 @@ from prometheus_client.core import REGISTRY
 from prometheus_client.metrics_core import GaugeMetricFamily, Metric
 from prometheus_client.registry import Collector
 
-from lifecycle.server.db_status import database_status
+from lifecycle.server.cache import LifecycleCache
 from lifecycle.server.metrics import metric_metrics_scrapes
 
 
@@ -68,6 +68,8 @@ def collect_tcp_connections_metric() -> Iterator[Metric]:
 
 
 def collect_database_connection_metric() -> Iterator[Metric]:
+    database_status = LifecycleCache.db_engine().database_status()
+
     if database_status.connected is not None:
         metric_value = 1 if database_status.connected is True else 0
         yield make_metric_sample(
@@ -75,6 +77,50 @@ def collect_database_connection_metric() -> Iterator[Metric]:
             'Status of database connection',
             metric_value)
 
+    yield make_metric_sample(
+        'lifecycle_database_pool_size',
+        'Number of connections currently managed by the pool (in the pool, given to clients, being prepared)',
+        database_status.pool_size)
+    yield make_metric_sample(
+        'lifecycle_database_pool_available',
+        'Number of connections currently idle in the pool',
+        database_status.pool_available)
+    yield make_metric_sample(
+        'lifecycle_database_requests_waiting',
+        'Number of requests currently waiting in a queue to receive a connection',
+        database_status.requests_waiting)
+    yield make_metric_sample(
+        'lifecycle_database_usage_ms',
+        'Total usage time of the connections outside the pool',
+        database_status.usage_ms)
+    yield make_metric_sample(
+        'lifecycle_database_requests_num',
+        'Number of connections requested to the pool',
+        database_status.requests_num)
+    yield make_metric_sample(
+        'lifecycle_database_requests_queued',
+        'Number of requests queued because a connection wasn’t immediately available in the pool',
+        database_status.requests_queued)
+    yield make_metric_sample(
+        'lifecycle_database_requests_wait_ms',
+        'Total time in the queue for the clients waiting',
+        database_status.requests_wait_ms)
+    yield make_metric_sample(
+        'lifecycle_database_requests_errors',
+        'Number of connection requests resulting in an error (timeouts, queue full)',
+        database_status.requests_errors)
+    yield make_metric_sample(
+        'lifecycle_database_connections_num',
+        'Number of connection attempts made by the pool to the server',
+        database_status.connections_num)
+    yield make_metric_sample(
+        'lifecycle_database_connections_ms',
+        'Total time spent to establish connections with the server',
+        database_status.connections_ms)
+    yield make_metric_sample(
+        'lifecycle_database_connections_errors',
+        'Number of failed connection attempts',
+        database_status.connections_errors)
 
 
 def make_metric_sample(metric_name: str, description: str, value: float) -> GaugeMetricFamily:

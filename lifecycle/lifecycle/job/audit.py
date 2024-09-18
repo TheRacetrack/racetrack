@@ -1,10 +1,11 @@
 import json
 from typing import Any
 
-from django.db.models import Q
-
-from lifecycle.django.registry import models
-from lifecycle.job.dto_converter import audit_log_event_to_dto
+from lifecycle.database.condition_builder import QueryCondition
+from lifecycle.database.schema import tables
+from lifecycle.database.schema.dto_converter import audit_log_event_record_to_dto
+from lifecycle.database.table_model import new_uuid
+from lifecycle.server.cache import LifecycleCache
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.audit import AuditLogEventType
@@ -25,7 +26,9 @@ class AuditLogger:
     ):
         timestamp = now()
         properties_json = json.dumps(properties) if properties else None
-        ale = models.AuditLogEvent(
+        ale = tables.AuditLogEvent(
+            id=new_uuid(),
+            version=1,
             timestamp=timestamp,
             event_type=event_type.value,
             properties=properties_json,
@@ -34,7 +37,7 @@ class AuditLogger:
             job_name=job_name,
             job_version=job_version,
         )
-        ale.save()
+        LifecycleCache.record_mapper().create(ale)
 
         traits = properties or {}
         traits['username_executor'] = username_executor
@@ -57,10 +60,16 @@ def read_audit_log_user_events(
     :param job_name: Name of the job to filter the events
     :param job_version: Exact job version or an alias ("latest" or wildcard)
     """
-    username_filter = Q(username_executor=username) | Q(username_subject=username) if username else Q()
-    job_name_filter = Q(job_name=job_name) if job_name else Q()
-    job_version_filter = Q(job_version=job_version) if job_version else Q()
-    queryset = models.AuditLogEvent.objects.filter(
-        username_filter & job_name_filter & job_version_filter
-    ).order_by('-timestamp')[:100]
-    return [audit_log_event_to_dto(model) for model in queryset]
+    mapper = LifecycleCache.record_mapper()
+    placeholder = mapper.placeholder
+    username_filter: QueryCondition = QueryCondition.operator_or(
+        QueryCondition(f'"username_executor" = {placeholder}', username),
+        QueryCondition(f'"username_subject" = {placeholder}', username),
+    ) if username else QueryCondition.empty()
+    job_name_filter = QueryCondition(f'"job_name" = {placeholder}', job_name) if job_name else QueryCondition.empty()
+    job_version_filter = QueryCondition(f'"job_version" = {placeholder}', job_version) if job_version else QueryCondition.empty()
+    query_condition = QueryCondition.operator_and(username_filter, job_name_filter, job_version_filter)
+    records = mapper.filter(
+        tables.AuditLogEvent, query_condition, order_by=['-timestamp'], limit=100,
+    )
+    return [audit_log_event_record_to_dto(model) for model in records]

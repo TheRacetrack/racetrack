@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from lifecycle.config import Config
-from lifecycle.server.db_status import database_status
+from lifecycle.server.cache import LifecycleCache
 
 
 def setup_health_endpoint(api: FastAPI, config: Config):
@@ -28,7 +28,7 @@ def setup_health_endpoint(api: FastAPI, config: Config):
     @api.get("/health", tags=['root'])
     def _health():
         """Report current application status"""
-        database_connected = database_status.connected
+        database_connected = LifecycleCache.db_engine().database_status().connected
         status_code = 200 if database_connected else 500
         content = {
             'service': 'lifecycle',
