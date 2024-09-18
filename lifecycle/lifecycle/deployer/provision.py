@@ -1,12 +1,12 @@
 from lifecycle.auth.authorize import grant_permission
 from lifecycle.config import Config
 from lifecycle.config.maintenance import ensure_no_maintenance
+from lifecycle.database.schema import tables
+from lifecycle.database.schema.dto_converter import job_family_record_to_dto
 from lifecycle.deployer.deployers import get_job_deployer
 from lifecycle.deployer.permissions import check_deploy_permissions
-from lifecycle.django.registry import models
 from lifecycle.job.audit import AuditLogger
 from lifecycle.job.deployment import save_deployment_phase
-from lifecycle.job.dto_converter import job_family_model_to_dto
 from lifecycle.job.models_registry import create_job_family_if_not_exist, save_job_model, update_job, delete_job_model
 from lifecycle.job.public_endpoints import create_job_public_endpoint_if_not_exist
 from lifecycle.monitor.monitors import check_job_condition
@@ -34,7 +34,7 @@ def provision_job(
     secret_build_env: dict[str, str],
     secret_runtime_env: dict[str, str],
     deployment: DeploymentDto,
-    auth_subject: models.AuthSubject | None,
+    auth_subject: tables.AuthSubject | None,
     previous_job: JobDto | None,
     plugin_engine: PluginEngine,
 ) -> JobDto:
@@ -62,7 +62,7 @@ def provision_job(
         job_deployer = get_job_deployer(deployment.infrastructure_target)
 
         family = create_job_family_if_not_exist(manifest.name)
-        family_dto = job_family_model_to_dto(family)
+        family_dto = job_family_record_to_dto(family)
 
         all_build_vars = merge_env_vars(manifest.build_env, secret_build_env)
         all_runtime_vars = merge_env_vars(manifest.runtime_env, secret_runtime_env)
@@ -135,7 +135,7 @@ def post_job_deploy(
     job: JobDto,
     image_name: str,
     deployment: DeploymentDto,
-    auth_subject: models.AuthSubject | None,
+    auth_subject: tables.AuthSubject | None,
     previous_job: JobDto | None,
     plugin_engine: PluginEngine,
 ):

@@ -25,7 +25,6 @@ def anyio_backend():
     return 'asyncio'
 
 
-@pytest.mark.django_db(transaction=True)
 def test_websocket_stream():
     configure_logs()
     unregister_metrics()

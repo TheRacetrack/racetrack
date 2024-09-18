@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from lifecycle.auth.authorize import list_permitted_jobs
 from lifecycle.auth.subject import find_auth_subject_by_esc_id, find_auth_subject_by_job_family_name
 from lifecycle.config.config import Config
+from lifecycle.database.schema import tables
 from lifecycle.job.esc import list_escs
 from lifecycle.job.registry import list_job_registry
 from racetrack_commons.auth.scope import AuthScope
@@ -10,7 +11,6 @@ from racetrack_commons.entities.dto import EscDto, JobDto
 from racetrack_commons.urls import get_external_pub_url
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
-from lifecycle.django.registry import models
 
 logger = get_logger(__name__)
 
@@ -35,7 +35,7 @@ class JobGraph:
     edges: list[JobGraphEdge]
 
 
-def build_job_dependencies_graph(config: Config, auth_subject: models.AuthSubject | None) -> JobGraph:
+def build_job_dependencies_graph(config: Config, auth_subject: tables.AuthSubject | None) -> JobGraph:
     jobs: list[JobDto] = list_job_registry(config, auth_subject)
     family_names = _group_job_families(jobs)
     escs: list[EscDto] = list(list_escs())

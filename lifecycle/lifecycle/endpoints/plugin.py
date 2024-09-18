@@ -3,6 +3,7 @@ import collections
 from typing import List, Optional, Any
 
 from fastapi.responses import FileResponse
+from lifecycle.database.schema import tables
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException, Response, UploadFile, Request
 
@@ -11,7 +12,6 @@ from racetrack_commons.deploy.job_type import list_jobtype_names_of_plugins
 from racetrack_commons.entities.audit import AuditLogEventType
 from racetrack_commons.plugin.core import PluginCore
 from racetrack_commons.plugin.engine import PluginEngine
-from lifecycle.django.registry import models
 from lifecycle.job import models_registry
 from lifecycle.auth.authenticate import get_username_from_token
 from lifecycle.job.audit import AuditLogger
@@ -143,7 +143,7 @@ def setup_plugin_endpoints(api: APIRouter, plugin_engine: PluginEngine):
 
 
 def _get_plugins_data(plugin_engine: PluginEngine) -> PluginsData:
-    job_models: list[models.Job] = list(models_registry.list_job_models())
+    job_models: list[tables.Job] = models_registry.list_job_models()
     jobtypes_usage: dict[str, int] = collections.defaultdict(int)
     infrastructure_usage: dict[str, int] = collections.defaultdict(int)
     for job_model in job_models:

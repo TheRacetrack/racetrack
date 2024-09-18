@@ -1,3 +1,4 @@
+from lifecycle.server.cache import LifecycleCache
 from racetrack_client.log.logs import get_logger
 from racetrack_client.utils.time import datetime_to_timestamp, days_ago, now
 from racetrack_commons.entities.dto import DeploymentStatus
@@ -13,10 +14,11 @@ def startup_check():
                                days_ago(datetime_to_timestamp(deployment.update_time)) * 24 >= 1]
 
     if in_progress_deployments:
+        mapper = LifecycleCache.record_mapper()
         logger.info(f'Halting {len(in_progress_deployments)} stale IN_PROGRESS deployments')
         for deployment in in_progress_deployments:
 
             deployment.status = DeploymentStatus.FAILED.value
             deployment.error = 'halted due to server restart'
             deployment.update_time = now()
-            deployment.save()
+            mapper.update(deployment)

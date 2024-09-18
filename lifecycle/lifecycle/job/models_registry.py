@@ -1,61 +1,55 @@
+import json
 import time
-from typing import Iterable, List, Optional
 
 from django.db.utils import IntegrityError
+from lifecycle.database.base_engine import NoRowsAffected
+from lifecycle.database.condition_builder import QueryCondition
+from lifecycle.database.table_model import new_uuid
+from lifecycle.server.cache import LifecycleCache
 import yaml
 
-from lifecycle.django.registry import models
-from lifecycle.django.registry.database import db_access
-from lifecycle.server.metrics import metric_job_model_fetch_duration
 from racetrack_client.log.context_error import wrap_context
-from racetrack_client.log.errors import EntityNotFound
+from racetrack_client.log.errors import AlreadyExists, EntityNotFound
 from racetrack_client.manifest.load import load_manifest_from_dict
 from racetrack_client.manifest.validate import validate_manifest
 from racetrack_client.utils.time import days_ago, now, timestamp_to_datetime
 from racetrack_client.utils.semver import SemanticVersion, SemanticVersionPattern
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.entities.dto import JobDto, JobFamilyDto, JobStatus
+from lifecycle.server.metrics import metric_job_model_fetch_duration
+from lifecycle.database.schema import tables
 
 logger = get_logger(__name__)
 
 
-@db_access
-def list_job_models() -> Iterable[models.Job]:
+def list_job_models() -> list[tables.Job]:
     """List deployed jobs stored in registry database"""
-    return models.Job.objects.all().order_by('-update_time', 'name')
+    mapper = LifecycleCache.record_mapper()
+    return mapper.list_all(tables.Job, order_by=['-update_time', 'name'])
 
 
-@db_access
-def list_job_family_models() -> Iterable[models.JobFamily]:
+def list_job_family_models() -> list[tables.JobFamily]:
     """List deployed job families stored in registry database"""
-    return models.JobFamily.objects.all().order_by('name')
+    mapper = LifecycleCache.record_mapper()
+    return mapper.list_all(tables.JobFamily, order_by=['name'])
 
 
-@db_access
-def read_job_model(job_name: str, job_version: str) -> models.Job:
-    try:
-        return models.Job.objects.get(name=job_name, version=job_version)
-    except models.Job.DoesNotExist:
-        raise EntityNotFound(f'Job with name {job_name} and version {job_version} was not found')
+def read_job_model(job_name: str, job_version: str) -> tables.Job:
+    mapper = LifecycleCache.record_mapper()
+    return mapper.find_one(tables.Job, name=job_name, version=job_version)
 
 
 def job_exists(job_name: str, job_version: str) -> bool:
-    try:
-        read_job_model(job_name, job_version)
-        return True
-    except EntityNotFound:
-        return False
+    mapper = LifecycleCache.record_mapper()
+    return mapper.exists(tables.Job, name=job_name, version=job_version)
 
 
 def job_family_exists(job_name: str) -> bool:
-    try:
-        read_job_family_model(job_name)
-        return True
-    except EntityNotFound:
-        return False
+    mapper = LifecycleCache.record_mapper()
+    return mapper.exists(tables.JobFamily, name=job_name)
 
 
-def resolve_job_model(job_name: str, job_version: str) -> models.Job:
+def resolve_job_model(job_name: str, job_version: str) -> tables.Job:
     """
     Find job by name and version, accepting version aliases
     :param job_name: Name of job family
@@ -74,90 +68,96 @@ def resolve_job_model(job_name: str, job_version: str) -> models.Job:
         metric_job_model_fetch_duration.observe(time.time() - start_time)
 
 
-@db_access
-def read_latest_job_model(job_name: str) -> models.Job:
-    job_queryset = models.Job.objects.filter(name=job_name, status__in=[
-        JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value])
-    if job_queryset.count() == 0:
+def read_latest_job_model(job_name: str) -> tables.Job:
+    mapper = LifecycleCache.record_mapper()
+    placeholder: str = mapper.placeholder
+    filter_condition = QueryCondition(
+        f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})',
+        job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value,
+    )
+    jobs: list[tables.Job] = mapper.filter(tables.Job, condition=filter_condition)
+    if len(jobs) == 0:
         raise EntityNotFound(f'No job named {job_name}')
-    jobs: List[models.Job] = list(job_queryset)
 
     latest_job = SemanticVersion.find_latest_stable(jobs, key=lambda f: f.version)
     if latest_job is None:
         raise EntityNotFound("No stable version found")
-
     return latest_job
 
 
-@db_access
-def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> models.Job:
+def read_latest_wildcard_job_model(job_name: str, version_wildcard: str) -> tables.Job:
     """
     :param job_name: Name of job family
     :param version_wildcard: version pattern containing "x" wildcards, e.g. "1.2.x", "2.x"
     """
     version_pattern = SemanticVersionPattern.from_x_pattern(version_wildcard)
 
-    job_queryset = models.Job.objects.filter(name=job_name, status__in=[
-        JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value])
-    if job_queryset.count() == 0:
+    mapper = LifecycleCache.record_mapper()
+    placeholder: str = mapper.placeholder
+    filter_condition = QueryCondition(
+        f'"name" = {placeholder} and "status" in ({placeholder}, {placeholder}, {placeholder})',
+        job_name, JobStatus.RUNNING.value, JobStatus.ERROR.value, JobStatus.LOST.value,
+    )
+    jobs: list[tables.Job] = mapper.filter(tables.Job, condition=filter_condition)
+    if len(jobs) == 0:
         raise EntityNotFound(f'No job named {job_name}')
-    jobs: List[models.Job] = list(job_queryset)
 
     latest_job = SemanticVersion.find_latest_wildcard(version_pattern, jobs, key=lambda f: f.version)
     if latest_job is None:
         raise EntityNotFound(f"Not found any stable version matching pattern: {version_wildcard}")
-
     return latest_job
 
 
-@db_access
-def read_job_family_model(job_family: str) -> models.JobFamily:
+def read_job_family_model(job_family: str) -> tables.JobFamily:
     try:
-        return models.JobFamily.objects.get(name=job_family)
-    except models.JobFamily.DoesNotExist:
+        return LifecycleCache.record_mapper().find_one(tables.JobFamily, name=job_family)
+    except EntityNotFound:
         raise EntityNotFound(f'Job Family with name {job_family} was not found')
 
 
-@db_access
 def delete_job_model(job_name: str, job_version: str):
-    models.Job.objects.get(name=job_name, version=job_version).delete()
+    mapper = LifecycleCache.record_mapper()
+    job = mapper.find_one(tables.Job, name=job_name, version=job_version)
+    mapper.delete_record(job)
 
 
-@db_access
-def create_job_model(job_dto: JobDto) -> models.Job:
+def create_job_model(job_dto: JobDto) -> tables.Job:
     job_family = create_job_family_if_not_exist(job_dto.name)
-    new_job = models.Job(
+    new_job = tables.Job(
+        id=new_uuid(),
+        family_id=job_family.id,
         name=job_dto.name,
         version=job_dto.version,
-        family=job_family,
         status=job_dto.status,
         create_time=timestamp_to_datetime(job_dto.create_time),
         update_time=timestamp_to_datetime(job_dto.update_time),
         manifest=job_dto.manifest_yaml,
         internal_name=job_dto.internal_name,
         error=job_dto.error,
+        notice=None,
         image_tag=job_dto.image_tag,
         deployed_by=job_dto.deployed_by,
+        last_call_time=None,
         infrastructure_target=job_dto.infrastructure_target,
         replica_internal_names=','.join(job_dto.replica_internal_names),
         job_type_version=job_dto.job_type_version,
-        infrastructure_stats=job_dto.infrastructure_stats,
+        infrastructure_stats=json.dumps(job_dto.infrastructure_stats),
     )
-    new_job.save()
+    LifecycleCache.record_mapper().create(new_job)
     return new_job
 
 
-@db_access
-def create_job_family_model(job_family_dto: JobFamilyDto) -> models.JobFamily:
-    new_model = models.JobFamily(
+def create_job_family_model(job_family_dto: JobFamilyDto) -> tables.JobFamily:
+    mapper = LifecycleCache.record_mapper()
+    new_model = tables.JobFamily(
+        id=new_uuid(),
         name=job_family_dto.name,
     )
-    new_model.save()
+    mapper.create(new_model)
     return new_model
 
 
-@db_access
-def update_job_model(job: models.Job, job_dto: JobDto):
+def update_job_model(job: tables.Job, job_dto: JobDto):
     job.status = job_dto.status
     job.update_time = timestamp_to_datetime(job_dto.update_time)
     job.manifest = job_dto.manifest_yaml
@@ -170,14 +170,13 @@ def update_job_model(job: models.Job, job_dto: JobDto):
     job.infrastructure_target = job_dto.infrastructure_target
     job.replica_internal_names = ','.join(job_dto.replica_internal_names)
     job.job_type_version = job_dto.job_type_version
-    job.infrastructure_stats = job_dto.infrastructure_stats
+    job.infrastructure_stats = json.dumps(job_dto.infrastructure_stats)
     try:
-        job.save(force_update=True)
-    except models.Job.DoesNotExist:
+        LifecycleCache.record_mapper().update(job)
+    except NoRowsAffected:
         raise EntityNotFound(f'Job model has gone before updating: {job}')
 
 
-@db_access
 def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
     with wrap_context('parsing YAML'):
         manifest_dict = yaml.safe_load(manifest_yaml)
@@ -191,13 +190,12 @@ def update_job_manifest(job_name: str, job_version: str, manifest_yaml: str):
     job_model = read_job_model(job_name, job_version)
     job_model.manifest = manifest_yaml
     try:
-        job_model.save(force_update=True)
-    except models.Job.DoesNotExist:
+        LifecycleCache.record_mapper().update(job_model)
+    except NoRowsAffected:
         raise EntityNotFound(f'Job model has gone before updating: {job_model}')
 
 
-@db_access
-def save_job_model(job_dto: JobDto) -> models.Job:
+def save_job_model(job_dto: JobDto) -> tables.Job:
     """Create or update existing job"""
     try:
         job_model = read_job_model(job_dto.name, job_dto.version)
@@ -207,26 +205,23 @@ def save_job_model(job_dto: JobDto) -> models.Job:
     return job_model
 
 
-@db_access
-def update_job(job_dto: JobDto) -> models.Job:
+def update_job(job_dto: JobDto) -> tables.Job:
     """Update existing job"""
     job_model = read_job_model(job_dto.name, job_dto.version)
     update_job_model(job_model, job_dto)
     return job_model
 
 
-@db_access
-def create_job_family_if_not_exist(job_family: str) -> models.JobFamily:
+def create_job_family_if_not_exist(job_family: str) -> tables.JobFamily:
     try:
         return read_job_family_model(job_family)
     except EntityNotFound:
         return create_job_family_model(JobFamilyDto(name=job_family))
 
 
-@db_access
 def create_trashed_job(job_dto: JobDto):
-    age_days = days_ago(job_dto.create_time)
-    new_job = models.TrashJob(
+    age_days = days_ago(job_dto.create_time) or 0
+    new_job = tables.TrashJob(
         id=job_dto.id,
         name=job_dto.name,
         version=job_dto.version,
@@ -244,19 +239,18 @@ def create_trashed_job(job_dto: JobDto):
         age_days=age_days,
     )
     try:
-        new_job.save()
-    except IntegrityError:
+        LifecycleCache.record_mapper().create(new_job)
+    except AlreadyExists:
         logger.error(f'Trash Job already exists with ID={job_dto.id}, {job_dto.name} {job_dto.version}')
 
 
-@db_access
 def find_deleted_job(
     job_name: str,
     job_version: str,
-) -> Optional[models.TrashJob]:
-    queryset = models.TrashJob.objects.filter(
-        name=job_name, version=job_version,
+) -> tables.TrashJob | None:
+    records = LifecycleCache.record_mapper().find_many(
+        tables.TrashJob, name=job_name, version=job_version,
     )
-    if queryset.count() == 0:
+    if len(records) == 0:
         return None
-    return queryset.first()
+    return records[0]
