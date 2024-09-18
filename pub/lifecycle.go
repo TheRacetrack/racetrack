@@ -52,6 +52,14 @@ func (e NotFoundError) Error() string {
 	return e.error.Error()
 }
 
+type ServiceUnavailableError struct {
+	error
+}
+
+func (e ServiceUnavailableError) Error() string {
+	return e.error.Error()
+}
+
 type LifecycleClient interface {
 	AuthorizeCaller(jobName, jobVersion, endpoint string) (*JobCallAuthData, error)
 }
@@ -149,6 +157,8 @@ func (l *lifecycleClient) getRequest(
 			return AuthenticationFailure{err}
 		} else if r.StatusCode == http.StatusNotFound {
 			return NotFoundError{err}
+		} else if r.StatusCode == http.StatusServiceUnavailable {
+			return ServiceUnavailableError{err}
 		}
 		return err
 	}
@@ -223,6 +233,8 @@ func (l *lifecycleClient) makeRequest(
 			return AuthenticationFailure{err}
 		} else if r.StatusCode == http.StatusNotFound {
 			return NotFoundError{err}
+		} else if r.StatusCode == http.StatusServiceUnavailable {
+			return ServiceUnavailableError{err}
 		}
 		return err
 	}
