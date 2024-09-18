@@ -59,6 +59,8 @@ Body (**application/json**):
     - `task_id` (**string**) - a unique UUID identifier of the task
 - `500 Internal Server Error` -
   the task has failed. Details of an error will be included in the HTTP body.
+- `503 Service Unavailable` -
+  Racetrack is currently in maintenance mode. Try again later.
 
 #### Request / Response Sample
 ```sh
@@ -100,6 +102,8 @@ Path parameters:
   the task has failed.
   Details of an error will be included in the HTTP body in the JSON format with the following fields:
     - `error` (**string**) - description of the error cause
+- `503 Service Unavailable` -
+  Racetrack is currently in maintenance mode. Try again later.
 
 #### Request / Response Sample
 ```sh
