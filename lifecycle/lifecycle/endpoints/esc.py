@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import APIRouter, Request
+from lifecycle.database.schema import tables
 from pydantic import BaseModel, Field
 
 from racetrack_client.utils.datamodel import parse_dict_datamodel
@@ -8,7 +9,6 @@ from racetrack_commons.entities.dto import EscDto
 from lifecycle.job.esc import list_escs, create_esc, read_esc_model
 from lifecycle.auth.check import check_staff_user
 from lifecycle.auth.subject import get_auth_subject_by_esc, get_auth_tokens_by_subject, revoke_token, create_auth_token
-from lifecycle.django.registry import models
 
 
 class EscPayloadModel(BaseModel):
@@ -61,8 +61,8 @@ def setup_esc_endpoints(api: APIRouter):
         """Get ESC's all details with auth token"""
         check_staff_user(request)
         esc_model = read_esc_model(esc_id)
-        auth_subject: models.AuthSubject = get_auth_subject_by_esc(esc_model)
-        auth_tokens: list[models.AuthToken] = get_auth_tokens_by_subject(auth_subject)
+        auth_subject = get_auth_subject_by_esc(esc_model)
+        auth_tokens: list[tables.AuthToken] = get_auth_tokens_by_subject(auth_subject)
         return EscAuthData(
             id=esc_id,
             name=esc_model.name,

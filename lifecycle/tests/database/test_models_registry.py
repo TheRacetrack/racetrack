@@ -1,5 +1,3 @@
-import pytest
-
 from lifecycle.config.config import Config
 from lifecycle.job.models_registry import (
     create_job_model,
@@ -20,13 +18,12 @@ from racetrack_client.utils.time import datetime_to_timestamp, now
 from racetrack_commons.entities.dto import JobDto, JobStatus
 
 
-@pytest.mark.django_db(transaction=True)
 def test_managing_job_models():
     config = Config()
 
-    jobs = list(list_job_models())
+    jobs = list_job_models()
     assert not jobs
-    families = list(list_job_family_models())
+    families = list_job_family_models()
     assert not families
 
     create_time = now().replace(microsecond=0)
@@ -56,7 +53,7 @@ def test_managing_job_models():
     job2_record = create_job_model(job2)
     job2_id = job2_record.id
 
-    jobs = list(list_job_models())
+    jobs = list_job_models()
     assert len(jobs) == 2
     assert jobs[0].id == job1_id
     assert jobs[1].id == job2_id
@@ -67,7 +64,7 @@ def test_managing_job_models():
     assert not job_exists('tester', '0.0.0')
     assert job_family_exists('tester')
     assert not job_family_exists('none')
-    families = list(list_job_family_models())
+    families = list_job_family_models()
     assert len(families) == 1
     assert families[0].name == 'tester'
     assert read_job_family_model('tester').name == 'tester'
