@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maintenance mode now also prohibits making calls to the Jobs.
   If turned on, it responds with "503 Service Unavailable".
   ([#517](https://github.com/TheRacetrack/racetrack/issues/517))
+- Job's secrets are mounted when building the image. This hides the secret
+  environment variables, so they can't be accessed after the build.
+  ([#474](https://github.com/TheRacetrack/racetrack/issues/474))
 
 ### Removed
 - Support for OpenTelemetry exporters has been dropped.
