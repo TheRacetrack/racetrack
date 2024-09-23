@@ -6,6 +6,7 @@ import queue
 import httpx
 from fastapi.responses import StreamingResponse
 
+from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import get_logger
 
 logger = get_logger(__name__)
@@ -28,6 +29,7 @@ def stream_result_with_heartbeat(result_runner: Callable[[], Dict]):
                 'result': result,
             }))
         except BaseException as e:
+            log_exception(e)
             result_channel.put(json.dumps({
                 'error': str(e),
             }))
