@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Support for OpenTelemetry exporters has been dropped.
 
+### Fixed
+- Added informative error about crash during Job initialization.
+  ([#469](https://github.com/TheRacetrack/racetrack/issues/469))
+
 ## [2.32.1] - 2024-08-26
 ### Added
 - `sslmode` and `sslrootcert` is supported in database connector for PostgreSQL
