@@ -2,6 +2,11 @@ from __future__ import annotations
 
 
 class AdderModel:
+    def __init__(self):
+        import time, sys
+        time.sleep(10)
+        sys.exit()
+
     def perform(self, numbers: list[float]) -> float:
         """
         Add numbers.

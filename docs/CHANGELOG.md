@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for OpenTelemetry exporters has been dropped.
 
 ### Fixed
+- Fixed deployment error about missing warnings.
+  ([#523](https://github.com/TheRacetrack/racetrack/issues/523))
 - Added informative error about crash during Job initialization.
   ([#469](https://github.com/TheRacetrack/racetrack/issues/469))
 

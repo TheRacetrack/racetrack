@@ -150,7 +150,7 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
         headers=get_auth_request_headers(user_auth),
     )
     response = parse_response_object(r, 'Lifecycle deployment status')
-    warnings = response['warnings']
+    warnings = response.get('warnings')
     if not warningss or warningss[-1] != warnings:  # don't print the same warnings again
         warningss.append(warnings)
         if warnings:
@@ -169,7 +169,6 @@ def _wait_for_deployment_result(lifecycle_url: str, deploy_id: str, user_auth: s
             logger.info(f'deployment in progress: {phase}...')
         else:
             logger.info(f'deployment in progress...')
-
 
     raise TimeoutError('Deployment timeout error')
 
