@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from racetrack_client.client_config.alias import resolve_lifecycle_url
@@ -69,7 +69,7 @@ def uninstall_plugin(
 
 def download_installed_plugin_version(
         lifecycle_url: Optional[str],
-        out_dir: Optional[str | Path],
+        out_dir: Optional[Union[str, Path]],
         plugin_name: str,
         plugin_version: str,):
     """Download a plugin from a remote Racetrack server"""
@@ -85,7 +85,7 @@ def download_installed_plugin_version(
     _save_response_to_disk(r, out_dir, out_filename)
 
 
-def _save_response_to_disk(r: Response, out_dir: Optional[str | Path], out_filename: str | Path):
+def _save_response_to_disk(r: Response, out_dir: Optional[Union[str, Path]], out_filename: Union[str, Path]):
     if not out_dir:
         out_dir = Path.cwd()
     assert Path(out_dir).is_dir()
