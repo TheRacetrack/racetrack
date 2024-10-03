@@ -65,7 +65,7 @@ class PostgresEngine(DbEngine):
         if self.schema:
             with connection.cursor() as cursor:
                 query = SQL('SET search_path TO {schema}').format(schema=Literal(self.schema))
-                cursor.execute(query)
+                cursor.execute(query, prepare=False)
             connection.commit()
         metric_database_connection_opened.inc()
         self.connection_status = True
@@ -138,7 +138,7 @@ class PostgresEngine(DbEngine):
                 with conn.cursor() as cursor:
                     sql = self._get_query_bytes(query, conn)
                     self._log_query(sql)
-                    cursor.execute(sql, params=params)
+                    cursor.execute(sql, params=params, prepare=False)
                     metric_database_queries_executed.inc()
                     check_affected_rows(expected_affected_rows, cursor.rowcount)
         except IntegrityError as e:
@@ -162,7 +162,7 @@ class PostgresEngine(DbEngine):
                 with conn.cursor() as cursor:
                     sql = self._get_query_bytes(query, conn)
                     self._log_query(sql)
-                    cursor.execute(sql, params=params)
+                    cursor.execute(sql, params=params, prepare=False)
                     metric_database_queries_executed.inc()
                     row = cursor.fetchone()
                     if row is None:
@@ -189,7 +189,7 @@ class PostgresEngine(DbEngine):
                 with conn.cursor() as cursor:
                     sql = self._get_query_bytes(query, conn)
                     self._log_query(sql)
-                    cursor.execute(sql, params=params)
+                    cursor.execute(sql, params=params, prepare=False)
                     metric_database_queries_executed.inc()
                     rows: list = cursor.fetchall()
                     assert cursor.description, 'no column names in the result'

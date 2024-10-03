@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.33.0] - 2024-10-01
 ### Changed
 - Most database operations are now handled by the new database access layer, making direct SQL queries.
   It has a configurable connection pool that reduces the number of open connections.
@@ -24,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#523](https://github.com/TheRacetrack/racetrack/issues/523))
 - Added informative error about crash during Job initialization.
   ([#469](https://github.com/TheRacetrack/racetrack/issues/469))
+- Resolved compatibility issues with the Racetrack client
+  for Python 3.8 related to unsupported typing operands.
+  ([#527](https://github.com/TheRacetrack/racetrack/issues/527))
 
 ## [2.32.1] - 2024-08-26
 ### Added
