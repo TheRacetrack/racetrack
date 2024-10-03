@@ -2,6 +2,7 @@ from typing import Callable
 
 import backoff
 
+from racetrack_client.log.context_error import ContextError
 from racetrack_client.utils.request import Requests, RequestError, Response
 from lifecycle.server.cache import LifecycleCache
 
@@ -73,7 +74,10 @@ def check_job_is_alive(
 
 
 def check_job_is_ready(base_url: str, headers: dict[str, str] | None) -> None:
-    response = Requests.get(f'{base_url}/ready', headers=headers, timeout=3)
+    try:
+        response = Requests.get(f'{base_url}/ready', headers=headers, timeout=3)
+    except BaseException as e:
+        raise ContextError('Job server crashed while initialization') from e
     if response.status_code == 200:
         return
     if response.status_code == 404:
