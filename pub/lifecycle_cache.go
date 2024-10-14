@@ -60,8 +60,12 @@ func (c *LifecycleCache) Get(jobName, jobVersion, endpoint, authToken string) (*
 	}
 	c.rwMutex.RLock()
 	defer c.rwMutex.RUnlock()
-	task, ok := c.cachedResponses[request]
-	return task, ok
+	response, ok := c.cachedResponses[request]
+	if response.createdAt.Add(c.timeToLive).Before(time.Now()) {
+		delete(c.cachedResponses, request)
+		return nil, false
+	}
+	return response, ok
 }
 
 func (c *LifecycleCache) cleanUpRoutine() {
