@@ -19,8 +19,9 @@ import (
 
 var defaultJobProxyTransport http.RoundTripper = defaultHttpTransport()
 
-func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
+func proxyEndpoint(c *gin.Context, services *Services, jobPath string) {
 	startTime := time.Now()
+	cfg := services.config
 
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{
@@ -28,7 +29,7 @@ func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	})
 
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleProxyRequest(c, cfg, logger, requestId, jobPath, startTime)
+	statusCode, err := handleProxyRequest(c, services, logger, requestId, jobPath, startTime)
 	if err != nil {
 		metricJobProxyRequestErrors.Inc()
 		errorStr := err.Error()
@@ -48,12 +49,13 @@ func proxyEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 
 func handleProxyRequest(
 	c *gin.Context,
-	cfg *Config,
+	services *Services,
 	logger log.Logger,
 	requestId string,
 	jobPath string,
 	startTime time.Time,
 ) (int, error) {
+	cfg := services.config
 
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
 		c.Writer.Header().Set("Allow", "GET, POST")
@@ -75,7 +77,7 @@ func handleProxyRequest(
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	job, jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, cfg, requestId, jobName, jobVersion, jobPath)
+	job, jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			logger.Warn("Job was not found", log.Ctx{
@@ -235,13 +237,26 @@ func getRequestTracingId(req *http.Request, headerName string) string {
 // Authorize Job call and get job's details
 func getAuthorizedJobDetails(
 	c *gin.Context,
-	cfg *Config,
+	services *Services,
 	requestId string,
 	jobName string,
 	jobVersion string,
 	jobPath string,
 ) (*JobDetails, *JobCallAuthData, string, int, error) {
+	cfg := services.config
 	authToken := getAuthFromHeaderOrCookie(c.Request)
+
+	authorizeCallResp, ok := services.lifecycleCache.Get(jobName, jobVersion, jobPath, authToken)
+	if ok && authorizeCallResp != nil {
+		jobCall := authorizeCallResp.AuthData
+		log.Debug("Reusing cached Lifecycle response", log.Ctx{
+			"jobName":    jobName,
+			"jobVersion": jobVersion,
+			"jobPath":    jobPath,
+			"requestId":  requestId,
+		})
+		return jobCall.Job, jobCall, *jobCall.Caller, http.StatusOK, nil
+	}
 
 	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
 	if err != nil {
@@ -271,6 +286,10 @@ func getAuthorizedJobDetails(
 			return nil, nil, "", http.StatusServiceUnavailable, err
 		}
 		return nil, nil, "", http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
+	}
+
+	if cfg.LifecycleCacheTTL > 0 {
+		services.lifecycleCache.Put(jobName, jobVersion, jobPath, authToken, jobCall)
 	}
 
 	return job, jobCall, callerName, http.StatusOK, nil

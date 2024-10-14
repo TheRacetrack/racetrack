@@ -19,7 +19,8 @@ import (
 )
 
 // Start a new async job call in background and return task ID
-func TaskStartEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, jobPath string) {
+func TaskStartEndpoint(c *gin.Context, services *Services, jobPath string) {
+	cfg := services.config
 	requestId := getRequestTracingId(c.Request, cfg.RequestTracingHeader)
 	logger := log.New(log.Ctx{"requestId": requestId})
 	if strings.HasPrefix(jobPath, "//") {
@@ -27,7 +28,7 @@ func TaskStartEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, j
 	}
 
 	logger.Info("Request: new Async Job Call", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
-	statusCode, err := handleTaskStartRequest(c, cfg, taskStore, logger, requestId, jobPath)
+	statusCode, err := handleTaskStartRequest(c, services, logger, requestId, jobPath)
 	if err != nil {
 		metricAsyncJobCallsErrors.Inc()
 		respondError(c, cfg, logger, statusCode, "Async Job Call request error", err, map[string]any{
@@ -38,12 +39,14 @@ func TaskStartEndpoint(c *gin.Context, cfg *Config, taskStore *AsyncTaskStore, j
 
 func handleTaskStartRequest(
 	c *gin.Context,
-	cfg *Config,
-	taskStore *AsyncTaskStore,
+	services *Services,
 	logger log.Logger,
 	requestId string,
 	jobPath string,
 ) (int, error) {
+	cfg := services.config
+	taskStore := services.asyncTaskStore
+
 	if c.Request.Method != "POST" && c.Request.Method != "GET" {
 		c.Writer.Header().Set("Allow", "GET, POST")
 		return http.StatusMethodNotAllowed, errors.New("method not allowed")
@@ -57,7 +60,7 @@ func handleTaskStartRequest(
 		return http.StatusBadRequest, errors.New("couldn't extract job version")
 	}
 
-	job, _, callerName, statusCode, err := getAuthorizedJobDetails(c, cfg, requestId, jobName, jobVersion, jobPath)
+	job, _, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
 	if err != nil {
 		return statusCode, err
 	}

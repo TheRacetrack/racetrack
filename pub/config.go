@@ -23,6 +23,7 @@ type Config struct {
 	ReplicaDiscoveryHostname string `env:"REPLICA_DISCOVERY_HOSTNAME" envDefault:""`
 	AsyncMaxAttempts         int    `env:"ASYNC_MAX_ATTEMPTS" envDefault:"2"`         // Maximum number of attempts to make a job call (1 is no retry)
 	AsyncTaskRetryInterval   int    `env:"ASYNC_TASK_RETRY_INTERVAL" envDefault:"10"` // Interval in seconds to wait before retrying a crashed job call
+	LifecycleCacheTTL        int    `env:"LIFECYCLE_CACHE_TTL" envDefault:"300"`      // Time-to-live in seconds to keep cached Lifecycle responses
 }
 
 func LoadConfig() (*Config, error) {
