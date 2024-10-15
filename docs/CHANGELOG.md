@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Internal calls of Pub service are cached for a short configurable time of 1-10 minutes.
+  This improves performance and robustness in case of Lifecycle, network or database issues.
+  ([#213](https://github.com/TheRacetrack/racetrack/issues/213))
 
 ## [2.33.0] - 2024-10-01
 ### Changed

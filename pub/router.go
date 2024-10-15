@@ -20,15 +20,13 @@ func ListenAndServe(cfg *Config) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
-	replicaDiscovery := NewReplicaDiscovery(cfg)
-	taskStorage := NewLifecycleTaskStorage(cfg.LifecycleUrl, cfg.LifecycleToken)
-	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery, taskStorage)
+	services := InitServices(cfg)
 
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")
 	// and at prefixed path (when accessed through ingress proxy)
 	baseUrls := []string{"", fmt.Sprintf("/%s", cfg.ServiceName)}
 	for _, baseUrl := range baseUrls {
-		SetupEndpoints(router, cfg, baseUrl, asyncTaskStore)
+		SetupEndpoints(router, cfg, baseUrl, services)
 	}
 
 	if cfg.RemoteGatewayMode {
@@ -47,7 +45,7 @@ func ListenAndServe(cfg *Config) error {
 		log.Info("Shutting down server...", log.Ctx{"signal": sig})
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		asyncTaskStore.CancelOngoingRequests()
+		services.Shutdown()
 		if err := server.Shutdown(ctx); err != nil {
 			log.Error("Shutting down server", log.Ctx{"error": err})
 		}
@@ -67,40 +65,40 @@ func SetupEndpoints(
 	router *gin.Engine,
 	cfg *Config,
 	baseUrl string,
-	asyncTaskStore *AsyncTaskStore,
+	services *Services,
 ) {
 	// Backwards compatability endpoints
 	router.Any(baseUrl+"/fatman/:job/:version/*path", func(c *gin.Context) {
-		proxyEndpoint(c, cfg, "/"+c.Param("path"))
+		proxyEndpoint(c, services, "/"+c.Param("path"))
 	})
 	router.Any(baseUrl+"/fatman/:job/:version", func(c *gin.Context) {
-		proxyEndpoint(c, cfg, "")
+		proxyEndpoint(c, services, "")
 	})
 
 	router.Any(baseUrl+"/job/:job/:version/*path", func(c *gin.Context) {
-		proxyEndpoint(c, cfg, "/"+c.Param("path"))
+		proxyEndpoint(c, services, "/"+c.Param("path"))
 	})
 	router.Any(baseUrl+"/job/:job/:version", func(c *gin.Context) {
-		proxyEndpoint(c, cfg, "")
+		proxyEndpoint(c, services, "")
 	})
 
 	router.Any(baseUrl+"/async/new/job/:job/:version/*path", func(c *gin.Context) {
-		TaskStartEndpoint(c, cfg, asyncTaskStore, "/"+c.Param("path"))
+		TaskStartEndpoint(c, services, "/"+c.Param("path"))
 	})
 	router.Any(baseUrl+"/async/new/job/:job/:version", func(c *gin.Context) {
-		TaskStartEndpoint(c, cfg, asyncTaskStore, "")
+		TaskStartEndpoint(c, services, "")
 	})
 	router.GET(baseUrl+"/async/task/:taskId/poll", func(c *gin.Context) {
-		TaskPollEndpoint(c, cfg, asyncTaskStore)
+		TaskPollEndpoint(c, cfg, services.asyncTaskStore)
 	})
 	router.GET(baseUrl+"/async/task/:taskId/poll/local", func(c *gin.Context) {
-		LocalTaskPollEndpoint(c, cfg, asyncTaskStore, true)
+		LocalTaskPollEndpoint(c, cfg, services.asyncTaskStore, true)
 	})
 	router.GET(baseUrl+"/async/task/:taskId/status", func(c *gin.Context) {
-		TaskStatusEndpoint(c, cfg, asyncTaskStore)
+		TaskStatusEndpoint(c, cfg, services.asyncTaskStore)
 	})
 	router.GET(baseUrl+"/async/task/:taskId/status/local", func(c *gin.Context) {
-		LocalTaskStatusEndpoint(c, cfg, asyncTaskStore)
+		LocalTaskStatusEndpoint(c, cfg, services.asyncTaskStore)
 	})
 
 	router.Any(baseUrl+"/remote/forward/:job/:version/*path", func(c *gin.Context) {
