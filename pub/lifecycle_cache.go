@@ -9,7 +9,8 @@ import (
 type LifecycleCache struct {
 	cachedResponses map[AuthorizeCallRequest]*AuthorizeCallResponse
 	rwMutex         sync.RWMutex
-	timeToLive      time.Duration
+	timeToLiveMin   time.Duration
+	timeToLiveMax   time.Duration
 	cleanUpPeriod   time.Duration
 }
 
@@ -28,7 +29,8 @@ type AuthorizeCallResponse struct {
 func NewLifecycleCache(cfg *Config) *LifecycleCache {
 	cache := &LifecycleCache{
 		cachedResponses: make(map[AuthorizeCallRequest]*AuthorizeCallResponse),
-		timeToLive:      time.Duration(cfg.LifecycleCacheTTL) * time.Second,
+		timeToLiveMin:   time.Duration(cfg.LifecycleCacheTTLMin) * time.Second,
+		timeToLiveMax:   time.Duration(cfg.LifecycleCacheTTLMax) * time.Second,
 		cleanUpPeriod:   1 * time.Minute,
 	}
 	go cache.cleanUpRoutine()
@@ -51,7 +53,7 @@ func (c *LifecycleCache) Put(jobName, jobVersion, endpoint, authToken string, au
 	c.rwMutex.Unlock()
 }
 
-func (c *LifecycleCache) Get(jobName, jobVersion, endpoint, authToken string) (*AuthorizeCallResponse, bool) {
+func (c *LifecycleCache) RetrieveResponse(jobName, jobVersion, endpoint, authToken string) (*AuthorizeCallResponse, bool) {
 	request := AuthorizeCallRequest{
 		JobName:       jobName,
 		JobVersion:    jobVersion,
@@ -61,7 +63,23 @@ func (c *LifecycleCache) Get(jobName, jobVersion, endpoint, authToken string) (*
 	c.rwMutex.RLock()
 	defer c.rwMutex.RUnlock()
 	response, ok := c.cachedResponses[request]
-	if response != nil && response.createdAt.Add(c.timeToLive).Before(time.Now()) {
+	if response != nil && response.createdAt.Add(c.timeToLiveMin).Before(time.Now()) {
+		return nil, false
+	}
+	return response, ok
+}
+
+func (c *LifecycleCache) RecoverFailedResponse(jobName, jobVersion, endpoint, authToken string) (*AuthorizeCallResponse, bool) {
+	request := AuthorizeCallRequest{
+		JobName:       jobName,
+		JobVersion:    jobVersion,
+		Endpoint:      endpoint,
+		AuthTokenHash: calculateHash(authToken),
+	}
+	c.rwMutex.RLock()
+	defer c.rwMutex.RUnlock()
+	response, ok := c.cachedResponses[request]
+	if response != nil && response.createdAt.Add(c.timeToLiveMax).Before(time.Now()) {
 		delete(c.cachedResponses, request)
 		return nil, false
 	}
@@ -73,7 +91,7 @@ func (c *LifecycleCache) cleanUpRoutine() {
 		time.Sleep(c.cleanUpPeriod)
 		c.rwMutex.Lock()
 		for request, response := range c.cachedResponses {
-			if response.createdAt.Add(c.timeToLive).Before(time.Now()) {
+			if response.createdAt.Add(c.timeToLiveMax).Before(time.Now()) {
 				delete(c.cachedResponses, request)
 			}
 		}

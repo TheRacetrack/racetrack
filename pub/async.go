@@ -60,10 +60,11 @@ func handleTaskStartRequest(
 		return http.StatusBadRequest, errors.New("couldn't extract job version")
 	}
 
-	job, _, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
+	jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
 	if err != nil {
 		return statusCode, err
 	}
+	job := jobCall.Job
 
 	metricAsyncJobCallsStarted.WithLabelValues(job.Name, job.Version).Inc()
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)

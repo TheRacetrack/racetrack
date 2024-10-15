@@ -77,7 +77,7 @@ func handleProxyRequest(
 			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
-	job, jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
+	jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			logger.Warn("Job was not found", log.Ctx{
@@ -95,6 +95,7 @@ func handleProxyRequest(
 		metricLifecycleErrors.Inc()
 		return statusCode, err
 	}
+	job := jobCall.Job
 
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
@@ -242,55 +243,68 @@ func getAuthorizedJobDetails(
 	jobName string,
 	jobVersion string,
 	jobPath string,
-) (*JobDetails, *JobCallAuthData, string, int, error) {
+) (*JobCallAuthData, string, int, error) {
 	cfg := services.config
 	authToken := getAuthFromHeaderOrCookie(c.Request)
 
-	authorizeCallResp, ok := services.lifecycleCache.Get(jobName, jobVersion, jobPath, authToken)
-	if ok && authorizeCallResp != nil {
-		jobCall := authorizeCallResp.AuthData
+	cachedResponse, ok := services.lifecycleCache.RetrieveResponse(jobName, jobVersion, jobPath, authToken)
+	if ok && cachedResponse != nil {
+		jobCall := cachedResponse.AuthData
 		log.Debug("Reusing cached Lifecycle response", log.Ctx{
 			"jobName":    jobName,
 			"jobVersion": jobVersion,
 			"jobPath":    jobPath,
 			"requestId":  requestId,
 		})
-		return jobCall.Job, jobCall, *jobCall.Caller, http.StatusOK, nil
+		return jobCall, *jobCall.Caller, http.StatusOK, nil
 	}
 
 	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
 	if err != nil {
-		return nil, nil, "", http.StatusInternalServerError, err
+		return nil, "", http.StatusInternalServerError, err
 	}
 
-	var job *JobDetails
 	var callerName string
 	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
-	if err == nil {
-		job = jobCall.Job
-		if jobCall.Caller != nil {
-			callerName = *jobCall.Caller
-		}
-		metricAuthSuccessful.Inc()
-	} else {
+	if err != nil {
 		metricAuthFailed.Inc()
+
+		cachedResponse, ok := services.lifecycleCache.RecoverFailedResponse(jobName, jobVersion, jobPath, authToken)
+		if ok && cachedResponse != nil && !errors.As(err, &AuthenticationFailure{}) {
+			jobCall := cachedResponse.AuthData
+			log.Warn("Lifecycle response error, recovering the cached response", log.Ctx{
+				"jobName":        jobName,
+				"jobVersion":     jobVersion,
+				"jobPath":        jobPath,
+				"requestId":      requestId,
+				"error":          err,
+				"cacheEntryTime": cachedResponse.createdAt,
+			})
+			return jobCall, *jobCall.Caller, http.StatusOK, nil
+		}
+
 		if errors.As(err, &AuthenticationFailure{}) {
 			if cfg.AuthDebug {
-				return nil, nil, "", http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
+				return nil, "", http.StatusUnauthorized, errors.Wrap(err, "Unauthenticated")
 			} else {
-				return nil, nil, "", http.StatusUnauthorized, errors.New("Unauthenticated")
+				return nil, "", http.StatusUnauthorized, errors.New("Unauthenticated")
 			}
 		} else if errors.As(err, &NotFoundError{}) {
-			return nil, nil, "", http.StatusNotFound, errors.Wrap(err, "Job was not found")
+			return nil, "", http.StatusNotFound, errors.Wrap(err, "Job was not found")
 		} else if errors.As(err, &ServiceUnavailableError{}) {
-			return nil, nil, "", http.StatusServiceUnavailable, err
+			return nil, "", http.StatusServiceUnavailable, err
 		}
-		return nil, nil, "", http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
+		return nil, "", http.StatusInternalServerError, errors.Wrap(err, "Getting job details")
 	}
 
-	if cfg.LifecycleCacheTTL > 0 {
+	if jobCall.Caller != nil {
+		callerName = *jobCall.Caller
+	}
+	metricAuthSuccessful.Inc()
+
+	if cfg.LifecycleCacheTTLMax > 0 {
 		services.lifecycleCache.Put(jobName, jobVersion, jobPath, authToken, jobCall)
 	}
 
-	return job, jobCall, callerName, http.StatusOK, nil
+	return jobCall, callerName, http.StatusOK, nil
 }
