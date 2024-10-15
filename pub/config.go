@@ -24,7 +24,7 @@ type Config struct {
 	AsyncMaxAttempts         int    `env:"ASYNC_MAX_ATTEMPTS" envDefault:"2"`         // Maximum number of attempts to make a job call (1 is no retry)
 	AsyncTaskRetryInterval   int    `env:"ASYNC_TASK_RETRY_INTERVAL" envDefault:"10"` // Interval in seconds to wait before retrying a crashed job call
 	LifecycleCacheTTLMin     int    `env:"LIFECYCLE_CACHE_TTL_MIN" envDefault:"60"`   // Time-to-live in seconds to keep cached Lifecycle responses
-	LifecycleCacheTTLMax     int    `env:"LIFECYCLE_CACHE_TTL_MAX" envDefault:"300"`  // Time-to-live in seconds to keep cached Lifecycle responses in case of Lifecycle/Database outage
+	LifecycleCacheTTLMax     int    `env:"LIFECYCLE_CACHE_TTL_MAX" envDefault:"600"`  // Time-to-live in seconds to keep cached Lifecycle responses in case of Lifecycle/Database outage
 }
 
 func LoadConfig() (*Config, error) {
