@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -27,6 +28,9 @@ func proxyEndpoint(c *gin.Context, services *Services, jobPath string) {
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
+	if strings.HasPrefix(jobPath, "//") {
+		jobPath = jobPath[1:]
+	}
 
 	logger.Info("Incoming Proxy request", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	statusCode, err := handleProxyRequest(c, services, logger, requestId, jobPath, startTime)
@@ -251,10 +255,11 @@ func getAuthorizedJobDetails(
 	if ok && cachedResponse != nil {
 		jobCall := cachedResponse.AuthData
 		log.Debug("Reusing cached Lifecycle response", log.Ctx{
-			"jobName":    jobName,
-			"jobVersion": jobVersion,
-			"jobPath":    jobPath,
-			"requestId":  requestId,
+			"jobName":        jobName,
+			"jobVersion":     jobVersion,
+			"jobPath":        jobPath,
+			"requestId":      requestId,
+			"cacheEntryTime": cachedResponse.createdAt,
 		})
 		return jobCall, *jobCall.Caller, http.StatusOK, nil
 	}
