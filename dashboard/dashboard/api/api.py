@@ -3,6 +3,7 @@ import os
 import httpx
 from fastapi import FastAPI, Request, Response, Body
 from starlette.background import BackgroundTask
+from starlette.responses import StreamingResponse
 from starlette.datastructures import MutableHeaders
 
 from racetrack_client.log.logs import get_logger
@@ -47,19 +48,15 @@ def setup_proxy_endpoints(app: FastAPI):
         request_headers = MutableHeaders(request.headers)
         request_headers['referer'] = request.url.path
 
-        timeout = httpx.Timeout(10, read=300)
-        rp_req = client.build_request(request.method, url,
-                                      headers=request_headers.raw,
-                                      timeout=timeout,
-                                      content=await request.body())
-        httpx_response = await client.send(rp_req, stream=True)
-        content: bytes = await httpx_response.aread()
-        return Response(
-            content=content,
-            status_code=httpx_response.status_code,
-            headers=httpx_response.headers,
-            background=BackgroundTask(httpx_response.aclose),
+        httpx_req: httpx.Request = client.build_request(
+            request.method,
+            url,
+            headers=request_headers.raw,
+            timeout=httpx.Timeout(10, read=300),
+            content=await request.body(),
         )
+        httpx_response: httpx.Response = await client.send(httpx_req, stream=True)
+        return StreamingResponse(httpx_response.aiter_bytes(), background=BackgroundTask(httpx_response.aclose))
 
     app.router.add_api_route("/api/v1/{path:path}", _proxy_api_call,
                              methods=["GET", "POST", "PUT", "DELETE"])
