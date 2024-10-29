@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Upgraded third-party dependencies.
+- Enhanced the proxying of requests from Dashboard to Lifecycle
+  in order to display detailed errors on the Dashboard
+  ([#540](https://github.com/TheRacetrack/racetrack/issues/540))
+
+### Fixed
+- Fixed Duplicate Prepared Statement in psycopg connector
+  ([#536](https://github.com/TheRacetrack/racetrack/issues/536))
 
 ## [2.33.0] - 2024-10-01
 ### Changed
