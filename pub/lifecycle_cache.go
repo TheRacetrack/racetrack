@@ -66,6 +66,7 @@ func (c *LifecycleCache) RetrieveResponse(jobName, jobVersion, endpoint, authTok
 	if response != nil && response.createdAt.Add(c.timeToLiveMin).Before(time.Now()) {
 		return nil, false
 	}
+	metricLifecycleCacheRetrievedResponses.Inc()
 	return response, ok
 }
 
@@ -83,6 +84,7 @@ func (c *LifecycleCache) RecoverFailedResponse(jobName, jobVersion, endpoint, au
 		delete(c.cachedResponses, request)
 		return nil, false
 	}
+	metricLifecycleCacheRecoveredFailedResponses.Inc()
 	return response, ok
 }
 
