@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,9 @@ func remoteForwardEndpoint(c *gin.Context, cfg *Config, jobPath string) {
 	logger := log.New(log.Ctx{
 		"requestId": requestId,
 	})
+	if strings.HasPrefix(jobPath, "//") {
+		jobPath = jobPath[1:]
+	}
 
 	logger.Info("Incoming forwarding request from main Pub", log.Ctx{"method": c.Request.Method, "path": c.Request.URL.Path})
 	statusCode, err := handleRemoteForwardRequest(c, cfg, logger, requestId, jobPath, startTime)
