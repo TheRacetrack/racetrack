@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This improves performance and robustness in case of Lifecycle, network or database issues.
   ([#213](https://github.com/TheRacetrack/racetrack/issues/213))
 
+### Changed
+- Upgraded third-party dependencies.
+- Enhanced the proxying of requests from Dashboard to Lifecycle
+  in order to display detailed errors on the Dashboard
+  ([#540](https://github.com/TheRacetrack/racetrack/issues/540))
+
+### Fixed
+- Fixed Duplicate Prepared Statement in psycopg connector
+  ([#536](https://github.com/TheRacetrack/racetrack/issues/536))
+
 ## [2.33.0] - 2024-10-01
 ### Changed
 - Most database operations are now handled by the new database access layer, making direct SQL queries.
