@@ -111,4 +111,13 @@ var (
 		Name: "pub_async_retried_missing_task",
 		Help: "Total number of retried async tasks due to a missing task",
 	})
+
+	metricLifecycleCacheRetrievedResponses = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_lifecycle_cache_retrieved_responses",
+		Help: "Total number of responses retrieved from the Lifecycle cache",
+	})
+	metricLifecycleCacheRecoveredFailedResponses = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_lifecycle_cache_recovered_failed_responses",
+		Help: "Total number of responses recovered from the Lifecycle cache due to a failure",
+	})
 )
