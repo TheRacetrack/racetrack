@@ -3,7 +3,6 @@ owner_email: sample@example.com
 jobtype: python3:latest
 git:
   remote: https://github.com/TheRacetrack/racetrack
-  branch: 
   directory: sample/large-payload
 jobtype_extra:
   entrypoint_path: 'entrypoint.py'
