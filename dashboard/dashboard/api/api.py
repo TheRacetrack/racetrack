@@ -56,7 +56,12 @@ def setup_proxy_endpoints(app: FastAPI):
             content=await request.body(),
         )
         httpx_response: httpx.Response = await client.send(httpx_req, stream=True)
-        return StreamingResponse(httpx_response.aiter_bytes(), background=BackgroundTask(httpx_response.aclose))
+        return StreamingResponse(
+            content=httpx_response.aiter_bytes(),
+            status_code=httpx_response.status_code,
+            headers=httpx_response.headers,
+            background=BackgroundTask(httpx_response.aclose),
+        )
 
     app.router.add_api_route("/api/v1/{path:path}", _proxy_api_call,
                              methods=["GET", "POST", "PUT", "DELETE"])
