@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.34.1] - 2024-11-12
 ### Fixed
 - Fixed infinite redirects to Sign in page on Dashboard.
   ([#541](https://github.com/TheRacetrack/racetrack/issues/541))
