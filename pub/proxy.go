@@ -250,6 +250,7 @@ func getAuthorizedJobDetails(
 ) (*JobCallAuthData, string, int, error) {
 	cfg := services.config
 	authToken := getAuthFromHeaderOrCookie(c.Request)
+	var callerName string
 
 	cachedResponse, ok := services.lifecycleCache.RetrieveResponse(jobName, jobVersion, jobPath, authToken)
 	if ok && cachedResponse != nil {
@@ -261,7 +262,10 @@ func getAuthorizedJobDetails(
 			"requestId":      requestId,
 			"cacheEntryTime": cachedResponse.createdAt,
 		})
-		return jobCall, *jobCall.Caller, http.StatusOK, nil
+		if jobCall.Caller != nil {
+			callerName = *jobCall.Caller
+		}
+		return jobCall, callerName, http.StatusOK, nil
 	}
 
 	lifecycleClient, err := NewProxyLifecycleClient(cfg, authToken, requestId)
@@ -269,7 +273,6 @@ func getAuthorizedJobDetails(
 		return nil, "", http.StatusInternalServerError, err
 	}
 
-	var callerName string
 	jobCall, err := lifecycleClient.AuthorizeCaller(jobName, jobVersion, jobPath)
 	if err != nil {
 		metricAuthFailed.Inc()
@@ -285,7 +288,10 @@ func getAuthorizedJobDetails(
 				"error":          err,
 				"cacheEntryTime": cachedResponse.createdAt,
 			})
-			return jobCall, *jobCall.Caller, http.StatusOK, nil
+			if jobCall.Caller != nil {
+				callerName = *jobCall.Caller
+			}
+			return jobCall, callerName, http.StatusOK, nil
 		}
 
 		if errors.As(err, &AuthenticationFailure{}) {
