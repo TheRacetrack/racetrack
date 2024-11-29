@@ -18,7 +18,7 @@ import (
 func ListenAndServe(cfg *Config) error {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
 	router := gin.New()
-	router.Use(gin.Recovery())
+	router.Use(gin.CustomRecovery(recoverPanic))
 
 	services := InitServices(cfg)
 
@@ -128,4 +128,16 @@ func wrapHandler(h http.Handler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
+}
+
+func recoverPanic(c *gin.Context, err any) {
+	metricPanicErrors.Inc()
+	var path string
+	if c.Request != nil && c.Request.URL != nil {
+		path = c.Request.URL.Path
+	}
+	log.Error("Panic error recovered", log.Ctx{
+		"error": err,
+		"path":  path,
+	})
 }

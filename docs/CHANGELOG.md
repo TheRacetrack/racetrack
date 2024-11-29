@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- More types of Pub errors are presented on the Grafana Dashboard, including panic errors.
+  ([#546](https://github.com/TheRacetrack/racetrack/issues/546))
+
 ## [2.34.2] - 2024-11-29
 ### Fixed
 - Fixed nil pointer dereference in case of caller data missing in the cached Pub response.
