@@ -50,6 +50,10 @@ var (
 		Name: "pub_lifecycle_errors",
 		Help: "Number of Lifecycle API malfunctions",
 	})
+	metricPanicErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pub_panic_errors",
+		Help: "Number of panic errors",
+	})
 	metricJobCallResponseTime = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "pub_job_call_response_time",
 		Help: "Total number of seconds spent waiting for a Job to answer a call",
