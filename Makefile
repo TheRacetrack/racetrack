@@ -20,7 +20,7 @@ endef
 -include .local.env
 
 setup:
-	python3 -m venv venv &&\
+	uv venv venv &&\
 	. venv/bin/activate &&\
 	pip install --upgrade pip setuptools &&\
 	pip install -r requirements-test.txt -r requirements-dev.txt &&\
@@ -29,6 +29,23 @@ setup:
 	( cd lifecycle && make setup ) &&\
 	( cd image_builder && make setup ) &&\
 	( cd dashboard && make setup )
+	@echo Activate your venv:
+	@echo . venv/bin/activate
+
+venv:
+	uv venv venv &&\
+	. venv/bin/activate &&\
+	uv pip install -r requirements-test.txt -r requirements-dev.txt \
+		-r racetrack_client/requirements.txt \
+		-r racetrack_commons/requirements.txt \
+		-r lifecycle/requirements.txt \
+		-r image_builder/requirements.txt \
+		-r dashboard/requirements.txt \
+	    -e racetrack_client/. \
+		-e racetrack_commons/. \
+		-e lifecycle/. \
+		-e image_builder/. \
+		-e dashboard/.
 	@echo Activate your venv:
 	@echo . venv/bin/activate
 
