@@ -3,7 +3,7 @@ pydantic==2.6.1
 pyjwt[crypto]==2.6.0
 fastapi==0.110.1
 uvicorn[standard]==0.29.0
-python-multipart==0.0.9  # uploading files
+python-multipart==0.0.18  # uploading files
 watchdog==2.3.1
 a2wsgi==1.10.4
 httpx==0.27.0
