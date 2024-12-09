@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ${NAMESPACE}
+  name: pub
+  labels:
+    app.kubernetes.io/name: pub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pub
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pub
+    spec:
+      serviceAccountName: null
+      securityContext:
+        supplementalGroups: [200000]
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
+      automountServiceAccountToken: true
+      hostname: pub
+      subdomain: pub
+      containers:
+        - name: pub
+          image: '${PUB_REMOTE_IMAGE}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7005
+          tty: true
+          env:
+            - name: PUB_PORT
+              value: '7005'
+            - name: AUTH_REQUIRED
+              value: 'true'
+            - name: REMOTE_GATEWAY_MODE
+              value: 'true'
+            - name: REMOTE_GATEWAY_TOKEN
+              value: '${REMOTE_GATEWAY_TOKEN}'
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 7005
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 7005
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          volumeMounts:
+            - mountPath: /.kube
+              name: tmp-k8s-volume
+      volumes:
+        - name: tmp-k8s-volume
+          emptyDir:
+            sizeLimit: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ${NAMESPACE}
+  name: pub
+  labels:
+    app.kubernetes.io/name: pub
+spec:
+  selector:
+    app.kubernetes.io/name: pub
+  type: NodePort
+  ports:
+    - name: pub
+      nodePort: 30005
+      port: 7005
+      targetPort: 7005
+
