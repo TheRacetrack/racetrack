@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 3,
+  "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -60,7 +60,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
-            "fillOpacity": 10,
+            "fillOpacity": 49,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -345,7 +345,7 @@
           "unit": "s"
         }
       },
-      "pluginVersion": "10.4.4",
+      "pluginVersion": "11.1.1",
       "reverseYBuckets": false,
       "targets": [
         {
@@ -661,7 +661,7 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -1303,7 +1303,7 @@
           "unit": "s"
         }
       },
-      "pluginVersion": "10.4.4",
+      "pluginVersion": "11.1.1",
       "reverseYBuckets": false,
       "targets": [
         {
@@ -1974,7 +1974,7 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -2183,6 +2183,7 @@
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -2196,7 +2197,7 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "10.4.4",
+      "pluginVersion": "11.1.1",
       "targets": [
         {
           "datasource": {
@@ -2549,6 +2550,6 @@
   "timezone": "",
   "title": "Lifecycle",
   "uid": "VZLtJLFnz",
-  "version": 13,
+  "version": 2,
   "weekStart": ""
 }
