@@ -48,7 +48,7 @@ class FilenameMatcher:
             pattern_result = False
             if pattern.startswith('-'):
                 pattern = pattern[1:]
-            elif pattern.startswith('+'):
+            elif pattern.startswith('+') or pattern.startswith('!'):
                 pattern_result = True
                 pattern = pattern[1:]
 
