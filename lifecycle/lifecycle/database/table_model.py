@@ -12,6 +12,8 @@ class TableModel(ABC):
 
 
 def table_name(cls: Type[TableModel] | TableModel) -> str:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
     metadata = getattr(cls, 'Metadata')
     assert metadata is not None, f'Metadata class not specified in {cls}'
     _table_name = getattr(metadata, 'table_name')
@@ -20,10 +22,14 @@ def table_name(cls: Type[TableModel] | TableModel) -> str:
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
+    if isinstance(cls, TableModel):
+        return cls.__class__.__name__
     return cls.__name__
 
 
 def table_primary_key_column(cls: Type[TableModel] | TableModel) -> str:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
     metadata = getattr(cls, 'Metadata')
     assert metadata is not None, f'Metadata class not specified in {cls}'
     primary_key = getattr(metadata, 'primary_key')
@@ -41,12 +47,16 @@ def primary_key_value(self: TableModel) -> Any:
 
 
 def table_on_delete_cascade(cls: Type[TableModel] | TableModel) -> dict[str, type['TableModel']]:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
     metadata = getattr(cls, 'Metadata')
     assert metadata is not None, f'Metadata class not specified in {cls}'
     return getattr(metadata, 'on_delete_cascade', {})
 
 
 def table_fields(cls: Type[TableModel] | TableModel) -> list[str]:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
     field_annotations: dict[str, type] = cls.__annotations__
     return list(field_annotations.keys())
 
