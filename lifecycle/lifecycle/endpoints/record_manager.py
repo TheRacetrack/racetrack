@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
+from lifecycle.database.table_model import table_name, table_type_name
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.database.schema import tables
 from lifecycle.auth.check import check_staff_user
@@ -30,7 +31,7 @@ def setup_record_manager_endpoints(api: APIRouter):
 
         def retriever():
             for table_class in tables.all_tables:
-                yield TablePayload(class_name=table_class.type_name(), table_name=table_class.table_name())
+                yield TablePayload(class_name=table_type_name(table_class), table_name=table_name(table_class))
         return list(retriever())
 
     @api.get('/records/all/{table_name}')

@@ -5,7 +5,8 @@ from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
-from lifecycle.database.table_model import TableModel
+from lifecycle.database.table_model import TableModel, table_name, table_type_name, table_primary_key_column, \
+    primary_key_value, table_on_delete_cascade, table_fields, record_to_dict
 from lifecycle.database.schema.tables import all_tables
 from lifecycle.database.type_parser import parse_typed_object
 
@@ -35,8 +36,8 @@ class RecordMapper:
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
 
         row = self.query_wrapper.select_one(
-            table=table_type.table_name(),
-            fields=table_type.fields(),
+            table=table_name(table_type),
+            fields=table_fields(table_type),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -62,8 +63,8 @@ class RecordMapper:
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         rows = self.query_wrapper.select_many(
-            table=table_type.table_name(),
-            fields=table_type.fields(),
+            table=table_name(table_type),
+            fields=table_fields(table_type),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
             order_by=order_by,
@@ -88,8 +89,8 @@ class RecordMapper:
         :return: list of record objects
         """
         rows = self.query_wrapper.select_many(
-            table=table_type.table_name(),
-            fields=table_type.fields(),
+            table=table_name(table_type),
+            fields=table_fields(table_type),
             filter_conditions=condition.filter_conditions,
             filter_params=condition.filter_params,
             join_expression=join_expression,
@@ -112,8 +113,8 @@ class RecordMapper:
         :return: list of record objects
         """
         rows = self.query_wrapper.select_many(
-            table=table_type.table_name(),
-            fields=table_type.fields(),
+            table=table_name(table_type),
+            fields=table_fields(table_type),
             order_by=order_by,
             limit=limit,
         )
@@ -131,11 +132,11 @@ class RecordMapper:
         :return: number of records
         """
         if not filter_kwargs:
-            return self.query_wrapper.count(table=table_type.table_name())
+            return self.query_wrapper.count(table=table_name(table_type))
 
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         return self.query_wrapper.count(
-            table=table_type.table_name(),
+            table=table_name(table_type),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -153,8 +154,8 @@ class RecordMapper:
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         row = self.query_wrapper.select_one(
-            table=table_type.table_name(),
-            fields=[table_type.primary_key_column()],
+            table=table_name(table_type),
+            fields=[table_primary_key_column(table_type)],
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -164,15 +165,15 @@ class RecordMapper:
         self,
         record_object: TableModel,
     ) -> bool:
-        primary_key_column = record_object.primary_key_column()
+        primary_key_column = table_primary_key_column(record_object)
         filter_kwargs = {
-            primary_key_column: record_object.primary_key_value()
+            primary_key_column: primary_key_value(record_object)
         }
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
         )
         row = self.query_wrapper.select_one(
-            table=record_object.table_name(),
+            table=table_name(record_object),
             fields=[primary_key_column],
             filter_conditions=filter_conditions,
             filter_params=filter_params,
@@ -187,8 +188,8 @@ class RecordMapper:
     ) -> bool:
         """Check if any record matches the SQL condition"""
         rows = self.query_wrapper.select_many(
-            table=table_type.table_name(),
-            fields=[table_type.primary_key_column()],
+            table=table_name(table_type),
+            fields=[table_primary_key_column(table_type)],
             join_expression=join_expression,
             filter_conditions=condition.filter_conditions,
             filter_params=condition.filter_params,
@@ -206,13 +207,13 @@ class RecordMapper:
         :param record_object: record object to create
         :param assign_primary_key: reassign returned primary key to the original object
         """
-        primary_key_column = record_object.primary_key_column()
+        primary_key_column = table_primary_key_column(record_object)
         record_data = _extract_record_data(record_object)
         # Skip NULL primary keys, let the database auto generate them
         if primary_key_column in record_data and record_data[primary_key_column] is None:
             del record_data[primary_key_column]
         returning_row = self.query_wrapper.insert_one(
-            table=record_object.table_name(),
+            table=table_name(record_object),
             data=record_data,
             primary_key_columns=[primary_key_column],
         )
@@ -232,9 +233,9 @@ class RecordMapper:
         :raise NoRowsAffected: if the record was not found
         :raise TooManyRowsAffected: if more than one record has been updated
         """
-        primary_key_column = record_object.primary_key_column()
+        primary_key_column = table_primary_key_column(record_object)
         filter_kwargs = {
-            primary_key_column: record_object.primary_key_value()
+            primary_key_column: primary_key_value(record_object)
         }
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
@@ -243,11 +244,11 @@ class RecordMapper:
             update_data = _extract_changed_data(record_object)
             if not update_data:
                 return
-            setattr(record_object, '_original_fields', record_object.to_row())
+            setattr(record_object, '_original_fields', record_to_dict(record_object))
         else:
             update_data = _extract_record_data(record_object)
         self.query_wrapper.update_one(
-            table=record_object.table_name(),
+            table=table_name(record_object),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
             new_data=update_data,
@@ -273,7 +274,7 @@ class RecordMapper:
         assert len(filter_kwargs), 'query should be filtered by at least one criteria'
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
         self.query_wrapper.delete_one(
-            table=table_type.table_name(),
+            table=table_name(table_type),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -283,9 +284,9 @@ class RecordMapper:
         record_object: TableModel,
         cascade: bool = True,
     ) -> None:
-        primary_key_column = record_object.primary_key_column()
+        primary_key_column = table_primary_key_column(record_object)
         filter_kwargs = {
-            primary_key_column: record_object.primary_key_value()
+            primary_key_column: primary_key_value(record_object)
         }
         filter_conditions, filter_params = self._build_filter_conditions(
             type(record_object), filter_kwargs
@@ -293,7 +294,7 @@ class RecordMapper:
         if cascade:
             self._delete_cascade_dependencies(record_object)
         self.query_wrapper.delete_one(
-            table=record_object.table_name(),
+            table=table_name(record_object),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
         )
@@ -304,7 +305,7 @@ class RecordMapper:
         filter_kwargs: dict[str, Any],
     ) -> tuple[list[str], list[Any]]:
         filter_keys: list[str] = list(filter_kwargs.keys())
-        fields = table_type.fields()
+        fields = table_fields(table_type)
         for filter_key in filter_keys:
             assert filter_key in fields, f'filtered key {filter_key} is not a valid column'
         filter_conditions: list[str] = [f'{field} = {self.placeholder}' for field in filter_keys]
@@ -315,11 +316,11 @@ class RecordMapper:
         self,
         record_object: TableModel,
     ) -> None:
-        origin_primary_key = record_object.primary_key_value()
+        origin_primary_key = primary_key_value(record_object)
 
         dependent_columns: dict[Type[TableModel], str] = {}
         for dependent_table in all_tables:
-            on_delete_cascade = dependent_table.on_delete_cascade()
+            on_delete_cascade = table_on_delete_cascade(dependent_table)
             for column, origin_table in on_delete_cascade.items():
                 if origin_table is type(record_object):
                     dependent_columns[dependent_table] = column
@@ -331,32 +332,32 @@ class RecordMapper:
             dep_records = self.find_many(dep_table, **filter_kwargs)
             for dep_record in dep_records:
                 self.delete_record(dep_record, cascade=True)
-                dep_record_info = f'{dep_record.primary_key_column()} = {dep_record.primary_key_value()}'
-                logger.debug(f'Cascade delete on record {dep_record.type_name()} {dep_record_info}')
+                dep_record_info = f'{table_primary_key_column(dep_record)} = {primary_key_value(dep_record)}'
+                logger.debug(f'Cascade delete on record {table_type_name(dep_record)} {dep_record_info}')
 
 
 def _convert_row_to_record_model(
     row: dict[str, Any],
     table_type: Type[T],
 ) -> T:
-    valid_fields = table_type.fields()
+    valid_fields = table_fields(table_type)
     for column in row.keys():
         assert column in valid_fields, \
             f'retrieved column "{column}" is not a valid field for the model {type(table_type)}'
     record_model = parse_typed_object(row, table_type)
 
     # remember original values to keep track of changed fields
-    setattr(record_model, '_original_fields', record_model.to_row())
+    setattr(record_model, '_original_fields', record_to_dict(record_model))
     return record_model
 
 
 def _extract_record_data(record_model: TableModel) -> dict[str, Any]:
-    fields: list[str] = record_model.fields()
+    fields: list[str] = table_fields(record_model)
     data = {}
     for field in fields:
         if not hasattr(record_model, field):
             raise ValueError(
-                f'given table model {record_model.type_name()} has no field {field}'
+                f'given table model {table_type_name(record_model)} has no field {field}'
             )
         data[field] = getattr(record_model, field)
     return data
@@ -367,7 +368,7 @@ def _extract_changed_data(record_model: TableModel) -> dict[str, Any]:
     originals: dict[str, Any] = getattr(record_model, '_original_fields', {})
     new_data = _extract_record_data(record_model)
     if not originals:
-        logger.warning(f'could not read original fields from record {record_model.type_name()}')
+        logger.warning(f'could not read original fields from record {table_type_name(record_model)}')
         return new_data
     
     changed_data = {}
