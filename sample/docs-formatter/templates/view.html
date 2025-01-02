@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Docs Formatter</title>
+
+    <!-- Fake favicon to suppress request -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+    <link href="{{ base_url }}/static/github-markdown.css" rel="stylesheet" type="text/css" />
+    <link href="{{ base_url }}/static/prism.css" rel="stylesheet" type="text/css" />
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+
+        .docs-area {
+            width: 100%;
+            min-height: 16em;
+        }
+    </style>
+</head>
+
+<body>
+    <article class="markdown-body" style="padding-top: 0;">
+        {{ html_docs | safe }}
+    </article>
+
+    <div>
+        <form action="{{ base_url }}/preview" method="post">
+            <textarea name="raw_docs" class="docs-area" placeholder="Put your Markdown here...">{{ raw_docs }}</textarea>
+            <button type="submit">Preview</button>
+        </form>
+    </div>
+
+    <script src="{{ base_url }}/static/prism.js"></script>
+</body>
+</html>
