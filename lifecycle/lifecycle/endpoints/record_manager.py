@@ -3,7 +3,8 @@ from typing import Any
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
-from lifecycle.database.table_model import table_name, table_type_name, table_plural_name, table_primary_key_column
+from lifecycle.database.table_model import table_name, table_type_name, table_plural_name, table_primary_key_column, \
+    TableModel, table_fields, record_to_dict, primary_key_value
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.database.schema import tables
 from lifecycle.auth.check import check_staff_user
@@ -44,9 +45,6 @@ class FetchManyRecordsRequest(BaseModel):
 
 
 class FetchManyRecordsResponse(BaseModel):
-    total_count: int
-    offset: int
-    limit: int | None
     columns: list[str]
     primary_key_column: str
     records: list[GetRecordPayload]
@@ -71,42 +69,50 @@ def setup_record_manager_endpoints(api: APIRouter):
                 )
         return list(retriever())
 
-    @api.get('/records/count/{table_name}')
-    def _list_table_records(request: Request, table_name: str) -> int:
+    @api.get('/records/count/{table}')
+    def _list_table_records(request: Request, table: str) -> int:
         """Fetch many records from a table"""
         check_staff_user(request)
-        table_type = mapper.table_name_to_class(table_name)
+        table_type = mapper.table_name_to_class(table)
         return mapper.count(table_type)
 
-    @api.get('/records/all/{table_name}')
-    def _list_table_records(payload: FetchManyRecordsRequest, table_name: str, request: Request) -> FetchManyRecordsResponse:
+    @api.post('/records/list/{table}')
+    def _list_table_records(payload: FetchManyRecordsRequest, table: str, request: Request) -> FetchManyRecordsResponse:
         """Fetch many records from a table"""
         check_staff_user(request)
-        table_type = mapper.table_name_to_class(table_name)
+        table_type = mapper.table_name_to_class(table)
         filter_kwargs = payload.filters or {}
-        records = mapper.find_many(table_type, order_by=payload.order_by, **filter_kwargs)
-        raise NotImplementedError()
+        records: list[TableModel] = mapper.find_many(table_type, order_by=payload.order_by, **filter_kwargs)
+        record_payloads: list[GetRecordPayload] = [GetRecordPayload(
+            primary_key_value=primary_key_value(record),
+            fields=record_to_dict(record),
+        ) for record in records]
+        return FetchManyRecordsResponse(
+            columns=table_fields(table_type),
+            primary_key_column=table_primary_key_column(table_type),
+            records=record_payloads,
+        )
 
-    @api.get('/records/table/{table_name}/id/{record_id}')
-    def _get_one_record(request: Request, record_id: str) -> GetRecordPayload:
+    @api.get('/records/table/{table}/id/{record_id}')
+    def _get_one_record(request: Request, table: str, record_id: str) -> GetRecordPayload:
         """Get one record by ID"""
         check_staff_user(request)
         raise NotImplementedError()
 
-    @api.post('/records/table/{table_name}')
-    def _create_record(payload: CreateRecordPayload, request: Request) -> GetRecordPayload:
+    @api.post('/records/table/{table}')
+    def _create_record(payload: CreateRecordPayload, table: str, request: Request) -> GetRecordPayload:
         """Create Record"""
         check_staff_user(request)
         raise NotImplementedError()
 
-    @api.put('/records/table/{table_name}')
-    def _update_record(payload: UpdateRecordPayload, request: Request) -> GetRecordPayload:
+    @api.put('/records/table/{table}')
+    def _update_record(payload: UpdateRecordPayload, table: str, request: Request) -> GetRecordPayload:
         """Update Record"""
         check_staff_user(request)
         raise NotImplementedError()
 
-    @api.delete('/records/table/{table_name}')
-    def _delete_record(payload: DeleteRecordPayload, request: Request) -> None:
+    @api.delete('/records/table/{table}')
+    def _delete_record(payload: DeleteRecordPayload, table: str, request: Request) -> None:
         """Update Record"""
         check_staff_user(request)
         raise NotImplementedError()

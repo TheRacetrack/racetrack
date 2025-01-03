@@ -90,7 +90,7 @@ class RecordMapper:
         :param join_expression: SQL expression to append to FROM clause
         :param order_by: list of columns to order by, for descending order prepend column name with '-'
         :param limit: maximum number of records to return. None is no limit
-        :return: list of record objects
+        :return: list of matching record objects
         """
         rows = self.query_wrapper.select_many(
             table=table_name(table_type),
@@ -100,6 +100,34 @@ class RecordMapper:
             join_expression=join_expression,
             order_by=order_by,
             limit=limit,
+        )
+        return [_convert_row_to_record_model(row, table_type) for row in rows]
+
+    def filter_by_fields(
+        self,
+        table_type: Type[T],
+        order_by: list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        **filter_kwargs: Any,
+    ) -> list[T]:
+        """
+        List many records, optionally filtered by simple key-value exact fields
+        :param table_type: table model class
+        :param order_by: list of columns to order by, for descending order prepend column name with '-'
+        :param limit: maximum number of records to return. None is no limit
+        :param offset: number of records to skip from the beginning
+        :return: list of matching record objects
+        """
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        rows = self.query_wrapper.select_many(
+            table=table_name(table_type),
+            fields=table_fields(table_type),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+            order_by=order_by,
+            limit=limit,
+            offset=offset,
         )
         return [_convert_row_to_record_model(row, table_type) for row in rows]
 

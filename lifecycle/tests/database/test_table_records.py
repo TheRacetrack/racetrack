@@ -2,10 +2,11 @@ import json
 
 from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject, Job
-from lifecycle.database.table_model import new_uuid
+from lifecycle.database.table_model import new_uuid, table_name
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import configure_logs
@@ -150,26 +151,7 @@ def test_delete_cascade():
 
     job_family = JobFamily(id=new_uuid(), name='primer')
     mapper.create(job_family)
-    job = Job(
-        id=new_uuid(),
-        family_id=job_family.id,
-        name='primer',
-        version='0.0.0',
-        status=JobStatus.RUNNING.value,
-        create_time=now(),
-        update_time=now(),
-        manifest='',
-        internal_name=None,
-        error=None,
-        notice=None,
-        image_tag=None,
-        deployed_by=None,
-        last_call_time=None,
-        infrastructure_target=None,
-        replica_internal_names=None,
-        job_type_version='python3:1.0.0',
-        infrastructure_stats=None,
-    )
+    job = _create_test_job('primer', job_family.id)
     mapper.create(job)
     assert mapper.count(Job) == 1
     assert mapper.count(JobFamily) == 1
@@ -185,17 +167,63 @@ def test_json_column():
     job_family = JobFamily(id=new_uuid(), name='primer')
     mapper.create(job_family)
     stats_content = json.dumps({"number_of_restarts": 2})
-    job = Job(
+    job = _create_test_job('primer', job_family.id, version='0.0.0', infrastructure_stats=stats_content)
+    mapper.create(job)
+
+    job: Job = mapper.find_one(Job, id=job.id)
+    assert job.infrastructure_stats == '{"number_of_restarts": 2}'
+
+
+def test_filtering_many_records():
+    mapper = RecordMapper(create_db_engine(Config(database_log_queries=True)))
+
+    job_family = JobFamily(id=new_uuid(), name='primer')
+    mapper.create(job_family)
+    job1 = _create_test_job('primer', job_family.id, version='1.1.1', error='')
+    mapper.create(job1)
+    job2 = _create_test_job('primer', job_family.id, version='2.2.2', error='bad')
+    mapper.create(job2)
+    job3 = _create_test_job('primer', job_family.id, version='3.3.3', error='')
+    mapper.create(job3)
+
+    records = mapper.find_many(Job, family_id=job_family.id)
+    assert len(records) == 3
+    records = mapper.find_many(Job, order_by=['-version'], error='', name='primer')
+    assert len(records) == 2
+    assert [r.version for r in records] == ['3.3.3', '1.1.1']
+
+    placeholder: str = mapper.placeholder
+    table_family = table_name(JobFamily)
+    table_job = table_name(Job)
+    join_expression = f'left join {table_family} on {table_family}.id = {table_job}.family_id'
+    filter_condition = QueryCondition.operator_and(
+        QueryCondition(f'{table_family}.name = {placeholder}', 'primer'),
+        QueryCondition(f'{table_job}.error is not null'),
+        QueryCondition(f'{table_job}.error = {placeholder}', 'bad'),
+    )
+    records = mapper.filter(Job, join_expression=join_expression, condition=filter_condition)
+    assert len(records) == 1
+    assert records[0].version == '2.2.2'
+
+
+def _create_test_job(
+    name: str,
+    family_id: str,
+    version: str = '0.0.0',
+    infrastructure_stats: str | None = None,
+    error: str | None = None,
+) -> Job:
+    return Job(
         id=new_uuid(),
-        family_id=job_family.id,
-        name='primer',
-        version='0.0.0',
+        family_id=family_id,
+        name=name,
+        version=version,
         status=JobStatus.RUNNING.value,
         create_time=now(),
         update_time=now(),
         manifest=None,
         internal_name=None,
-        error=None,
+        error=error,
         notice=None,
         image_tag=None,
         deployed_by=None,
@@ -203,9 +231,5 @@ def test_json_column():
         infrastructure_target=None,
         replica_internal_names=None,
         job_type_version='python3:1.0.0',
-        infrastructure_stats=stats_content,
+        infrastructure_stats=infrastructure_stats,
     )
-    mapper.create(job)
-
-    job: Job = mapper.find_one(Job, id=job.id)
-    assert job.infrastructure_stats == '{"number_of_restarts": 2}'
