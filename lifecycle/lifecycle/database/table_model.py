@@ -11,10 +11,13 @@ class TableModel(ABC):
     class Metadata:
         table_name: str
         primary_key: str  # name of the column being used as primary key
+        primary_key_type: type = str  # type of the primary key column
         # mapping of a foreign key column to table class
         # It indicates that this model depends on the other and should be deleted along with the foreign one
         on_delete_cascade: dict[str, 'TableModel'] = {}
         plural_name: str | None = None
+        # list of columns to display on the management view
+        list_display_columns: list[str] = []
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
@@ -40,6 +43,15 @@ def table_primary_key_column(cls: Type[TableModel] | TableModel) -> str:
     assert metadata is not None, f'primary_key not specified in {cls}.Metadata'
     assert isinstance(primary_key, str), f'primary_key of {cls} should be a string column name'
     return primary_key
+
+
+def table_primary_key_type(cls: Type[TableModel]) -> type:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
+    metadata = table_metadata(cls)
+    primary_key_type = getattr(metadata, 'primary_key_type')
+    assert metadata is not None, f'primary_key_type not specified in {cls}.Metadata'
+    return primary_key_type
 
 
 def primary_key_value(self: TableModel) -> Any:
@@ -79,9 +91,13 @@ def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
 def table_plural_name(cls: Type[TableModel]) -> str:
     metadata = table_metadata(cls)
     plural_name = getattr(metadata, 'plural_name')
-    if not plural_name:
-        plural_name = table_name(cls) + 's'
-    return plural_name
+    return plural_name or (table_name(cls) + 's')
+
+
+def table_list_display_columns(cls: Type[TableModel]) -> list[str]:
+    metadata = table_metadata(cls)
+    list_display_columns = getattr(metadata, 'list_display_columns')
+    return list_display_columns or []
 
 
 def new_uuid() -> str:

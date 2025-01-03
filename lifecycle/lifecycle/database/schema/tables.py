@@ -11,6 +11,7 @@ class JobFamily(TableModel):
         table_name = 'registry_jobfamily'
         primary_key = 'id'
         plural_name = 'Job Families'
+        list_display_columns: list[str] = ['id', 'name']
 
     id: str
     name: str
@@ -28,6 +29,7 @@ class Job(TableModel):
             'family_id': JobFamily,
         }
         plural_name = 'Jobs'
+        list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'update_time', 'deployed_by']
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -61,6 +63,7 @@ class Deployment(TableModel):
         table_name = 'registry_deployment'
         primary_key = 'id'
         plural_name = 'Deployments'
+        list_display_columns: list[str] = ['id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase']
 
     id: str
     status: str
@@ -87,6 +90,7 @@ class Esc(TableModel):
         table_name = 'registry_esc'
         primary_key = 'id'
         plural_name = 'ESCs'
+        list_display_columns: list[str] = ['id', 'name']
 
     id: str
     name: str
@@ -104,6 +108,7 @@ class PublicEndpointRequest(TableModel):
             'job_id': Job,
         }
         plural_name = 'Public Endpoint Requests'
+        list_display_columns: list[str] = ['id', 'job_id', 'endpoint', 'active']
 
     id: str
     job_id: str  # foreign key: Job
@@ -117,6 +122,7 @@ class TrashJob(TableModel):
         table_name = 'registry_trashjob'
         primary_key = 'id'
         plural_name = 'Trash Jobs'
+        list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days']
 
     id: str
     name: str
@@ -141,6 +147,7 @@ class AuditLogEvent(TableModel):
         table_name = 'registry_auditlogevent'
         primary_key = 'id'
         plural_name = 'Audit Log Events'
+        list_display_columns: list[str] = ['id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version']
 
     id: str
     version: int  # data structure version
@@ -158,7 +165,9 @@ class User(TableModel):
     class Metadata:
         table_name = 'auth_user'
         primary_key = 'id'
+        primary_key_type = int
         plural_name = 'Users'
+        list_display_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
 
     id: int
     password: str
@@ -184,6 +193,7 @@ class AuthSubject(TableModel):
             'job_family_id': JobFamily,
         }
         plural_name = 'Auth Subjects'
+        list_display_columns: list[str] = ['id', 'user_id', 'esc_id', 'job_family_id']
 
     id: str
     user_id: int | None  # foreign key: User
@@ -218,6 +228,7 @@ class AuthToken(TableModel):
             'auth_subject_id': AuthSubject,
         }
         plural_name = 'Auth Tokens'
+        list_display_columns: list[str] = ['id', 'auth_subject_id', 'active']
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubject
@@ -239,6 +250,7 @@ class AuthResourcePermission(TableModel):
             'job_id': Job,
         }
         plural_name = 'Auth Resource Permissions'
+        list_display_columns: list[str] = ['id', 'auth_subject_id', 'scope', 'job_family_id', 'job_id', 'endpoint']
 
     id: int | None
     auth_subject_id: str  # foreign key: AuthSubject
@@ -256,6 +268,7 @@ class Setting(TableModel):
         table_name = 'registry_setting'
         primary_key = 'name'
         plural_name = 'Settings'
+        list_display_columns: list[str] = ['name', 'value']
 
     name: str
     value: str | None  # JSON
@@ -267,6 +280,7 @@ class AsyncJobCall(TableModel):
         table_name = 'registry_asyncjobcall'
         primary_key = 'id'
         plural_name = 'Async Job Calls'
+        list_display_columns: list[str] = ['id', 'status', 'started_at', 'job_name']
 
     id: str
     status: str

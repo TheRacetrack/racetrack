@@ -4,10 +4,11 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from lifecycle.database.table_model import table_name, table_type_name, table_plural_name, table_primary_key_column, \
-    TableModel, table_fields, record_to_dict, primary_key_value
+    TableModel, table_fields, record_to_dict, table_primary_key_type
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.database.schema import tables
 from lifecycle.auth.check import check_staff_user
+from racetrack_client.utils.datamodel import convert_to_json_serializable
 
 
 class TableMetadataPayload(BaseModel):
@@ -84,7 +85,7 @@ def setup_record_manager_endpoints(api: APIRouter):
         records: list[TableModel] = mapper.filter_by_fields(
             table_type, order_by=payload.order_by, offset=payload.offset, limit=payload.limit, **filter_kwargs)
         record_payloads: list[GetRecordPayload] = [
-            GetRecordPayload(fields=record_to_dict(record))
+            GetRecordPayload(fields=convert_to_json_serializable(record_to_dict(record)))
             for record in records]
         return FetchManyRecordsResponse(
             columns=table_fields(table_type),
@@ -95,11 +96,15 @@ def setup_record_manager_endpoints(api: APIRouter):
     @api.get('/records/table/{table}/id/{record_id}')
     def _get_one_record(request: Request, table: str, record_id: str) -> GetRecordPayload:
         """Get one record by ID"""
-        # TODO sanitize ID input: str or int
         check_staff_user(request)
         table_type = mapper.table_name_to_class(table)
-        record: TableModel = mapper.find_one(table_type, id=record_id)
-        return GetRecordPayload(fields=record_to_dict(record))
+        primary_key_name = table_primary_key_column(table_type)
+        primary_key_type: type = table_primary_key_type(table_type)
+        filter_kwargs = {
+            primary_key_name: primary_key_type(record_id),
+        }
+        record: TableModel = mapper.find_one(table_type, **filter_kwargs)
+        return GetRecordPayload(fields=convert_to_json_serializable(record_to_dict(record)))
 
     @api.post('/records/table/{table}')
     def _create_record(payload: CreateRecordPayload, table: str, request: Request) -> GetRecordPayload:
@@ -117,4 +122,10 @@ def setup_record_manager_endpoints(api: APIRouter):
     def _delete_record(payload: DeleteRecordPayload, table: str, request: Request) -> None:
         """Update Record"""
         check_staff_user(request)
+        table_type = mapper.table_name_to_class(table)
+        primary_key_name = table_primary_key_column(table_type)
+        primary_key_type: type = table_primary_key_type(table_type)
+        primary_key_value = primary_key_type(payload.primary_key_value)
+        record = mapper.find_one(table_type, **{primary_key_name: primary_key_value})
+        mapper.delete_record(record, cascade=True)
         raise NotImplementedError()
