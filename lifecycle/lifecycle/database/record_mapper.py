@@ -107,8 +107,8 @@ class RecordMapper:
         self,
         table_type: Type[T],
         order_by: list[str] | None = None,
-        limit: int | None = None,
         offset: int | None = None,
+        limit: int | None = None,
         **filter_kwargs: Any,
     ) -> list[T]:
         """

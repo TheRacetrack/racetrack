@@ -18,7 +18,6 @@ class TableMetadataPayload(BaseModel):
 
 
 class GetRecordPayload(BaseModel):
-    primary_key_value: str | int
     fields: dict[str, Any]
 
 
@@ -37,8 +36,8 @@ class DeleteRecordPayload(BaseModel):
 
 
 class FetchManyRecordsRequest(BaseModel):
-    offset: int
-    limit: int | None
+    offset: int = 0
+    limit: int | None = None
     columns: list[str] | None = None
     order_by: list[str] | None = None
     filters: dict[str, Any] | None = None
@@ -82,11 +81,11 @@ def setup_record_manager_endpoints(api: APIRouter):
         check_staff_user(request)
         table_type = mapper.table_name_to_class(table)
         filter_kwargs = payload.filters or {}
-        records: list[TableModel] = mapper.find_many(table_type, order_by=payload.order_by, **filter_kwargs)
-        record_payloads: list[GetRecordPayload] = [GetRecordPayload(
-            primary_key_value=primary_key_value(record),
-            fields=record_to_dict(record),
-        ) for record in records]
+        records: list[TableModel] = mapper.filter_by_fields(
+            table_type, order_by=payload.order_by, offset=payload.offset, limit=payload.limit, **filter_kwargs)
+        record_payloads: list[GetRecordPayload] = [
+            GetRecordPayload(fields=record_to_dict(record))
+            for record in records]
         return FetchManyRecordsResponse(
             columns=table_fields(table_type),
             primary_key_column=table_primary_key_column(table_type),
@@ -96,8 +95,11 @@ def setup_record_manager_endpoints(api: APIRouter):
     @api.get('/records/table/{table}/id/{record_id}')
     def _get_one_record(request: Request, table: str, record_id: str) -> GetRecordPayload:
         """Get one record by ID"""
+        # TODO sanitize ID input: str or int
         check_staff_user(request)
-        raise NotImplementedError()
+        table_type = mapper.table_name_to_class(table)
+        record: TableModel = mapper.find_one(table_type, id=record_id)
+        return GetRecordPayload(fields=record_to_dict(record))
 
     @api.post('/records/table/{table}')
     def _create_record(payload: CreateRecordPayload, table: str, request: Request) -> GetRecordPayload:

@@ -186,6 +186,8 @@ def test_filtering_many_records():
     job3 = _create_test_job('primer', job_family.id, version='3.3.3', error='')
     mapper.create(job3)
 
+    assert mapper.exists_record(job1)
+
     records = mapper.find_many(Job, family_id=job_family.id)
     assert len(records) == 3
     records = mapper.find_many(Job, order_by=['-version'], error='', name='primer')
@@ -204,6 +206,16 @@ def test_filtering_many_records():
     records = mapper.filter(Job, join_expression=join_expression, condition=filter_condition)
     assert len(records) == 1
     assert records[0].version == '2.2.2'
+
+    assert mapper.exists_on_condition(
+        Job, join_expression=join_expression, condition=filter_condition,
+    )
+
+    records = mapper.filter_by_fields(Job, order_by=['version'], offset=1, limit=1)
+    assert [r.version for r in records] == ['2.2.2']
+
+    records = mapper.filter_by_fields(Job, order_by=['version'], error='bad')
+    assert [r.version for r in records] == ['2.2.2']
 
 
 def _create_test_job(
