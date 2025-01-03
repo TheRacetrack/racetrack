@@ -22,6 +22,7 @@ class RecordMapper:
         self.placeholder: str = engine.query_builder.placeholder()
         # cache to keep reverse dependencies for cascade delete: Origin table -> (dependant table, dependant column)
         self._delete_cascade_dependants: dict[Type[TableModel], list[tuple[Type[TableModel], str]]] = defaultdict(list)
+        self._table_name_to_class: dict[str, Type[TableModel]] = {table_name(cls): cls for cls in all_tables}
 
     def find_one(
         self,
@@ -339,6 +340,11 @@ class RecordMapper:
             on_delete_cascade = table_on_delete_cascade(dependent_table)
             for dep_column, origin_table in on_delete_cascade.items():
                 self._delete_cascade_dependants[origin_table].append((dependent_table, dep_column))
+
+    def table_name_to_class(self, name: str) -> Type[TableModel]:
+        if name not in self._table_name_to_class:
+            raise EntityNotFound(f'Table class not found for table name {name}')
+        return self._table_name_to_class[name]
 
 
 def _convert_row_to_record_model(

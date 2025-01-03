@@ -71,12 +71,20 @@ def setup_record_manager_endpoints(api: APIRouter):
                 )
         return list(retriever())
 
-    @api.get('/records/all/{table_name}')
-    def _list_table_records(payload: FetchManyRecordsRequest, request: Request) -> FetchManyRecordsResponse:
+    @api.get('/records/count/{table_name}')
+    def _list_table_records(request: Request, table_name: str) -> int:
         """Fetch many records from a table"""
         check_staff_user(request)
+        table_type = mapper.table_name_to_class(table_name)
+        return mapper.count(table_type)
 
-        table_class = mapper.get_table_class(payload.table_name)
+    @api.get('/records/all/{table_name}')
+    def _list_table_records(payload: FetchManyRecordsRequest, table_name: str, request: Request) -> FetchManyRecordsResponse:
+        """Fetch many records from a table"""
+        check_staff_user(request)
+        table_type = mapper.table_name_to_class(table_name)
+        filter_kwargs = payload.filters or {}
+        records = mapper.find_many(table_type, order_by=payload.order_by, **filter_kwargs)
         raise NotImplementedError()
 
     @api.get('/records/table/{table_name}/id/{record_id}')
