@@ -8,17 +8,10 @@ from racetrack_client.log.context_error import ContextError
 
 
 class TableModel(ABC):
-    pass
-
-
-def table_name(cls: Type[TableModel] | TableModel) -> str:
-    if isinstance(cls, TableModel):
-        cls = cls.__class__
-    metadata = getattr(cls, 'Metadata')
-    assert metadata is not None, f'Metadata class not specified in {cls}'
-    _table_name = getattr(metadata, 'table_name')
-    assert metadata is not None, f'table_name not specified in {cls}.Metadata'
-    return _table_name
+    class Metadata:
+        table_name: str
+        primary_key: str
+        on_delete_cascade: dict[str, 'TableModel'] = {}
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
@@ -27,11 +20,19 @@ def table_type_name(cls: Type[TableModel] | TableModel) -> str:
     return cls.__name__
 
 
+def table_name(cls: Type[TableModel] | TableModel) -> str:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
+    metadata = table_metadata(cls)
+    _table_name = getattr(metadata, 'table_name')
+    assert metadata is not None, f'table_name not specified in {cls}.Metadata'
+    return _table_name
+
+
 def table_primary_key_column(cls: Type[TableModel] | TableModel) -> str:
     if isinstance(cls, TableModel):
         cls = cls.__class__
-    metadata = getattr(cls, 'Metadata')
-    assert metadata is not None, f'Metadata class not specified in {cls}'
+    metadata = table_metadata(cls)
     primary_key = getattr(metadata, 'primary_key')
     assert metadata is not None, f'primary_key not specified in {cls}.Metadata'
     assert isinstance(primary_key, str), f'primary_key of {cls} should be a string column name'
@@ -46,11 +47,8 @@ def primary_key_value(self: TableModel) -> Any:
     return getattr(self, column)
 
 
-def table_on_delete_cascade(cls: Type[TableModel] | TableModel) -> dict[str, type['TableModel']]:
-    if isinstance(cls, TableModel):
-        cls = cls.__class__
-    metadata = getattr(cls, 'Metadata')
-    assert metadata is not None, f'Metadata class not specified in {cls}'
+def table_on_delete_cascade(cls: Type[TableModel] | TableModel) -> dict[str, type[TableModel]]:
+    metadata = table_metadata(cls)
     return getattr(metadata, 'on_delete_cascade', {})
 
 
@@ -65,6 +63,14 @@ def record_to_dict(self: TableModel) -> dict[str, Any]:
     if is_dataclass(self):
         return asdict(self)
     raise ValueError(f"'{self.__class__.__name__}' is not a dataclass!")
+
+
+def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
+    if isinstance(cls, TableModel):
+        cls = cls.__class__
+    metadata = getattr(cls, 'Metadata')
+    assert metadata is not None, f'Metadata class not specified in {cls}'
+    return metadata
 
 
 def new_uuid() -> str:
