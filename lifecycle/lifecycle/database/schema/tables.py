@@ -10,6 +10,7 @@ class JobFamily(TableModel):
     class Metadata:
         table_name = 'registry_jobfamily'
         primary_key = 'id'
+        plural_name = 'Job Families'
 
     id: str
     name: str
@@ -26,6 +27,7 @@ class Job(TableModel):
         on_delete_cascade = {
             'family_id': JobFamily,
         }
+        plural_name = 'Jobs'
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -58,6 +60,7 @@ class Deployment(TableModel):
     class Metadata:
         table_name = 'registry_deployment'
         primary_key = 'id'
+        plural_name = 'Deployments'
 
     id: str
     status: str
@@ -83,6 +86,7 @@ class Esc(TableModel):
     class Metadata:
         table_name = 'registry_esc'
         primary_key = 'id'
+        plural_name = 'ESCs'
 
     id: str
     name: str
@@ -99,6 +103,7 @@ class PublicEndpointRequest(TableModel):
         on_delete_cascade = {
             'job_id': Job,
         }
+        plural_name = 'Public Endpoint Requests'
 
     id: str
     job_id: str  # foreign key: Job
@@ -111,6 +116,7 @@ class TrashJob(TableModel):
     class Metadata:
         table_name = 'registry_trashjob'
         primary_key = 'id'
+        plural_name = 'Trash Jobs'
 
     id: str
     name: str
@@ -134,6 +140,7 @@ class AuditLogEvent(TableModel):
     class Metadata:
         table_name = 'registry_auditlogevent'
         primary_key = 'id'
+        plural_name = 'Audit Log Events'
 
     id: str
     version: int  # data structure version
@@ -151,6 +158,7 @@ class User(TableModel):
     class Metadata:
         table_name = 'auth_user'
         primary_key = 'id'
+        plural_name = 'Users'
 
     id: int
     password: str
@@ -175,6 +183,7 @@ class AuthSubject(TableModel):
             'esc_id': Esc,
             'job_family_id': JobFamily,
         }
+        plural_name = 'Auth Subjects'
 
     id: str
     user_id: int | None  # foreign key: User
@@ -208,6 +217,7 @@ class AuthToken(TableModel):
         on_delete_cascade = {
             'auth_subject_id': AuthSubject,
         }
+        plural_name = 'Auth Tokens'
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubject
@@ -228,6 +238,7 @@ class AuthResourcePermission(TableModel):
             'job_family_id': JobFamily,
             'job_id': Job,
         }
+        plural_name = 'Auth Resource Permissions'
 
     id: int | None
     auth_subject_id: str  # foreign key: AuthSubject
@@ -244,6 +255,7 @@ class Setting(TableModel):
     class Metadata:
         table_name = 'registry_setting'
         primary_key = 'name'
+        plural_name = 'Settings'
 
     name: str
     value: str | None  # JSON
@@ -254,6 +266,7 @@ class AsyncJobCall(TableModel):
     class Metadata:
         table_name = 'registry_asyncjobcall'
         primary_key = 'id'
+        plural_name = 'Async Job Calls'
 
     id: str
     status: str

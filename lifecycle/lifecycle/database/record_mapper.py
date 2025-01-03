@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any, Type, TypeVar
 
 from lifecycle.database.base_engine import DbEngine
@@ -19,6 +20,8 @@ class RecordMapper:
     def __init__(self, engine: DbEngine):
         self.query_wrapper: QueryWrapper = QueryWrapper(engine)
         self.placeholder: str = engine.query_builder.placeholder()
+        # cache to keep reverse dependencies for cascade delete: Origin table -> (dependant table, dependant column)
+        self._delete_cascade_dependants: dict[Type[TableModel], list[tuple[Type[TableModel], str]]] = defaultdict(list)
 
     def find_one(
         self,
@@ -317,15 +320,9 @@ class RecordMapper:
         record_object: TableModel,
     ) -> None:
         origin_primary_key = primary_key_value(record_object)
-
-        dependent_columns: dict[Type[TableModel], str] = {}
-        for dependent_table in all_tables:
-            on_delete_cascade = table_on_delete_cascade(dependent_table)
-            for column, origin_table in on_delete_cascade.items():
-                if origin_table is type(record_object):
-                    dependent_columns[dependent_table] = column
-
-        for dep_table, dep_column in dependent_columns.items():
+        self._populate_delete_cascade_dependants()
+        dependants: list[tuple[Type[TableModel], str]] = self._delete_cascade_dependants[type(record_object)]
+        for dep_table, dep_column in dependants:
             filter_kwargs = {
                 dep_column: origin_primary_key
             }
@@ -334,6 +331,14 @@ class RecordMapper:
                 self.delete_record(dep_record, cascade=True)
                 dep_record_info = f'{table_primary_key_column(dep_record)} = {primary_key_value(dep_record)}'
                 logger.debug(f'Cascade delete on record {table_type_name(dep_record)} {dep_record_info}')
+
+    def _populate_delete_cascade_dependants(self):
+        if self._delete_cascade_dependants:
+            return
+        for dependent_table in all_tables:
+            on_delete_cascade = table_on_delete_cascade(dependent_table)
+            for dep_column, origin_table in on_delete_cascade.items():
+                self._delete_cascade_dependants[origin_table].append((dependent_table, dep_column))
 
 
 def _convert_row_to_record_model(

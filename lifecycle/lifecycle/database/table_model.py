@@ -10,8 +10,11 @@ from racetrack_client.log.context_error import ContextError
 class TableModel(ABC):
     class Metadata:
         table_name: str
-        primary_key: str
+        primary_key: str  # name of the column being used as primary key
+        # mapping of a foreign key column to table class
+        # It indicates that this model depends on the other and should be deleted along with the foreign one
         on_delete_cascade: dict[str, 'TableModel'] = {}
+        plural_name: str | None = None
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
@@ -71,6 +74,14 @@ def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
     metadata = getattr(cls, 'Metadata')
     assert metadata is not None, f'Metadata class not specified in {cls}'
     return metadata
+
+
+def table_plural_name(cls: Type[TableModel]) -> str:
+    metadata = table_metadata(cls)
+    plural_name = getattr(metadata, 'plural_name')
+    if not plural_name:
+        plural_name = table_name(cls) + 's'
+    return plural_name
 
 
 def new_uuid() -> str:
