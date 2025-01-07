@@ -110,7 +110,9 @@ def setup_record_manager_endpoints(api: APIRouter):
     def _create_record(payload: CreateRecordPayload, table: str, request: Request) -> GetRecordPayload:
         """Create Record"""
         check_staff_user(request)
-        raise NotImplementedError()
+        table_type = mapper.table_name_to_class(table)
+        record = mapper.create_from_dict(table_type, payload.fields)
+        return GetRecordPayload(fields=convert_to_json_serializable(record_to_dict(record)))
 
     @api.put('/records/table/{table}')
     def _update_record(payload: UpdateRecordPayload, table: str, request: Request) -> GetRecordPayload:

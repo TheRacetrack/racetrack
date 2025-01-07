@@ -7,7 +7,7 @@ from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.table_model import TableModel, table_name, table_type_name, table_primary_key_column, \
-    primary_key_value, table_on_delete_cascade, table_fields, record_to_dict
+    primary_key_value, table_on_delete_cascade, table_fields, record_to_dict, table_id_generator, table_primary_key_type
 from lifecycle.database.schema.tables import all_tables
 from lifecycle.database.type_parser import parse_typed_object
 
@@ -235,15 +235,18 @@ class RecordMapper:
         assign_primary_key: bool = True,
     ) -> None:
         """
-        Create a new record
+        Create a new record, auto-generating primary key if it's not provided
         :param record_object: record object to create
         :param assign_primary_key: reassign returned primary key to the original object
         """
         primary_key_column = table_primary_key_column(record_object)
         record_data = _extract_record_data(record_object)
-        # Skip NULL primary keys, let the database auto generate them
-        if primary_key_column in record_data and record_data[primary_key_column] is None:
-            del record_data[primary_key_column]
+        if record_data.get(primary_key_column) is None:
+            id_generator = table_id_generator(record_object.__class__)
+            if id_generator is not None:
+                record_data[primary_key_column] = id_generator()  # generate manually if function is provided
+            elif primary_key_column in record_data:
+                del record_data[primary_key_column]  # let the database auto generate it
         returning_row = self.query_wrapper.insert_one(
             table=table_name(record_object),
             data=record_data,
@@ -252,6 +255,39 @@ class RecordMapper:
         if assign_primary_key:
             for primary_key, primary_value in returning_row.items():
                 setattr(record_object, primary_key, primary_value)
+
+    def create_from_dict(
+        self,
+        table_type: Type[T],
+        record_data: dict[str, Any],
+    ) -> T:
+        """
+        Create a new record from a dictionary of fields
+        :param table_type: table model class
+        :param record_data: dictionary with key-value pairs of record fields. Doesn't need to contain primary key
+        :return: record object with assigned primary key
+        """
+        primary_key_column = table_primary_key_column(table_type)
+        if primary_key_column in record_data and record_data.get(primary_key_column) is None:
+            del record_data[primary_key_column]
+        if primary_key_column not in record_data:
+            id_generator = table_id_generator(table_type)
+            if id_generator is not None:
+                record_data[primary_key_column] = id_generator()  # generate manually if function is provided
+
+        returning_row = self.query_wrapper.insert_one(
+            table=table_name(table_type),
+            data=record_data,
+            primary_key_columns=[primary_key_column],
+        )
+
+        if primary_key_column not in record_data:
+            primary_key_type = table_primary_key_type(table_type)
+            record_data[primary_key_column] = primary_key_type()
+        record_object = table_type(**record_data)
+        for primary_key, primary_value in returning_row.items():
+            setattr(record_object, primary_key, primary_value)
+        return record_object
 
     def update(
         self,

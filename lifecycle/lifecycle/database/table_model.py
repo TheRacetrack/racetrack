@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import asdict, is_dataclass
 import json
-from typing import Any, Type
+from typing import Any, Type, Callable
 import uuid
 
 from racetrack_client.log.context_error import ContextError
@@ -18,6 +18,8 @@ class TableModel(ABC):
         plural_name: str | None = None
         # list of columns to display on the management view
         list_display_columns: list[str] = []
+        # function to generate a new value for the primary key column
+        id_generator: Callable[[], str] | None = None
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
@@ -49,9 +51,7 @@ def table_primary_key_type(cls: Type[TableModel]) -> type:
     if isinstance(cls, TableModel):
         cls = cls.__class__
     metadata = table_metadata(cls)
-    primary_key_type = getattr(metadata, 'primary_key_type')
-    assert metadata is not None, f'primary_key_type not specified in {cls}.Metadata'
-    return primary_key_type
+    return getattr(metadata, 'primary_key_type') or str
 
 
 def primary_key_value(self: TableModel) -> Any:
@@ -98,6 +98,11 @@ def table_list_display_columns(cls: Type[TableModel]) -> list[str]:
     metadata = table_metadata(cls)
     list_display_columns = getattr(metadata, 'list_display_columns')
     return list_display_columns or []
+
+
+def table_id_generator(cls: Type[TableModel]) -> Callable[[], str] | None:
+    metadata = table_metadata(cls)
+    return getattr(metadata, 'id_generator', None)
 
 
 def new_uuid() -> str:

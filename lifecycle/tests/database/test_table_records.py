@@ -218,6 +218,33 @@ def test_filtering_many_records():
     assert [r.version for r in records] == ['2.2.2']
 
 
+def test_auto_assign_id():
+    configure_logs()
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    record = User(id=-1, password='encrypted', username='new-admin', first_name='', last_name='', email='admin@example.com', is_active=False, is_staff=False, is_superuser=False, date_joined=now(), last_login=None)
+    setattr(record, 'id', None)
+    mapper.create(record)
+    new_record = mapper.find_one(User, username='new-admin')
+    assert new_record.id > 0
+
+    record = JobFamily(id='', name='new-one')
+    setattr(record, 'id', None)
+    mapper.create(record)
+    new_record = mapper.find_one(JobFamily, name='new-one')
+    assert new_record.id, 'ID should be assigned automatically'
+
+
+def test_create_from_dict():
+    configure_logs()
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    record = mapper.create_from_dict(JobFamily, {'name': 'new-one'})
+    assert record.id, 'ID should be assigned automatically'
+    record = mapper.find_one(JobFamily, name='new-one')
+    assert record.id, 'ID should be assigned automatically'
+
+
 def _create_test_job(
     name: str,
     family_id: str,
