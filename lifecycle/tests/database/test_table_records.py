@@ -245,6 +245,16 @@ def test_create_from_dict():
     assert record.id, 'ID should be assigned automatically'
 
 
+def test_update_from_dict():
+    configure_logs()
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    record = mapper.create_from_dict(JobFamily, {'name': 'old-one'})
+    mapper.update_from_dict(JobFamily, record.id, {'name': 'new-one-updated'})
+    record = mapper.find_one(JobFamily, name='new-one-updated')
+    assert record.name, 'new-one-updated'
+
+
 def _create_test_job(
     name: str,
     family_id: str,

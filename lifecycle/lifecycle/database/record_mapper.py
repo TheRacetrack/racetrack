@@ -242,7 +242,7 @@ class RecordMapper:
         primary_key_column = table_primary_key_column(record_object)
         record_data = _extract_record_data(record_object)
         if record_data.get(primary_key_column) is None:
-            id_generator = table_id_generator(record_object.__class__)
+            id_generator = table_id_generator(type(record_object))
             if id_generator is not None:
                 record_data[primary_key_column] = id_generator()  # generate manually if function is provided
             elif primary_key_column in record_data:
@@ -274,6 +274,9 @@ class RecordMapper:
             id_generator = table_id_generator(table_type)
             if id_generator is not None:
                 record_data[primary_key_column] = id_generator()  # generate manually if function is provided
+        valid_fields = table_fields(table_type)
+        for field in record_data.keys():
+            assert field in valid_fields, f'field {field} is not a valid column'
 
         returning_row = self.query_wrapper.insert_one(
             table=table_name(table_type),
@@ -317,6 +320,26 @@ class RecordMapper:
             update_data = _extract_record_data(record_object)
         self.query_wrapper.update_one(
             table=table_name(record_object),
+            filter_conditions=filter_conditions,
+            filter_params=filter_params,
+            new_data=update_data,
+        )
+
+    def update_from_dict(
+        self,
+        table_type: Type[T],
+        primary_key_val: Any,
+        update_data: dict[str, Any],
+    ):
+        primary_key_column = table_primary_key_column(table_type)
+        assert primary_key_column not in update_data, 'primary key should not be updated'
+        valid_fields = table_fields(table_type)
+        for field in update_data.keys():
+            assert field in valid_fields, f'field {field} is not a valid column'
+        filter_kwargs = {primary_key_column: primary_key_val}
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        self.query_wrapper.update_one(
+            table=table_name(table_type),
             filter_conditions=filter_conditions,
             filter_params=filter_params,
             new_data=update_data,

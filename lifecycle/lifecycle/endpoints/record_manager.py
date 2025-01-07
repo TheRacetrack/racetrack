@@ -115,10 +115,11 @@ def setup_record_manager_endpoints(api: APIRouter):
         return GetRecordPayload(fields=convert_to_json_serializable(record_to_dict(record)))
 
     @api.put('/records/table/{table}')
-    def _update_record(payload: UpdateRecordPayload, table: str, request: Request) -> GetRecordPayload:
+    def _update_record(payload: UpdateRecordPayload, table: str, request: Request) -> None:
         """Update Record"""
         check_staff_user(request)
-        raise NotImplementedError()
+        table_type = mapper.table_name_to_class(table)
+        mapper.update_from_dict(table_type, payload.primary_key_value, payload.fields)
 
     @api.delete('/records/table/{table}')
     def _delete_record(payload: DeleteRecordPayload, table: str, request: Request) -> None:
