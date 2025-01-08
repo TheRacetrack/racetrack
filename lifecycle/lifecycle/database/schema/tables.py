@@ -10,10 +10,10 @@ class JobFamily(TableModel):
     """Collection of Jobs generations with the same name (family name)"""
     class Metadata:
         table_name = 'registry_jobfamily'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Job Families'
         list_display_columns: list[str] = ['id', 'name']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     name: str
@@ -26,13 +26,13 @@ class JobFamily(TableModel):
 class Job(TableModel):
     class Metadata:
         table_name = 'registry_job'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         on_delete_cascade = {
             'family_id': JobFamily,
         }
         plural_name = 'Jobs'
         list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'update_time', 'deployed_by']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -64,10 +64,10 @@ class Job(TableModel):
 class Deployment(TableModel):
     class Metadata:
         table_name = 'registry_deployment'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Deployments'
         list_display_columns: list[str] = ['id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     status: str
@@ -92,10 +92,10 @@ class Deployment(TableModel):
 class Esc(TableModel):
     class Metadata:
         table_name = 'registry_esc'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'ESCs'
         list_display_columns: list[str] = ['id', 'name']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     name: str
@@ -108,13 +108,13 @@ class Esc(TableModel):
 class PublicEndpointRequest(TableModel):
     class Metadata:
         table_name = 'registry_publicendpointrequest'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         on_delete_cascade = {
             'job_id': Job,
         }
         plural_name = 'Public Endpoint Requests'
         list_display_columns: list[str] = ['id', 'job_id', 'endpoint', 'active']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     job_id: str  # foreign key: Job
@@ -126,10 +126,10 @@ class PublicEndpointRequest(TableModel):
 class TrashJob(TableModel):
     class Metadata:
         table_name = 'registry_trashjob'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Trash Jobs'
         list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     name: str
@@ -152,10 +152,10 @@ class TrashJob(TableModel):
 class AuditLogEvent(TableModel):
     class Metadata:
         table_name = 'registry_auditlogevent'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Audit Log Events'
         list_display_columns: list[str] = ['id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     version: int  # data structure version
@@ -172,11 +172,11 @@ class AuditLogEvent(TableModel):
 class User(TableModel):
     class Metadata:
         table_name = 'auth_user'
-        primary_key = 'id'
+        primary_key_column = 'id'
         primary_key_type = int
+        primary_key_generator = None
         plural_name = 'Users'
         list_display_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
-        primary_key_generator: Callable[[], Any] | None = None
 
     id: int
     password: str
@@ -195,7 +195,8 @@ class User(TableModel):
 class AuthSubject(TableModel):
     class Metadata:
         table_name = 'registry_authsubject'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         on_delete_cascade = {
             'user_id': User,
             'esc_id': Esc,
@@ -203,7 +204,6 @@ class AuthSubject(TableModel):
         }
         plural_name = 'Auth Subjects'
         list_display_columns: list[str] = ['id', 'user_id', 'esc_id', 'job_family_id']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     user_id: int | None  # foreign key: User
@@ -233,13 +233,13 @@ class AuthSubject(TableModel):
 class AuthToken(TableModel):
     class Metadata:
         table_name = 'registry_authtoken'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         on_delete_cascade = {
             'auth_subject_id': AuthSubject,
         }
         plural_name = 'Auth Tokens'
         list_display_columns: list[str] = ['id', 'auth_subject_id', 'active']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubject
@@ -254,7 +254,8 @@ class AuthToken(TableModel):
 class AuthResourcePermission(TableModel):
     class Metadata:
         table_name = 'registry_authresourcepermission'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_type = int
         on_delete_cascade = {
             'auth_subject_id': AuthSubject,
             'job_family_id': JobFamily,
@@ -277,7 +278,7 @@ class AuthResourcePermission(TableModel):
 class Setting(TableModel):
     class Metadata:
         table_name = 'registry_setting'
-        primary_key = 'name'
+        primary_key_column = 'name'
         plural_name = 'Settings'
         list_display_columns: list[str] = ['name', 'value']
 
@@ -289,10 +290,10 @@ class Setting(TableModel):
 class AsyncJobCall(TableModel):
     class Metadata:
         table_name = 'registry_asyncjobcall'
-        primary_key = 'id'
+        primary_key_column = 'id'
+        primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Async Job Calls'
         list_display_columns: list[str] = ['id', 'status', 'started_at', 'job_name']
-        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     status: str

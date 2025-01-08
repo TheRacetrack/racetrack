@@ -3,7 +3,7 @@ from collections import defaultdict
 from lifecycle.auth.subject import get_description_from_auth_subject
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.schema import tables
-from lifecycle.database.table_model import table_name
+from lifecycle.database.table_model import table_metadata
 from lifecycle.server.cache import LifecycleCache
 from racetrack_commons.auth.auth import AuthSubjectType, UnauthorizedError
 from racetrack_commons.auth.scope import AuthScope
@@ -108,9 +108,9 @@ def has_endpoint_permission(
 ) -> bool:
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    table_permission = table_name(tables.AuthResourcePermission)
-    table_family = table_name(tables.JobFamily)
-    table_job = table_name(tables.Job)
+    table_permission = table_metadata(tables.AuthResourcePermission).table_name
+    table_family = table_metadata(tables.JobFamily).table_name
+    table_job = table_metadata(tables.Job).table_name
     join_expression = f'left join {table_family} on {table_family}.id = {table_permission}.job_family_id'
     join_expression += f' left join {table_job} on {table_job}.id = {table_permission}.job_id'
 
@@ -154,9 +154,9 @@ def has_resource_permission(
 ) -> bool:
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    table_permission = table_name(tables.AuthResourcePermission)
-    table_family = table_name(tables.JobFamily)
-    table_job = table_name(tables.Job)
+    table_permission = table_metadata(tables.AuthResourcePermission).table_name
+    table_family = table_metadata(tables.JobFamily).table_name
+    table_job = table_metadata(tables.Job).table_name
     join_expression = f'left join {table_family} on {table_family}.id = {table_permission}.job_family_id'
     join_expression += f' left join {table_job} on {table_job}.id = {table_permission}.job_id'
 
@@ -193,7 +193,7 @@ def has_scope_permission(
 ) -> bool:
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    table_permission = table_name(tables.AuthResourcePermission)
+    table_permission = table_metadata(tables.AuthResourcePermission).table_name
 
     subject_filter = QueryCondition(f'{table_permission}.auth_subject_id = {placeholder}', auth_subject.id)
     scope_filter = QueryCondition.operator_or(
@@ -360,9 +360,9 @@ def permission_exists(
 ) -> bool:
     mapper = LifecycleCache.record_mapper()
     placeholder: str = mapper.placeholder
-    table_permission = table_name(tables.AuthResourcePermission)
-    table_family = table_name(tables.JobFamily)
-    table_job = table_name(tables.Job)
+    table_permission = table_metadata(tables.AuthResourcePermission).table_name
+    table_family = table_metadata(tables.JobFamily).table_name
+    table_job = table_metadata(tables.Job).table_name
     join_expression = f'left join {table_family} on {table_family}.id = {table_permission}.job_family_id'
     join_expression += f' left join {table_job} on {table_job}.id = {table_permission}.job_id'
 

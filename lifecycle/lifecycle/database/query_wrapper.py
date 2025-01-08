@@ -9,6 +9,9 @@ logger = get_logger(__name__)
 
 
 class QueryWrapper:
+    """
+    A wrapper around DbEngine to provide a simple interface for common database operations and executing SQL queries.
+    """
     def __init__(self, engine: DbEngine):
         self.engine: DbEngine = engine
         self.query_builder: BaseQueryBuilder = engine.query_builder

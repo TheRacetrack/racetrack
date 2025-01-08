@@ -6,7 +6,7 @@ from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject, Job
-from lifecycle.database.table_model import new_uuid, table_name
+from lifecycle.database.table_model import new_uuid, table_metadata
 from racetrack_client.log.errors import AlreadyExists
 from racetrack_client.utils.time import now
 from racetrack_client.log.logs import configure_logs
@@ -195,8 +195,8 @@ def test_filtering_many_records():
     assert [r.version for r in records] == ['3.3.3', '1.1.1']
 
     placeholder: str = mapper.placeholder
-    table_family = table_name(JobFamily)
-    table_job = table_name(Job)
+    table_family = table_metadata(JobFamily).table_name
+    table_job = table_metadata(Job).table_name
     join_expression = f'left join {table_family} on {table_family}.id = {table_job}.family_id'
     filter_condition = QueryCondition.operator_and(
         QueryCondition(f'{table_family}.name = {placeholder}', 'primer'),
@@ -237,8 +237,8 @@ def test_create_from_dict():
     configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
-    record = mapper.create_from_dict(JobFamily, {'name': 'new-one'})
-    assert record.id, 'ID should be assigned automatically'
+    record_data = mapper.create_from_dict(JobFamily, {'name': 'new-one'})
+    assert record_data['id'], 'ID should be assigned automatically'
     record = mapper.find_one(JobFamily, name='new-one')
     assert record.id, 'ID should be assigned automatically'
 
@@ -247,8 +247,8 @@ def test_update_from_dict():
     configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
-    record = mapper.create_from_dict(JobFamily, {'name': 'old-one'})
-    mapper.update_from_dict(JobFamily, record.id, {'name': 'new-one-updated'})
+    record_data = mapper.create_from_dict(JobFamily, {'name': 'old-one'})
+    mapper.update_from_dict(JobFamily, record_data['id'], {'name': 'new-one-updated'})
     record = mapper.find_one(JobFamily, name='new-one-updated')
     assert record.name, 'new-one-updated'
 
