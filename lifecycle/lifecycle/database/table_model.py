@@ -19,7 +19,7 @@ class TableModel(ABC):
         # list of columns to display on the management view
         list_display_columns: list[str] = []
         # function to generate a new value for the primary key column
-        id_generator: Callable[[], str] | None = None
+        primary_key_generator: Callable[[], Any] | None = None
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
@@ -100,9 +100,9 @@ def table_list_display_columns(cls: Type[TableModel]) -> list[str]:
     return list_display_columns or []
 
 
-def table_id_generator(cls: Type[TableModel]) -> Callable[[], str] | None:
+def table_primary_key_generator(cls: Type[TableModel]) -> Callable[[], str] | None:
     metadata = table_metadata(cls)
-    return getattr(metadata, 'id_generator', None)
+    return getattr(metadata, 'primary_key_generator', None)
 
 
 def new_uuid() -> str:

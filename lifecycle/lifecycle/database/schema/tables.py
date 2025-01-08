@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Any
 
 from lifecycle.database.table_model import TableModel, new_uuid
 
@@ -13,7 +13,7 @@ class JobFamily(TableModel):
         primary_key = 'id'
         plural_name = 'Job Families'
         list_display_columns: list[str] = ['id', 'name']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     name: str
@@ -32,7 +32,7 @@ class Job(TableModel):
         }
         plural_name = 'Jobs'
         list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'update_time', 'deployed_by']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -67,7 +67,7 @@ class Deployment(TableModel):
         primary_key = 'id'
         plural_name = 'Deployments'
         list_display_columns: list[str] = ['id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     status: str
@@ -95,7 +95,7 @@ class Esc(TableModel):
         primary_key = 'id'
         plural_name = 'ESCs'
         list_display_columns: list[str] = ['id', 'name']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     name: str
@@ -114,7 +114,7 @@ class PublicEndpointRequest(TableModel):
         }
         plural_name = 'Public Endpoint Requests'
         list_display_columns: list[str] = ['id', 'job_id', 'endpoint', 'active']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     job_id: str  # foreign key: Job
@@ -129,7 +129,7 @@ class TrashJob(TableModel):
         primary_key = 'id'
         plural_name = 'Trash Jobs'
         list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     name: str
@@ -155,7 +155,7 @@ class AuditLogEvent(TableModel):
         primary_key = 'id'
         plural_name = 'Audit Log Events'
         list_display_columns: list[str] = ['id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     version: int  # data structure version
@@ -176,6 +176,7 @@ class User(TableModel):
         primary_key_type = int
         plural_name = 'Users'
         list_display_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
+        primary_key_generator: Callable[[], Any] | None = None
 
     id: int
     password: str
@@ -202,7 +203,7 @@ class AuthSubject(TableModel):
         }
         plural_name = 'Auth Subjects'
         list_display_columns: list[str] = ['id', 'user_id', 'esc_id', 'job_family_id']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     user_id: int | None  # foreign key: User
@@ -238,7 +239,7 @@ class AuthToken(TableModel):
         }
         plural_name = 'Auth Tokens'
         list_display_columns: list[str] = ['id', 'auth_subject_id', 'active']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubject
@@ -291,7 +292,7 @@ class AsyncJobCall(TableModel):
         primary_key = 'id'
         plural_name = 'Async Job Calls'
         list_display_columns: list[str] = ['id', 'status', 'started_at', 'job_name']
-        id_generator: Callable[[], str] = new_uuid
+        primary_key_generator: Callable[[], str] = new_uuid
 
     id: str
     status: str

@@ -222,14 +222,12 @@ def test_auto_assign_id():
     configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
-    record = User(id=-1, password='encrypted', username='new-admin', first_name='', last_name='', email='admin@example.com', is_active=False, is_staff=False, is_superuser=False, date_joined=now(), last_login=None)
-    setattr(record, 'id', None)
+    record = User(id=0, password='encrypted', username='new-admin', first_name='', last_name='', email='admin@example.com', is_active=False, is_staff=False, is_superuser=False, date_joined=now(), last_login=None)
     mapper.create(record)
     new_record = mapper.find_one(User, username='new-admin')
     assert new_record.id > 0
 
     record = JobFamily(id='', name='new-one')
-    setattr(record, 'id', None)
     mapper.create(record)
     new_record = mapper.find_one(JobFamily, name='new-one')
     assert new_record.id, 'ID should be assigned automatically'

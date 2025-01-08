@@ -39,7 +39,6 @@ class DeleteRecordPayload(BaseModel):
 class FetchManyRecordsRequest(BaseModel):
     offset: int = 0
     limit: int | None = None
-    columns: list[str] | None = None
     order_by: list[str] | None = None
     filters: dict[str, Any] | None = None
 

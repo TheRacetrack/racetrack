@@ -7,7 +7,7 @@ from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.table_model import TableModel, table_name, table_type_name, table_primary_key_column, \
-    primary_key_value, table_on_delete_cascade, table_fields, record_to_dict, table_id_generator, table_primary_key_type
+    primary_key_value, table_on_delete_cascade, table_fields, record_to_dict, table_primary_key_generator, table_primary_key_type
 from lifecycle.database.schema.tables import all_tables
 from lifecycle.database.type_parser import parse_typed_object
 
@@ -232,17 +232,17 @@ class RecordMapper:
     def create(
         self,
         record_object: TableModel,
-        assign_primary_key: bool = True,
+        auto_generate_primary_key: bool = True,
     ) -> None:
         """
-        Create a new record, auto-generating primary key if it's not provided
+        Create a new record
         :param record_object: record object to create
-        :param assign_primary_key: reassign returned primary key to the original object
+        :param auto_generate_primary_key: if True, auto-generate primary key if it's not provided
         """
         primary_key_column = table_primary_key_column(record_object)
         record_data = _extract_record_data(record_object)
-        if record_data.get(primary_key_column) is None:
-            id_generator = table_id_generator(type(record_object))
+        if not record_data.get(primary_key_column) and auto_generate_primary_key:
+            id_generator = table_primary_key_generator(type(record_object))
             if id_generator is not None:
                 record_data[primary_key_column] = id_generator()  # generate manually if function is provided
             elif primary_key_column in record_data:
@@ -252,9 +252,8 @@ class RecordMapper:
             data=record_data,
             primary_key_columns=[primary_key_column],
         )
-        if assign_primary_key:
-            for primary_key, primary_value in returning_row.items():
-                setattr(record_object, primary_key, primary_value)
+        for primary_key, primary_value in returning_row.items():
+            setattr(record_object, primary_key, primary_value)
 
     def create_from_dict(
         self,
@@ -271,7 +270,7 @@ class RecordMapper:
         if primary_key_column in record_data and record_data.get(primary_key_column) is None:
             del record_data[primary_key_column]
         if primary_key_column not in record_data:
-            id_generator = table_id_generator(table_type)
+            id_generator = table_primary_key_generator(table_type)
             if id_generator is not None:
                 record_data[primary_key_column] = id_generator()  # generate manually if function is provided
         valid_fields = table_fields(table_type)
