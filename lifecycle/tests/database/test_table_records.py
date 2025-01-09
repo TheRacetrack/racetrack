@@ -214,7 +214,9 @@ def test_filtering_many_records():
     records = mapper.filter_by_fields(Job, order_by=['version'], offset=1, limit=1)
     assert [r.version for r in records] == ['2.2.2']
 
-    records = mapper.filter_by_fields(Job, order_by=['version'], error='bad')
+    records = mapper.filter_by_fields(Job, order_by=['version'], filters={
+        'error': 'bad',
+    })
     assert [r.version for r in records] == ['2.2.2']
 
 

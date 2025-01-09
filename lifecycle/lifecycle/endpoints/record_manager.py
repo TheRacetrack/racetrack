@@ -4,6 +4,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from lifecycle.database.table_model import table_type_name, TableModel, record_to_dict, table_metadata
+from lifecycle.database.type_parser import parse_dict_typed_values
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.database.schema import tables
 from lifecycle.auth.check import check_staff_user
@@ -80,12 +81,13 @@ def setup_record_manager_endpoints(api: APIRouter):
         check_staff_user(request)
         table_type = mapper.table_name_to_class(table)
         metadata = table_metadata(table_type)
-        filter_kwargs = payload.filters or {}
+        filters = parse_dict_typed_values(payload.filters or {}, table_type)
         records: list[TableModel] = mapper.filter_by_fields(
-            table_type, order_by=payload.order_by, offset=payload.offset, limit=payload.limit, **filter_kwargs)
+            table_type, order_by=payload.order_by, offset=payload.offset, limit=payload.limit, filters=filters)
         record_payloads: list[GetRecordPayload] = [
             GetRecordPayload(fields=convert_to_json_serializable(record_to_dict(record)))
-            for record in records]
+            for record in records
+        ]
         return FetchManyRecordsResponse(
             columns=metadata.fields,
             primary_key_column=metadata.primary_key_column,
@@ -108,7 +110,8 @@ def setup_record_manager_endpoints(api: APIRouter):
         """Create Record"""
         check_staff_user(request)
         table_type = mapper.table_name_to_class(table)
-        record_data = mapper.create_from_dict(table_type, payload.fields)
+        fields_data = parse_dict_typed_values(payload.fields, table_type)
+        record_data = mapper.create_from_dict(table_type, fields_data)
         return GetRecordPayload(fields=convert_to_json_serializable(record_data))
 
     @api.put('/records/table/{table}')
@@ -119,7 +122,8 @@ def setup_record_manager_endpoints(api: APIRouter):
         metadata = table_metadata(table_type)
         primary_key_type: type = metadata.primary_key_type
         primary_key_value = primary_key_type(payload.primary_key_value)
-        mapper.update_from_dict(table_type, primary_key_value, payload.fields)
+        fields_data = parse_dict_typed_values(payload.fields, table_type)
+        mapper.update_from_dict(table_type, primary_key_value, fields_data)
 
     @api.delete('/records/table/{table}')
     def _delete_record(payload: DeleteRecordPayload, table: str, request: Request) -> None:

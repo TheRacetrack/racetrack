@@ -114,18 +114,19 @@ class RecordMapper:
         order_by: list[str] | None = None,
         offset: int | None = None,
         limit: int | None = None,
-        **filter_kwargs: Any,
+        filters: dict[str, Any] | None = None,
     ) -> list[T]:
         """
         List many records, optionally filtered by simple key-value exact fields
         :param table_type: table model class
         :param order_by: list of columns to order by, for descending order prepend column name with '-'
-        :param limit: maximum number of records to return. None is no limit
         :param offset: number of records to skip from the beginning
+        :param limit: maximum number of records to return. None is no limit
+        :param filters: key-value pairs of exact filter criteria
         :return: list of matching record objects
         """
         metadata = self._tables_metadata[table_type]
-        filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
+        filter_conditions, filter_params = self._build_filter_conditions(table_type, filters or {})
         rows = self.query_wrapper.select_many(
             table=metadata.table_name,
             fields=metadata.fields,
@@ -316,7 +317,8 @@ class RecordMapper:
         update_data: dict[str, Any],
     ):
         metadata = self._tables_metadata[table_type]
-        assert metadata.primary_key_column not in update_data, 'primary key should not be updated'
+        if metadata.primary_key_column in update_data:
+            del update_data[metadata.primary_key_column]  # primary key should not be updated
         _validate_fields(update_data, metadata)
         filter_kwargs = {metadata.primary_key_column: primary_key_val}
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filter_kwargs)
