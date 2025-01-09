@@ -207,13 +207,13 @@ def test_filtering_many_records():
         Job, join_expression=join_expression, condition=filter_condition,
     )
 
-    records = mapper.filter_by_fields(Job, order_by=['version'], offset=1, limit=1)
-    assert [r.version for r in records] == ['2.2.2']
+    records = mapper.filter_dicts(Job, order_by=['version'], offset=1, limit=1)
+    assert [r['version'] for r in records] == ['2.2.2']
 
-    records = mapper.filter_by_fields(Job, order_by=['version'], filters={
+    records = mapper.filter_dicts(Job, order_by=['version'], filters={
         'error': 'bad',
     })
-    assert [r.version for r in records] == ['2.2.2']
+    assert [r['version'] for r in records] == ['2.2.2']
 
 
 def test_auto_assign_id():

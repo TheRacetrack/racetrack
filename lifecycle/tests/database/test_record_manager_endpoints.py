@@ -3,7 +3,7 @@ from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.endpoints.record_manager import list_all_tables, create_record, RecordFieldsPayload, \
     count_table_records, CountRecordsRequest, list_table_records, FetchManyRecordsRequest, get_one_record, \
-    update_record, delete_record
+    update_record, delete_record, FetchManyRecordsResponse
 from racetrack_client.log.errors import EntityNotFound
 
 
@@ -30,6 +30,16 @@ def test_endpoints_operations():
 
     response = list_table_records(mapper, FetchManyRecordsRequest(filters={'name': 'adder'}), 'registry_jobfamily')
     assert [record.fields['name'] for record in response.records] == ['adder']
+
+    response = list_table_records(mapper, FetchManyRecordsRequest(order_by=['name'], columns=['name']), 'registry_jobfamily')
+    assert response == FetchManyRecordsResponse(
+        columns=['name'],
+        primary_key_column='id',
+        records=[
+            RecordFieldsPayload(fields={'name': 'adder'}),
+            RecordFieldsPayload(fields={'name': 'primer'}),
+        ],
+    )
 
     record = get_one_record(mapper, 'registry_jobfamily', ids[0])
     assert record.fields == {'id': ids[0], 'name': 'primer'}

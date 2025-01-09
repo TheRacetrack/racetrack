@@ -28,6 +28,7 @@ class FetchManyRecordsRequest(BaseModel):
     limit: int | None = None
     order_by: list[str] | None = None
     filters: dict[str, Any] | None = None
+    columns: list[str] | None = None
 
 
 class FetchManyRecordsResponse(BaseModel):
@@ -114,14 +115,16 @@ def list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, t
     table_type = mapper.table_name_to_class(table)
     metadata = table_metadata(table_type)
     filters = parse_dict_typed_values(payload.filters or {}, table_type)
-    records: list[TableModel] = mapper.filter_by_fields(
-        table_type, order_by=payload.order_by, offset=payload.offset, limit=payload.limit, filters=filters)
+    columns = payload.columns or metadata.fields
+    records: list[dict] = mapper.filter_dicts(
+        table_type, columns=payload.columns,  filters=filters, order_by=payload.order_by,
+        offset=payload.offset, limit=payload.limit)
     record_payloads: list[RecordFieldsPayload] = [
-        RecordFieldsPayload(fields=convert_to_json_serializable(record_to_dict(record)))
+        RecordFieldsPayload(fields=convert_to_json_serializable(record))
         for record in records
     ]
     return FetchManyRecordsResponse(
-        columns=metadata.fields,
+        columns=columns,
         primary_key_column=metadata.primary_key_column,
         records=record_payloads,
     )

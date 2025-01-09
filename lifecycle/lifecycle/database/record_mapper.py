@@ -108,35 +108,39 @@ class RecordMapper:
         )
         return [_convert_row_to_record_model(row, table_type) for row in rows]
 
-    def filter_by_fields(
+    def filter_dicts(
         self,
         table_type: Type[T],
+        columns: list[str] | None = None,
         order_by: list[str] | None = None,
         offset: int | None = None,
         limit: int | None = None,
         filters: dict[str, Any] | None = None,
-    ) -> list[T]:
+    ) -> list[dict[str, Any]]:
         """
         List many records, optionally filtered by simple key-value exact fields
         :param table_type: table model class
+        :param columns: selective list of columns to retrieve. If None, all columns are returned
         :param order_by: list of columns to order by, for descending order prepend column name with '-'
         :param offset: number of records to skip from the beginning
         :param limit: maximum number of records to return. None is no limit
         :param filters: key-value pairs of exact filter criteria
-        :return: list of matching record objects
+        :return: list of matching records as column-value dictionaries
         """
         metadata = self._tables_metadata[table_type]
         filter_conditions, filter_params = self._build_filter_conditions(table_type, filters or {})
-        rows = self.query_wrapper.select_many(
+        fields = columns or metadata.fields
+        if columns:
+            assert not (set(columns) - set(metadata.fields)), f'columns {columns} are not valid for the table {table_type}'
+        return self.query_wrapper.select_many(
             table=metadata.table_name,
-            fields=metadata.fields,
+            fields=fields,
             filter_conditions=filter_conditions,
             filter_params=filter_params,
             order_by=order_by,
             limit=limit,
             offset=offset,
         )
-        return [_convert_row_to_record_model(row, table_type) for row in rows]
 
     def list_all(
         self,
