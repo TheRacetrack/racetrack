@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 
 from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
@@ -8,7 +9,7 @@ from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject, Job
 from lifecycle.database.table_model import new_uuid, table_metadata
 from racetrack_client.log.errors import AlreadyExists
-from racetrack_client.utils.time import now
+from racetrack_client.utils.time import now, datetime_to_str
 from racetrack_client.log.logs import configure_logs
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.entities.dto import JobStatus
@@ -55,7 +56,6 @@ def test_record_operations():
 
 
 def test_create_or_update():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record: JobFamily = JobFamily(
@@ -73,7 +73,6 @@ def test_create_or_update():
 
 
 def test_violate_primary_key():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record: JobFamily = JobFamily(
@@ -89,7 +88,6 @@ def test_violate_primary_key():
 
 
 def test_create_with_auto_increment():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     job_family = JobFamily(
@@ -121,7 +119,6 @@ def test_create_with_auto_increment():
 
 
 def test_update_only_changed_fields():
-    configure_logs()
     db_engine = create_db_engine(Config(database_log_queries=True))
     mapper = RecordMapper(db_engine)
 
@@ -146,7 +143,6 @@ def test_update_only_changed_fields():
 
 
 def test_delete_cascade():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config(database_log_queries=True)))
 
     job_family = JobFamily(id=new_uuid(), name='primer')
@@ -221,7 +217,6 @@ def test_filtering_many_records():
 
 
 def test_auto_assign_id():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record = User(id=0, password='encrypted', username='new-admin', first_name='', last_name='', email='admin@example.com', is_active=False, is_staff=False, is_superuser=False, date_joined=now(), last_login=None)
@@ -236,7 +231,6 @@ def test_auto_assign_id():
 
 
 def test_create_from_dict():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record_data = mapper.create_from_dict(JobFamily, {'name': 'new-one'})
@@ -246,13 +240,26 @@ def test_create_from_dict():
 
 
 def test_update_from_dict():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record_data = mapper.create_from_dict(JobFamily, {'name': 'old-one'})
     mapper.update_from_dict(JobFamily, record_data['id'], {'name': 'new-one-updated'})
     record = mapper.find_one(JobFamily, name='new-one-updated')
     assert record.name, 'new-one-updated'
+
+
+def test_casting_datetime_type():
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    mapper.create(job_family := JobFamily(id='', name='primer'))
+    job = _create_test_job('primer', job_family.id, version='1.1.1')
+    mapper.create(job)
+    update_time_str = datetime_to_str(job.update_time)
+    assert datetime_to_str(mapper.find_one(Job, id=job.id).update_time) == update_time_str
+
+    tomorrow = now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
+    mapper.update_from_dict(Job, job.id, {'update_time': tomorrow})
+    assert datetime_to_str(mapper.find_one(Job, id=job.id).update_time) == datetime_to_str(tomorrow)
 
 
 def _create_test_job(
