@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Callable, Any
+from typing import Callable
 
 from lifecycle.database.table_model import TableModel, new_uuid
 

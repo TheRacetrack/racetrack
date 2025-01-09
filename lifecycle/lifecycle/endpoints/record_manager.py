@@ -47,46 +47,46 @@ def setup_record_manager_endpoints(api: APIRouter):
     def _list_all_tables_endpoint(request: Request) -> list[TableMetadataPayload]:
         """Get list of metadata for all tables"""
         check_staff_user(request)
-        return list(_list_all_tables())
+        return list(list_all_tables())
 
     @api.post('/records/table/{table}')
     def _create_record_endpoint(payload: RecordFieldsPayload, table: str, request: Request) -> RecordFieldsPayload:
         """Create Record"""
         check_staff_user(request)
-        return _create_record(mapper, payload, table)
+        return create_record(mapper, payload, table)
 
     @api.post('/records/count/{table}')
     def _count_table_records_endpoint(payload: CountRecordsRequest, table: str, request: Request) -> int:
         """Count how many records are in a table"""
         check_staff_user(request)
-        return _count_table_records(mapper, payload, table)
+        return count_table_records(mapper, payload, table)
 
     @api.post('/records/list/{table}')
     def _list_table_records_endpoint(payload: FetchManyRecordsRequest, table: str, request: Request) -> FetchManyRecordsResponse:
         """Fetch many records from a table"""
         check_staff_user(request)
-        return _list_table_records(mapper, payload, table)
+        return list_table_records(mapper, payload, table)
 
     @api.get('/records/table/{table}/id/{record_id}')
     def _get_one_record_endpoint(table: str, record_id: str, request: Request) -> RecordFieldsPayload:
         """Get data for one record by ID"""
         check_staff_user(request)
-        return _get_one_record(mapper, table, record_id)
+        return get_one_record(mapper, table, record_id)
 
     @api.put('/records/table/{table}/id/{record_id}')
     def _update_record_endpoint(payload: RecordFieldsPayload, table: str, record_id: str, request: Request) -> None:
         """Update fields of record selectively"""
         check_staff_user(request)
-        _update_record(mapper, payload, table, record_id)
+        update_record(mapper, payload, table, record_id)
 
     @api.delete('/records/table/{table}/id/{record_id}')
     def _delete_record_endpoint(table: str, record_id: str, request: Request) -> None:
         """Delete record by ID"""
         check_staff_user(request)
-        _delete_record(mapper, table, record_id)
+        delete_record(mapper, table, record_id)
 
 
-def _list_all_tables() -> Iterable[TableMetadataPayload]:
+def list_all_tables() -> Iterable[TableMetadataPayload]:
     for table_type in tables.all_tables:
         metadata = table_metadata(table_type)
         yield TableMetadataPayload(
@@ -97,20 +97,20 @@ def _list_all_tables() -> Iterable[TableMetadataPayload]:
         )
 
 
-def _count_table_records(mapper: RecordMapper, payload: CountRecordsRequest, table: str) -> int:
+def count_table_records(mapper: RecordMapper, payload: CountRecordsRequest, table: str) -> int:
     table_type = mapper.table_name_to_class(table)
     filters = parse_dict_typed_values(payload.filters or {}, table_type)
     return mapper.count(table_type, **filters)
 
 
-def _create_record(mapper: RecordMapper, payload: RecordFieldsPayload, table: str) -> RecordFieldsPayload:
+def create_record(mapper: RecordMapper, payload: RecordFieldsPayload, table: str) -> RecordFieldsPayload:
     table_type = mapper.table_name_to_class(table)
     fields_data = parse_dict_typed_values(payload.fields, table_type)
     record_data = mapper.create_from_dict(table_type, fields_data)
     return RecordFieldsPayload(fields=convert_to_json_serializable(record_data))
 
 
-def _list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, table: str) -> FetchManyRecordsResponse:
+def list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, table: str) -> FetchManyRecordsResponse:
     table_type = mapper.table_name_to_class(table)
     metadata = table_metadata(table_type)
     filters = parse_dict_typed_values(payload.filters or {}, table_type)
@@ -127,7 +127,7 @@ def _list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, 
     )
 
 
-def _get_one_record(mapper: RecordMapper, table: str, record_id: str) -> RecordFieldsPayload:
+def get_one_record(mapper: RecordMapper, table: str, record_id: str) -> RecordFieldsPayload:
     table_type = mapper.table_name_to_class(table)
     metadata = table_metadata(table_type)
     filters = {metadata.primary_key_column: metadata.primary_key_type(record_id)}
@@ -135,7 +135,7 @@ def _get_one_record(mapper: RecordMapper, table: str, record_id: str) -> RecordF
     return RecordFieldsPayload(fields=convert_to_json_serializable(record_to_dict(record)))
 
 
-def _update_record(mapper: RecordMapper, payload: RecordFieldsPayload, table: str, record_id: str) -> None:
+def update_record(mapper: RecordMapper, payload: RecordFieldsPayload, table: str, record_id: str) -> None:
     table_type = mapper.table_name_to_class(table)
     metadata = table_metadata(table_type)
     primary_key_type: type = metadata.primary_key_type
@@ -144,7 +144,7 @@ def _update_record(mapper: RecordMapper, payload: RecordFieldsPayload, table: st
     mapper.update_from_dict(table_type, primary_key_value, fields_data)
 
 
-def _delete_record(mapper: RecordMapper, table: str, record_id: str) -> None:
+def delete_record(mapper: RecordMapper, table: str, record_id: str) -> None:
     table_type = mapper.table_name_to_class(table)
     metadata = table_metadata(table_type)
     filters = {metadata.primary_key_column: metadata.primary_key_type(record_id)}
