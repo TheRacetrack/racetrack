@@ -1,10 +1,7 @@
 from abc import ABC
 from dataclasses import asdict, is_dataclass
-import json
 from typing import Any, Type, Callable
 import uuid
-
-from racetrack_client.log.context_error import ContextError
 
 
 class TableModel(ABC):
@@ -72,12 +69,3 @@ def record_to_dict(self: TableModel) -> dict[str, Any]:
 
 def new_uuid() -> str:
     return str(uuid.uuid4())
-
-
-def parse_json_column(text: str | None) -> Any:
-    if not text:
-        return None
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        raise ContextError(f'Unparsable JSON content ({text})') from e

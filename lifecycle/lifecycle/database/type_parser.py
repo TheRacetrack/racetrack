@@ -1,8 +1,11 @@
 import dataclasses
+import json
 from datetime import datetime, timezone
 from dateutil import parser as dt_parser
 from typing import Type, TypeVar, Union, Any, get_origin, get_args
 import types
+
+from racetrack_client.log.context_error import ContextError
 
 T = TypeVar("T")
 
@@ -75,3 +78,12 @@ def parse_dict_typed_values(data: dict[str, Any], clazz: Type[T]) -> dict[str, A
             raise KeyError(f'unexpected field "{key}" provided for type {clazz}')
         typed_data[key] = parse_typed_object(value, field_types[key])
     return typed_data
+
+
+def parse_json_column(text: str | None) -> Any:
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        raise ContextError(f'Unparsable JSON content ({text})') from e
