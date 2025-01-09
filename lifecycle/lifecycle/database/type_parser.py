@@ -65,6 +65,8 @@ def parse_dict_typed_values(data: dict[str, Any], clazz: Type[T]) -> dict[str, A
     :param clazz: expected dataclass type to take the fields from
     :return: dictionary with the same keys as the input, but with values casted to the expected types
     """
+    if not data:
+        return {}
     assert dataclasses.is_dataclass(clazz), f'expected dataclass type to parse into a dict, got {clazz}'
     field_types = {field.name: field.type for field in dataclasses.fields(clazz)}
     typed_data: dict[str, Any] = dict()
