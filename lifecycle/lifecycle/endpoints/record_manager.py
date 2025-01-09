@@ -17,6 +17,7 @@ class TableMetadataPayload(BaseModel):
     table_name: str
     plural_name: str
     primary_key_column: str
+    main_columns: list[str]
 
 
 class RecordFieldsPayload(BaseModel):
@@ -95,6 +96,7 @@ def list_all_tables() -> Iterable[TableMetadataPayload]:
             table_name=metadata.table_name,
             plural_name=metadata.plural_name,
             primary_key_column=metadata.primary_key_column,
+            main_columns=metadata.main_columns,
         )
 
 

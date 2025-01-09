@@ -13,7 +13,7 @@ class JobFamily(TableModel):
         primary_key_column = 'id'
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Job Families'
-        list_display_columns: list[str] = ['id', 'name']
+        main_columns: list[str] = ['id', 'name']
 
     id: str
     name: str
@@ -32,7 +32,7 @@ class Job(TableModel):
             'family_id': JobFamily,
         }
         plural_name = 'Jobs'
-        list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'update_time', 'deployed_by']
+        main_columns: list[str] = ['id', 'name', 'version', 'status', 'update_time', 'deployed_by']
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -67,7 +67,7 @@ class Deployment(TableModel):
         primary_key_column = 'id'
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Deployments'
-        list_display_columns: list[str] = ['id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase']
+        main_columns: list[str] = ['id', 'job_name', 'job_version', 'status', 'create_time', 'deployed_by', 'phase']
 
     id: str
     status: str
@@ -95,7 +95,7 @@ class Esc(TableModel):
         primary_key_column = 'id'
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'ESCs'
-        list_display_columns: list[str] = ['id', 'name']
+        main_columns: list[str] = ['id', 'name']
 
     id: str
     name: str
@@ -114,7 +114,7 @@ class PublicEndpointRequest(TableModel):
             'job_id': Job,
         }
         plural_name = 'Public Endpoint Requests'
-        list_display_columns: list[str] = ['id', 'job_id', 'endpoint', 'active']
+        main_columns: list[str] = ['id', 'job_id', 'endpoint', 'active']
 
     id: str
     job_id: str  # foreign key: Job
@@ -129,7 +129,7 @@ class TrashJob(TableModel):
         primary_key_column = 'id'
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Trash Jobs'
-        list_display_columns: list[str] = ['id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days']
+        main_columns: list[str] = ['id', 'name', 'version', 'status', 'delete_time', 'deployed_by', 'age_days']
 
     id: str
     name: str
@@ -155,7 +155,7 @@ class AuditLogEvent(TableModel):
         primary_key_column = 'id'
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Audit Log Events'
-        list_display_columns: list[str] = ['id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version']
+        main_columns: list[str] = ['id', 'timestamp', 'event_type', 'username_executor', 'job_name', 'job_version']
 
     id: str
     version: int  # data structure version
@@ -176,7 +176,7 @@ class User(TableModel):
         primary_key_type = int
         primary_key_generator = None
         plural_name = 'Users'
-        list_display_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
+        main_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
 
     id: int
     password: str
@@ -203,7 +203,7 @@ class AuthSubject(TableModel):
             'job_family_id': JobFamily,
         }
         plural_name = 'Auth Subjects'
-        list_display_columns: list[str] = ['id', 'user_id', 'esc_id', 'job_family_id']
+        main_columns: list[str] = ['id', 'user_id', 'esc_id', 'job_family_id']
 
     id: str
     user_id: int | None  # foreign key: User
@@ -239,7 +239,7 @@ class AuthToken(TableModel):
             'auth_subject_id': AuthSubject,
         }
         plural_name = 'Auth Tokens'
-        list_display_columns: list[str] = ['id', 'auth_subject_id', 'active']
+        main_columns: list[str] = ['id', 'auth_subject_id', 'active']
 
     id: str
     auth_subject_id: str  # foreign key: AuthSubject
@@ -262,7 +262,7 @@ class AuthResourcePermission(TableModel):
             'job_id': Job,
         }
         plural_name = 'Auth Resource Permissions'
-        list_display_columns: list[str] = ['id', 'auth_subject_id', 'scope', 'job_family_id', 'job_id', 'endpoint']
+        main_columns: list[str] = ['id', 'auth_subject_id', 'scope', 'job_family_id', 'job_id', 'endpoint']
 
     id: int | None
     auth_subject_id: str  # foreign key: AuthSubject
@@ -280,7 +280,7 @@ class Setting(TableModel):
         table_name = 'registry_setting'
         primary_key_column = 'name'
         plural_name = 'Settings'
-        list_display_columns: list[str] = ['name', 'value']
+        main_columns: list[str] = ['name', 'value']
 
     name: str
     value: str | None  # JSON
@@ -293,7 +293,7 @@ class AsyncJobCall(TableModel):
         primary_key_column = 'id'
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Async Job Calls'
-        list_display_columns: list[str] = ['id', 'status', 'started_at', 'job_name']
+        main_columns: list[str] = ['id', 'status', 'started_at', 'job_name']
 
     id: str
     status: str

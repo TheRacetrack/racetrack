@@ -16,7 +16,7 @@ class TableModel(ABC):
         on_delete_cascade: dict[str, Type['TableModel']] = {}
         plural_name: str
         # list of columns to display on the management view
-        list_display_columns: list[str] = []
+        main_columns: list[str] = []
 
         # Attributes evaluated at runtime:
         fields: list[str]
@@ -47,7 +47,7 @@ def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
     metadata.primary_key_type = getattr(metadata, 'primary_key_type', None) or str
     metadata.on_delete_cascade = getattr(metadata, 'on_delete_cascade', {})
     metadata.plural_name = getattr(metadata, 'plural_name', None) or (cls.__name__ + 's')
-    metadata.list_display_columns = getattr(metadata, 'list_display_columns', [])
+    metadata.main_columns = getattr(metadata, 'main_columns', [])
     metadata.primary_key_generator = getattr(metadata, 'primary_key_generator', None)
     return metadata
 
