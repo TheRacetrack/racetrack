@@ -65,6 +65,8 @@ export interface TableMetadataPayload {
     plural_name: string
     primary_key_column: string
     main_columns: string[]
+    all_columns: string[]
+    column_types: Record<string, string>
 }
 
 export interface RecordFieldsPayload {

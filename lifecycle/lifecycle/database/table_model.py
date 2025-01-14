@@ -1,7 +1,22 @@
 from abc import ABC
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
+from enum import Enum
 from typing import Any, Type, Callable
 import uuid
+
+
+class ColumnType(str, Enum):
+    STRING = 'str'
+    DATETIME = 'datetime'
+    INT = 'int'
+    FLOAT = 'float'
+    BOOLEAN = 'bool'
+    BYTES = 'bytes'
+    OPTIONAL_STRING = 'str | None'
+    OPTIONAL_DATETIME = 'datetime | None'
+    OPTIONAL_INT = 'int | None'
+    UNKNOWN = 'Any'
 
 
 class TableModel(ABC):
@@ -20,6 +35,7 @@ class TableModel(ABC):
 
         # Attributes evaluated at runtime:
         fields: list[str]
+        column_types: dict[str, ColumnType]
 
 
 def table_type_name(cls: Type[TableModel] | TableModel) -> str:
@@ -36,6 +52,7 @@ def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
 
     field_annotations: dict[str, type] = cls.__annotations__
     metadata.fields = list(field_annotations.keys())
+    metadata.column_types = {col: build_column_type(col_type) for col, col_type in field_annotations.items()}
 
     _table_name = getattr(metadata, 'table_name', None)
     assert _table_name, f'table_name not specified in {cls}.Metadata'
@@ -65,6 +82,21 @@ def record_to_dict(self: TableModel) -> dict[str, Any]:
     if is_dataclass(self):
         return asdict(self)
     raise ValueError(f"'{self.__class__.__name__}' is not a dataclass!")
+
+
+def build_column_type(annotation: type) -> ColumnType:
+    type_dict: dict[type, ColumnType] = {
+        str: ColumnType.STRING,
+        datetime: ColumnType.DATETIME,
+        int: ColumnType.INT,
+        float: ColumnType.FLOAT,
+        bool: ColumnType.BOOLEAN,
+        bytes: ColumnType.BYTES,
+        str | None: ColumnType.OPTIONAL_STRING,
+        datetime | None: ColumnType.OPTIONAL_DATETIME,
+        int | None: ColumnType.OPTIONAL_INT,
+    }
+    return type_dict.get(annotation, ColumnType.UNKNOWN)
 
 
 def new_uuid() -> str:

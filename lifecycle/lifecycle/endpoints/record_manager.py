@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from lifecycle.database.record_mapper import RecordMapper
-from lifecycle.database.table_model import table_type_name, TableModel, record_to_dict, table_metadata
+from lifecycle.database.table_model import table_type_name, TableModel, record_to_dict, table_metadata, ColumnType
 from lifecycle.database.type_parser import parse_dict_typed_values
 from lifecycle.server.cache import LifecycleCache
 from lifecycle.database.schema import tables
@@ -18,6 +18,8 @@ class TableMetadataPayload(BaseModel):
     plural_name: str
     primary_key_column: str
     main_columns: list[str]
+    all_columns: list[str]
+    column_types: dict[str, ColumnType]
 
 
 class RecordFieldsPayload(BaseModel):
@@ -56,6 +58,12 @@ def setup_record_manager_endpoints(api: APIRouter):
         """Create Record"""
         check_staff_user(request)
         return create_record(mapper, payload, table)
+
+    @api.get('/records/table/{table}/metadata')
+    def _get_table_metadata(table: str, request: Request) -> TableMetadataPayload:
+        """Get metadata of a table"""
+        check_staff_user(request)
+        return get_table_metadata(mapper, table)
 
     @api.post('/records/count/{table}')
     def _count_table_records_endpoint(payload: CountRecordsRequest, table: str, request: Request) -> int:
@@ -97,7 +105,23 @@ def list_all_tables() -> Iterable[TableMetadataPayload]:
             plural_name=metadata.plural_name,
             primary_key_column=metadata.primary_key_column,
             main_columns=metadata.main_columns,
+            all_columns=metadata.fields,
+            column_types=metadata.column_types,
         )
+
+
+def get_table_metadata(mapper: RecordMapper, table: str) -> TableMetadataPayload:
+    table_type = mapper.table_name_to_class(table)
+    metadata = table_metadata(table_type)
+    return TableMetadataPayload(
+        class_name=table_type_name(table_type),
+        table_name=metadata.table_name,
+        plural_name=metadata.plural_name,
+        primary_key_column=metadata.primary_key_column,
+        main_columns=metadata.main_columns,
+        all_columns=metadata.fields,
+        column_types=metadata.column_types,
+    )
 
 
 def count_table_records(mapper: RecordMapper, payload: CountRecordsRequest, table: str) -> int:
