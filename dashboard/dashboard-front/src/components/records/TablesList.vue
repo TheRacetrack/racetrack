@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload} from '@/utils/api-schema'
 import {toastService} from "@/services/ToastService";
-import { mdiDatabase } from '@quasar/extras/mdi-v7'
+import { mdiDatabase, mdiTable } from '@quasar/extras/mdi-v7'
 
 const tablesMetadata = ref<TableMetadataPayload[]>([])
 const loading = ref(true)
@@ -27,11 +27,10 @@ onMounted(() => {
 
 <template>
     <q-card>
-
         <q-card-section class="q-pb-none">
-            <span class="text-h6">
-                <router-link :to="{name: 'records-tables-index'}">Record Manager</router-link>
-            </span>
+            <q-breadcrumbs>
+              <q-breadcrumbs-el label="Tables Index" :icon="mdiDatabase" :to="{name: 'records-tables-index'}" />
+            </q-breadcrumbs>
         </q-card-section>
 
         <q-card-section>
@@ -42,7 +41,7 @@ onMounted(() => {
                         :to="{name: 'records-table', params: {table: tableMetadata.table_name}}">
 
                     <q-item-section avatar>
-                        <q-icon :name="mdiDatabase" />
+                        <q-icon :name="mdiTable" />
                     </q-item-section>
 
                     <q-item-section>
@@ -55,6 +54,5 @@ onMounted(() => {
                 <q-spinner-gears size="50px" color="primary" />
             </q-inner-loading>
         </q-card-section>
-
     </q-card>
 </template>
