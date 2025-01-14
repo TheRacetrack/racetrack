@@ -53,14 +53,14 @@ function changePassword() {
                 <q-input outlined type="password" label="New Password"
                     v-model="newPassword" @keydown.enter.prevent="changePassword"
                 />
-                <p class="text-grey-7">
+                <div class="text-grey-7">
                     <ul>
                         <li>Your password can't be too similar to your other personal information.</li>
                         <li>Your password must contain at least 8 characters.</li>
                         <li>Your password can't be a commonly used password.</li>
                         <li>Your password can't be entirely numeric.</li>
                     </ul>
-                </p>
+                </div>
                 <q-input outlined type="password" label="New password confirmation"
                     hint="Enter the same password as before, for verification."
                     v-model="newPassword2" @keydown.enter.prevent="changePassword"

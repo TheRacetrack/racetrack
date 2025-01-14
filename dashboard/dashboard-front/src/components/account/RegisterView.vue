@@ -59,14 +59,14 @@ function register() {
                 <q-input outlined type="password" label="Password" autocomplete="password"
                 v-model="password" @keydown.enter.prevent="register"
                 />
-                <p class="text-grey-7">
+                <div class="text-grey-7">
                     <ul>
                         <li>Your password can't be too similar to your other personal information.</li>
                         <li>Your password must contain at least 8 characters.</li>
                         <li>Your password can't be a commonly used password.</li>
                         <li>Your password can't be entirely numeric.</li>
                     </ul>
-                </p>
+                </div>
                 <q-input outlined type="password" label="Password confirmation" autocomplete="password"
                 hint="Enter the same password as before, for verification."
                 v-model="password2" @keydown.enter.prevent="register"
