@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useRoute} from "vue-router"
+import {useRoute, useRouter} from "vue-router"
 import { ref, onMounted } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
@@ -8,6 +8,7 @@ import { mdiDatabase, mdiTable } from '@quasar/extras/mdi-v7'
 import type {QTableProps} from "quasar"
 
 const route = useRoute()
+const router = useRouter()
 const tableName: string = route.params.table as string
 const tableMetadata = ref<TableMetadataPayload | null>(null)
 const recordCount = ref<number | null>(null)
@@ -76,6 +77,12 @@ async function fetchRecords(): Promise<void> {
     }
 }
 
+function onRowClick(event: Event, row: RecordFieldsPayload, index: number) {
+    if (!tableMetadata.value) return
+    const rowId = row.fields[tableMetadata.value.primary_key_column]
+    router.push({name: 'records-table-record', params: {table: tableName, recordId: rowId}})
+}
+
 onMounted(async () => {
     await fetchTableMetadata()
     await fetchRecordsCount()
@@ -100,7 +107,9 @@ onMounted(async () => {
           :visible-columns="visibleColumns"
           :pagination="pagination"
           :filter="tableFilter"
+          :loading="loading"
           no-data-label="No records"
+          @row-click="onRowClick"
         >
             <template v-slot:top-left>
                 <q-select
@@ -120,6 +129,7 @@ onMounted(async () => {
                         <q-icon name="search" />
                     </template>
                 </q-input>
+                <q-btn color="primary" label="Add record" @click="" />
             </template>
             <template v-slot:header="props">
                 <q-tr :props="props">
