@@ -49,9 +49,13 @@ onMounted(async () => {
             <q-breadcrumbs>
               <q-breadcrumbs-el label="Tables Index" :icon="mdiDatabase" :to="{name: 'records-tables-index'}" />
               <q-breadcrumbs-el :label="tableMetadata?.plural_name ?? ''" :icon="mdiTable" :to="{name: 'records-table', params: {table: tableName}}" />
-              <q-breadcrumbs-el :label="`${recordId}`" :icon="mdiFileDocumentOutline" :to="{name: 'records-table-record', params: {table: tableName, recordId: recordId}}" />
+              <q-breadcrumbs-el :label="recordId" :icon="mdiFileDocumentOutline" :to="{name: 'records-table-record', params: {table: tableName, recordId: recordId}}" />
             </q-breadcrumbs>
         </q-card-section>
+
+        <div>
+            {{recordData}}
+        </div>
 
         <q-inner-loading :showing="loading">
             <q-spinner-gears size="50px" color="primary" />
