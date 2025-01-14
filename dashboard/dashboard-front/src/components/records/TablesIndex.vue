@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload} from '@/utils/api-schema'
-import {toastService} from "@/services/ToastService";
+import {toastService} from "@/services/ToastService"
 import { mdiDatabase, mdiTable } from '@quasar/extras/mdi-v7'
 
 const tablesMetadata = ref<TableMetadataPayload[]>([])
@@ -12,7 +12,7 @@ function fetchTables() {
     loading.value = true
     apiClient.get<TableMetadataPayload[]>(`/api/v1/records/tables`)
         .then(response => {
-            tablesMetadata.value = response.data
+            tablesMetadata.value = response.data.sort((a, b) => a.plural_name.localeCompare(b.plural_name))
         }).catch(err => {
             toastService.showErrorDetails(`Failed to fetch tables metadata`, err)
         }).finally(() => {
