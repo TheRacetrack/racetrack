@@ -65,13 +65,13 @@ def setup_record_manager_endpoints(api: APIRouter):
         check_staff_user(request)
         return get_table_metadata(mapper, table)
 
-    @api.post('/records/count/{table}')
+    @api.post('/records/table/{table}/count')
     def _count_table_records_endpoint(payload: CountRecordsRequest, table: str, request: Request) -> int:
         """Count how many records are in a table"""
         check_staff_user(request)
         return count_table_records(mapper, payload, table)
 
-    @api.post('/records/list/{table}')
+    @api.post('/records/table/{table}/list')
     def _list_table_records_endpoint(payload: FetchManyRecordsRequest, table: str, request: Request) -> FetchManyRecordsResponse:
         """Fetch many records from a table"""
         check_staff_user(request)

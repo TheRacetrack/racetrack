@@ -23,7 +23,7 @@ import PluginConfigView from '@/components/admin/PluginConfigView.vue'
 import PageNotFound from '@/components/PageNotFound.vue'
 import ExternalConsumers from "@/components/esc/ExternalConsumers.vue";
 import ExternalConsumerDetails from "@/components/esc/ExternalConsumerDetails.vue";
-import TablesList from "@/components/records/TablesList.vue";
+import TablesIndex from "@/components/records/TablesIndex.vue";
 import RecordsList from "@/components/records/RecordsList.vue";
 import RecordEditor from "@/components/records/RecordEditor.vue";
 
@@ -150,7 +150,7 @@ const router = createRouter({
     {
       path: '/records/tables',
       name: 'records-tables-index',
-      component: TablesList,
+      component: TablesIndex,
       meta: { requiresAuth: true },
     },
     {
