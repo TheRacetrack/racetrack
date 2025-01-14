@@ -58,3 +58,33 @@ export interface EscAuthData {
     name: string
     tokens: AuthTokenData[]
 }
+
+export interface TableMetadataPayload {
+    class_name: string
+    table_name: string
+    plural_name: string
+    primary_key_column: string
+    main_columns: string[]
+}
+
+export interface RecordFieldsPayload {
+    fields: Record<string, any>
+}
+
+export interface FetchManyRecordsRequest {
+    offset: number
+    limit: number | null
+    order_by: string[] | null
+    filters: Record<string, any> | null
+    columns: string[] | null
+}
+
+export interface FetchManyRecordsResponse {
+    columns: string[]
+    primary_key_column: string
+    records: RecordFieldsPayload[]
+}
+
+export interface CountRecordsRequest {
+    filters: Record<string, any> | null
+}
