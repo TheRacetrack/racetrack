@@ -59,8 +59,8 @@ setup-test-unit:
 	uv venv venv &&\
 	. venv/bin/activate &&\
 	uv pip install -r requirements-test.txt \
-		-r racetrack_client/requirements.txt racetrack_client@racetrack_client \
-		-r racetrack_commons/requirements.txt racetrack_commons@racetrack_commons \
+		-r racetrack_client/requirements.txt -e racetrack_client@racetrack_client \
+		-r racetrack_commons/requirements.txt -e racetrack_commons@racetrack_commons \
 		-r lifecycle/requirements.txt -e lifecycle@lifecycle \
 		-r image_builder/requirements.txt -e image_builder@image_builder \
 		-r dashboard/requirements.txt -e dashboard@dashboard
