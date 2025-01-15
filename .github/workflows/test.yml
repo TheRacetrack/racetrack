@@ -1,7 +1,6 @@
 name: test
 on:
   push
-
 jobs:
 
   test-unit:
@@ -9,7 +8,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
       - name: Set up Python
@@ -20,11 +18,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '>=1.22'
-
       - name: Install dependencies
         run: make setup-test-unit
       - name: Run unit tests
-        run: . venv/bin/activate && make test-unit
+        run: . venv/bin/activate && make test-unit-coverage
 
   test-e2e-compose:
     runs-on: ubuntu-latest

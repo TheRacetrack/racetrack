@@ -122,25 +122,20 @@ test-pub-1: # Run single unit test of Pub
 test-utils:
 	cd utils && python -m pytest -v --tb=short -ra
 
-test-coverage:
+test-unit-coverage:
 	(cd racetrack_client &&\
-	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes &&\
-	python -m coverage report --show-missing --skip-empty --skip-covered)
+	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
 	(cd lifecycle/tests &&\
 	SECRET_KEY=dev AUTH_KEY=dev DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings" \
 	DB_TYPE=sqlite-memory DB_PATH=../lifecycle/django/db.sqlite3 \
-	python -m coverage run --omit '../tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes &&\
-	python -m coverage report --show-missing --skip-empty --skip-covered)
+	python -m coverage run --omit '../tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
 	(cd image_builder &&\
-	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes &&\
-	python -m coverage report --show-missing --skip-empty --skip-covered)
+	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
 	(cd dashboard &&\
-	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes &&\
-	python -m coverage report --show-missing --skip-empty --skip-covered)
+	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
 	@echo "--- Combined Python coverage report:"
 	python -m coverage combine --keep racetrack_client/.coverage lifecycle/tests/.coverage image_builder/.coverage dashboard/.coverage &&\
  	python -m coverage report --show-missing --skip-empty --skip-covered
-	@echo "--- Pub coverage report:"
 	(cd pub &&\
 	go test -p 1 -coverprofile coverage.out . &&\
 	go tool cover -func=coverage.out)
