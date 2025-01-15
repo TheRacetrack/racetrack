@@ -42,3 +42,17 @@ def test_exclude_and_include():
     assert matcher.match_path(Path('whole_dir/but_this/code/plugin-1.1.0.txt'))
     assert not matcher.match_path(Path('whole_dir/but_this/without_that'))
     assert not matcher.match_path(Path('whole_dir/but_this/without_that/plugin-1.1.0.txt'))
+
+
+def test_exclude_and_include_with_exclamation():
+    matcher = FilenameMatcher([
+        'whole_dir',
+        '!whole_dir/but_this',
+        '*.dll',
+        '!this.dll',
+    ])
+    assert not matcher.match_path(Path('whole_dir'))
+    assert not matcher.match_path(Path('whole_dir/plugin-1.1.0.txt'))
+    assert matcher.match_path(Path('whole_dir/but_this'))
+    assert not matcher.match_path(Path('not.dll'))
+    assert matcher.match_path(Path('this.dll'))
