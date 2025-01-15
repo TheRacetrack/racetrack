@@ -25,3 +25,4 @@ dashboard/dashboard/migrations/
 /.local.env
 generated
 *.ignored.*
+coverage.out
