@@ -56,14 +56,14 @@ setup-racetrack-client:
 	( cd racetrack_client && make setup )
 
 setup-test-unit:
-	python3 -m venv venv &&\
+	uv venv venv &&\
 	. venv/bin/activate &&\
-	pip install -r requirements-test.txt &&\
-	( cd racetrack_client && make setup ) &&\
-	( cd racetrack_commons && make setup ) &&\
-	( cd lifecycle && make setup ) &&\
-	( cd image_builder && make setup ) &&\
-	( cd dashboard && make setup )
+	uv pip install -r requirements-test.txt \
+		-r racetrack_client/requirements.txt -e racetrack_client@racetrack_client \
+		-r racetrack_commons/requirements.txt -e racetrack_commons@racetrack_commons \
+		-r lifecycle/requirements.txt -e lifecycle@lifecycle \
+		-r image_builder/requirements.txt -e image_builder@image_builder \
+		-r dashboard/requirements.txt -e dashboard@dashboard
 	@echo Activate your venv: . venv/bin/activate
 
 setup-test-e2e:
@@ -121,6 +121,24 @@ test-pub-1: # Run single unit test of Pub
 
 test-utils:
 	cd utils && python -m pytest -v --tb=short -ra
+
+test-unit-coverage:
+	(cd racetrack_client &&\
+	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
+	(cd lifecycle/tests &&\
+	SECRET_KEY=dev AUTH_KEY=dev DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings" \
+	DB_TYPE=sqlite-memory DB_PATH=../lifecycle/django/db.sqlite3 \
+	python -m coverage run --omit '../tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
+	(cd image_builder &&\
+	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
+	(cd dashboard &&\
+	python -m coverage run --omit 'tests/**/*.py' -m pytest -vv --tb=short -ra --color=yes)
+	@echo "--- Combined Python coverage report:"
+	python -m coverage combine --keep racetrack_client/.coverage lifecycle/tests/.coverage image_builder/.coverage dashboard/.coverage &&\
+ 	python -m coverage report --show-missing --skip-empty --skip-covered
+	(cd pub &&\
+	go test -p 1 -coverprofile coverage.out . &&\
+	go tool cover -func=coverage.out)
 
 test-e2e: compose-test-e2e
 

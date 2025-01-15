@@ -6,6 +6,7 @@ from racetrack_client.utils.request import Requests, parse_response, parse_respo
 _url = 'http://localhost/blahblah'
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_response_json():
     httpretty.register_uri(
@@ -22,6 +23,7 @@ def test_response_json():
     assert parsed == {'result': 'ok'}
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_response_json_list():
     httpretty.register_uri(
@@ -38,6 +40,7 @@ def test_response_json_list():
     assert parsed == [{'result': 'ok'}]
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_response_empty():
     httpretty.register_uri(
@@ -53,6 +56,7 @@ def test_response_empty():
     assert parsed is None
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_response_invalid_json():
     httpretty.register_uri(
@@ -70,6 +74,7 @@ def test_response_invalid_json():
     assert 'no content in response to decode as JSON' in str(excinfo.value)
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_response_failed():
     httpretty.register_uri(
@@ -87,6 +92,7 @@ def test_response_failed():
     )
 
 
+@pytest.mark.filterwarnings("ignore:datetime.datetime.utcnow()")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_response_failed_gracefully_with_message():
     httpretty.register_uri(
