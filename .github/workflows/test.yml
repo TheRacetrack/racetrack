@@ -8,12 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: actions/checkout@v2
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v2
         with:
           python-version: '3.10'
       - name: Set up Go
@@ -23,8 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: make setup-test-unit
-      - name: Run unit tests
-        run: . venv/bin/activate && make test-unit
+      - run: . venv/bin/activate && make test-unit
 
   test-e2e-compose:
     runs-on: ubuntu-latest
