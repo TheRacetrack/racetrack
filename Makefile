@@ -56,14 +56,14 @@ setup-racetrack-client:
 	( cd racetrack_client && make setup )
 
 setup-test-unit:
-	python3 -m venv venv &&\
+	uv venv venv &&\
 	. venv/bin/activate &&\
-	pip install -r requirements-test.txt &&\
-	( cd racetrack_client && make setup ) &&\
-	( cd racetrack_commons && make setup ) &&\
-	( cd lifecycle && make setup ) &&\
-	( cd image_builder && make setup ) &&\
-	( cd dashboard && make setup )
+	uv pip install -r requirements-test.txt \
+		-r racetrack_client/requirements.txt racetrack_client@racetrack_client \
+		-r racetrack_commons/requirements.txt racetrack_commons@racetrack_commons \
+		-r lifecycle/requirements.txt -e lifecycle@lifecycle \
+		-r image_builder/requirements.txt -e image_builder@image_builder \
+		-r dashboard/requirements.txt -e dashboard@dashboard
 	@echo Activate your venv: . venv/bin/activate
 
 setup-test-e2e:
