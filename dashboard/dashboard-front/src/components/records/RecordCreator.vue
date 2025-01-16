@@ -8,9 +8,7 @@ import { mdiDatabase, mdiTable, mdiFileDocumentOutline } from '@quasar/extras/md
 import {progressService} from "@/services/ProgressService"
 
 const route = useRoute()
-const router = useRouter()
 const tableName: string = route.params.table as string
-const recordId: string = route.params.recordId as string
 const tableMetadata = ref<TableMetadataPayload>({
     class_name: '',
     table_name: '',
@@ -20,7 +18,6 @@ const tableMetadata = ref<TableMetadataPayload>({
     all_columns: [],
     column_types: {},
 })
-const recordData = ref<RecordFieldsPayload | null>(null)
 const loading = ref(true)
 const submitting = ref(false)
 const inputValues = ref<Record<string, any>>({})
@@ -37,50 +34,21 @@ async function fetchTableMetadata(): Promise<void> {
     }
 }
 
-async function fetchRecord(): Promise<void> {
-    loading.value = true
-    try {
-        let response = await apiClient.get<RecordFieldsPayload>(`/api/v1/records/table/${tableName}/id/${recordId}`)
-        recordData.value = response.data
-        inputValues.value = response.data.fields
-    } catch (err) {
-        toastService.showErrorDetails(`Failed to fetch table records`, err)
-    } finally {
-        loading.value = false
-    }
-}
-
-function saveRecord() {
+function createRecord() {
     progressService.runLoading({
-        task: apiClient.put(`/api/v1/records/table/${tableName}/id/${recordId}`, {
+        task: apiClient.post(`/api/v1/records/table/${tableName}`, {
             fields: inputValues.value,
         }),
         loadingState: submitting,
-        progressMsg: `Saving record…`,
-        successMsg: `Record saved.`,
-        errorMsg: `Failed to save a record`,
+        progressMsg: `Creating record…`,
+        successMsg: `Record created.`,
+        errorMsg: `Failed to create a record`,
         onSuccess: () => {},
-    })
-}
-
-function deleteRecord() {
-    progressService.confirmWithLoading({
-        confirmQuestion: `Are you sure you want to delete this record ${tableName} / ${recordId}?`,
-        onConfirm: () => {
-            return apiClient.delete(`/api/v1/records/table/${tableName}/id/${recordId}`)
-        },
-        progressMsg: `Deleting record ${tableName} / ${recordId}…`,
-        successMsg: `Record ${tableName} / ${recordId} has been deleted.`,
-        errorMsg: `Failed to delete record ${tableName} / ${recordId}`,
-        onSuccess: () => {
-            router.push({name: 'records-table', params: {table: tableName}})
-        },
     })
 }
 
 onMounted(async () => {
     await fetchTableMetadata()
-    await fetchRecord()
 })
 </script>
 
@@ -90,7 +58,7 @@ onMounted(async () => {
             <q-breadcrumbs>
               <q-breadcrumbs-el label="Tables Index" :icon="mdiDatabase" :to="{name: 'records-tables-index'}" />
               <q-breadcrumbs-el :label="tableMetadata.plural_name" :icon="mdiTable" :to="{name: 'records-table', params: {table: tableName}}" />
-              <q-breadcrumbs-el :label="recordId" :icon="mdiFileDocumentOutline" :to="{name: 'records-table-record', params: {table: tableName, recordId: recordId}}" />
+              <q-breadcrumbs-el label="New record" :icon="mdiFileDocumentOutline" />
             </q-breadcrumbs>
         </q-card-section>
 
@@ -152,8 +120,7 @@ onMounted(async () => {
             </div>
         </q-card-section>
         <q-card-actions>
-            <q-btn color="primary" push label="Save" icon="save" :loading="submitting" @click="saveRecord()" />
-            <q-btn color="negative" push label="Delete" icon="delete" :loading="submitting" @click="deleteRecord()" />
+            <q-btn color="primary" push label="Save" icon="save" :loading="submitting" @click="createRecord()" />
         </q-card-actions>
 
         <q-inner-loading :showing="loading">

@@ -83,6 +83,10 @@ function onRowClick(event: Event, row: RecordFieldsPayload, index: number) {
     router.push({name: 'records-table-record', params: {table: tableName, recordId: rowId}})
 }
 
+function createRecord() {
+    router.push({name: 'records-table-creator', params: {table: tableName}})
+}
+
 onMounted(async () => {
     await fetchTableMetadata()
     await fetchRecordsCount()
@@ -129,7 +133,7 @@ onMounted(async () => {
                         <q-icon name="search" />
                     </template>
                 </q-input>
-                <q-btn color="primary" push label="Create" icon="add" @click="" />
+                <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
             </template>
             <template v-slot:header="props">
                 <q-tr :props="props">

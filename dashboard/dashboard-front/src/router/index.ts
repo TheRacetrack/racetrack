@@ -26,6 +26,7 @@ import ExternalConsumerDetails from "@/components/esc/ExternalConsumerDetails.vu
 import TablesIndex from "@/components/records/TablesIndex.vue";
 import RecordsList from "@/components/records/RecordsList.vue";
 import RecordEditor from "@/components/records/RecordEditor.vue";
+import RecordCreator from "@/components/records/RecordCreator.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -163,6 +164,12 @@ const router = createRouter({
       path: '/records/table/:table/record/:recordId',
       name: 'records-table-record',
       component: RecordEditor,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/records/table/:table/new',
+      name: 'records-table-creator',
+      component: RecordCreator,
       meta: { requiresAuth: true },
     },
     { path: '/:catchAll(.*)', component: PageNotFound },
