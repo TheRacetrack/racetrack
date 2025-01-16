@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useRoute} from "vue-router"
+import {useRoute, useRouter} from "vue-router"
 import { ref, onMounted } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload, type RecordFieldsPayload} from '@/utils/api-schema'
@@ -8,6 +8,7 @@ import { mdiDatabase, mdiTable, mdiFileDocumentOutline } from '@quasar/extras/md
 import {progressService} from "@/services/ProgressService"
 
 const route = useRoute()
+const router = useRouter()
 const tableName: string = route.params.table as string
 const recordId: string = route.params.recordId as string
 const tableMetadata = ref<TableMetadataPayload>({
@@ -58,7 +59,21 @@ function saveRecord() {
         progressMsg: `Saving record…`,
         successMsg: `Record saved.`,
         errorMsg: `Failed to save a record`,
+        onSuccess: () => {},
+    })
+}
+
+function deleteRecord() {
+    progressService.confirmWithLoading({
+        confirmQuestion: `Are you sure you want to delete this record ${tableName}/${recordId}?`,
+        onConfirm: () => {
+            return apiClient.delete(`/api/v1/records/table/${tableName}/id/${recordId}`)
+        },
+        progressMsg: `Deleting record ${tableName}/${recordId}…`,
+        successMsg: `Record ${tableName}/${recordId} has been deleted.`,
+        errorMsg: `Failed to delete record ${tableName}/${recordId}`,
         onSuccess: () => {
+            router.push({name: 'records-table', params: {table: tableName}})
         },
     })
 }
@@ -83,11 +98,10 @@ onMounted(async () => {
             <div v-for="(fieldValue, fieldName) in recordData?.fields" :key="fieldName">
                 <template v-if="['str', 'str | None'].includes(tableMetadata.column_types[fieldName])">
                     <q-input
-                        outlined
+                        outlined autogrow
                         v-model="inputValues[fieldName]"
                         :label="fieldName"
                         type="text"
-                        autogrow
                         >
                         <template v-slot:append>
                             <q-icon v-if="tableMetadata.column_types[fieldName].endsWith(' | None')"
@@ -130,18 +144,16 @@ onMounted(async () => {
                 </template>
                 <template v-else>
                     <q-input
-                        outlined
+                        outlined readonly
                         :label="fieldName"
                         type="text"
-                        readonly
-                        model-value="[Unreadable data]">
-                    </q-input>
+                        model-value="[Unreadable data]" />
                 </template>
             </div>
         </q-card-section>
         <q-card-actions>
             <q-btn color="primary" push label="Save" icon="save" :loading="submitting" @click="saveRecord()" />
-            <q-btn color="negative" push label="Delete" icon="delete" :loading="submitting" />
+            <q-btn color="negative" push label="Delete" icon="delete" :loading="submitting" @click="deleteRecord()" />
         </q-card-actions>
 
         <q-inner-loading :showing="loading">

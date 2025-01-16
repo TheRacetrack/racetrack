@@ -129,7 +129,7 @@ onMounted(async () => {
                         <q-icon name="search" />
                     </template>
                 </q-input>
-                <q-btn color="primary" push label="Add record" icon="add" @click="" />
+                <q-btn color="primary" push label="Create" icon="add" @click="" />
             </template>
             <template v-slot:header="props">
                 <q-tr :props="props">
