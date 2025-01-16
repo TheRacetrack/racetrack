@@ -5,6 +5,7 @@ import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload, type RecordFieldsPayload} from '@/utils/api-schema'
 import {toastService} from "@/services/ToastService"
 import { mdiDatabase, mdiTable, mdiFileDocumentOutline } from '@quasar/extras/mdi-v7'
+import {progressService} from "@/services/ProgressService"
 
 const route = useRoute()
 const tableName: string = route.params.table as string
@@ -46,6 +47,20 @@ async function fetchRecord(): Promise<void> {
     } finally {
         loading.value = false
     }
+}
+
+function saveRecord() {
+    progressService.runLoading({
+        task: apiClient.put(`/api/v1/records/table/${tableName}/id/${recordId}`, {
+            fields: inputValues.value,
+        }),
+        loadingState: submitting,
+        progressMsg: `Saving record…`,
+        successMsg: `Record saved.`,
+        errorMsg: `Failed to save a record`,
+        onSuccess: () => {
+        },
+    })
 }
 
 onMounted(async () => {
@@ -125,7 +140,7 @@ onMounted(async () => {
             </div>
         </q-card-section>
         <q-card-actions>
-            <q-btn color="primary" push label="Save" icon="save" :loading="submitting" />
+            <q-btn color="primary" push label="Save" icon="save" :loading="submitting" @click="saveRecord()" />
             <q-btn color="negative" push label="Delete" icon="delete" :loading="submitting" />
         </q-card-actions>
 
