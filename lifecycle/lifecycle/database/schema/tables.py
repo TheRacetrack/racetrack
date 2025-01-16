@@ -179,16 +179,16 @@ class User(TableModel):
         main_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
 
     id: int
-    password: str
-    last_login: datetime | None
-    is_superuser: bool
     username: str
-    last_name: str
     email: str
-    is_staff: bool
-    is_active: bool
-    date_joined: datetime
     first_name: str
+    last_name: str
+    password: str
+    date_joined: datetime
+    last_login: datetime | None
+    is_active: bool
+    is_staff: bool
+    is_superuser: bool
 
 
 @dataclass
