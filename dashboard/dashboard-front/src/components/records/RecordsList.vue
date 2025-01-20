@@ -20,11 +20,11 @@ const pagination = ref({
     descending: false,
     page: 1,
     rowsPerPage: 50,
-    rowsNumber: 0,
 })
 const tableFilter = ref('')
 const visibleColumns = ref<string[]>([])
 const columnProps = ref<QTableProps['columns']>([])
+const selectedItems = ref<RecordFieldsPayload[]>([])
 
 async function fetchTableMetadata(): Promise<void> {
     loading.value = true
@@ -112,9 +112,10 @@ onMounted(async () => {
 
         <q-table
           flat bordered
+          separator="cell"
           :rows="pageRows"
-          :columns="columnProps"
           :row-key="tableMetadata?.primary_key_column"
+          :columns="columnProps"
           :visible-columns="visibleColumns"
           :pagination="pagination"
           :rows-per-page-options="[2, 5, 10, 20, 50, 100, 200, 500, 0]"
@@ -123,7 +124,12 @@ onMounted(async () => {
           no-data-label="No records"
           @row-click="onRowClick"
           @request="onPageFetch"
+          selection="multiple"
+          v-model:selected="selectedItems.value"
         >
+            <template v-slot:header-selection="scope">
+                <q-checkbox v-model="scope.selected" />
+            </template>
             <template v-slot:top-left>
                 <q-select
                     v-model="visibleColumns"
@@ -144,18 +150,10 @@ onMounted(async () => {
                 </q-input>
                 <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
             </template>
-            <template v-slot:header="props">
-                <q-tr :props="props">
-                    <q-th
-                        v-for="col in props.cols"
-                        :key="col.name"
-                        :props="props"
-                        >
-                        <span class="text-bold">
-                            {{ col.label }}
-                        </span>
-                    </q-th>
-                </q-tr>
+            <template v-slot:header-cell="props">
+                <q-th :props="props" :key="props.col.label">
+                    <span class="text-bold">{{ props.col.label }}</span>
+                </q-th>
             </template>
         </q-table>
 
