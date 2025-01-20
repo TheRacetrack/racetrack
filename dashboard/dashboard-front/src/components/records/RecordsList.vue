@@ -20,6 +20,7 @@ const pagination = ref({
     descending: false,
     page: 1,
     rowsPerPage: 50,
+    rowsNumber: 0,
 })
 const tableFilter = ref('')
 const visibleColumns = ref<string[]>([])
@@ -52,6 +53,7 @@ async function fetchRecordsCount(): Promise<void> {
             filters: filters.value,
         } as CountRecordsRequest)
         recordCount.value = response.data
+        pagination.value.rowsNumber = recordCount.value
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -87,6 +89,11 @@ function createRecord() {
     router.push({name: 'records-table-creator', params: {table: tableName}})
 }
 
+async function onPageFetch(_: any) {
+    await fetchRecordsCount()
+    await fetchRecords()
+}
+
 onMounted(async () => {
     await fetchTableMetadata()
     await fetchRecordsCount()
@@ -110,10 +117,12 @@ onMounted(async () => {
           :row-key="tableMetadata?.primary_key_column"
           :visible-columns="visibleColumns"
           :pagination="pagination"
+          :rows-per-page-options="[2, 5, 10, 20, 50, 100, 200, 500, 0]"
           :filter="tableFilter"
           :loading="loading"
           no-data-label="No records"
           @row-click="onRowClick"
+          @request="onPageFetch"
         >
             <template v-slot:top-left>
                 <q-select
@@ -155,9 +164,5 @@ onMounted(async () => {
                 Number of all records: {{recordCount}}
             </div>
         </q-card-section>
-
-        <q-inner-loading :showing="loading">
-            <q-spinner-gears size="50px" color="primary" />
-        </q-inner-loading>
     </q-card>
 </template>

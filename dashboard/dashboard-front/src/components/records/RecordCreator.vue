@@ -2,12 +2,13 @@
 import {useRoute, useRouter} from "vue-router"
 import { ref, onMounted } from 'vue'
 import { apiClient } from '@/services/ApiClient'
-import {type TableMetadataPayload, type RecordFieldsPayload} from '@/utils/api-schema'
+import {type TableMetadataPayload} from '@/utils/api-schema'
 import {toastService} from "@/services/ToastService"
 import { mdiDatabase, mdiTable, mdiFileDocumentOutline } from '@quasar/extras/mdi-v7'
 import {progressService} from "@/services/ProgressService"
 
 const route = useRoute()
+const router = useRouter()
 const tableName: string = route.params.table as string
 const tableMetadata = ref<TableMetadataPayload>({
     class_name: '',
@@ -43,7 +44,9 @@ function createRecord() {
         progressMsg: `Creating record…`,
         successMsg: `Record created.`,
         errorMsg: `Failed to create a record`,
-        onSuccess: () => {},
+        onSuccess: () => {
+            router.push({name: 'records-table', params: {table: tableName}})
+        },
     })
 }
 
