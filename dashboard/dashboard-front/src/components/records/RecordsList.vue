@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router"
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, type Ref } from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
 import {toastService} from "@/services/ToastService"
@@ -15,11 +15,12 @@ const recordCount = ref<number | null>(null)
 const filters = ref<Record<string, any>>({})
 const pageRows = ref<RecordFieldsPayload[]>([])
 const loading = ref(true)
-const pagination = ref({
+const pagination: Ref<QTableProps['pagination']> = ref({
     sortBy: null,
     descending: false,
     page: 1,
     rowsPerPage: 50,
+    rowsNumber: undefined,
 })
 const tableFilter = ref('')
 const visibleColumns = ref<string[]>([])
@@ -53,7 +54,7 @@ async function fetchRecordsCount(): Promise<void> {
             filters: filters.value,
         } as CountRecordsRequest)
         recordCount.value = response.data
-        pagination.value.rowsNumber = recordCount.value
+        // pagination.value.rowsNumber = recordCount.value
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -125,7 +126,7 @@ onMounted(async () => {
           @row-click="onRowClick"
           @request="onPageFetch"
           selection="multiple"
-          v-model:selected="selectedItems.value"
+          v-model:selected="selectedItems"
         >
             <template v-slot:header-selection="scope">
                 <q-checkbox v-model="scope.selected" />
