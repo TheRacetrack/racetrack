@@ -63,7 +63,7 @@ async function fetchRecordsCount(): Promise<void> {
             filters: filters.value,
         } as CountRecordsRequest)
         recordCount.value = response.data
-        pagination.value.rowsNumber = recordCount.value
+        pagination.value.rowsNumber = response.data // Correctly update rowsNumber
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -74,9 +74,12 @@ async function fetchRecordsCount(): Promise<void> {
 async function fetchRecords(): Promise<void> {
     loading.value = true
     try {
+        const rowsPerPage = pagination.value?.rowsPerPage ?? 50
+        const pageIndex = (pagination.value?.page ?? 1) - 1
+        const offset = pageIndex * rowsPerPage
         let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
-            offset: 0,
-            limit: 30,
+            offset: offset,
+            limit: rowsPerPage,
             order_by: null,
             filters: filters.value,
             columns: tableMetadata.value?.all_columns ?? [],
@@ -99,8 +102,9 @@ function createRecord() {
     router.push({name: 'records-table-creator', params: {table: tableName}})
 }
 
-async function onPageFetch(_: any) {
-    await fetchRecordsCount()
+async function onPageFetch(props: any) {
+    pagination.value.page = props.page
+    pagination.value.rowsPerPage = props.rowsPerPage
     await fetchRecords()
 }
 
@@ -128,7 +132,7 @@ onMounted(async () => {
           :columns="columnProps"
           :visible-columns="visibleColumns"
           :pagination="pagination"
-          :rows-per-page-options="[2, 5, 10, 20, 50, 100, 200, 500, 0]"
+          :rows-per-page-options="[5, 10, 20, 50, 100, 200, 500, 0]"
           :filter="tableFilter"
           :loading="loading"
           no-data-label="No records"
