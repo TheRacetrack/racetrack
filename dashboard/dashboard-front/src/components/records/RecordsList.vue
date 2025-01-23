@@ -10,11 +10,24 @@ import type {QTableProps} from "quasar"
 const route = useRoute()
 const router = useRouter()
 const tableName: string = route.params.table as string
-const tableMetadata = ref<TableMetadataPayload | null>(null)
+const tableMetadata = ref<TableMetadataPayload>({
+    class_name: '',
+    table_name: '',
+    plural_name: '',
+    primary_key_column: '',
+    main_columns: [],
+    all_columns: [],
+    column_types: {},
+})
 const recordCount = ref<number | null>(null)
 const filters = ref<Record<string, any>>({})
-const pageRows = ref<RecordFieldsPayload[]>([])
+const pageRows = ref<TableRow[]>([])
 const loading = ref(true)
+
+interface TableRow {
+    key: string | number
+    fields: Record<string, any>
+}
 
 interface QTablePagination {
     sortBy?: string | null
@@ -34,21 +47,21 @@ const pagination: Ref<QTablePagination> = ref({
 const tableFilter = ref('')
 const visibleColumns = ref<string[]>([])
 const columnProps = ref<QTableProps['columns']>([])
-const selectedItems = ref<RecordFieldsPayload[]>([])
+const selectedRows = ref<TableRow[]>([])
 
 async function fetchTableMetadata(): Promise<void> {
     loading.value = true
     try {
         let response = await apiClient.get<TableMetadataPayload>(`/api/v1/records/table/${tableName}/metadata`)
         tableMetadata.value = response.data
-        visibleColumns.value = response.data.main_columns
         columnProps.value = response.data.all_columns.map(col => ({
             name: col,
             label: col,
             align: 'left',
-            field: (row: RecordFieldsPayload) => row.fields[col],
+            field: (row: TableRow) => row.fields[col],
             sortable: true,
         }))
+        visibleColumns.value = response.data.main_columns
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch table data`, err)
     } finally {
@@ -63,7 +76,7 @@ async function fetchRecordsCount(): Promise<void> {
             filters: filters.value,
         } as CountRecordsRequest)
         recordCount.value = response.data
-        pagination.value.rowsNumber = response.data // Correctly update rowsNumber
+        pagination.value.rowsNumber = response.data
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -80,11 +93,14 @@ async function fetchRecords(): Promise<void> {
         let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
             limit: rowsPerPage,
-            order_by: null,
+            order_by: evaluateOrderBy(),
             filters: filters.value,
-            columns: tableMetadata.value?.all_columns ?? [],
+            columns: tableMetadata.value.all_columns ?? [],
         } as FetchManyRecordsRequest)
-        pageRows.value = response.data.records
+        pageRows.value = response.data.records.map((record: RecordFieldsPayload) => ({
+            key: record.fields[tableMetadata.value.primary_key_column],
+            fields: record.fields,
+        }))
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch table records`, err)
     } finally {
@@ -92,10 +108,17 @@ async function fetchRecords(): Promise<void> {
     }
 }
 
-function onRowClick(event: Event, row: RecordFieldsPayload, index: number) {
+function evaluateOrderBy(): string | null {
+    if (!tableMetadata.value) return null
+    if (!pagination.value.sortBy) return null
+    const column = pagination.value.sortBy
+    return pagination.value.descending ? `-${column}` : column
+}
+
+function onRowClick(event: Event, row: TableRow, index: number) {
     if (!tableMetadata.value) return
-    const rowId = row.fields[tableMetadata.value.primary_key_column]
-    router.push({name: 'records-table-record', params: {table: tableName, recordId: rowId}})
+    const recordId = String(row.key)
+    router.push({name: 'records-table-record', params: {table: tableName, recordId: recordId}})
 }
 
 function createRecord() {
@@ -132,10 +155,9 @@ onMounted(async () => {
         </q-card-section>
 
         <q-table
-          flat bordered
-          separator="cell"
+          flat bordered separator="cell"
           :rows="pageRows"
-          :row-key="tableMetadata?.primary_key_column"
+          row-key="key"
           :columns="columnProps"
           :visible-columns="visibleColumns"
           :pagination="pagination"
@@ -145,10 +167,13 @@ onMounted(async () => {
           no-data-label="No records"
           @row-click="onRowClick"
           selection="multiple"
-          v-model:selected="selectedItems"
+          v-model:selected="selectedRows"
           @request="onPageFetch"
         >
             <template v-slot:header-selection="scope">
+                <q-checkbox v-model="scope.selected" />
+            </template>
+            <template v-slot:body-selection="scope">
                 <q-checkbox v-model="scope.selected" />
             </template>
             <template v-slot:top-left>
