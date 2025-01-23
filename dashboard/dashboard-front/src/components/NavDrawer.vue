@@ -88,7 +88,7 @@ defineExpose({
             <q-icon :name="mdiDatabase" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Record Manager</q-item-label>
+            <q-item-label>Records</q-item-label>
           </q-item-section>
         </q-item>
 

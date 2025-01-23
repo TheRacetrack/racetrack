@@ -108,6 +108,13 @@ async function onPageFetch(props: any) {
     await fetchRecords()
 }
 
+function humanReadableColumn(column: string): string {
+    return column
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+}
+
 onMounted(async () => {
     await fetchTableMetadata()
     await fetchRecordsCount()
@@ -162,19 +169,15 @@ onMounted(async () => {
                         <q-icon name="search" />
                     </template>
                 </q-input>
+            </template>
+            <template v-slot:top-right>
                 <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
             </template>
             <template v-slot:header-cell="props">
                 <q-th :props="props" :key="props.col.label">
-                    <span class="text-bold">{{ props.col.label }}</span>
+                    <span class="text-bold">{{ humanReadableColumn(props.col.label) }}</span>
                 </q-th>
             </template>
         </q-table>
-
-        <q-card-section>
-            <div>
-                Number of all records: {{recordCount}}
-            </div>
-        </q-card-section>
     </q-card>
 </template>
