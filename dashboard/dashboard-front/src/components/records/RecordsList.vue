@@ -6,6 +6,7 @@ import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyR
 import {toastService} from "@/services/ToastService"
 import { mdiDatabase, mdiTable } from '@quasar/extras/mdi-v7'
 import type {QTableProps} from "quasar"
+import {progressService} from "@/services/ProgressService"
 
 const route = useRoute()
 const router = useRouter()
@@ -138,6 +139,29 @@ function humanReadableColumn(column: string): string {
         .join(' ')
 }
 
+function deleteSelectedRecords() {
+    const selectedIds: string[] = selectedRows.value.map(row => String(row.key))
+    if (selectedIds.length == 0) return toastService.error('No records selected')
+    progressService.confirmWithLoading({
+        confirmQuestion: `Are you sure you want to delete ${selectedIds.length} selected records (${selectedIds}) from table ${tableName}?`,
+        onConfirm: () => {
+            return apiClient.delete(`/api/v1/records/table/${tableName}/many`, {
+                record_ids: selectedIds,
+            })
+        },
+        progressMsg: `Deleting ${selectedIds.length} selected records…`,
+        successMsg: `${selectedIds.length} records have been deleted.`,
+        errorMsg: `Failed to delete records`,
+        onSuccess: async () => {
+            await fetchRecordsCount()
+            await fetchRecords()
+        },
+        onFinalize: () => {
+            selectedRows.value = []
+        },
+    })
+}
+
 onMounted(async () => {
     await fetchTableMetadata()
     await fetchRecordsCount()
@@ -197,6 +221,7 @@ onMounted(async () => {
             </template>
             <template v-slot:top-right>
                 <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
+                <q-btn color="negative" push label="Delete" icon="delete" @click="deleteSelectedRecords()" />
             </template>
             <template v-slot:header-cell="props">
                 <q-th :props="props" :key="props.col.label">

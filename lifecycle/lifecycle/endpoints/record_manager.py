@@ -10,6 +10,9 @@ from lifecycle.server.cache import LifecycleCache
 from lifecycle.database.schema import tables
 from lifecycle.auth.check import check_staff_user
 from racetrack_client.utils.datamodel import convert_to_json_serializable
+from racetrack_client.log.logs import get_logger
+
+logger = get_logger(__name__)
 
 
 class TableMetadataPayload(BaseModel):
@@ -42,6 +45,10 @@ class FetchManyRecordsResponse(BaseModel):
 
 class CountRecordsRequest(BaseModel):
     filters: dict[str, Any] | None = None
+
+
+class DeleteManyRecordsRequest(BaseModel):
+    record_ids: list[str]
 
 
 def setup_record_manager_endpoints(api: APIRouter):
@@ -95,6 +102,12 @@ def setup_record_manager_endpoints(api: APIRouter):
         check_staff_user(request)
         delete_record(mapper, table, record_id)
 
+    @api.delete('/records/table/{table}/many')
+    def _delete_many_records_endpoint(payload: DeleteManyRecordsRequest, table: str, request: Request) -> None:
+        """Delete multiple records by ID"""
+        check_staff_user(request)
+        delete_many_records(mapper, table, payload.record_ids)
+
 
 def list_all_tables() -> Iterable[TableMetadataPayload]:
     for table_type in tables.all_tables:
@@ -134,6 +147,7 @@ def create_record(mapper: RecordMapper, payload: RecordFieldsPayload, table: str
     table_type = mapper.table_name_to_class(table)
     fields_data = parse_dict_typed_values(payload.fields, table_type)
     record_data = mapper.create_from_dict(table_type, fields_data)
+    logger.info(f'New record created in table {table}')
     return RecordFieldsPayload(fields=convert_to_json_serializable(record_data))
 
 
@@ -179,3 +193,15 @@ def delete_record(mapper: RecordMapper, table: str, record_id: str) -> None:
     filters = {metadata.primary_key_column: metadata.primary_key_type(record_id)}
     record = mapper.find_one(table_type, **filters)
     mapper.delete_record(record, cascade=True)
+    logger.info(f'Record {record_id} deleted from table {table}')
+
+
+def delete_many_records(mapper: RecordMapper, table: str, record_ids: list[str]) -> None:
+    table_type = mapper.table_name_to_class(table)
+    metadata = table_metadata(table_type)
+    primary_keys = [metadata.primary_key_type(record_id) for record_id in record_ids]
+    for primary_key in primary_keys:
+        filters = {metadata.primary_key_column: primary_key}
+        record = mapper.find_one(table_type, **filters)
+        mapper.delete_record(record, cascade=True)
+    logger.info(f'Records {record_ids} deleted from table {table}')
