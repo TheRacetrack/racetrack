@@ -15,7 +15,16 @@ const recordCount = ref<number | null>(null)
 const filters = ref<Record<string, any>>({})
 const pageRows = ref<RecordFieldsPayload[]>([])
 const loading = ref(true)
-const pagination: Ref<QTableProps['pagination']> = ref({
+
+interface QTablePagination {
+    sortBy?: string | null
+    descending?: boolean
+    page?: number
+    rowsPerPage?: number
+    rowsNumber?: number
+}
+
+const pagination: Ref<QTablePagination> = ref({
     sortBy: null,
     descending: false,
     page: 1,
@@ -54,7 +63,7 @@ async function fetchRecordsCount(): Promise<void> {
             filters: filters.value,
         } as CountRecordsRequest)
         recordCount.value = response.data
-        // pagination.value.rowsNumber = recordCount.value
+        pagination.value.rowsNumber = recordCount.value
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -124,9 +133,9 @@ onMounted(async () => {
           :loading="loading"
           no-data-label="No records"
           @row-click="onRowClick"
-          @request="onPageFetch"
           selection="multiple"
           v-model:selected="selectedItems"
+          @request="onPageFetch"
         >
             <template v-slot:header-selection="scope">
                 <q-checkbox v-model="scope.selected" />
