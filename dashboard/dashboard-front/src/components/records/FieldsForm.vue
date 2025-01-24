@@ -51,8 +51,10 @@ const fieldValues: Ref<Record<string, any>> = computed(() => {
                             name="cancel" @click.stop.prevent="fieldValues[fieldName] = null" class="cursor-pointer" />
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="fieldValues[fieldName]" mask="YYYY-MM-DD, HH:mm:ss.SSS Z" first-day-of-week="1" today-btn />
-                    <q-time v-model="fieldValues[fieldName]" mask="YYYY-MM-DD, HH:mm:ss.SSS Z" color="primary" format24h with-seconds now-btn />
+                    <div class="row items-center justify-end">
+                      <q-date v-model="fieldValues[fieldName]" mask="YYYY-MM-DD, HH:mm:ss.SSS Z" first-day-of-week="1" today-btn />
+                      <q-time v-model="fieldValues[fieldName]" mask="YYYY-MM-DD, HH:mm:ss.SSS Z" color="primary" format24h with-seconds now-btn />
+                    </div>
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
