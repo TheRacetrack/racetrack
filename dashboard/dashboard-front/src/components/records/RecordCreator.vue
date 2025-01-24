@@ -1,57 +1,51 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router"
-import { ref, onMounted } from 'vue'
-import { apiClient } from '@/services/ApiClient'
-import {type TableMetadataPayload} from '@/utils/api-schema'
-import {toastService} from "@/services/ToastService"
-import { mdiDatabase, mdiTable, mdiFileDocumentOutline } from '@quasar/extras/mdi-v7'
+import {ref, onMounted} from 'vue'
+import {apiClient} from '@/services/ApiClient'
+import {type RecordFieldsPayload, type TableMetadataPayload} from '@/utils/api-schema'
+import {mdiDatabase, mdiTable, mdiFileDocumentOutline} from '@quasar/extras/mdi-v7'
 import {progressService} from "@/services/ProgressService"
+import {emptyTableMetadata, encodeInputValues, fetchTableMetadata, type FormFields} from "@/components/records/records"
+import FieldsForm from "@/components/records/FieldsForm.vue";
+import {toastService} from "@/services/ToastService";
 
 const route = useRoute()
 const router = useRouter()
 const tableName: string = route.params.table as string
-const tableMetadata = ref<TableMetadataPayload>({
-    class_name: '',
-    table_name: '',
-    plural_name: '',
-    primary_key_column: '',
-    main_columns: [],
-    all_columns: [],
-    column_types: {},
-})
+const tableMetadata = ref<TableMetadataPayload>(emptyTableMetadata)
 const loading = ref(true)
 const submitting = ref(false)
-const inputValues = ref<Record<string, any>>({})
-
-async function fetchTableMetadata(): Promise<void> {
-    loading.value = true
-    try {
-        let response = await apiClient.get<TableMetadataPayload>(`/api/v1/records/table/${tableName}/metadata`)
-        tableMetadata.value = response.data
-    } catch (err) {
-        toastService.showErrorDetails(`Failed to fetch table data`, err)
-    } finally {
-        loading.value = false
-    }
-}
+const formFields = ref<FormFields>({
+    names: [],
+    values: {},
+    types: {},
+})
 
 function createRecord() {
+    const fields = encodeInputValues(formFields.value)
     progressService.runLoading({
         task: apiClient.post(`/api/v1/records/table/${tableName}`, {
-            fields: inputValues.value,
+            fields: fields,
         }),
         loadingState: submitting,
         progressMsg: `Creating record…`,
-        successMsg: `Record created.`,
         errorMsg: `Failed to create a record`,
-        onSuccess: () => {
+        onSuccess: (response: any) => {
+            const responsePayload = response.data as RecordFieldsPayload
+            const recordId = responsePayload.fields[tableMetadata.value.primary_key_column]
+            toastService.success(`Record ${recordId} created.`)
             router.push({name: 'records-table', params: {table: tableName}})
         },
     })
 }
 
 onMounted(async () => {
-    await fetchTableMetadata()
+    await fetchTableMetadata(loading, tableMetadata, tableName)
+    formFields.value = {
+        names: tableMetadata.value.all_columns,
+        values: {},
+        types: tableMetadata.value.column_types,
+    }
 })
 </script>
 
@@ -66,61 +60,7 @@ onMounted(async () => {
         </q-card-section>
 
         <q-card-section class="q-pa-md">
-            <div v-for="fieldName in tableMetadata.all_columns" :key="fieldName">
-                <template v-if="['str', 'str | None'].includes(tableMetadata.column_types[fieldName])">
-                    <q-input
-                        outlined autogrow
-                        v-model="inputValues[fieldName]"
-                        :label="fieldName"
-                        type="text"
-                        >
-                        <template v-slot:append>
-                            <q-icon v-if="tableMetadata.column_types[fieldName].endsWith(' | None')"
-                                name="cancel" @click.stop.prevent="inputValues[fieldName] = null" class="cursor-pointer" />
-                        </template>
-                    </q-input>
-                </template>
-                <template v-else-if="['int', 'int | None', 'float', 'float | None'].includes(tableMetadata.column_types[fieldName])">
-                    <q-input
-                        outlined
-                        v-model="inputValues[fieldName]"
-                        :label="fieldName"
-                        type="number"
-                        >
-                        <template v-slot:append>
-                            <q-icon v-if="tableMetadata.column_types[fieldName].endsWith(' | None')"
-                                name="cancel" @click.stop.prevent="inputValues[fieldName] = null" class="cursor-pointer" />
-                        </template>
-                    </q-input>
-                </template>
-                <template v-else-if="['datetime', 'datetime | None'].includes(tableMetadata.column_types[fieldName])">
-                    <q-input outlined :label="fieldName" v-model="inputValues[fieldName]">
-                      <template v-slot:append>
-                            <q-icon v-if="tableMetadata.column_types[fieldName].endsWith(' | None')"
-                                name="cancel" @click.stop.prevent="inputValues[fieldName] = null" class="cursor-pointer" />
-                        <q-icon name="event" class="cursor-pointer">
-                          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                            <q-date v-model="inputValues[fieldName]" mask="YYYY-MM-DD HH:mm:ss" first-day-of-week="1" today-btn />
-                            <q-time v-model="inputValues[fieldName]" mask="YYYY-MM-DD HH:mm:ss" color="primary" format24h with-seconds now-btn />
-                            <div class="row items-center justify-end">
-                              <q-btn v-close-popup label="Close" color="primary" flat />
-                            </div>
-                          </q-popup-proxy>
-                        </q-icon>
-                      </template>
-                    </q-input>
-                </template>
-                <template v-else-if="tableMetadata.column_types[fieldName] == 'bool'">
-                    <q-checkbox v-model="inputValues[fieldName]" :label="fieldName" />
-                </template>
-                <template v-else>
-                    <q-input
-                        outlined readonly
-                        :label="fieldName"
-                        type="text"
-                        model-value="[Unreadable data]" />
-                </template>
-            </div>
+            <FieldsForm :formFields="formFields" />
         </q-card-section>
         <q-card-actions>
             <q-btn color="primary" push label="Save" icon="save" :loading="submitting" @click="createRecord()" />
