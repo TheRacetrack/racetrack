@@ -49,7 +49,7 @@ spec:
             - name: LIFECYCLE_AUTH_TOKEN
               value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZWVkIjoiY2E3ZWNmODAtZDAxZS00ZjA5LWI4ZjQtMTZiNTMxYjhhOTNhIiwic3ViamVjdCI6InB1YiIsInN1YmplY3RfdHlwZSI6ImludGVybmFsIiwic2NvcGVzIjpbImZ1bGxfYWNjZXNzIl19.Xyg1lwQG4oiA65y-KAkdmCFjnT7BZkfmm66DDGOVZu4'
             - name: REPLICA_DISCOVERY_HOSTNAME
-              value: 'pub.pub.racetrack.svc'
+              value: 'pub.pub.racetrack.svc.cluster.local'
           livenessProbe:
             httpGet:
               path: /live
