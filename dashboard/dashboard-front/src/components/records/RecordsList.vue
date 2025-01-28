@@ -91,21 +91,29 @@ async function fetchRecordsCount(): Promise<void> {
 }
 
 async function fetchRecords(): Promise<void> {
-    console.log('Fetching page records...')
+    const primaryKeyColumn = tableMetadata.value.primary_key_column
+    if (!primaryKeyColumn) return
     loading.value = true
     try {
         const rowsPerPage = paginationRecordsPerPage.value
         const pageIndex = paginationPage.value - 1
         const offset = pageIndex * rowsPerPage
+        const orderBy = evaluateOrderBy()
+        const columns = visibleColumns.value
+        if (!columns.includes(primaryKeyColumn)) {
+            columns.push(primaryKeyColumn)
+        }
+
+        console.log(`Fetching records ${offset}-${rowsPerPage}: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(filters.value)}`)
         let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
             limit: rowsPerPage,
-            order_by: evaluateOrderBy(),
+            order_by: orderBy,
             filters: filters.value,
-            columns: tableMetadata.value.all_columns ?? [],
+            columns: columns,
         } as FetchManyRecordsRequest)
         pageRows.value = response.data.records.map((record: RecordFieldsPayload) => ({
-            key: record.fields[tableMetadata.value.primary_key_column],
+            key: record.fields[primaryKeyColumn],
             fields: record.fields,
         }))
     } catch (err) {
@@ -222,6 +230,7 @@ async function onPaginationSortChange(newPagination: QTablePagination) {
                     option-value="name"
                     options-cover
                     style="min-width: 150px"
+                    @update:model-value="fetchRecords()"
                 />
                 <q-input outlined dense debounce="300" v-model="tableFilter" placeholder="Filter">
                     <template v-slot:append>
