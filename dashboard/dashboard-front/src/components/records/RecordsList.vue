@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router"
-import { ref, onMounted, type Ref } from 'vue'
+import {ref, onMounted, type Ref} from 'vue'
 import { apiClient } from '@/services/ApiClient'
 import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
 import {toastService} from "@/services/ToastService"
@@ -20,7 +20,6 @@ const tableMetadata = ref<TableMetadataPayload>({
     all_columns: [],
     column_types: {},
 })
-const recordCount = ref<number | null>(null)
 const filters = ref<Record<string, any>>({})
 const pageRows = ref<TableRow[]>([])
 const loading = ref(true)
@@ -42,9 +41,14 @@ const pagination: Ref<QTablePagination> = ref({
     sortBy: null,
     descending: false,
     page: 1,
-    rowsPerPage: 50,
+    rowsPerPage: 0,
     rowsNumber: undefined,
 })
+const paginationPage: Ref<number> = ref(1)
+const paginationMin: Ref<number> = ref(1)
+const paginationMax: Ref<number> = ref(1)
+const paginationRecordsPerPage: Ref<number> = ref(20)
+const totalRecords: Ref<number> = ref(0)
 const tableFilter = ref('')
 const visibleColumns = ref<string[]>([])
 const columnProps = ref<QTableProps['columns']>([])
@@ -76,8 +80,9 @@ async function fetchRecordsCount(): Promise<void> {
         let response = await apiClient.post<number>(`/api/v1/records/table/${tableName}/count`, {
             filters: filters.value,
         } as CountRecordsRequest)
-        recordCount.value = response.data
-        pagination.value.rowsNumber = response.data
+        totalRecords.value = response.data
+        paginationMax.value = Math.ceil(totalRecords.value / paginationRecordsPerPage.value)
+        paginationPage.value = Math.min(paginationMax.value, paginationPage.value)
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -86,10 +91,11 @@ async function fetchRecordsCount(): Promise<void> {
 }
 
 async function fetchRecords(): Promise<void> {
+    console.log('Fetching page records...')
     loading.value = true
     try {
-        const rowsPerPage = pagination.value?.rowsPerPage ?? 50
-        const pageIndex = (pagination.value?.page ?? 1) - 1
+        const rowsPerPage = paginationRecordsPerPage.value
+        const pageIndex = paginationPage.value - 1
         const offset = pageIndex * rowsPerPage
         let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
@@ -109,11 +115,11 @@ async function fetchRecords(): Promise<void> {
     }
 }
 
-function evaluateOrderBy(): string | null {
+function evaluateOrderBy(): string[] | null {
     if (!tableMetadata.value) return null
     if (!pagination.value.sortBy) return null
     const column = pagination.value.sortBy
-    return pagination.value.descending ? `-${column}` : column
+    return pagination.value.descending ? [`-${column}`] : [column]
 }
 
 function onRowClick(event: Event, row: TableRow, index: number) {
@@ -124,12 +130,6 @@ function onRowClick(event: Event, row: TableRow, index: number) {
 
 function createRecord() {
     router.push({name: 'records-table-creator', params: {table: tableName}})
-}
-
-async function onPageFetch(props: any) {
-    pagination.value.page = props.page
-    pagination.value.rowsPerPage = props.rowsPerPage
-    await fetchRecords()
 }
 
 function humanReadableColumn(column: string): string {
@@ -167,6 +167,17 @@ onMounted(async () => {
     await fetchRecordsCount()
     await fetchRecords()
 })
+
+async function onRecordsPerPageChange(paginationRecordsPerPage: number) {
+    paginationMax.value = Math.ceil(totalRecords.value / paginationRecordsPerPage)
+    paginationPage.value = 1
+    await fetchRecords()
+}
+
+async function onPaginationSortChange(newPagination: QTablePagination) {
+    pagination.value = newPagination
+    await fetchRecords()
+}
 </script>
 
 <template>
@@ -185,14 +196,13 @@ onMounted(async () => {
           :columns="columnProps"
           :visible-columns="visibleColumns"
           :pagination="pagination"
-          :rows-per-page-options="[5, 10, 20, 50, 100, 200, 500, 0]"
           :filter="tableFilter"
           :loading="loading"
           no-data-label="No records"
           @row-click="onRowClick"
           selection="multiple"
           v-model:selected="selectedRows"
-          @request="onPageFetch"
+          @update:pagination="onPaginationSortChange"
         >
             <template v-slot:header-selection="scope">
                 <q-checkbox v-model="scope.selected" />
@@ -222,6 +232,28 @@ onMounted(async () => {
             <template v-slot:top-right>
                 <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
                 <q-btn color="negative" push label="Delete" icon="delete" @click="deleteSelectedRecords()" />
+            </template>
+            <template v-slot:bottom>
+                <div class="row full-width justify-between items-center">
+                    <div class="q-pl-md">Total records: {{ totalRecords }}</div>
+                    <div class="row justify-end items-center">
+                        <q-select
+                            style="min-width: 12em;" outlined
+                            label="Records per page"
+                            v-model="paginationRecordsPerPage"
+                            :options="[5, 10, 20, 50, 100, 200, 500, 1000]"
+                            @update:model-value="onRecordsPerPageChange"
+                        />
+                        <q-pagination
+                            v-model="paginationPage"
+                            :min="paginationMin"
+                            :max="paginationMax"
+                            :max-pages="11"
+                            boundary-numbers direction-links boundary-links active-color="primary" active-design="push"
+                            @update:model-value="fetchRecords()"
+                        />
+                    </div>
+                </div>
             </template>
             <template v-slot:header-cell="props">
                 <q-th :props="props" :key="props.col.label">
