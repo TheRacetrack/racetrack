@@ -209,8 +209,8 @@ async function onPaginationSortChange(newPagination: QTablePagination) {
     await fetchRecords()
 }
 
-async function onFilterUpdated(newValue: string) {
-    tableFilter.value = newValue
+async function onFilterUpdated(newValue: string | number | null) {
+    tableFilter.value = String(newValue ?? '')
     await fetchRecordsCount()
     await fetchRecords()
 }
