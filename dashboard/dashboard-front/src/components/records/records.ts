@@ -67,6 +67,9 @@ export function encodeInputValue(value: any, colType: string): any {
     if (['datetime', 'datetime | None'].includes(colType)) {
         return formatDateUtcIso8601(value)
     }
+    if (colType === 'bool' && typeof value === 'string') {
+        return ['true', 'yes', '1', 't', 'y', 'on'].includes(value.toLowerCase())
+    }
     return value
 }
 

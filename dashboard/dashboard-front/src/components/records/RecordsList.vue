@@ -7,7 +7,7 @@ import {apiClient} from '@/services/ApiClient'
 import {toastService} from "@/services/ToastService"
 import {progressService} from "@/services/ProgressService"
 import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
-import {decodeInputValues} from "@/components/records/records";
+import {decodeInputValues, encodeInputValues} from "@/components/records/records"
 
 const route = useRoute()
 const router = useRouter()
@@ -21,7 +21,6 @@ const tableMetadata = ref<TableMetadataPayload>({
     all_columns: [],
     column_types: {},
 })
-const filters = ref<Record<string, any>>({})
 const pageRows = ref<TableRow[]>([])
 const loading = ref(true)
 
@@ -77,8 +76,13 @@ async function fetchTableMetadata(): Promise<void> {
 async function fetchRecordsCount(): Promise<void> {
     loading.value = true
     try {
+        const encodedFilters = encodeInputValues({
+            names: tableMetadata.value.all_columns,
+            values: parseFilterQueryString(tableFilter.value),
+            types: tableMetadata.value.column_types,
+        })
         let response = await apiClient.post<number>(`/api/v1/records/table/${tableName}/count`, {
-            filters: filters.value,
+            filters: encodedFilters,
         } as CountRecordsRequest)
         totalRecords.value = response.data
         paginationMax.value = Math.max(Math.ceil(totalRecords.value / paginationRecordsPerPage.value), 1)
@@ -103,13 +107,18 @@ async function fetchRecords(): Promise<void> {
         if (!columns.includes(primaryKeyColumn)) {
             columns.push(primaryKeyColumn)
         }
+        const encodedFilters = encodeInputValues({
+            names: tableMetadata.value.all_columns,
+            values: parseFilterQueryString(tableFilter.value),
+            types: tableMetadata.value.column_types,
+        })
 
-        console.log(`Fetching records [${offset}-${offset+rowsPerPage}]: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(filters.value)}`)
+        console.log(`Fetching records [${offset}-${offset+rowsPerPage}]: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(encodedFilters)}`)
         let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
             limit: rowsPerPage,
             order_by: orderBy,
-            filters: filters.value,
+            filters: encodedFilters,
             columns: columns,
         } as FetchManyRecordsRequest)
         pageRows.value = response.data.records.map((record: RecordFieldsPayload) => ({
@@ -170,6 +179,19 @@ function deleteSelectedRecords() {
     })
 }
 
+function parseFilterQueryString(query: string): { [key: string]: string | number } {
+    if (!query) return {}
+    const result: { [key: string]: string | number } = {}
+    const pairs = query.trim().split(/[\s,]+/)
+    pairs.forEach((pair) => {
+        const [key, value] = pair.trim().split(/={1,2}/)
+        if (key && value !== undefined) {
+            result[key] = value
+        }
+    })
+    return result
+}
+
 onMounted(async () => {
     await fetchTableMetadata()
     await fetchRecordsCount()
@@ -184,6 +206,12 @@ async function onRecordsPerPageChange(paginationRecordsPerPage: number) {
 
 async function onPaginationSortChange(newPagination: QTablePagination) {
     pagination.value = newPagination
+    await fetchRecords()
+}
+
+async function onFilterUpdated(newValue: string) {
+    tableFilter.value = newValue
+    await fetchRecordsCount()
     await fetchRecords()
 }
 </script>
@@ -204,7 +232,6 @@ async function onPaginationSortChange(newPagination: QTablePagination) {
           :columns="columnProps"
           :visible-columns="visibleColumns"
           :pagination="pagination"
-          :filter="tableFilter"
           :loading="loading"
           no-data-label="No records"
           @row-click="onRowClick"
@@ -232,7 +259,7 @@ async function onPaginationSortChange(newPagination: QTablePagination) {
                     style="min-width: 150px"
                     @update:model-value="fetchRecords()"
                 />
-                <q-input outlined dense debounce="300" v-model="tableFilter" placeholder="Filter">
+                <q-input outlined dense debounce="750" v-model="tableFilter" placeholder="Filter" @update:model-value="onFilterUpdated">
                     <template v-slot:append>
                         <q-icon name="search" />
                     </template>
