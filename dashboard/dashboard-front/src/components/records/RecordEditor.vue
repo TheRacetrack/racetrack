@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router"
 import {ref, onMounted} from 'vue'
-import {apiClient} from '@/services/ApiClient'
-import {type TableMetadataPayload, type RecordFieldsPayload} from '@/utils/api-schema'
-import {toastService} from "@/services/ToastService"
 import {mdiDatabase, mdiTable, mdiFileDocumentOutline} from '@quasar/extras/mdi-v7'
+import {apiClient} from '@/services/ApiClient'
+import {toastService} from "@/services/ToastService"
 import {progressService} from "@/services/ProgressService"
+import {type TableMetadataPayload, type RecordFieldsPayload} from '@/utils/api-schema'
 import FieldsForm from "@/components/records/FieldsForm.vue"
 import {emptyTableMetadata, fetchTableMetadata, encodeInputValues, decodeInputValues, type FormFields} from "@/components/records/records"
 

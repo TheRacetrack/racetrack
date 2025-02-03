@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router"
 import {ref, onMounted, type Ref} from 'vue'
-import { apiClient } from '@/services/ApiClient'
-import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
-import {toastService} from "@/services/ToastService"
-import { mdiDatabase, mdiTable } from '@quasar/extras/mdi-v7'
 import type {QTableProps} from "quasar"
+import {mdiDatabase, mdiTable} from '@quasar/extras/mdi-v7'
+import {apiClient} from '@/services/ApiClient'
+import {toastService} from "@/services/ToastService"
 import {progressService} from "@/services/ProgressService"
+import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
+import {decodeInputValues} from "@/components/records/records";
 
 const route = useRoute()
 const router = useRouter()
@@ -114,7 +115,7 @@ async function fetchRecords(): Promise<void> {
         } as FetchManyRecordsRequest)
         pageRows.value = response.data.records.map((record: RecordFieldsPayload) => ({
             key: record.fields[primaryKeyColumn],
-            fields: record.fields,
+            fields: decodeInputValues(record.fields, tableMetadata.value),
         }))
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch table records`, err)

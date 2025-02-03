@@ -78,7 +78,7 @@ export function encodeInputValues(formFields: FormFields): Record<string, any> {
     ) as Record<string, any>
 }
 
-export function decodeInputValues(fields: Record<string, any>, tableMetadata: TableMetadataPayload) {
+export function decodeInputValues(fields: Record<string, any>, tableMetadata: TableMetadataPayload): Record<string, any>  {
     return Object.fromEntries(
             Object.entries(fields)
                 .map(([key, value]) => [key, decodeInputValue(value, key, tableMetadata)])
