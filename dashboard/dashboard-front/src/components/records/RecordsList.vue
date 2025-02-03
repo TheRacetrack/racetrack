@@ -46,7 +46,6 @@ const pagination: Ref<QTablePagination> = ref({
     rowsNumber: undefined,
 })
 const paginationPage: Ref<number> = ref(1)
-const paginationMin: Ref<number> = ref(1)
 const paginationMax: Ref<number> = ref(1)
 const paginationRecordsPerPage: Ref<number> = ref(20)
 const totalRecords: Ref<number> = ref(0)
@@ -82,8 +81,8 @@ async function fetchRecordsCount(): Promise<void> {
             filters: filters.value,
         } as CountRecordsRequest)
         totalRecords.value = response.data
-        paginationMax.value = Math.ceil(totalRecords.value / paginationRecordsPerPage.value)
-        paginationPage.value = Math.min(paginationMax.value, paginationPage.value)
+        paginationMax.value = Math.max(Math.ceil(totalRecords.value / paginationRecordsPerPage.value), 1)
+        paginationPage.value = Math.max(Math.min(paginationMax.value, paginationPage.value), 1)
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch records count`, err)
     } finally {
@@ -105,7 +104,7 @@ async function fetchRecords(): Promise<void> {
             columns.push(primaryKeyColumn)
         }
 
-        console.log(`Fetching records ${offset}-${rowsPerPage}: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(filters.value)}`)
+        console.log(`Fetching records [${offset}-${offset+rowsPerPage}]: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(filters.value)}`)
         let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
             limit: rowsPerPage,
@@ -178,7 +177,7 @@ onMounted(async () => {
 })
 
 async function onRecordsPerPageChange(paginationRecordsPerPage: number) {
-    paginationMax.value = Math.ceil(totalRecords.value / paginationRecordsPerPage)
+    paginationMax.value = Math.max(Math.ceil(totalRecords.value / paginationRecordsPerPage), 1)
     paginationPage.value = 1
     await fetchRecords()
 }
@@ -248,7 +247,7 @@ async function onPaginationSortChange(newPagination: QTablePagination) {
                     <div class="q-pl-md">Total records: {{ totalRecords }}</div>
                     <div class="row justify-end items-center">
                         <q-select
-                            style="min-width: 12em;" outlined
+                            style="min-width: 12em;" outlined dense
                             label="Records per page"
                             v-model="paginationRecordsPerPage"
                             :options="[5, 10, 20, 50, 100, 200, 500, 1000]"
@@ -256,7 +255,7 @@ async function onPaginationSortChange(newPagination: QTablePagination) {
                         />
                         <q-pagination
                             v-model="paginationPage"
-                            :min="paginationMin"
+                            min="1"
                             :max="paginationMax"
                             :max-pages="11"
                             boundary-numbers direction-links boundary-links active-color="primary" active-design="push"
