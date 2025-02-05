@@ -14,6 +14,7 @@ from lifecycle.endpoints.audit import setup_audit_endpoints
 from lifecycle.endpoints.auth import setup_auth_endpoints
 from lifecycle.endpoints.info import setup_info_endpoints
 from lifecycle.endpoints.plugin import setup_plugin_endpoints
+from lifecycle.endpoints.records import setup_records_endpoints
 from lifecycle.event_stream.server import EventStreamServer
 from lifecycle.endpoints.health import setup_health_endpoint
 from lifecycle.endpoints.deploy import setup_deploy_endpoints
@@ -113,6 +114,7 @@ def setup_api_endpoints(api: APIRouter, config: Config, plugin_engine: PluginEng
     setup_plugin_endpoints(api, plugin_engine)
     setup_audit_endpoints(api)
     setup_auth_endpoints(api, config)
+    setup_records_endpoints(api)
 
 
 def setup_socket_io_server(config: Config) -> socketio.WSGIApp:
