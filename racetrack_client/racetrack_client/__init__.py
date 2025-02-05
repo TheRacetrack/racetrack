@@ -1,2 +1,2 @@
 name = "racetrack_client"
-__version__ = "2.34.2"
+__version__ = "2.35.0"
