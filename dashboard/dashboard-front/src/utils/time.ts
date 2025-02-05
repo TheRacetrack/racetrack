@@ -104,3 +104,15 @@ export function leftZeroPad(num: number, size: number): string {
         s = "0" + s
     return s
 }
+
+export function formatDateUtcIso8601(value: number | string | Date): string {
+    const date = new Date(value)
+    const day = leftZeroPad(date.getUTCDate(), 2)
+    const month = leftZeroPad(date.getUTCMonth() + 1, 2)
+    const year = leftZeroPad(date.getUTCFullYear(), 4)
+    const hour = leftZeroPad(date.getUTCHours(), 2)
+    const minute = leftZeroPad(date.getUTCMinutes(), 2)
+    const second = leftZeroPad(date.getUTCSeconds(), 2)
+    const millisecond = leftZeroPad(date.getUTCMilliseconds(), 3)
+    return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}+00:00`
+}

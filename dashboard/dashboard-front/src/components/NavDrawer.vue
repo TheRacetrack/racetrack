@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { mdiGraphOutline, mdiTable, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant, mdiTextBoxOutline, mdiAccountNetwork } from '@quasar/extras/mdi-v7'
+import { mdiDatabase, mdiGraphOutline, mdiTable, mdiAccountCircle, mdiTools, mdiLogout, mdiBookOpenVariant, mdiTextBoxOutline, mdiAccountNetwork } from '@quasar/extras/mdi-v7'
 import { outlinedMemory } from '@quasar/extras/material-icons-outlined'
 import { isAuthenticated, isAdmin } from '@/services/UserDataStore'
 
@@ -79,6 +79,16 @@ defineExpose({
           </q-item-section>
           <q-item-section>
             <q-item-label>External Consumers</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item v-ripple clickable :to="{name: 'records-tables-index'}"
+          v-if="isAdmin">
+          <q-item-section avatar>
+            <q-icon :name="mdiDatabase" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Records</q-item-label>
           </q-item-section>
         </q-item>
 
