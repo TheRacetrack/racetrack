@@ -61,13 +61,13 @@ func TestTargetURL(t *testing.T) {
 	{
 		job := &JobDetails{
 			Name:         "svc-name",
-			InternalName: "job-svc-name.racetrack.svc:1234",
+			InternalName: "job-svc-name.racetrack.svc.cluster.local:1234",
 		}
 		cfg := Config{
 			ForwardToProtocol: "http",
 		}
 		res := TargetURL(&cfg, job, "pub/job/golang/latest/api/v1/perform")
-		assert.Equal(t, "http://job-svc-name.racetrack.svc:1234/pub/job/golang/latest/api/v1/perform", res.String())
+		assert.Equal(t, "http://job-svc-name.racetrack.svc.cluster.local:1234/pub/job/golang/latest/api/v1/perform", res.String())
 	}
 
 	{
