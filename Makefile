@@ -1,4 +1,4 @@
-.PHONY: setup test clean registry
+.PHONY: setup test clean registry venv
 
 # docker tag of images
 TAG ?= 2.34.2
@@ -41,11 +41,11 @@ venv:
 		-r lifecycle/requirements.txt \
 		-r image_builder/requirements.txt \
 		-r dashboard/requirements.txt \
-	    -e racetrack_client/. \
-		-e racetrack_commons/. \
-		-e lifecycle/. \
-		-e image_builder/. \
-		-e dashboard/.
+	    -e racetrack_client@racetrack_client \
+		-e racetrack_commons@racetrack_commons \
+		-e lifecycle@lifecycle \
+		-e image_builder@image_builder \
+		-e dashboard@dashboard
 	@echo Activate your venv:
 	@echo . venv/bin/activate
 
