@@ -15,7 +15,7 @@ scrape_configs:
     metrics_path: /metrics
     dns_sd_configs:
       - names: 
-          - 'lifecycle.lifecycle.racetrack.svc'
+          - 'lifecycle.lifecycle.racetrack.svc.cluster.local'
         type: A
         port: 7002
 
@@ -31,7 +31,7 @@ scrape_configs:
     metrics_path: /metrics
     dns_sd_configs:
       - names: 
-          - 'image-builder.image-builder.racetrack.svc'
+          - 'image-builder.image-builder.racetrack.svc.cluster.local'
         type: A
         port: 7001
 
@@ -40,7 +40,7 @@ scrape_configs:
     metrics_path: /metrics
     dns_sd_configs:
       - names: 
-          - 'pub.pub.racetrack.svc'
+          - 'pub.pub.racetrack.svc.cluster.local'
         type: A
         port: 7005
 

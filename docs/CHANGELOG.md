@@ -6,12 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- Upgraded third-party dependencies.
-
 ### Added
 - More types of Pub errors are presented on the Grafana Dashboard, including panic errors.
   ([#546](https://github.com/TheRacetrack/racetrack/issues/546))
+
+### Changed
+- Upgraded third-party dependencies.
+- Use `svc.cluster.local` suffix for Kubernetes DNS names.
 
 ## [2.34.2] - 2024-11-29
 ### Fixed
