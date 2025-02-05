@@ -51,7 +51,7 @@ class DeleteManyRecordsRequest(BaseModel):
     record_ids: list[str]
 
 
-def setup_record_manager_endpoints(api: APIRouter):
+def setup_records_endpoints(api: APIRouter):
     mapper = LifecycleCache.record_mapper()
 
     @api.get('/records/tables')

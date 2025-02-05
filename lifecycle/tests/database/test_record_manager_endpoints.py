@@ -1,7 +1,7 @@
 from lifecycle.config import Config
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
-from lifecycle.endpoints.record_manager import list_all_tables, create_record, RecordFieldsPayload, \
+from lifecycle.endpoints.records import list_all_tables, create_record, RecordFieldsPayload, \
     count_table_records, CountRecordsRequest, list_table_records, FetchManyRecordsRequest, get_one_record, \
     update_record, delete_record, FetchManyRecordsResponse
 from racetrack_client.log.errors import EntityNotFound
