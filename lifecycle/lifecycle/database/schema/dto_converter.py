@@ -1,5 +1,6 @@
 from datetime import datetime
-from lifecycle.database.table_model import parse_json_column
+
+from lifecycle.database.type_parser import parse_json_column
 from lifecycle.server.cache import LifecycleCache
 from racetrack_client.manifest.load import parse_manifest_or_empty
 from racetrack_client.utils.time import datetime_to_timestamp

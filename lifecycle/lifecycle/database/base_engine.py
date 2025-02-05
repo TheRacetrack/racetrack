@@ -24,14 +24,13 @@ class DatabaseStatus:
     connections_errors: int = 0  # Number of failed connection attempts
 
 
-"""
-Base class for Database Engines
-- PostgreSQL implementation: file://./postgres/engine.py
-- SQLite implementation: file://./sqlite/engine.py
-"""
 class DbEngine(ABC):
-    def __init__(self) -> None:
-        self.query_builder: BaseQueryBuilder
+    """
+    Base class for Database Engines
+    - PostgreSQL implementation: file://./postgres/engine.py
+    - SQLite implementation: file://./sqlite/engine.py
+    """
+    query_builder: BaseQueryBuilder
     
     def check_connection(self) -> None:
         pass

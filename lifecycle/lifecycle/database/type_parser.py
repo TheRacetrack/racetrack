@@ -1,8 +1,11 @@
 import dataclasses
+import json
 from datetime import datetime, timezone
 from dateutil import parser as dt_parser
 from typing import Type, TypeVar, Union, Any, get_origin, get_args
 import types
+
+from racetrack_client.log.context_error import ContextError
 
 T = TypeVar("T")
 
@@ -56,3 +59,31 @@ def parse_typed_object(obj: Any, clazz: Type[T]) -> T:
             return clazz(obj)
         except BaseException as e:
             raise ValueError(f'failed to parse "{obj}" ({type(obj)}) to type {clazz}: {e}')
+
+
+def parse_dict_typed_values(data: dict[str, Any], clazz: Type[T]) -> dict[str, Any]:
+    """
+    Cast dictionary values to the expected types, matching the field annotations from a dataclass
+    :param data: fields dictionary to be transformed into expected type. It doesn't need to contain all dataclass fields
+    :param clazz: expected dataclass type to take the fields from
+    :return: dictionary with the same keys as the input, but with values casted to the expected types
+    """
+    if not data:
+        return {}
+    assert dataclasses.is_dataclass(clazz), f'expected dataclass type to parse into a dict, got {clazz}'
+    field_types = {field.name: field.type for field in dataclasses.fields(clazz)}
+    typed_data: dict[str, Any] = dict()
+    for key, value in data.items():
+        if key not in field_types:
+            raise KeyError(f'unexpected field "{key}" provided for type {clazz}')
+        typed_data[key] = parse_typed_object(value, field_types[key])
+    return typed_data
+
+
+def parse_json_column(text: str | None) -> Any:
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        raise ContextError(f'Unparsable JSON content ({text})') from e

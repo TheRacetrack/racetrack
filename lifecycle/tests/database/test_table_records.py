@@ -1,13 +1,15 @@
 import json
+from datetime import timedelta
 
 from lifecycle.config import Config
 from lifecycle.database.base_engine import NoRowsAffected
+from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
 from lifecycle.database.schema.tables import AuthResourcePermission, JobFamily, User, AuthSubject, Job
-from lifecycle.database.table_model import new_uuid
+from lifecycle.database.table_model import new_uuid, table_metadata
 from racetrack_client.log.errors import AlreadyExists
-from racetrack_client.utils.time import now
+from racetrack_client.utils.time import now, datetime_to_str
 from racetrack_client.log.logs import configure_logs
 from racetrack_commons.auth.scope import AuthScope
 from racetrack_commons.entities.dto import JobStatus
@@ -54,7 +56,6 @@ def test_record_operations():
 
 
 def test_create_or_update():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record: JobFamily = JobFamily(
@@ -72,7 +73,6 @@ def test_create_or_update():
 
 
 def test_violate_primary_key():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     record: JobFamily = JobFamily(
@@ -88,7 +88,6 @@ def test_violate_primary_key():
 
 
 def test_create_with_auto_increment():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config()))
 
     job_family = JobFamily(
@@ -120,7 +119,6 @@ def test_create_with_auto_increment():
 
 
 def test_update_only_changed_fields():
-    configure_logs()
     db_engine = create_db_engine(Config(database_log_queries=True))
     mapper = RecordMapper(db_engine)
 
@@ -145,31 +143,11 @@ def test_update_only_changed_fields():
 
 
 def test_delete_cascade():
-    configure_logs()
     mapper = RecordMapper(create_db_engine(Config(database_log_queries=True)))
 
     job_family = JobFamily(id=new_uuid(), name='primer')
     mapper.create(job_family)
-    job = Job(
-        id=new_uuid(),
-        family_id=job_family.id,
-        name='primer',
-        version='0.0.0',
-        status=JobStatus.RUNNING.value,
-        create_time=now(),
-        update_time=now(),
-        manifest='',
-        internal_name=None,
-        error=None,
-        notice=None,
-        image_tag=None,
-        deployed_by=None,
-        last_call_time=None,
-        infrastructure_target=None,
-        replica_internal_names=None,
-        job_type_version='python3:1.0.0',
-        infrastructure_stats=None,
-    )
+    job = _create_test_job('primer', job_family.id)
     mapper.create(job)
     assert mapper.count(Job) == 1
     assert mapper.count(JobFamily) == 1
@@ -185,17 +163,123 @@ def test_json_column():
     job_family = JobFamily(id=new_uuid(), name='primer')
     mapper.create(job_family)
     stats_content = json.dumps({"number_of_restarts": 2})
-    job = Job(
+    job = _create_test_job('primer', job_family.id, version='0.0.0', infrastructure_stats=stats_content)
+    mapper.create(job)
+
+    job: Job = mapper.find_one(Job, id=job.id)
+    assert job.infrastructure_stats == '{"number_of_restarts": 2}'
+
+
+def test_filtering_many_records():
+    mapper = RecordMapper(create_db_engine(Config(database_log_queries=True)))
+
+    job_family = JobFamily(id=new_uuid(), name='primer')
+    mapper.create(job_family)
+    job1 = _create_test_job('primer', job_family.id, version='1.1.1', error='')
+    mapper.create(job1)
+    job2 = _create_test_job('primer', job_family.id, version='2.2.2', error='bad')
+    mapper.create(job2)
+    job3 = _create_test_job('primer', job_family.id, version='3.3.3', error='')
+    mapper.create(job3)
+
+    assert mapper.exists_record(job1)
+
+    records = mapper.find_many(Job, family_id=job_family.id)
+    assert len(records) == 3
+    records = mapper.find_many(Job, order_by=['-version'], error='', name='primer')
+    assert len(records) == 2
+    assert [r.version for r in records] == ['3.3.3', '1.1.1']
+
+    placeholder: str = mapper.placeholder
+    table_family = table_metadata(JobFamily).table_name
+    table_job = table_metadata(Job).table_name
+    join_expression = f'left join {table_family} on {table_family}.id = {table_job}.family_id'
+    filter_condition = QueryCondition.operator_and(
+        QueryCondition(f'{table_family}.name = {placeholder}', 'primer'),
+        QueryCondition(f'{table_job}.error is not null'),
+        QueryCondition(f'{table_job}.error = {placeholder}', 'bad'),
+    )
+    records = mapper.filter(Job, join_expression=join_expression, condition=filter_condition)
+    assert len(records) == 1
+    assert records[0].version == '2.2.2'
+
+    assert mapper.exists_on_condition(
+        Job, join_expression=join_expression, condition=filter_condition,
+    )
+
+    records = mapper.filter_dicts(Job, order_by=['version'], offset=1, limit=1)
+    assert [r['version'] for r in records] == ['2.2.2']
+
+    records = mapper.filter_dicts(Job, order_by=['version'], filters={
+        'error': 'bad',
+    })
+    assert [r['version'] for r in records] == ['2.2.2']
+
+
+def test_auto_assign_id():
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    record = User(id=0, password='encrypted', username='new-admin', first_name='', last_name='', email='admin@example.com', is_active=False, is_staff=False, is_superuser=False, date_joined=now(), last_login=None)
+    mapper.create(record)
+    new_record = mapper.find_one(User, username='new-admin')
+    assert new_record.id > 0
+
+    record = JobFamily(id='', name='new-one')
+    mapper.create(record)
+    new_record = mapper.find_one(JobFamily, name='new-one')
+    assert new_record.id, 'ID should be assigned automatically'
+
+
+def test_create_from_dict():
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    record_data = mapper.create_from_dict(JobFamily, {'name': 'new-one'})
+    assert record_data['id'], 'ID should be assigned automatically'
+    record = mapper.find_one(JobFamily, name='new-one')
+    assert record.id, 'ID should be assigned automatically'
+
+
+def test_update_from_dict():
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    record_data = mapper.create_from_dict(JobFamily, {'name': 'old-one'})
+    mapper.update_from_dict(JobFamily, record_data['id'], {'name': 'new-one-updated'})
+    record = mapper.find_one(JobFamily, name='new-one-updated')
+    assert record.name, 'new-one-updated'
+
+
+def test_casting_datetime_type():
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    mapper.create(job_family := JobFamily(id='', name='primer'))
+    job = _create_test_job('primer', job_family.id, version='1.1.1')
+    mapper.create(job)
+    update_time_str = datetime_to_str(job.update_time)
+    assert datetime_to_str(mapper.find_one(Job, id=job.id).update_time) == update_time_str
+
+    tomorrow = now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
+    mapper.update_from_dict(Job, job.id, {'update_time': tomorrow})
+    assert datetime_to_str(mapper.find_one(Job, id=job.id).update_time) == datetime_to_str(tomorrow)
+
+
+def _create_test_job(
+    name: str,
+    family_id: str,
+    version: str = '0.0.0',
+    infrastructure_stats: str | None = None,
+    error: str | None = None,
+) -> Job:
+    return Job(
         id=new_uuid(),
-        family_id=job_family.id,
-        name='primer',
-        version='0.0.0',
+        family_id=family_id,
+        name=name,
+        version=version,
         status=JobStatus.RUNNING.value,
         create_time=now(),
         update_time=now(),
         manifest=None,
         internal_name=None,
-        error=None,
+        error=error,
         notice=None,
         image_tag=None,
         deployed_by=None,
@@ -203,9 +287,5 @@ def test_json_column():
         infrastructure_target=None,
         replica_internal_names=None,
         job_type_version='python3:1.0.0',
-        infrastructure_stats=stats_content,
+        infrastructure_stats=infrastructure_stats,
     )
-    mapper.create(job)
-
-    job: Job = mapper.find_one(Job, id=job.id)
-    assert job.infrastructure_stats == '{"number_of_restarts": 2}'
