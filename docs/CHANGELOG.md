@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - More types of Pub errors are presented on the Grafana Dashboard, including panic errors.
   ([#546](https://github.com/TheRacetrack/racetrack/issues/546))
+- A new tab in the Dashboard called "Records" lets you manage all the data models stored
+  in Racetrack's database. It's designed to replace the Django Admin panel and incorporate its
+  features into Racetrack's built-inadministration interface. This way, you can manage database
+  entities in one central place without needing to log in separately.
+  ([#543](https://github.com/TheRacetrack/racetrack/issues/543))
 
 ### Changed
 - Upgraded third-party dependencies.
