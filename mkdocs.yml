@@ -70,6 +70,7 @@ nav:
       - Remote Kubernetes Gateway: docs/deployment/remote-kubernetes-gateway.md
       - Remote Docker Gateway: docs/deployment/remote-docker-gateway.md
     - Administering: docs/admin.md
+    - Setting Up Racetrack with HTTPS: docs/deployment/racetrack-behind-https.md
   - For Developers:
     - Plugins:
       - Developing plugins: docs/development/developing-plugins.md
