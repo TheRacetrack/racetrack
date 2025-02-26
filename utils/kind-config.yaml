@@ -34,11 +34,6 @@ nodes:
       - hostPort: 3000 # Grafana
         containerPort: 30300
         listenAddress: "127.0.0.1"
-# TLS Ingress:
-#      - hostPort: 443
-#        containerPort: 30443
-#        listenAddress: "127.0.0.1"
-#        protocol: TCP
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."racetrack-registry:5000"]

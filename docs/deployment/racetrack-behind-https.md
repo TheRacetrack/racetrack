@@ -1,6 +1,7 @@
 # Setting Up Racetrack with HTTPS
 This guide will walk you through how to serve Racetrack behind a secure HTTPS protocol.
 
+## TLS/SSL Certificate
 To start, you'll need a valid TLS certificate. Here are some options for obtaining one:
 
 -   **Self-Signed Certificate** -
@@ -36,14 +37,27 @@ To create a custom self-signed TLS certificate for use on an HTTPS server, follo
     They are suitable for development and testing purposes, but not recommended for production environments.
     For production use, obtain a certificate from a trusted CA. If using a self-signed certificate in a controlled environment, you can create a root CA and use it to sign server certificates, then install the root CA certificate on client machines to avoid security warnings.
 
-3.  Set Up an Ingress Controller:
+3.  Set up an Ingress Controller:
     ```sh
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
     ```
     
-    Optional: If you're using a local Kubernetes environment like Minikube or Kind, you might need to patch the ingress-nginx-controller service to use NodePort
+    Optional: If you're using a local Kubernetes environment like [Kind](https://kind.sigs.k8s.io/) or Minikube,
+    you might need to patch the ingress-nginx-controller service to use NodePort
     ```sh
     kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "NodePort", "ports": [{"nodePort": 30443, "port": 443, "targetPort": 443, "protocol": "TCP", "name": "https"}]}}'
+    ```
+    Don't forget to open port 443 in your Kind configuration:
+    ```yaml
+    apiVersion: kind.x-k8s.io/v1alpha4
+    kind: Cluster
+    nodes:
+        extraPortMappings:
+          # TLS Ingress
+          - hostPort: 443
+            containerPort: 30443
+            listenAddress: "127.0.0.1"
+            protocol: TCP
     ```
 
 4.  Create Ingress in a `ingress.yaml` file.
