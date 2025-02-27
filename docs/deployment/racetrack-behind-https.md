@@ -2,25 +2,25 @@
 This guide will walk you through how to serve Racetrack behind a secure HTTPS protocol.
 
 ## TLS/SSL Certificate
-To start, you'll need a valid TLS certificate. Here are some options for obtaining one:
-
--   **Self-Signed Certificate** -
-    You can create a self-signed certificate, but it's not recommended for production as it's insecure and vulnerable to man-in-the-middle attacks.
--   **Certificate Authority** - 
-    You can create your own CA certificate and install it on all your devices.
--   **Let's Encrypt** -
-    Use Let's Encrypt to get a free certificate, typically valid for 90 days. You'll need to set up Certbot to renew the certificate automatically.
--   **Third-Party Services** - Acquire a certificate from other trusted third-party provider
-
-Keep in mind that a properly signed certificate is usually issued for a registered DNS domain name, not an IP address.
-Working with certificates also entails setting up a correct renewal process to update them before they expire.
+To start, you'll need a valid TLS certificate.
+While this guide will show you how to create a self-signed certificate,
+keep in mind that it's not suitable for production environments due to security risks,
+such as being prone to man-in-the-middle attacks.
+For better security, consider obtaining a certificate from a trusted source, such as Let's Encrypt.
 
 ## TLS Termination
 It's a common practice to split responsibilities into two separate tasks that can be handled by different teams:
 - Core Application Setup (using HTTP) - not accessible externally, developers don't need to worry about implementing TLS properly
 - TLS Termination at the Edge - a secure HTTPS gateway at the system's first public entry point.
 
-## Using a Self-Signed Certificate in Local Kubernetes
+## Example of using a self-signed certificate in local Kubernetes
+
+### Prerequisites
+
+- Local Kubernetes running in [Kind](https://kind.sigs.k8s.io/).
+- Racetrack deployed in the `racetrack` namespace.
+
+### Setup
 To create a custom self-signed TLS certificate for use on an HTTPS server, follow these steps:
 
 1.  Generate a private key and certificate:
@@ -33,16 +33,20 @@ To create a custom self-signed TLS certificate for use on an HTTPS server, follo
     kubectl create secret tls tls-secret --namespace=racetrack --key tls.key --cert tls.crt
     ```
     
-    Note that self-signed certificates are not trusted by browsers and will trigger security warnings.
-    They are suitable for development and testing purposes, but not recommended for production environments.
-    For production use, obtain a certificate from a trusted CA. If using a self-signed certificate in a controlled environment, you can create a root CA and use it to sign server certificates, then install the root CA certificate on client machines to avoid security warnings.
+    Note that this will create `tls.crt` which is a self-signed certificate,
+    which is not trusted by browsers and will trigger security warnings.
+    Self-signed certificates are suitable for development and testing purposes,
+    but not recommended for production environments.
+    For production use, obtain a certificate from a trusted CA. If using a self-signed certificate
+    in a controlled environment, you can create a root CA and use it to sign server certificates,
+    then install the root CA certificate on client machines to avoid security warnings.
 
 3.  Set up an Ingress Controller:
     ```sh
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
     ```
     
-    Optional: If you're using a local Kubernetes environment like [Kind](https://kind.sigs.k8s.io/) or Minikube,
+    If you're using a local Kubernetes environment like [Kind](https://kind.sigs.k8s.io/) or Minikube,
     you might need to patch the ingress-nginx-controller service to use NodePort
     ```sh
     kubectl patch svc ingress-nginx-controller -n ingress-nginx -p '{"spec": {"type": "NodePort", "ports": [{"nodePort": 30443, "port": 443, "targetPort": 443, "protocol": "TCP", "name": "https"}]}}'
