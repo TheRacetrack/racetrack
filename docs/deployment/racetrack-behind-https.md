@@ -10,6 +10,7 @@ For better security, consider obtaining a certificate from a trusted source, suc
 
 ## TLS Termination
 It's a common practice to split responsibilities into two separate tasks that can be handled by different teams:
+
 - Core Application Setup (using HTTP) - not accessible externally, developers don't need to worry about implementing TLS properly
 - TLS Termination at the Edge - a secure HTTPS gateway at the system's first public entry point.
 
@@ -138,7 +139,8 @@ To create a custom self-signed TLS certificate for use on an HTTPS server, follo
     kubectl apply -f ingress.yaml
     ```
 
-Now you should be able to access the application at https://127.0.0.1/dashboard or https://ingress.local/dashboard.
+Now you should be able to access the application at [https://127.0.0.1/dashboard](https://127.0.0.1/dashboard)
+or [https://ingress.local/dashboard](https://ingress.local/dashboard).
 
 For more detailed information, visit the
 [TLS Termination with Ingress-Nginx Controller](https://kubernetes.github.io/ingress-nginx/examples/tls-termination/)
