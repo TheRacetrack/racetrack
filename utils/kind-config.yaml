@@ -6,6 +6,12 @@ nodes:
       - hostPath: ./utils/grafana/dashboards
         containerPath: /src/utils/grafana/dashboards
         readOnly: true
+    kubeadmConfigPatches:
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "ingress-ready=true"
     extraPortMappings:
       - hostPort: 7001 # Image-builder
         containerPort: 30001
