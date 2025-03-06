@@ -36,6 +36,8 @@ class TableModel(ABC):
         plural_name: str
         # list of columns to display on the management view
         main_columns: list[str] = []
+        # list of columns needed to display the object name
+        name_columns: list[str] = []
 
         # Attributes evaluated at runtime:
         fields: list[str]
@@ -69,6 +71,7 @@ def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
     metadata.on_delete_cascade = getattr(metadata, 'on_delete_cascade', {})
     metadata.plural_name = getattr(metadata, 'plural_name', None) or (cls.__name__ + 's')
     metadata.main_columns = getattr(metadata, 'main_columns', [])
+    metadata.name_columns = getattr(metadata, 'name_columns', [])
     metadata.primary_key_generator = getattr(metadata, 'primary_key_generator', None)
     return metadata
 
@@ -101,6 +104,21 @@ def build_column_type(annotation: type) -> ColumnType:
         int | None: ColumnType.OPTIONAL_INT,
     }
     return type_dict.get(annotation, ColumnType.UNKNOWN)
+
+
+def create_empty_field(column_type: ColumnType) -> Any:
+    empty_values: dict[ColumnType, Any] = {
+        ColumnType.STRING: '',
+        ColumnType.DATETIME: datetime.fromtimestamp(0),
+        ColumnType.INT: 0,
+        ColumnType.FLOAT: 0,
+        ColumnType.BOOLEAN: False,
+        ColumnType.BYTES: b'',
+        ColumnType.OPTIONAL_STRING: None,
+        ColumnType.OPTIONAL_DATETIME: None,
+        ColumnType.OPTIONAL_INT: None,
+    }
+    return empty_values.get(column_type)
 
 
 def new_uuid() -> str:
