@@ -6,23 +6,16 @@ import {mdiDatabase, mdiTable} from '@quasar/extras/mdi-v7'
 import {apiClient} from '@/services/ApiClient'
 import {toastService} from "@/services/ToastService"
 import {progressService} from "@/services/ProgressService"
-import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
-import {decodeInputValues, encodeInputValues} from "@/components/records/records"
+import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest, type ManyRecordsRequest, type FetchManyNamesResponse} from '@/utils/api-schema'
+import {decodeInputValues, emptyTableMetadata, encodeInputValues} from "@/components/records/records"
 
 const route = useRoute()
 const router = useRouter()
 const tableName: string = route.params.table as string
-const tableMetadata = ref<TableMetadataPayload>({
-    class_name: '',
-    table_name: '',
-    plural_name: '',
-    primary_key_column: '',
-    main_columns: [],
-    all_columns: [],
-    column_types: {},
-})
+const tableMetadata = ref<TableMetadataPayload>(emptyTableMetadata)
 const pageRows = ref<TableRow[]>([])
 const loading = ref(true)
+const foreignRecordNames = ref<Map<string, Map<string, string>>>(new Map()) // column name -> foreign record ID -> foreign record name
 
 interface TableRow {
     key: string | number
@@ -114,7 +107,7 @@ async function fetchRecords(): Promise<void> {
         })
 
         console.log(`Fetching records [${offset}-${offset+rowsPerPage}]: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(encodedFilters)}`)
-        let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
+        const response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
             limit: rowsPerPage,
             order_by: orderBy,
@@ -125,8 +118,34 @@ async function fetchRecords(): Promise<void> {
             key: record.fields[primaryKeyColumn],
             fields: decodeInputValues(record.fields, tableMetadata.value),
         }))
+        await fetchForeignRecordNames()
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch table records`, err)
+    } finally {
+        loading.value = false
+    }
+}
+
+async function fetchForeignRecordNames(): Promise<void> {
+    const primaryKeyColumn = tableMetadata.value.primary_key_column
+    if (!primaryKeyColumn) return
+    loading.value = true
+    try {
+        const foreignKeys = tableMetadata.value.foreign_keys
+        for (const column in foreignKeys) {
+            if (!visibleColumns.value.includes(column)) continue
+            const foreignTableName = foreignKeys[column]
+            let record_ids = pageRows.value.map(row => row.fields[column])
+            record_ids = record_ids.filter((it) => it != null)
+            if (record_ids.length === 0) continue
+            const response = await apiClient.post<FetchManyNamesResponse>(`/api/v1/records/table/${foreignTableName}/names`, {
+                record_ids: record_ids,
+            } as ManyRecordsRequest)
+            const idToNameMap: Map<string, string> = new Map(Object.entries(response.data.id_to_name))
+            foreignRecordNames.value.set(column, idToNameMap)
+        }
+    } catch (err) {
+        toastService.showErrorDetails(`Failed to fetch foreign record names`, err)
     } finally {
         loading.value = false
     }
@@ -277,6 +296,9 @@ async function onFilterUpdated(newValue: string | number | null) {
             <template v-slot:body-cell="props">
                 <q-td :props="props">
                     <span @click.stop class="non-clickable">{{ props.value }}</span>
+                    <q-badge
+                        v-if="foreignRecordNames.get(props.col.name)?.get(props.value) !== undefined"
+                        outline color="grey">{{foreignRecordNames.get(props.col.name)?.get(props.value)}}</q-badge>
                 </q-td>
             </template>
             <template v-slot:bottom>

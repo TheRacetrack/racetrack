@@ -1,4 +1,4 @@
-from typing import Any, Iterable
+from typing import Any, Iterable, Type
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
@@ -23,6 +23,7 @@ class TableMetadataPayload(BaseModel):
     main_columns: list[str]
     all_columns: list[str]
     column_types: dict[str, ColumnType]
+    foreign_keys: dict[str, str]  # column name -> foreign table name
 
 
 class RecordFieldsPayload(BaseModel):
@@ -121,21 +122,19 @@ def setup_records_endpoints(api: APIRouter):
 
 def list_all_tables() -> Iterable[TableMetadataPayload]:
     for table_type in tables.all_tables:
-        metadata = table_metadata(table_type)
-        yield TableMetadataPayload(
-            class_name=table_type_name(table_type),
-            table_name=metadata.table_name,
-            plural_name=metadata.plural_name,
-            primary_key_column=metadata.primary_key_column,
-            main_columns=metadata.main_columns,
-            all_columns=metadata.fields,
-            column_types=metadata.column_types,
-        )
+        yield _build_table_metadata_payload(table_type)
 
 
 def get_table_metadata(mapper: RecordMapper, table: str) -> TableMetadataPayload:
     table_type = mapper.table_name_to_class(table)
+    return _build_table_metadata_payload(table_type)
+
+
+def _build_table_metadata_payload(table_type: Type[TableModel]) -> TableMetadataPayload:
     metadata = table_metadata(table_type)
+    foreign_keys = {}
+    for column_name, foreign_type in metadata.on_delete_cascade.items():
+        foreign_keys[column_name] = table_metadata(foreign_type).table_name
     return TableMetadataPayload(
         class_name=table_type_name(table_type),
         table_name=metadata.table_name,
@@ -144,6 +143,7 @@ def get_table_metadata(mapper: RecordMapper, table: str) -> TableMetadataPayload
         main_columns=metadata.main_columns,
         all_columns=metadata.fields,
         column_types=metadata.column_types,
+        foreign_keys=foreign_keys,
     )
 
 
@@ -183,10 +183,11 @@ def list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, t
 def enrich_record_names(mapper: RecordMapper, payload: ManyRecordsRequest, table: str) -> FetchManyNamesResponse:
     table_type = mapper.table_name_to_class(table)
     id_to_name: dict[str, str] = {}
-    for record_id in payload.record_ids:
-        record_name = mapper.get_record_name(table_type, record_id)
-        if record_name is not None:
-            id_to_name[record_id] = record_name
+    for record_id in set(payload.record_ids):
+        if record_id:
+            record_name = mapper.get_record_name(table_type, record_id)
+            if record_name is not None:
+                id_to_name[record_id] = record_name
     return FetchManyNamesResponse(id_to_name=id_to_name)
 
 
