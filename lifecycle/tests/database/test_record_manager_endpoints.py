@@ -1,3 +1,5 @@
+import datetime
+
 from lifecycle.config import Config
 from lifecycle.database.engine_factory import create_db_engine
 from lifecycle.database.record_mapper import RecordMapper
@@ -67,3 +69,35 @@ def test_endpoints_operations():
         assert False, 'Should have raised EntityNotFound'
     except EntityNotFound:
         pass
+
+
+def test_enrich_foreign_user_name():
+    mapper = RecordMapper(create_db_engine(Config()))
+
+    create_record(mapper, RecordFieldsPayload(fields={
+        'id': 2,
+        'username': 'admin2',
+        'email': 'admin@example.com',
+        'first_name': '',
+        'last_name': '',
+        'password': '',
+        'is_active': True,
+        'is_staff': True,
+        'is_superuser': True,
+        'date_joined': datetime.datetime.now(),
+        'last_login': datetime.datetime.now(),
+    }), 'auth_user')
+    create_record(mapper, RecordFieldsPayload(fields={
+        'id': '',
+        'user_id': 2,
+        'esc_id': None,
+        'job_family_id': None,
+    }), 'registry_authsubject')
+
+    assert enrich_record_names(mapper, ManyRecordsRequest(
+        record_ids=['2'],
+    ), 'auth_user') == FetchManyNamesResponse(
+        id_to_name={
+            '2': 'admin2',
+        },
+    )

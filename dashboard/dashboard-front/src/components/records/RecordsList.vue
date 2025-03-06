@@ -135,8 +135,10 @@ async function fetchForeignRecordNames(): Promise<void> {
         for (const column in foreignKeys) {
             if (!visibleColumns.value.includes(column)) continue
             const foreignTableName = foreignKeys[column]
-            let record_ids = pageRows.value.map(row => row.fields[column])
-            record_ids = record_ids.filter((it) => it != null)
+            const record_ids = pageRows.value
+                .map(row => row.fields[column])
+                .filter((it) => it != null)
+                .map(it => String(it))
             if (record_ids.length === 0) continue
             const response = await apiClient.post<FetchManyNamesResponse>(`/api/v1/records/table/${foreignTableName}/names`, {
                 record_ids: record_ids,
@@ -279,8 +281,11 @@ async function onFilterUpdated(newValue: string | number | null) {
                 </q-input>
             </template>
             <template v-slot:top-right>
-                <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
-                <q-btn color="negative" push label="Delete" icon="delete" @click="deleteSelectedRecords()" />
+                <q-btn-group push>
+                    <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
+                    <q-btn color="negative" push label="Delete" icon="delete"
+                           :disabled="selectedRows.length == 0" @click="deleteSelectedRecords()" />
+                </q-btn-group>
             </template>
             <template v-slot:header-cell="props">
                 <q-th :props="props" :key="props.col.label">
@@ -296,14 +301,15 @@ async function onFilterUpdated(newValue: string | number | null) {
             <template v-slot:body-cell="props">
                 <q-td :props="props">
                     <template v-if="props.col.name == tableMetadata.primary_key_column">
-                        <router-link :to="{name: 'records-table-record', params: {table: tableName, recordId: String(props.row.key)}}">
+                        <router-link class="text-primary text-bold"
+                            :to="{name: 'records-table-record', params: {table: tableName, recordId: String(props.row.key)}}">
                           {{ props.value }}
                         </router-link>
                     </template>
                     <span v-else @click.stop class="non-clickable">{{ props.value }}</span>
-                    <template v-if="foreignRecordNames.get(props.col.name)?.get(props.value) !== undefined">
+                    <template v-if="foreignRecordNames.get(props.col.name)?.get(String(props.value)) !== undefined">
                         <span>&nbsp;</span>
-                        <q-badge outline color="grey-7">{{foreignRecordNames.get(props.col.name)?.get(props.value)}}</q-badge>
+                        <q-badge outline color="grey-7">{{foreignRecordNames.get(props.col.name)?.get(String(props.value))}}</q-badge>
                     </template>
                 </q-td>
             </template>
