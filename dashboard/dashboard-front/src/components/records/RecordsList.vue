@@ -295,10 +295,16 @@ async function onFilterUpdated(newValue: string | number | null) {
             </template>
             <template v-slot:body-cell="props">
                 <q-td :props="props">
-                    <span @click.stop class="non-clickable">{{ props.value }}</span>
-                    <q-badge
-                        v-if="foreignRecordNames.get(props.col.name)?.get(props.value) !== undefined"
-                        outline color="grey">{{foreignRecordNames.get(props.col.name)?.get(props.value)}}</q-badge>
+                    <template v-if="props.col.name == tableMetadata.primary_key_column">
+                        <router-link :to="{name: 'records-table-record', params: {table: tableName, recordId: String(props.row.key)}}">
+                          {{ props.value }}
+                        </router-link>
+                    </template>
+                    <span v-else @click.stop class="non-clickable">{{ props.value }}</span>
+                    <template v-if="foreignRecordNames.get(props.col.name)?.get(props.value) !== undefined">
+                        <span>&nbsp;</span>
+                        <q-badge outline color="grey-7">{{foreignRecordNames.get(props.col.name)?.get(props.value)}}</q-badge>
+                    </template>
                 </q-td>
             </template>
             <template v-slot:bottom>
@@ -330,6 +336,6 @@ async function onFilterUpdated(newValue: string | number | null) {
 <style scoped>
 .non-clickable {
     cursor: auto;
-    padding: 10px 10px 10px 0;
+    padding: 10px 5px 10px 0;
 }
 </style>
