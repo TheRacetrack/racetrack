@@ -1,4 +1,4 @@
-from typing import Any, Iterable
+from typing import Any, Iterable, Type
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
@@ -23,6 +23,7 @@ class TableMetadataPayload(BaseModel):
     main_columns: list[str]
     all_columns: list[str]
     column_types: dict[str, ColumnType]
+    foreign_keys: dict[str, str]  # column name -> foreign table name
 
 
 class RecordFieldsPayload(BaseModel):
@@ -47,8 +48,12 @@ class CountRecordsRequest(BaseModel):
     filters: dict[str, Any] | None = None
 
 
-class DeleteManyRecordsRequest(BaseModel):
+class ManyRecordsRequest(BaseModel):
     record_ids: list[str]
+
+
+class FetchManyNamesResponse(BaseModel):
+    id_to_name: dict[str, str]
 
 
 def setup_records_endpoints(api: APIRouter):
@@ -84,6 +89,12 @@ def setup_records_endpoints(api: APIRouter):
         check_staff_user(request)
         return list_table_records(mapper, payload, table)
 
+    @api.post('/records/table/{table}/names')
+    def _enrich_record_names(payload: ManyRecordsRequest, table: str, request: Request) -> FetchManyNamesResponse:
+        """Enrich record IDs with their names"""
+        check_staff_user(request)
+        return enrich_record_names(mapper, payload, table)
+
     @api.get('/records/table/{table}/id/{record_id}')
     def _get_one_record_endpoint(table: str, record_id: str, request: Request) -> RecordFieldsPayload:
         """Get data for one record by ID"""
@@ -103,7 +114,7 @@ def setup_records_endpoints(api: APIRouter):
         delete_record(mapper, table, record_id)
 
     @api.delete('/records/table/{table}/many')
-    def _delete_many_records_endpoint(payload: DeleteManyRecordsRequest, table: str, request: Request) -> None:
+    def _delete_many_records_endpoint(payload: ManyRecordsRequest, table: str, request: Request) -> None:
         """Delete multiple records by ID"""
         check_staff_user(request)
         delete_many_records(mapper, table, payload.record_ids)
@@ -111,21 +122,19 @@ def setup_records_endpoints(api: APIRouter):
 
 def list_all_tables() -> Iterable[TableMetadataPayload]:
     for table_type in tables.all_tables:
-        metadata = table_metadata(table_type)
-        yield TableMetadataPayload(
-            class_name=table_type_name(table_type),
-            table_name=metadata.table_name,
-            plural_name=metadata.plural_name,
-            primary_key_column=metadata.primary_key_column,
-            main_columns=metadata.main_columns,
-            all_columns=metadata.fields,
-            column_types=metadata.column_types,
-        )
+        yield _build_table_metadata_payload(table_type)
 
 
 def get_table_metadata(mapper: RecordMapper, table: str) -> TableMetadataPayload:
     table_type = mapper.table_name_to_class(table)
+    return _build_table_metadata_payload(table_type)
+
+
+def _build_table_metadata_payload(table_type: Type[TableModel]) -> TableMetadataPayload:
     metadata = table_metadata(table_type)
+    foreign_keys = {}
+    for column_name, foreign_type in metadata.on_delete_cascade.items():
+        foreign_keys[column_name] = table_metadata(foreign_type).table_name
     return TableMetadataPayload(
         class_name=table_type_name(table_type),
         table_name=metadata.table_name,
@@ -134,6 +143,7 @@ def get_table_metadata(mapper: RecordMapper, table: str) -> TableMetadataPayload
         main_columns=metadata.main_columns,
         all_columns=metadata.fields,
         column_types=metadata.column_types,
+        foreign_keys=foreign_keys,
     )
 
 
@@ -168,6 +178,17 @@ def list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, t
         primary_key_column=metadata.primary_key_column,
         records=record_payloads,
     )
+
+
+def enrich_record_names(mapper: RecordMapper, payload: ManyRecordsRequest, table: str) -> FetchManyNamesResponse:
+    table_type = mapper.table_name_to_class(table)
+    id_to_name: dict[str, str] = {}
+    for record_id in set(payload.record_ids):
+        if record_id:
+            record_name = mapper.get_record_name(table_type, record_id)
+            if record_name is not None:
+                id_to_name[record_id] = record_name
+    return FetchManyNamesResponse(id_to_name=id_to_name)
 
 
 def get_one_record(mapper: RecordMapper, table: str, record_id: str) -> RecordFieldsPayload:

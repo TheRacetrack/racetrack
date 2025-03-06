@@ -67,6 +67,7 @@ export interface TableMetadataPayload {
     main_columns: string[]
     all_columns: string[]
     column_types: Record<string, string>
+    foreign_keys: Record<string, string>
 }
 
 export interface RecordFieldsPayload {
@@ -89,4 +90,12 @@ export interface FetchManyRecordsResponse {
 
 export interface CountRecordsRequest {
     filters: Record<string, any> | null
+}
+
+export interface ManyRecordsRequest {
+    record_ids: string[]
+}
+
+export interface FetchManyNamesResponse {
+    id_to_name: Record<string, string>
 }

@@ -12,6 +12,7 @@ export const emptyTableMetadata: TableMetadataPayload = {
     main_columns: [],
     all_columns: [],
     column_types: {},
+    foreign_keys: {},
 }
 
 const allowedTypes = ['str', 'str | None', 'int', 'int | None', 'float', 'float | None', 'datetime', 'datetime | None', 'bool']

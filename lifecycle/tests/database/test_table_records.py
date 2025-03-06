@@ -262,6 +262,14 @@ def test_casting_datetime_type():
     assert datetime_to_str(mapper.find_one(Job, id=job.id).update_time) == datetime_to_str(tomorrow)
 
 
+def test_get_record_name():
+    mapper = RecordMapper(create_db_engine(Config()))
+    mapper.create(job_family := JobFamily(id='', name='primer'))
+    mapper.create(auth_subject := AuthSubject(id='', user_id=None, esc_id=None, job_family_id=job_family.id))
+
+    assert mapper.get_record_name(AuthSubject, auth_subject.id) == 'Job Family: primer'
+
+
 def _create_test_job(
     name: str,
     family_id: str,

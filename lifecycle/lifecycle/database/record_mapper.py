@@ -7,7 +7,7 @@ from lifecycle.database.query_wrapper import QueryWrapper
 from racetrack_client.log.errors import EntityNotFound
 from racetrack_client.log.logs import get_logger
 from lifecycle.database.table_model import TableModel, table_type_name, \
-    get_primary_key_value, record_to_dict, table_metadata
+    get_primary_key_value, record_to_dict, table_metadata, create_empty_field
 from lifecycle.database.schema.tables import all_tables
 from lifecycle.database.type_parser import parse_typed_object
 
@@ -20,8 +20,10 @@ class RecordMapper:
     def __init__(self, engine: DbEngine):
         self.query_wrapper: QueryWrapper = QueryWrapper(engine)
         self.placeholder: str = engine.query_builder.placeholder()
-        self._table_name_to_class: dict[str, Type[TableModel]] = {table_metadata(cls).table_name: cls for cls in all_tables}
         self._tables_metadata: dict[Type[TableModel], TableModel.Metadata] = {cls: table_metadata(cls) for cls in all_tables}
+        self._table_name_to_class: dict[str, Type[TableModel]] = {
+            metadata.table_name: cls for cls, metadata in self._tables_metadata.items()
+        }
         # cache to keep reverse dependencies for cascade delete: Origin table -> (dependant table, dependant column)
         self._delete_cascade_dependants: dict[Type[TableModel], list[tuple[Type[TableModel], str]]] = defaultdict(list)
         self._populate_delete_cascade_dependants()
@@ -52,7 +54,7 @@ class RecordMapper:
             filtered_by = ', '.join(filter_kwargs.keys())
             raise EntityNotFound(f'{table_type.__name__} record not found for given {filtered_by}')
 
-        return _convert_row_to_record_model(row, table_type)
+        return self._convert_row_to_record_model(row, table_type)
 
     def find_many(
         self,
@@ -77,7 +79,7 @@ class RecordMapper:
             filter_params=filter_params,
             order_by=order_by,
         )
-        return [_convert_row_to_record_model(row, table_type) for row in rows]
+        return [self._convert_row_to_record_model(row, table_type) for row in rows]
     
     def filter(
         self,
@@ -106,7 +108,7 @@ class RecordMapper:
             order_by=order_by,
             limit=limit,
         )
-        return [_convert_row_to_record_model(row, table_type) for row in rows]
+        return [self._convert_row_to_record_model(row, table_type) for row in rows]
 
     def filter_dicts(
         self,
@@ -162,7 +164,7 @@ class RecordMapper:
             order_by=order_by,
             limit=limit,
         )
-        return [_convert_row_to_record_model(row, table_type) for row in rows]
+        return [self._convert_row_to_record_model(row, table_type) for row in rows]
 
     def count(
         self,
@@ -251,7 +253,7 @@ class RecordMapper:
         :param record_object: record object to create
         """
         metadata = self._tables_metadata[type(record_object)]
-        record_data = _extract_record_data(record_object)
+        record_data = self._extract_record_data(record_object)
         record_data = _supplement_primary_key(record_data, metadata)
         returning_row = self.query_wrapper.insert_one(
             table=metadata.table_name,
@@ -301,12 +303,12 @@ class RecordMapper:
         filter_kwargs = {metadata.primary_key_column: get_primary_key_value(record_object)}
         filter_conditions, filter_params = self._build_filter_conditions(type(record_object), filter_kwargs)
         if only_changed:
-            update_data = _extract_changed_data(record_object)
+            update_data = self._extract_changed_data(record_object)
             if not update_data:
                 return
             setattr(record_object, '_original_fields', record_to_dict(record_object))
         else:
-            update_data = _extract_record_data(record_object)
+            update_data = self._extract_record_data(record_object)
         self.query_wrapper.update_one(
             table=metadata.table_name,
             filter_conditions=filter_conditions,
@@ -399,7 +401,8 @@ class RecordMapper:
             dep_records = self.find_many(dep_table, **filter_kwargs)
             for dep_record in dep_records:
                 self.delete_record(dep_record, cascade=True)
-                dep_record_info = f'{table_metadata(dep_record).primary_key_column} = {get_primary_key_value(dep_record)}'
+                dep_metadata = self._tables_metadata[type(dep_record)]
+                dep_record_info = f'{dep_metadata.primary_key_column} = {get_primary_key_value(dep_record)}'
                 logger.debug(f'Cascade delete on record {table_type_name(dep_record)} {dep_record_info}')
 
     def _populate_delete_cascade_dependants(self):
@@ -415,45 +418,70 @@ class RecordMapper:
             raise EntityNotFound(f'Table class not found for table name {name}')
         return self._table_name_to_class[name]
 
+    def get_record_name(self, table_type: Type[T], record_id: str) -> str | None:
+        metadata = self._tables_metadata[table_type]
+        if not metadata.name_columns:
+            return None
+        filters = {metadata.primary_key_column: metadata.primary_key_type(record_id)}
+        records: list[dict] = self.filter_dicts(table_type, columns=metadata.name_columns, filters=filters, limit=1)
+        if not records:
+            raise EntityNotFound(f'Record {table_type_name(table_type)} with id {record_id} not found')
+        row_fields: dict[str, Any] = {**records[0], **filters}
+        record = self._create_mock_record_model(table_type, row_fields)
 
-def _convert_row_to_record_model(
-    row: dict[str, Any],
-    table_type: Type[T],
-) -> T:
-    valid_fields = table_metadata(table_type).fields
-    for column in row.keys():
-        assert column in valid_fields, \
-            f'retrieved column "{column}" is not a valid field for the model {table_type_name(table_type)}'
-    record_model = parse_typed_object(row, table_type)
+        _record_name = getattr(record, '_record_name', None)
+        if _record_name is None:
+            return None
 
-    # remember original values to keep track of changed fields
-    setattr(record_model, '_original_fields', record_to_dict(record_model))
-    return record_model
+        def name_retriever(_table_type: Type[T], _record_id: str):
+            return self.get_record_name(_table_type, _record_id)
+        return _record_name(name_retriever)
 
+    def _convert_row_to_record_model(
+        self,
+        row: dict[str, Any],
+        table_type: Type[T],
+    ) -> T:
+        valid_fields = self._tables_metadata[table_type].fields
+        for column in row.keys():
+            assert column in valid_fields, \
+                f'retrieved column "{column}" is not a valid field for the model {table_type_name(table_type)}'
+        record_model = parse_typed_object(row, table_type)
 
-def _extract_record_data(record_model: TableModel) -> dict[str, Any]:
-    fields: list[str] = table_metadata(record_model).fields
-    data = {}
-    for field in fields:
-        if not hasattr(record_model, field):
-            raise ValueError(f'given table model {table_type_name(record_model)} has no field {field}')
-        data[field] = getattr(record_model, field)
-    return data
+        # remember original values to keep track of changed fields
+        setattr(record_model, '_original_fields', record_to_dict(record_model))
+        return record_model
 
+    def _extract_record_data(self, record_model: TableModel) -> dict[str, Any]:
+        metadata = self._tables_metadata[type(record_model)]
+        fields: list[str] = metadata.fields
+        data = {}
+        for field in fields:
+            if not hasattr(record_model, field):
+                raise ValueError(f'given table model {table_type_name(record_model)} has no field {field}')
+            data[field] = getattr(record_model, field)
+        return data
 
-def _extract_changed_data(record_model: TableModel) -> dict[str, Any]:
-    """Compare with original data and return only the fields that has been modified"""
-    originals: dict[str, Any] = getattr(record_model, '_original_fields', {})
-    new_data = _extract_record_data(record_model)
-    if not originals:
-        logger.warning(f'could not read original fields from record {table_type_name(record_model)}')
-        return new_data
-    
-    changed_data = {}
-    for field, new_value in new_data.items():
-        if field not in originals or new_value != originals.get(field):
-            changed_data[field] = new_value
-    return changed_data
+    def _extract_changed_data(self, record_model: TableModel) -> dict[str, Any]:
+        """Compare with original data and return only the fields that has been modified"""
+        originals: dict[str, Any] = getattr(record_model, '_original_fields', {})
+        new_data = self._extract_record_data(record_model)
+        if not originals:
+            logger.warning(f'could not read original fields from record {table_type_name(record_model)}')
+            return new_data
+
+        changed_data = {}
+        for field, new_value in new_data.items():
+            if field not in originals or new_value != originals.get(field):
+                changed_data[field] = new_value
+        return changed_data
+
+    def _create_mock_record_model(self, table_type: Type[T], row_fields: dict[str, Any]) -> TableModel:
+        missing_fields = set(self._tables_metadata[table_type].fields) - set(row_fields.keys())
+        column_types = self._tables_metadata[table_type].column_types
+        for missing_field in missing_fields:
+            row_fields[missing_field] = create_empty_field(column_types[missing_field])
+        return self._convert_row_to_record_model(row_fields, table_type)
 
 
 def _supplement_primary_key(record_data: dict[str, Any], metadata: TableModel.Metadata) -> dict[str, Any]:
