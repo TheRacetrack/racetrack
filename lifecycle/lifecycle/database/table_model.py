@@ -21,14 +21,18 @@ class ColumnType(str, Enum):
 
 class TableModel(ABC):
     class Metadata:
-        table_name: str  # name of the table in the database
-        primary_key_column: str  # name of the column being used as primary key
-        primary_key_type: type = str  # type of the primary key column, e.g. str | int
+        # name of the table in the database
+        table_name: str
+        # name of the column being used as primary key
+        primary_key_column: str
+        # type of the primary key column, e.g. str | int
+        primary_key_type: type = str
         # function to generate a new value for the primary key column
         primary_key_generator: Callable[[], Any] | None = None
         # mapping of a foreign key column to a foreign table class
         # It indicates this model depends on the other, and it should be deleted along with the foreign one
         on_delete_cascade: dict[str, Type['TableModel']] = {}
+        # plural name of the objects in the table
         plural_name: str
         # list of columns to display on the management view
         main_columns: list[str] = []

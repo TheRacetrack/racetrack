@@ -239,12 +239,6 @@ async function onFilterUpdated(newValue: string | number | null) {
           v-model:selected="selectedRows"
           @update:pagination="onPaginationSortChange"
         >
-            <template v-slot:header-selection="scope">
-                <q-checkbox v-model="scope.selected" />
-            </template>
-            <template v-slot:body-selection="scope">
-                <q-checkbox v-model="scope.selected" />
-            </template>
             <template v-slot:top-left>
                 <q-select
                     v-model="visibleColumns"
@@ -269,6 +263,22 @@ async function onFilterUpdated(newValue: string | number | null) {
                 <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
                 <q-btn color="negative" push label="Delete" icon="delete" @click="deleteSelectedRecords()" />
             </template>
+            <template v-slot:header-cell="props">
+                <q-th :props="props" :key="props.col.label">
+                    <span class="text-bold">{{ humanReadableColumn(props.col.label) }}</span>
+                </q-th>
+            </template>
+            <template v-slot:header-selection="scope">
+                <q-checkbox v-model="scope.selected" />
+            </template>
+            <template v-slot:body-selection="scope">
+                <q-checkbox v-model="scope.selected" />
+            </template>
+            <template v-slot:body-cell="props">
+                <q-td :props="props">
+                    <span @click.stop class="non-clickable">{{ props.value }}</span>
+                </q-td>
+            </template>
             <template v-slot:bottom>
                 <div class="row full-width justify-between items-center">
                     <div class="q-pl-md">Total records: {{ totalRecords }}</div>
@@ -291,11 +301,13 @@ async function onFilterUpdated(newValue: string | number | null) {
                     </div>
                 </div>
             </template>
-            <template v-slot:header-cell="props">
-                <q-th :props="props" :key="props.col.label">
-                    <span class="text-bold">{{ humanReadableColumn(props.col.label) }}</span>
-                </q-th>
-            </template>
         </q-table>
     </q-card>
 </template>
+
+<style scoped>
+.non-clickable {
+    cursor: auto;
+    padding: 10px 10px 10px 0;
+}
+</style>
