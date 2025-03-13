@@ -131,17 +131,18 @@ async function fetchForeignRecordNames(): Promise<void> {
     if (!primaryKeyColumn) return
     loading.value = true
     try {
+        // For each column that is a foreign key, take its values (record IDs) and enrich the foreign IDs with matching names
         const foreignKeys = tableMetadata.value.foreign_keys
         for (const column in foreignKeys) {
             if (!visibleColumns.value.includes(column)) continue
             const foreignTableName = foreignKeys[column]
-            const record_ids = pageRows.value
-                .map(row => row.fields[column])
-                .filter((it) => it != null)
+            const recordIds = pageRows.value
+                .map(row => row.fields[column]) // take the value of the particular column
+                .filter(it => it != null)
                 .map(it => String(it))
-            if (record_ids.length === 0) continue
+            if (recordIds.length === 0) continue
             const response = await apiClient.post<FetchManyNamesResponse>(`/api/v1/records/table/${foreignTableName}/names`, {
-                record_ids: record_ids,
+                record_ids: recordIds,
             } as ManyRecordsRequest)
             const idToNameMap: Map<string, string> = new Map(Object.entries(response.data.id_to_name))
             foreignRecordNames.value.set(column, idToNameMap)
