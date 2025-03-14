@@ -14,12 +14,16 @@ class JobFamily(TableModel):
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'Job Families'
         main_columns: list[str] = ['id', 'name']
+        name_columns: list[str] = ['name']
 
     id: str
     name: str
 
     def __str__(self):
-        return f'{self.name}'
+        return self.name
+
+    def _record_name(self, _):
+        return self.name
 
 
 @dataclass
@@ -33,6 +37,7 @@ class Job(TableModel):
         }
         plural_name = 'Jobs'
         main_columns: list[str] = ['id', 'name', 'version', 'status', 'update_time', 'deployed_by']
+        name_columns: list[str] = ['name', 'version']
 
     id: str
     family_id: str  # foreign key: JobFamily
@@ -57,6 +62,9 @@ class Job(TableModel):
     infrastructure_stats: str | None
 
     def __str__(self):
+        return f'{self.name} {self.version}'
+
+    def _record_name(self, _):
         return f'{self.name} {self.version}'
 
 
@@ -96,12 +104,16 @@ class Esc(TableModel):
         primary_key_generator: Callable[[], str] = new_uuid
         plural_name = 'ESCs'
         main_columns: list[str] = ['id', 'name']
+        name_columns: list[str] = ['name']
 
     id: str
     name: str
 
     def __str__(self):
         return f'{self.name} ({self.id})'
+
+    def _record_name(self, _):
+        return self.name
 
 
 @dataclass
@@ -177,6 +189,7 @@ class User(TableModel):
         primary_key_generator = None
         plural_name = 'Users'
         main_columns: list[str] = ['id', 'username', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
+        name_columns: list[str] = ['username']
 
     id: int
     username: str
@@ -189,6 +202,9 @@ class User(TableModel):
     is_active: bool
     is_staff: bool
     is_superuser: bool
+
+    def _record_name(self, _):
+        return self.username
 
 
 @dataclass
@@ -204,6 +220,7 @@ class AuthSubject(TableModel):
         }
         plural_name = 'Auth Subjects'
         main_columns: list[str] = ['id', 'user_id', 'esc_id', 'job_family_id']
+        name_columns: list[str] = ['user_id', 'esc_id', 'job_family_id']
 
     id: str
     user_id: int | None  # foreign key: User
@@ -218,6 +235,15 @@ class AuthSubject(TableModel):
         if self.job_family_id is not None:
             return f'Job Family: {self.job_family_id}'
         return f'{self.id}'
+
+    def _record_name(self, name_retriever):
+        if self.user_id is not None:
+            return f'User: {name_retriever(User, self.user_id)}'
+        if self.esc_id is not None:
+            return f'ESC: {name_retriever(Esc, self.esc_id)}'
+        if self.job_family_id is not None:
+            return f'Job Family: {name_retriever(JobFamily, self.job_family_id)}'
+        return 'Unknown'
 
     def subject_type(self) -> str:
         if self.user_id is not None:

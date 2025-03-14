@@ -6,23 +6,16 @@ import {mdiDatabase, mdiTable} from '@quasar/extras/mdi-v7'
 import {apiClient} from '@/services/ApiClient'
 import {toastService} from "@/services/ToastService"
 import {progressService} from "@/services/ProgressService"
-import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest} from '@/utils/api-schema'
-import {decodeInputValues, encodeInputValues} from "@/components/records/records"
+import {type TableMetadataPayload, type FetchManyRecordsRequest, type FetchManyRecordsResponse, type RecordFieldsPayload, type CountRecordsRequest, type ManyRecordsRequest, type FetchManyNamesResponse} from '@/utils/api-schema'
+import {decodeInputValues, emptyTableMetadata, encodeInputValues} from "@/components/records/records"
 
 const route = useRoute()
 const router = useRouter()
 const tableName: string = route.params.table as string
-const tableMetadata = ref<TableMetadataPayload>({
-    class_name: '',
-    table_name: '',
-    plural_name: '',
-    primary_key_column: '',
-    main_columns: [],
-    all_columns: [],
-    column_types: {},
-})
+const tableMetadata = ref<TableMetadataPayload>(emptyTableMetadata)
 const pageRows = ref<TableRow[]>([])
 const loading = ref(true)
+const foreignRecordNames = ref<Map<string, Map<string, string>>>(new Map()) // column name -> foreign record ID -> foreign record name
 
 interface TableRow {
     key: string | number
@@ -114,7 +107,7 @@ async function fetchRecords(): Promise<void> {
         })
 
         console.log(`Fetching records [${offset}-${offset+rowsPerPage}]: ${columns} ordered by ${orderBy}, filtered by ${JSON.stringify(encodedFilters)}`)
-        let response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
+        const response = await apiClient.post<FetchManyRecordsResponse>(`/api/v1/records/table/${tableName}/list`, {
             offset: offset,
             limit: rowsPerPage,
             order_by: orderBy,
@@ -125,8 +118,37 @@ async function fetchRecords(): Promise<void> {
             key: record.fields[primaryKeyColumn],
             fields: decodeInputValues(record.fields, tableMetadata.value),
         }))
+        await fetchForeignRecordNames()
     } catch (err) {
         toastService.showErrorDetails(`Failed to fetch table records`, err)
+    } finally {
+        loading.value = false
+    }
+}
+
+async function fetchForeignRecordNames(): Promise<void> {
+    const primaryKeyColumn = tableMetadata.value.primary_key_column
+    if (!primaryKeyColumn) return
+    loading.value = true
+    try {
+        // For each column that is a foreign key, take its values (record IDs) and enrich the foreign IDs with matching names
+        const foreignKeys = tableMetadata.value.foreign_keys
+        for (const column in foreignKeys) {
+            if (!visibleColumns.value.includes(column)) continue
+            const foreignTableName = foreignKeys[column]
+            const recordIds = pageRows.value
+                .map(row => row.fields[column]) // take the value of the particular column
+                .filter(it => it != null)
+                .map(it => String(it))
+            if (recordIds.length === 0) continue
+            const response = await apiClient.post<FetchManyNamesResponse>(`/api/v1/records/table/${foreignTableName}/names`, {
+                record_ids: recordIds,
+            } as ManyRecordsRequest)
+            const idToNameMap: Map<string, string> = new Map(Object.entries(response.data.id_to_name))
+            foreignRecordNames.value.set(column, idToNameMap)
+        }
+    } catch (err) {
+        toastService.showErrorDetails(`Failed to fetch foreign record names`, err)
     } finally {
         loading.value = false
     }
@@ -239,12 +261,6 @@ async function onFilterUpdated(newValue: string | number | null) {
           v-model:selected="selectedRows"
           @update:pagination="onPaginationSortChange"
         >
-            <template v-slot:header-selection="scope">
-                <q-checkbox v-model="scope.selected" />
-            </template>
-            <template v-slot:body-selection="scope">
-                <q-checkbox v-model="scope.selected" />
-            </template>
             <template v-slot:top-left>
                 <q-select
                     v-model="visibleColumns"
@@ -266,8 +282,37 @@ async function onFilterUpdated(newValue: string | number | null) {
                 </q-input>
             </template>
             <template v-slot:top-right>
-                <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
-                <q-btn color="negative" push label="Delete" icon="delete" @click="deleteSelectedRecords()" />
+                <q-btn-group push>
+                    <q-btn color="primary" push label="Create" icon="add" @click="createRecord()" />
+                    <q-btn color="negative" push label="Delete" icon="delete"
+                           :disabled="selectedRows.length == 0" @click="deleteSelectedRecords()" />
+                </q-btn-group>
+            </template>
+            <template v-slot:header-cell="props">
+                <q-th :props="props" :key="props.col.label">
+                    <span class="text-bold">{{ humanReadableColumn(props.col.label) }}</span>
+                </q-th>
+            </template>
+            <template v-slot:header-selection="scope">
+                <q-checkbox v-model="scope.selected" />
+            </template>
+            <template v-slot:body-selection="scope">
+                <q-checkbox v-model="scope.selected" />
+            </template>
+            <template v-slot:body-cell="props">
+                <q-td :props="props">
+                    <template v-if="props.col.name == tableMetadata.primary_key_column">
+                        <router-link class="text-primary text-bold"
+                            :to="{name: 'records-table-record', params: {table: tableName, recordId: String(props.row.key)}}">
+                          {{ props.value }}
+                        </router-link>
+                    </template>
+                    <span v-else @click.stop class="non-clickable">{{ props.value }}</span>
+                    <template v-if="foreignRecordNames.get(props.col.name)?.get(String(props.value)) !== undefined">
+                        <span>&nbsp;</span>
+                        <q-badge outline color="grey-7">{{foreignRecordNames.get(props.col.name)?.get(String(props.value))}}</q-badge>
+                    </template>
+                </q-td>
             </template>
             <template v-slot:bottom>
                 <div class="row full-width justify-between items-center">
@@ -291,11 +336,13 @@ async function onFilterUpdated(newValue: string | number | null) {
                     </div>
                 </div>
             </template>
-            <template v-slot:header-cell="props">
-                <q-th :props="props" :key="props.col.label">
-                    <span class="text-bold">{{ humanReadableColumn(props.col.label) }}</span>
-                </q-th>
-            </template>
         </q-table>
     </q-card>
 </template>
+
+<style scoped>
+.non-clickable {
+    cursor: auto;
+    padding: 10px 5px 10px 0;
+}
+</style>
