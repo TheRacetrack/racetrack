@@ -1,0 +1,18 @@
+# Docker registry configuration
+registry_hostname: 'ghcr.io'
+registry_namespace: 'theracetrack/racetrack'
+registry_username: 'racetrack-registry'
+read_registry_token: ''
+write_registry_token: ''
+
+# IP address for all public services exposed by Ingress, e.g. 1.1.1.1
+your_ip: ''
+
+# Secret key for authentication tokens encryption. Leave it empty to make it auto-generated.
+# AUTH_KEY = ''
+
+# Database password. Leave it empty to make it auto-generated.
+# POSTGRES_PASSWORD = ''
+
+# Django Secret key. Leave it empty to make it auto-generated.
+# SECRET_KEY = ''
