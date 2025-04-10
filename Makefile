@@ -20,7 +20,7 @@ endef
 -include .local.env
 
 setup:
-	uv venv venv &&\
+	python3 -m venv venv &&\
 	. venv/bin/activate &&\
 	pip install --upgrade pip setuptools &&\
 	pip install -r requirements-test.txt -r requirements-dev.txt &&\
