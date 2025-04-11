@@ -58,6 +58,11 @@ Activate `python3` job type in the Racetrack by installing the plugin:
 racetrack plugin install github.com/TheRacetrack/plugin-python-job-type
 ```
 
+Install docker infrastructure plugin:
+```bash
+racetrack plugin install github.com/TheRacetrack/plugin-docker-infrastructure
+```
+
 Finally, you can deploy some jobs there, eg.:
 ```bash
 racetrack deploy sample/python-class
@@ -122,11 +127,15 @@ Job management/access is the same as in **Localhost** case.
 A Kubernetes cluster in a Docker container. `make kind-up` to set it up,
 `make kind-down` to tear down. After applying some changes, redeploy using `make kind-redeploy`.
 
+To deploy a job you need kubernetes infrastructure plugin:
+```bash
+racetrack plugin install github.com/TheRacetrack/plugin-kubernetes-infrastructure
+```
+
 Submitting a job:
 
 ```bash
 racetrack deploy sample/python-class/ --remote http://127.0.0.1:7002
-# or make kind-deploy-sample
 ```
 
 Jobs are deployed as k8s pods, and should be managed as such.
@@ -193,7 +202,7 @@ to the Racetrack instance running on Kubernetes as an end user.
 Run the following command to perform all tests (unit tests and End-to-End):
 
 ```bash
-make kind-up test clean
+make kind-up kind-test clean
 ```
 
 You can also run E2E tests on docker-compose setup:
