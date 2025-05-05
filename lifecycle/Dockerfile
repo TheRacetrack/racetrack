@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye
+FROM python:3.12-slim-bullseye AS base
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
@@ -47,13 +47,21 @@ RUN cd /src/racetrack_client && pip install -e . &&\
 
 RUN chmod 777 -R /src/lifecycle/lifecycle/django
 
-ENV DJANGO_SETTINGS_MODULE "lifecycle.django.app.settings"
-CMD ["python", "-u", "-m", "lifecycle", "serve"]
+ENV DJANGO_SETTINGS_MODULE="lifecycle.django.app.settings"
 
 EXPOSE 7002
 STOPSIGNAL SIGTERM
 ARG GIT_VERSION
 ARG DOCKER_TAG
-ENV GIT_VERSION ${GIT_VERSION}
-ENV DOCKER_TAG ${DOCKER_TAG}
+ENV GIT_VERSION=${GIT_VERSION}
+ENV DOCKER_TAG=${DOCKER_TAG}
 LABEL racetrack-component="lifecycle" git-version="${GIT_VERSION}"
+
+FROM base AS debug
+
+RUN pip install debugpy
+CMD ["python", "-u", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "lifecycle", "serve"]
+
+FROM base
+
+CMD ["python", "-u", "-m", "lifecycle", "serve"]

@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim-bullseye AS base
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
@@ -42,8 +42,6 @@ RUN cd /src/racetrack_client && pip install -e . &&\
   cd /src/racetrack_commons && pip install -e . &&\
   cd /src/image_builder && pip install -e .
 
-CMD ["python", "-u", "-m", "image_builder", "serve"]
-
 EXPOSE 7001
 STOPSIGNAL SIGTERM
 ARG GIT_VERSION
@@ -51,3 +49,12 @@ ARG DOCKER_TAG
 ENV GIT_VERSION ${GIT_VERSION}
 ENV DOCKER_TAG ${DOCKER_TAG}
 LABEL racetrack-component="image-builder" git-version="${GIT_VERSION}"
+
+FROM base AS debug
+
+RUN pip install debugpy
+CMD ["python", "-u", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "image_builder", "serve"]
+
+FROM base
+
+CMD ["python", "-u", "-m", "image_builder", "serve"]

@@ -1,0 +1,41 @@
+services:
+
+  lifecycle:
+    build:
+      target: debug
+    ports:
+      - "5678:5678"
+    command: >
+      bash -c "
+      /src/lifecycle/wait-for-postgres.sh && 
+      /src/lifecycle/wait-for-migration.sh && 
+      python -u -m debugpy --listen 0.0.0.0:5678 -m lifecycle serve"
+
+  lifecycle-supervisor:
+    build:
+      target: debug
+    ports:
+      - "5679:5678"
+    command: >
+      bash -c "
+      /src/lifecycle/wait-for-postgres.sh && 
+      /src/lifecycle/lifecycle/django/migrate.sh && 
+      python -u -m debugpy --listen 0.0.0.0:5678 -m lifecycle supervisor"
+
+  image-builder:
+    build:
+      target: debug
+    ports:
+      - "5680:5678"
+
+  dashboard:
+    build:
+      target: debug
+    ports:
+      - "5681:5678"
+
+  pub:
+    build:
+      target: debug
+    ports:
+      - "12345:12345"
