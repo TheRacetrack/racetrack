@@ -175,6 +175,9 @@ compose-run: registry docker-build compose-volumes
 compose-run-dev: registry docker-build compose-volumes
 	$(docker-compose) --profile dev up
 
+compose-run-debug: registry docker-build-debug compose-volumes
+	$(docker-compose) -f docker-compose.yaml -f compose-debug-override.yaml up
+
 compose-run-stress: registry docker-build docker-build-stress
 	$(docker-compose) -f docker-compose.yaml -f tests/stress/docker-compose.stress.yaml up
 
@@ -183,6 +186,9 @@ compose-up: registry docker-build compose-volumes
 
 compose-up-dev: registry docker-build compose-volumes
 	$(docker-compose) --profile dev up -d
+
+compose-up-debug: registry docker-build-debug compose-volumes
+	$(docker-compose) -f docker-compose.yaml -f compose-debug-override.yaml up -d
 
 compose-up-service: compose-volumes
 	$(docker-compose) build \
@@ -232,6 +238,11 @@ compose-logs:
 
 docker-build:
 	$(docker-compose) build \
+		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
+		--build-arg DOCKER_TAG="$(TAG)"
+
+docker-build-debug:
+	$(docker-compose) -f docker-compose.yaml -f compose-debug-override.yaml build \
 		--build-arg GIT_VERSION="`git describe --long --tags --dirty --always`" \
 		--build-arg DOCKER_TAG="$(TAG)"
 

@@ -17,7 +17,7 @@ COPY dashboard/dashboard-front/src /build/src
 RUN npm install && npm run build
 
 
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim-bullseye AS base
 
 WORKDIR /src/dashboard
 
@@ -45,8 +45,6 @@ COPY docs/. /src/docs/
 
 COPY --from=frontend-builder /build/dist /src/dashboard/static/
 
-CMD ["python", "-u", "dashboard/main.py"]
-
 EXPOSE 7003
 STOPSIGNAL SIGINT
 ARG GIT_VERSION
@@ -54,3 +52,12 @@ ARG DOCKER_TAG
 ENV GIT_VERSION ${GIT_VERSION}
 ENV DOCKER_TAG ${DOCKER_TAG}
 LABEL racetrack-component="dashboard" git-version="${GIT_VERSION}"
+
+FROM base AS debug
+
+RUN pip install debugpy
+CMD ["python", "-u", "-m", "debugpy", "--listen", "0.0.0.0:5678", "dashboard/main.py"]
+
+FROM base
+
+CMD ["python", "-u", "dashboard/main.py"]

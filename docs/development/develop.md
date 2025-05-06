@@ -223,3 +223,28 @@ In order to view Lifecycle Postgres db, in k8s dashboard exec into postgres pod 
 ```
 psql -h 127.0.0.1 -d racetrack -U racetrack -p 5432
 ```
+
+### Debugging in docker
+
+Services have additional docker images prepared that allow attaching debugger to them. 
+
+`compose-debug-override.yaml` contains overrides for default docker compose
+configuration.
+
+You can start cluster with debuggers by using 
+```
+make compose-up-debug
+```
+
+Python services are run using `debugpy`, while go ones(only PUB at this moment)
+use `Delve`.
+
+Debugger ports for services are as follows:
+
+| service              |Debugger    | Port   |    
+|----------------------|------------|--------|
+| Lifecycle            | debugpy    | 5678   |  
+| Lifecycle Supervisor | debugpy    | 5679   |         
+| Image Builder        | debugpy    | 5680   |            
+| Dashboard            | debugpy    | 5681   |       
+| PUB                  | Delve      | 12345  |            
