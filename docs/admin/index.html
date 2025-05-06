@@ -1,0 +1,1501 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="TheRacetrack">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.0, mkdocs-material-8.5.6">
+    
+    
+      
+        <title>Administering - Racetrack</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#administering-racetrack" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Racetrack" class="md-header__button md-logo" aria-label="Racetrack" data-md-component="logo">
+      
+  <img src="../assets/logo/racetrack-logo-white.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Racetrack
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Administering
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/TheRacetrack/racetrack" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    TheRacetrack/racetrack
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Racetrack" class="md-nav__button md-logo" aria-label="Racetrack" data-md-component="logo">
+      
+  <img src="../assets/logo/racetrack-logo-white.png" alt="logo">
+
+    </a>
+    Racetrack
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/TheRacetrack/racetrack" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    TheRacetrack/racetrack
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          For Users
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="For Users" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          For Users
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        Quickstart
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/user-guide-1/" class="md-nav__link">
+        User Manual
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/user-guide-2/" class="md-nav__link">
+        User Guide - Deploying a Job
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/available-plugins/" class="md-nav__link">
+        Available plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/using-plugins/" class="md-nav__link">
+        Installing plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manifest-schema/" class="md-nav__link">
+        Job Manifest File Schema
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        Permission model
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../racetrack_client/" class="md-nav__link">
+        CLI client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/async-job-calls/" class="md-nav__link">
+        Asynchronous calls to jobs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        Glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CHANGELOG/" class="md-nav__link">
+        Changelog
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          For Administrators
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="For Administrators" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          For Administrators
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Installation guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation guides" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Installation guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/local-kubernetes-setup/" class="md-nav__link">
+        Local Kubernetes Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/standalone-host/" class="md-nav__link">
+        Installation to standalone host
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/k8s-installation/" class="md-nav__link">
+        Installation to non-local Kubernetes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/remote-kubernetes-gateway/" class="md-nav__link">
+        Remote Kubernetes Gateway
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/remote-docker-gateway/" class="md-nav__link">
+        Remote Docker Gateway
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Administering
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Administering
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#maintaining-racetrack" class="md-nav__link">
+    Maintaining Racetrack
+  </a>
+  
+    <nav class="md-nav" aria-label="Maintaining Racetrack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#managing-users" class="md-nav__link">
+    Managing users
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-user-account" class="md-nav__link">
+    Creating user account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-users-password" class="md-nav__link">
+    Changing user's password
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-job-portfolio" class="md-nav__link">
+    Managing Job Portfolio
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Job Portfolio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audit-log" class="md-nav__link">
+    Audit Log
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#portfolio-table" class="md-nav__link">
+    Portfolio table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-job-attributes" class="md-nav__link">
+    Changing Job attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    Permissions
+  </a>
+  
+    <nav class="md-nav" aria-label="Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowing-esc-to-job-permissions" class="md-nav__link">
+    Allowing ESC to Job permissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allowing-job-to-job-permissions" class="md-nav__link">
+    Allowing Job to Job permissions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resetting-admin-password" class="md-nav__link">
+    Resetting admin password
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleaning-up-docker-registry" class="md-nav__link">
+    Cleaning up Docker Registry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintenance-mode" class="md-nav__link">
+    Maintenance Mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    Troubleshooting
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-restore" class="md-nav__link">
+    Backup &amp; Restore
+  </a>
+  
+    <nav class="md-nav" aria-label="Backup &amp; Restore">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgres-database" class="md-nav__link">
+    Postgres Database
+  </a>
+  
+    <nav class="md-nav" aria-label="Postgres Database">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backing-up" class="md-nav__link">
+    Backing up
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restoring" class="md-nav__link">
+    Restoring
+  </a>
+  
+    <nav class="md-nav" aria-label="Restoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rotating-auth-key" class="md-nav__link">
+    Rotating Auth Key
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugins-volume" class="md-nav__link">
+    Plugins Volume
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-registry" class="md-nav__link">
+    Docker Registry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-secrets" class="md-nav__link">
+    Job Secrets
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/racetrack-behind-https/" class="md-nav__link">
+        Setting Up Racetrack with HTTPS
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          For Developers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="For Developers" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          For Developers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_1">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_1">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/developing-plugins/" class="md-nav__link">
+        Developing plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/plugins-job-types/" class="md-nav__link">
+        Job type plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/develop/" class="md-nav__link">
+        Developer manual
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/release/" class="md-nav__link">
+        Releasing a version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/bom/" class="md-nav__link">
+        Bill of Materials
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/copyright-notices/" class="md-nav__link">
+        Copyright Notices
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#maintaining-racetrack" class="md-nav__link">
+    Maintaining Racetrack
+  </a>
+  
+    <nav class="md-nav" aria-label="Maintaining Racetrack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#managing-users" class="md-nav__link">
+    Managing users
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-user-account" class="md-nav__link">
+    Creating user account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-users-password" class="md-nav__link">
+    Changing user's password
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-job-portfolio" class="md-nav__link">
+    Managing Job Portfolio
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Job Portfolio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audit-log" class="md-nav__link">
+    Audit Log
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#portfolio-table" class="md-nav__link">
+    Portfolio table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-job-attributes" class="md-nav__link">
+    Changing Job attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    Permissions
+  </a>
+  
+    <nav class="md-nav" aria-label="Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allowing-esc-to-job-permissions" class="md-nav__link">
+    Allowing ESC to Job permissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allowing-job-to-job-permissions" class="md-nav__link">
+    Allowing Job to Job permissions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resetting-admin-password" class="md-nav__link">
+    Resetting admin password
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleaning-up-docker-registry" class="md-nav__link">
+    Cleaning up Docker Registry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintenance-mode" class="md-nav__link">
+    Maintenance Mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    Troubleshooting
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-restore" class="md-nav__link">
+    Backup &amp; Restore
+  </a>
+  
+    <nav class="md-nav" aria-label="Backup &amp; Restore">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgres-database" class="md-nav__link">
+    Postgres Database
+  </a>
+  
+    <nav class="md-nav" aria-label="Postgres Database">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backing-up" class="md-nav__link">
+    Backing up
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restoring" class="md-nav__link">
+    Restoring
+  </a>
+  
+    <nav class="md-nav" aria-label="Restoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rotating-auth-key" class="md-nav__link">
+    Rotating Auth Key
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugins-volume" class="md-nav__link">
+    Plugins Volume
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-registry" class="md-nav__link">
+    Docker Registry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-secrets" class="md-nav__link">
+    Job Secrets
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="administering-racetrack">Administering Racetrack<a class="headerlink" href="#administering-racetrack" title="Permanent link">&para;</a></h1>
+<h2 id="maintaining-racetrack">Maintaining Racetrack<a class="headerlink" href="#maintaining-racetrack" title="Permanent link">&para;</a></h2>
+<h3 id="managing-users">Managing users<a class="headerlink" href="#managing-users" title="Permanent link">&para;</a></h3>
+<h4 id="creating-user-account">Creating user account<a class="headerlink" href="#creating-user-account" title="Permanent link">&para;</a></h4>
+<p>In order to create an account, 
+user needs to go to Racetrack Dashboard and register new account there.
+Then he should ask Racetrack Admin to activate his account.
+Racetrack Admin goes to Admin panel, <code>Users</code> tab, selects user, 
+sets <code>Active</code> checkbox and clicks <code>Save</code>.</p>
+<h4 id="changing-users-password">Changing user's password<a class="headerlink" href="#changing-users-password" title="Permanent link">&para;</a></h4>
+<p>Admin can change any user's password by going to Admin panel, <code>Users</code> tab, 
+selecting user, clicking "change the password using this form".</p>
+<h3 id="managing-job-portfolio">Managing Job Portfolio<a class="headerlink" href="#managing-job-portfolio" title="Permanent link">&para;</a></h3>
+<h4 id="audit-log">Audit Log<a class="headerlink" href="#audit-log" title="Permanent link">&para;</a></h4>
+<p>"Audit Log" tab in Dashboard shows activity events done by users,
+eg. "job F1 of user Alice has been deleted by Bob".
+It can be filtered by events related to a logged user,
+whole job family or a particular job.</p>
+<h4 id="portfolio-table">Portfolio table<a class="headerlink" href="#portfolio-table" title="Permanent link">&para;</a></h4>
+<p>"Portfolio" tab in Dashboard allows to browse jobs freely
+with custom criteria and showing the candidates for removal.
+Use the filters above each column to filter and limit table data. 
+Advanced searches can be performed by using the following operators:
+<code>&lt;, &lt;=, &gt;, &gt;=, =, *, !, {, }, ||,&amp;&amp;, [empty], [nonempty], rgx:</code></p>
+<p>You can delete job from there.
+"Purge score" column shows assessed penalty points representing usability of a job.
+A higher value means a better candidate for removal.
+"Purge score" value is explained in "Purge reasons" column
+with suggestions explaining why job is a candidate for removal.</p>
+<h4 id="changing-job-attributes">Changing Job attributes<a class="headerlink" href="#changing-job-attributes" title="Permanent link">&para;</a></h4>
+<p>If you want to overwrite some deployment attributes of a job in runtime 
+(eg. minimum memory amount, number of replicas),
+you can go to Admin panel, choose "Jobs" tab, select particular one,
+change its "Manifest" field by editing the YAML and click "Save".
+Then go back to Racetrack Dashboard, tab "Jobs" and click Redeploy button under the selected job.
+However, keep in mind that this change will be overwritten by the next deployment,
+so better ask maintaner of a job to change the manifest in the git repository as well.</p>
+<h3 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h3>
+<p>You can view the permissions-graph in Racetrack Dashboard, under Graph page.
+Click on the node to see the details and filter out the neighbours of the selected node.</p>
+<p>Permissions can be managed in Administration panel, under "Admin panel" tab in dashboard.
+See <a href="../permissions/">how to manage permissions</a>.</p>
+<h4 id="allowing-esc-to-job-permissions">Allowing ESC to Job permissions<a class="headerlink" href="#allowing-esc-to-job-permissions" title="Permanent link">&para;</a></h4>
+<p>In the Racetrack admin panel, go to ESC list, create new ESC.</p>
+<p>Copy the caller token code. It's base64, so it's not safely encrypted, ie.
+<code>base64 -d &lt;&lt;&lt; caller-token</code> will view the underlying json structure
+with exact esc-id and api-token.</p>
+<p>Make sure it's safely transported to ESC developer, ie. using email encrypted with
+public-private key scheme like PGP.</p>
+<p>If this key becomes stolen, to prevent attacker from using it, reset the ESC api-token
+in Auth Subject edit page.</p>
+<h4 id="allowing-job-to-job-permissions">Allowing Job to Job permissions<a class="headerlink" href="#allowing-job-to-job-permissions" title="Permanent link">&para;</a></h4>
+<p>Job to Job permissions are setup on Job family basis; that is you just
+have to set it once that family Adder can be called by Badder, then all Badder
+versions can communicate with all Adder versions. The relation is one way only,
+so Adder won't be able to call Badder unless it's permitted too.</p>
+<h3 id="resetting-admin-password">Resetting admin password<a class="headerlink" href="#resetting-admin-password" title="Permanent link">&para;</a></h3>
+<p>If there's other admin user, ask him to do the reset in admin panel:
+Users -&gt; select user, next to password field there will be link to change form.</p>
+<p>If none of the admins remember their password, then somebody has to exec
+to Lifecycle pod, <code>cd /src/lifecycle/lifecycle/django</code> and run 
+<code>python manage.py changepassword &lt;my_admin&gt;</code>, or <code>python manage.py createsuperuser</code>.</p>
+<h3 id="cleaning-up-docker-registry">Cleaning up Docker Registry<a class="headerlink" href="#cleaning-up-docker-registry" title="Permanent link">&para;</a></h3>
+<p>There is a Container Registry utility for cleaning obsolete images from the registry
+(collecting garbage).
+See <a href="../../utils/registry_cleaner/">registry_cleaner</a>.</p>
+<h3 id="maintenance-mode">Maintenance Mode<a class="headerlink" href="#maintenance-mode" title="Permanent link">&para;</a></h3>
+<p>Racetrack can be turned into a Maintenance mode.
+During that time, users are unable to make changes.
+Therefore, deploying, deleting and moving jobs is disabled.</p>
+<p>To configure it, go to Racetrack Dashboard, Administration tab, open Lifecycle Admin panel,
+go to Settings, add or update a setting object:</p>
+<ul>
+<li>Name: <code>maintenance_mode</code></li>
+<li>Value: <code>true</code> to enable or <code>false</code> to disable the maintenance mode.</li>
+</ul>
+<h3 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h3>
+<p>If something's malfunctioning, check out the following places to find more information:</p>
+<ul>
+<li>Racetrack dashboard pages: jobs list, audit log, dependencies graph,</li>
+<li>Job logs (Dashboard / Jobs / Logs / Runtime logs)</li>
+<li>Job build logs:<ul>
+<li>via Dashboard (Jobs / Logs / Build logs),</li>
+<li>in image-builder container, at <code>/var/log/racetrack/image-builder/build-logs</code>,</li>
+<li>through Django Admin Panel: Deployments model, "Build logs" field,</li>
+</ul>
+</li>
+<li>Django Admin panel (Dashboard &gt; Administration &gt; Lifecycle Admin panel):
+  browse stored models (eg. Users, Auth subjects, Auth resource permissions,
+  Deployments, Jobs, Job families, External service consumers),</li>
+<li>Racetrack component logs: dashboard, lifecycle, lifecycle-supervisor, image-builder, pub, postgres, pgbouncer</li>
+</ul>
+<h2 id="backup-restore">Backup &amp; Restore<a class="headerlink" href="#backup-restore" title="Permanent link">&para;</a></h2>
+<p>Here's the overview of the places where Racetrack data are stored:</p>
+<ul>
+<li><strong>Postgres Database</strong> - keeps information about jobs
+  (that are expected to be running), deployments, users, permissions, etc.</li>
+<li><strong>Plugins Volume</strong> - a persistent volume containing plugins 
+  currently installed in the Racetrack instance.</li>
+<li><strong>Docker Registry</strong> - a registry for keeping built job images.
+  If a job gets killed somehow, it will be recreated from the image taken from here.
+  Backing up the Docker Registry is not always an obligatory step,
+  if it's fine for you to have a cluster with all jobs glowing red (requiring to redeploy) after a wipeout.
+  If you want the jobs to be brought back to life after a wipeout,
+  make sure to back up the Docker Registry.</li>
+<li><strong>Job Secrets</strong> - Job secrets (git credentials and secret vars) 
+  are kept by Racetrack inside Kubernetes Secrets.
+  If you skip to back it up, the jobs making use of secret vars 
+  won't be reproduced (the others should work fine),
+  unless you redeploy them manually later on.</li>
+</ul>
+<h3 id="postgres-database">Postgres Database<a class="headerlink" href="#postgres-database" title="Permanent link">&para;</a></h3>
+<h4 id="backing-up">Backing up<a class="headerlink" href="#backing-up" title="Permanent link">&para;</a></h4>
+<p>If Postgres database runs outside kubernetes on an external server,
+use <a href="https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html">pgAdmin</a>
+tool to make a backup of the database.</p>
+<p>Otherwise, if your database runs inside kubernetes, 
+exec to <code>postgres</code> pod and use <a href="https://www.postgresql.org/docs/current/app-pgdump.html">pg_dump</a></p>
+<h4 id="restoring">Restoring<a class="headerlink" href="#restoring" title="Permanent link">&para;</a></h4>
+<p>If Postgres database runs outside kubernetes,
+use <a href="https://www.pgadmin.org/docs/pgadmin4/development/backup_and_restore.html">pgAdmin</a>
+tool to restore the database.</p>
+<p>Otherwise, if your database runs inside kubernetes, 
+exec to <code>postgres</code> pod and use <a href="https://www.postgresql.org/docs/current/app-pgrestore.html">pg_restore</a>. </p>
+<h5 id="rotating-auth-key">Rotating Auth Key<a class="headerlink" href="#rotating-auth-key" title="Permanent link">&para;</a></h5>
+<p>If you restore a snapshot of the Racetrack's database originating from the other environment (with different <code>AUTH_KEY</code>),
+it can invalidate the auth tokens, making the signature invalid with the current <code>AUTH_KEY</code>.
+In this case, once the migration is done, do the following:</p>
+<ul>
+<li>Exec into the <code>lifecycle-supervisor</code> pod/container</li>
+<li>Run <code>python -m lifecycle generate-auth admin</code> to create a valid Auth token for you. Copy it.</li>
+<li>Go to Lifecycle-Supervisor or Lifecycle API page (<code>/lifecycle</code>) and Authorize with your Racetrack Auth Token.</li>
+<li>Call endpoints <code>POST /api/v1/auth/token/user/all/regenerate</code> and <code>POST /api/v1/auth/token/job_family/regenerate</code>
+  to recreate valid signatures for the tokens.</li>
+</ul>
+<h3 id="plugins-volume">Plugins Volume<a class="headerlink" href="#plugins-volume" title="Permanent link">&para;</a></h3>
+<p>Plugins are stored in a Persistent Volume called <code>racetrack-plugins-pvc</code>.
+Copy all of its contents with the help of your Kubernetes Admin.</p>
+<p>To do a restore, copy saved files back to <code>racetrack-plugins-pvc</code> 
+volume and restart all the Racetrack pods.</p>
+<h3 id="docker-registry">Docker Registry<a class="headerlink" href="#docker-registry" title="Permanent link">&para;</a></h3>
+<p>To do a backup of the Docker Registry, you can pull the images you're interested in (eg. to your local registry).
+When restoring, just push the images back.</p>
+<p>Check out <code>image-builder</code> config to see what's the URL of the registry configured with your Racetrack instance:
+<div class="highlight"><pre><span></span><code><span class="nt">docker_registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io</span>
+<span class="nt">docker_registry_namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theracetrack/racetrack</span>
+</code></pre></div></p>
+<h3 id="job-secrets">Job Secrets<a class="headerlink" href="#job-secrets" title="Permanent link">&para;</a></h3>
+<p>Contact your Kubernetes administrator to back up all the <code>Secret</code> resources
+associated with the <code>racetrack/job</code> label.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../deployment/remote-docker-gateway/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Remote Docker Gateway" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Remote Docker Gateway
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../deployment/racetrack-behind-https/" class="md-footer__link md-footer__link--next" aria-label="Next: Setting Up Racetrack with HTTPS" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Setting Up Racetrack with HTTPS
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/TheRacetrack/racetrack" target="_blank" rel="noopener" title="Racetrack on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.078830c0.min.js"></script>
+      
+    
+  </body>
+</html>
