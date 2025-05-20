@@ -5,6 +5,7 @@ See site-packages/django/contrib/auth/__init__.py
 import inspect
 import sys
 from importlib import import_module
+from django.db import models
 
 from .hasher import get_hasher
 
@@ -78,8 +79,8 @@ class ModelBackend(BaseBackend):
     """
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        if username is None:
-            username = kwargs.get(UserModel.USERNAME_FIELD)
+        # if username is None:
+        #     username = kwargs.get(UserModel.USERNAME_FIELD)
         if username is None or password is None:
             return
         try:
@@ -204,7 +205,7 @@ class ModelBackend(BaseBackend):
         return user if self.user_can_authenticate(user) else None
 
 
-class AbstractBaseUser(models.Model):
+class AbstractBaseUser:
     password = models.CharField(_("password"), max_length=128)
     last_login = models.DateTimeField(_("last login"), blank=True, null=True)
 

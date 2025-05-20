@@ -1,8 +1,10 @@
 from django.contrib import auth as django_auth
-from django.contrib.auth.models import AbstractUser, User
+# from django.contrib.auth.models import AbstractUser, User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
+from lifecycle.auth.authenticate_password import authenticate
+from lifecycle.auth.authenticate_password import User, AbstractUser
 from lifecycle.auth.subject import create_auth_token, get_auth_token_by_subject, get_description_from_auth_subject
 from lifecycle.auth.subject import get_auth_subject_by_user
 from lifecycle.database.schema import tables
@@ -18,7 +20,7 @@ logger = get_logger(__name__)
 
 @db_access
 def authenticate_username_with_password(username: str, password: str) -> tuple[User, tables.AuthSubject, tables.AuthToken]:
-    user: User = django_auth.authenticate(username=username, password=password)
+    user: User = authenticate(username=username, password=password)
     if user is None:
         raise UnauthorizedError('incorrect username or password')
     if not user.is_active:
@@ -59,7 +61,7 @@ def register_user_account(username: str, password: str) -> User:
 
 @db_access
 def change_user_password(username: str, old_password: str, new_password: str):
-    user: AbstractUser | None = django_auth.authenticate(username=username, password=old_password)
+    user: AbstractUser | None = authenticate(username=username, password=old_password)
     if user is None:
         raise UnauthorizedError('Passed password is incorrect.')
 
