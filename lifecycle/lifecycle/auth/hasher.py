@@ -42,11 +42,8 @@ def make_password(password, salt=None):
 
 
 @functools.lru_cache
-def get_hasher(algorithm: str = "default"):
-    hasher = PBKDF2PasswordHasher()
-    if not getattr(hasher, "algorithm"):
-        raise RuntimeError("hasher doesn't specify an algorithm name")
-    return hasher
+def get_hasher():
+    return PBKDF2PasswordHasher()
 
 
 class BasePasswordHasher:
