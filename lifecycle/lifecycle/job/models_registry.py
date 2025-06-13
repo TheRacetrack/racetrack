@@ -1,7 +1,6 @@
 import json
 import time
 
-from django.db.utils import IntegrityError
 from lifecycle.database.base_engine import NoRowsAffected
 from lifecycle.database.condition_builder import QueryCondition
 from lifecycle.database.table_model import new_uuid
