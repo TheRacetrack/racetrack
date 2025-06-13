@@ -1,0 +1,1851 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="TheRacetrack">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.0, mkdocs-material-8.5.6">
+    
+    
+      
+        <title>User Guide - Deploying a Job - Racetrack</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.20d9efc8.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#user-guide-deploying-a-job" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Racetrack" class="md-header__button md-logo" aria-label="Racetrack" data-md-component="logo">
+      
+  <img src="../../assets/logo/racetrack-logo-white.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Racetrack
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              User Guide - Deploying a Job
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/TheRacetrack/racetrack" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    TheRacetrack/racetrack
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Racetrack" class="md-nav__button md-logo" aria-label="Racetrack" data-md-component="logo">
+      
+  <img src="../../assets/logo/racetrack-logo-white.png" alt="logo">
+
+    </a>
+    Racetrack
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/TheRacetrack/racetrack" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    TheRacetrack/racetrack
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          For Users
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="For Users" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          For Users
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        Quickstart
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide-1/" class="md-nav__link">
+        User Manual
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          User Guide - Deploying a Job
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        User Guide - Deploying a Job
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-racetrack-workflow" class="md-nav__link">
+    The Racetrack Workflow
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-install-racetrack" class="md-nav__link">
+    1. Install Racetrack
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-configure-your-racetrack-client" class="md-nav__link">
+    2. Configure your racetrack client
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Configure your racetrack client">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-the-racetrack-cli-client" class="md-nav__link">
+    Get the Racetrack CLI client
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-remote" class="md-nav__link">
+    Set Remote
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-a-production-racetrack" class="md-nav__link">
+    Using a Production Racetrack
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-aliases-for-racetrack-servers" class="md-nav__link">
+    Setting aliases for Racetrack servers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-an-account" class="md-nav__link">
+    Create an account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activate-the-account" class="md-nav__link">
+    Activate the account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    Authentication
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jobs-in-private-git-repositories" class="md-nav__link">
+    Jobs in private git repositories
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-client-configuration" class="md-nav__link">
+    Local Client Configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-write-a-piece-of-code-doing-something-useful" class="md-nav__link">
+    3. Write a piece of code doing something useful
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-develop-a-job" class="md-nav__link">
+    4. Develop a Job
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Develop a Job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#job-type" class="md-nav__link">
+    Job Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactor-your-code-to-follow-the-convention" class="md-nav__link">
+    Refactor your code to follow the Convention
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-job-guidelines" class="md-nav__link">
+    General Job Guidelines
+  </a>
+  
+    <nav class="md-nav" aria-label="General Job Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#must" class="md-nav__link">
+    Must
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#should" class="md-nav__link">
+    Should
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#should-not" class="md-nav__link">
+    Should not
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#may" class="md-nav__link">
+    May
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compose-a-job-manifest" class="md-nav__link">
+    5. Compose a Job Manifest
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-push-it-to-git" class="md-nav__link">
+    6. Push it to git
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deploy-a-job" class="md-nav__link">
+    7. Deploy a Job
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-call-the-job" class="md-nav__link">
+    8. Call the Job
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Call the Job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#through-browser" class="md-nav__link">
+    Through Browser
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#through-curl" class="md-nav__link">
+    Through Curl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#through-racetrack-client" class="md-nav__link">
+    Through Racetrack client
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    FAQ
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ive-submitted-a-job-where-can-i-see-if-its-ready" class="md-nav__link">
+    I've submitted a job, where can I see if it's ready?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ive-submitted-a-job-but-its-not-working-where-can-i-see-my-errors" class="md-nav__link">
+    I've submitted a job, but it's not working. Where can I see my errors?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#my-job-produces-raw-output-i-need-it-in-another-format" class="md-nav__link">
+    My Job produces raw output, I need it in another format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#my-job-takes-config-parameters-i-dont-want-to-pass-them-every-call" class="md-nav__link">
+    My Job takes config parameters, I don't want to pass them every call
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i-need-to-combine-the-results-of-multiple-job" class="md-nav__link">
+    I need to combine the results of multiple Job
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i-need-to-be-able-to-receive-my-answers-asynchronously" class="md-nav__link">
+    I need to be able to receive my answers asynchronously
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    What's next?
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../available-plugins/" class="md-nav__link">
+        Available plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../using-plugins/" class="md-nav__link">
+        Installing plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manifest-schema/" class="md-nav__link">
+        Job Manifest File Schema
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../permissions/" class="md-nav__link">
+        Permission model
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../racetrack_client/" class="md-nav__link">
+        CLI client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../async-job-calls/" class="md-nav__link">
+        Asynchronous calls to jobs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        Glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        Changelog
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          For Administrators
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="For Administrators" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          For Administrators
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Installation guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation guides" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Installation guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/local-kubernetes-setup/" class="md-nav__link">
+        Local Kubernetes Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/standalone-host/" class="md-nav__link">
+        Installation to standalone host
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/k8s-installation/" class="md-nav__link">
+        Installation to non-local Kubernetes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/remote-kubernetes-gateway/" class="md-nav__link">
+        Remote Kubernetes Gateway
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/remote-docker-gateway/" class="md-nav__link">
+        Remote Docker Gateway
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../admin/" class="md-nav__link">
+        Administering
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/racetrack-behind-https/" class="md-nav__link">
+        Setting Up Racetrack with HTTPS
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          For Developers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="For Developers" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          For Developers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_1">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_1">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/developing-plugins/" class="md-nav__link">
+        Developing plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/plugins-job-types/" class="md-nav__link">
+        Job type plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/develop/" class="md-nav__link">
+        Developer manual
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/release/" class="md-nav__link">
+        Releasing a version
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/bom/" class="md-nav__link">
+        Bill of Materials
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/copyright-notices/" class="md-nav__link">
+        Copyright Notices
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-racetrack-workflow" class="md-nav__link">
+    The Racetrack Workflow
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-install-racetrack" class="md-nav__link">
+    1. Install Racetrack
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-configure-your-racetrack-client" class="md-nav__link">
+    2. Configure your racetrack client
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Configure your racetrack client">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-the-racetrack-cli-client" class="md-nav__link">
+    Get the Racetrack CLI client
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-remote" class="md-nav__link">
+    Set Remote
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-a-production-racetrack" class="md-nav__link">
+    Using a Production Racetrack
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-aliases-for-racetrack-servers" class="md-nav__link">
+    Setting aliases for Racetrack servers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-an-account" class="md-nav__link">
+    Create an account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#activate-the-account" class="md-nav__link">
+    Activate the account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    Authentication
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jobs-in-private-git-repositories" class="md-nav__link">
+    Jobs in private git repositories
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-client-configuration" class="md-nav__link">
+    Local Client Configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-write-a-piece-of-code-doing-something-useful" class="md-nav__link">
+    3. Write a piece of code doing something useful
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-develop-a-job" class="md-nav__link">
+    4. Develop a Job
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Develop a Job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#job-type" class="md-nav__link">
+    Job Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactor-your-code-to-follow-the-convention" class="md-nav__link">
+    Refactor your code to follow the Convention
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-job-guidelines" class="md-nav__link">
+    General Job Guidelines
+  </a>
+  
+    <nav class="md-nav" aria-label="General Job Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#must" class="md-nav__link">
+    Must
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#should" class="md-nav__link">
+    Should
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#should-not" class="md-nav__link">
+    Should not
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#may" class="md-nav__link">
+    May
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compose-a-job-manifest" class="md-nav__link">
+    5. Compose a Job Manifest
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-push-it-to-git" class="md-nav__link">
+    6. Push it to git
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deploy-a-job" class="md-nav__link">
+    7. Deploy a Job
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-call-the-job" class="md-nav__link">
+    8. Call the Job
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Call the Job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#through-browser" class="md-nav__link">
+    Through Browser
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#through-curl" class="md-nav__link">
+    Through Curl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#through-racetrack-client" class="md-nav__link">
+    Through Racetrack client
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    FAQ
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ive-submitted-a-job-where-can-i-see-if-its-ready" class="md-nav__link">
+    I've submitted a job, where can I see if it's ready?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ive-submitted-a-job-but-its-not-working-where-can-i-see-my-errors" class="md-nav__link">
+    I've submitted a job, but it's not working. Where can I see my errors?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#my-job-produces-raw-output-i-need-it-in-another-format" class="md-nav__link">
+    My Job produces raw output, I need it in another format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#my-job-takes-config-parameters-i-dont-want-to-pass-them-every-call" class="md-nav__link">
+    My Job takes config parameters, I don't want to pass them every call
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i-need-to-combine-the-results-of-multiple-job" class="md-nav__link">
+    I need to combine the results of multiple Job
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i-need-to-be-able-to-receive-my-answers-asynchronously" class="md-nav__link">
+    I need to be able to receive my answers asynchronously
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    What's next?
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="user-guide-deploying-a-job">User Guide - Deploying a Job<a class="headerlink" href="#user-guide-deploying-a-job" title="Permanent link">&para;</a></h1>
+<h2 id="the-racetrack-workflow">The Racetrack Workflow<a class="headerlink" href="#the-racetrack-workflow" title="Permanent link">&para;</a></h2>
+<p>As a Racetrack user, to deploy a Job your workflow will typically look similar to this:</p>
+<ol>
+<li>(Do it once) <a href="#1-install-racetrack">Install Racetrack</a>.</li>
+<li>(Do it once) <a href="#2-configure-your-racetrack-client">Configure your racetrack client</a>.</li>
+<li><a href="#3-write-a-piece-of-code-doing-something-useful">Write a piece of code doing something useful</a></li>
+<li><a href="#4-develop-a-job">Develop a Job</a> by picking the Job Type and following the Convention.</li>
+<li><a href="#5-compose-a-job-manifest">Compose a Job Manifest</a></li>
+<li><a href="#6-push-it-to-git">Push it to git</a></li>
+<li><a href="#7-deploy-a-job">Submit the Job code</a></li>
+<li><a href="#8-call-the-job">Call the Job</a></li>
+</ol>
+<p>These instructions will work against the local test version described in the
+<a href="../../quickstart/">Local Tutorial</a>, but are also explained such that they make sense
+against a production instance of Racetrack on a <a href="../../deployment/k8s-installation/">real Kubernetes cluster</a>.
+You will follow the same workflow in both cases.</p>
+<h2 id="1-install-racetrack">1. Install Racetrack<a class="headerlink" href="#1-install-racetrack" title="Permanent link">&para;</a></h2>
+<p>You have the following options:</p>
+<ul>
+<li><a href="../../quickstart/">Install Racetrack locally</a> - quickly setup Racetrack on local Docker engine.</li>
+<li><a href="../../deployment/local-kubernetes-setup/">Install Racetrack in local Kubernetes</a> - run Racetrack on Kind.</li>
+<li><a href="../../deployment/standalone-host/">Install to standalone host</a> - e.g. Virtual Machine or EC2</li>
+<li>Ask your friendly admin to install Racetrack for you and get you a link.</li>
+</ul>
+<p>In this tutorial, we chose first option and we'll assume Racetrack is running on:</p>
+<ul>
+<li><a href="http://127.0.0.1:7102">http://127.0.0.1:7102</a> - Lifecycle API service</li>
+<li><a href="http://127.0.0.1:7103">http://127.0.0.1:7103</a> - Racetrack Dashboard</li>
+</ul>
+<h2 id="2-configure-your-racetrack-client">2. Configure your racetrack client<a class="headerlink" href="#2-configure-your-racetrack-client" title="Permanent link">&para;</a></h2>
+<h3 id="get-the-racetrack-cli-client">Get the Racetrack CLI client<a class="headerlink" href="#get-the-racetrack-cli-client" title="Permanent link">&para;</a></h3>
+<p>You need the <a href="https://pypi.org/project/racetrack-client/">racetrack-client</a> CLI tool
+installed to manage Jobs. Something like this ought to work:
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+.<span class="w"> </span>venv/bin/activate
+python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>racetrack-client
+racetrack<span class="w"> </span>--help
+</code></pre></div></p>
+<h3 id="set-remote">Set Remote<a class="headerlink" href="#set-remote" title="Permanent link">&para;</a></h3>
+<p>You can set the current Racetrack server's URL (a "remote") with:
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span>remote<span class="w"> </span>http://127.0.0.1:7102
+</code></pre></div></p>
+<p>This then affects all subsequent invocations to <code>racetrack</code>,
+if <code>--remote</code> parameter is not set explicitly.</p>
+<h3 id="using-a-production-racetrack">Using a Production Racetrack<a class="headerlink" href="#using-a-production-racetrack" title="Permanent link">&para;</a></h3>
+<p>In the case of a production cluster, the only real change will be to the remote URL.
+You will need to obtain the Racetrack address instead of
+<code>127.0.0.1:7002</code>, so that:</p>
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span>remote<span class="w"> </span>http://127.0.0.1:7102
+</code></pre></div>
+<p>becomes</p>
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span>remote<span class="w"> </span>http://racetrack.platform.example.com:12345/lifecycle
+</code></pre></div>
+<p>Other endpoints described in the tutorial will also change away from
+<code>localhost</code>. for example <code>http://127.0.0.1:7103/</code> might become
+<code>https://racetrack-lifecycle.platform.example.com/dashboard</code>.
+You will need to check with your local Racetrack admin to get these endpoints.
+Or see <a href="../../deployment/standalone-host/">how-to deploy Racetrack on your own</a>.</p>
+<h3 id="setting-aliases-for-racetrack-servers">Setting aliases for Racetrack servers<a class="headerlink" href="#setting-aliases-for-racetrack-servers" title="Permanent link">&para;</a></h3>
+<p>You can set up aliases for Racetrack server URL addresses by issuing command:
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">alias</span><span class="w"> </span>ALIAS<span class="w"> </span>RACETRACK_URL
+</code></pre></div></p>
+<p>If you operate with many environments, setting short names may come in handy. For instance:
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">alias</span><span class="w"> </span>docker<span class="w"> </span>http://127.0.0.1:7102
+racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">alias</span><span class="w"> </span>kind<span class="w"> </span>http://127.0.0.1:7002
+racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">alias</span><span class="w"> </span>dev<span class="w"> </span>https://racetrack.dev.platform.example.com/lifecycle
+racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">alias</span><span class="w"> </span><span class="nb">test</span><span class="w"> </span>https://racetrack.test.platform.example.com/lifecycle
+racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">alias</span><span class="w"> </span>prod<span class="w"> </span>https://racetrack.prod.platform.example.com/lifecycle
+</code></pre></div></p>
+<p>and then you can use your short names instead of full <code>RACETRACK_URL</code> address when calling <code>racetrack deploy --remote docker</code>.
+You can also use it in the current remote name. For instance, let's set it to "docker":
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span>remote<span class="w"> </span>docker
+</code></pre></div></p>
+<h3 id="create-an-account">Create an account<a class="headerlink" href="#create-an-account" title="Permanent link">&para;</a></h3>
+<p>Before you can deploy a job to production Racetrack server or even view the list
+of Job on RT Dashboard, you need to create user there.</p>
+<p>Visit your Racetrack Dashboard at <code>https://racetrack.platform.example.com/dashboard/</code>
+(or local <a href="http://127.0.0.1:7103/dashboard">http://127.0.0.1:7103/dashboard</a>), click link to <strong>Register</strong>.
+Type username (an email) and password. Password will be needed to log in, 
+so manage it carefully. Then notify your admin that he should activate your user.</p>
+<h3 id="activate-the-account">Activate the account<a class="headerlink" href="#activate-the-account" title="Permanent link">&para;</a></h3>
+<p>The administrator now has to visit Racetrack Dashboard, open <strong>Administration</strong> tab, open <strong>Lifecycle Admin panel</strong>, Browse the <strong>Users</strong>, and tick the <strong>Active</strong> checkbox near the new user.</p>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<p>When he does that, you can log in, and click <strong>Profile</strong> tab.
+There will be your auth token for racetrack client CLI, along with ready command
+to log in. It will look like <code>racetrack login &lt;token&gt; [--remote &lt;remote&gt;]</code>. When you
+run this, then you can finally deploy your Job.</p>
+<p>Alternatively, use command
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span>login<span class="w"> </span>--username<span class="w"> </span>&lt;username&gt;
+</code></pre></div>
+to log in with your username and password (entered into the standard input)
+and to save the auth token without having to visit the Dashboard page.</p>
+<p>If you need, you can log out with <code>racetrack logout [--remote &lt;remote&gt;]</code>. To check your
+logged servers, there's <code>racetrack get config</code> command.</p>
+<p>You can aceess Job pages though the browser as long as you're logged to Racetrack Dashboard.
+Session is maintained through cookie.</p>
+<p>When viewing Job swagger page, you can run there the <code>/perform</code> method without specifying
+additional credentials, because auth data in cookie from Racetrack Dashboard is 
+used as credential. However, if you copy the code to curl in CLI like this:
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">&#39;POST&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">&#39;https://racetrack.platform.example.com/pub/job/adder/0.0.1/api/v1/perform&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;accept: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">  &quot;numbers&quot;: [</span>
+<span class="s1">    40,</span>
+<span class="s1">    2</span>
+<span class="s1">  ]</span>
+<span class="s1">}&#39;</span>
+</code></pre></div>
+Then it won't work, because there's no auth data specified: 
+<code>Unauthenticated: no header X-Racetrack-Auth: not logged in</code></p>
+<p>You will need to include it in curl using <code>-H 'X-Racetrack-Auth: $(racetrack get auth-token)</code>.</p>
+<h3 id="jobs-in-private-git-repositories">Jobs in private git repositories<a class="headerlink" href="#jobs-in-private-git-repositories" title="Permanent link">&para;</a></h3>
+<p>Racetrack requires in the <code>job.yaml</code> a git URL from
+which to fetch the Job source code. If this repo is private or protected, you
+will need to issue a token for the <code>racetrack</code> CLI tool to work. In GitLab, there
+are two kinds of tokens (either of them can be used):</p>
+<ul>
+<li>Personal Access Token - allows to operate on all user projects. Instructions
+  to create it are <a href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html">here</a> </li>
+<li>Project Access Token - needs to be issued per project. User has to be Maintainer
+  in project to be able to create such token. Instructions to create it are
+  <a href="https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html">here</a>. </li>
+</ul>
+<p>In both cases it has to have <code>read_repository</code> privilege.</p>
+<p>Once you have this token, you need to register it with the <code>racetrack</code> CLI tool:</p>
+<p><div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span>credentials<span class="w"> </span>REPO_URL<span class="w"> </span>USERNAME<span class="w"> </span>TOKEN
+</code></pre></div>
+where:</p>
+<ul>
+<li><code>REPO_URL</code>: url to git repository, i.e. <code>https://github.com/theracetrack/racetrack</code>
+  You can also set this to root domain i.e. <code>https://github.com</code> to make this token
+  handle all projects.</li>
+<li><code>USERNAME</code>: it's your GitHub/Gitlab account name, usually in the form of email</li>
+<li><code>TOKEN</code>: A token giving the <strong>read-only</strong> access to repository. Keep it secret.</li>
+</ul>
+<h3 id="local-client-configuration">Local Client Configuration<a class="headerlink" href="#local-client-configuration" title="Permanent link">&para;</a></h3>
+<p>The <code>racetrack</code> CLI tool maintains a configuration on your developer workstation. 
+As you saw earlier in the section on 
+<a href="#jobs-in-private-git-repositories">Jobs in private git Repositories</a>
+it can store Project/Personal Access Tokens.</p>
+<p>It is also possible to store the address of the Racetrack server:</p>
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span><span class="nb">set</span><span class="w"> </span>remote<span class="w"> </span>http://127.0.0.1:7002
+</code></pre></div>
+<p>Local client configuration is stored at <code>~/.racetrack/config.yaml</code></p>
+<h2 id="3-write-a-piece-of-code-doing-something-useful">3. Write a piece of code doing something useful<a class="headerlink" href="#3-write-a-piece-of-code-doing-something-useful" title="Permanent link">&para;</a></h2>
+<p>Let's say we have a piece of Python code, checking if a given number is prime.
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_prime</span><span class="p">(</span><span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a number is prime&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">number</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">number</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">number</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div></p>
+<h2 id="4-develop-a-job">4. Develop a Job<a class="headerlink" href="#4-develop-a-job" title="Permanent link">&para;</a></h2>
+<p>You must pick the appropriate Racetrack <a href="../available-plugins/">Job Type</a>
+and Refactor your code to follow its Convention.</p>
+<h3 id="job-type">Job Type<a class="headerlink" href="#job-type" title="Permanent link">&para;</a></h3>
+<p>These links show how to use particular job types that are provided by the <a href="../available-plugins/">plugins</a>:</p>
+<ul>
+<li><a href="https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md">python3</a> -
+  designed for Python projects</li>
+<li><a href="https://github.com/TheRacetrack/plugin-go-job-type/blob/master/docs/job_golang.md">golang</a> -
+  designed for Go projects</li>
+<li><a href="https://github.com/TheRacetrack/plugin-docker-proxy-job-type/blob/master/docs/job_docker.md">docker-proxy</a> -
+  designed for any other Dockefile-based jobs</li>
+</ul>
+<p>We decide to use <a href="https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md">python3</a>
+job type to deploy our Python code.</p>
+<h3 id="refactor-your-code-to-follow-the-convention">Refactor your code to follow the Convention<a class="headerlink" href="#refactor-your-code-to-follow-the-convention" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/TheRacetrack/plugin-python-job-type/blob/master/docs/job_python3.md">Python3</a>
+job type requires to embed our code in a <code>perform</code> method inside a class.
+It also says that implementing method <code>docs_input_example</code> will show the example input values on the Swagger Documentation page.</p>
+<p>Let's create <code>sample/python-primer/entrypoint.py</code> file:
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">JobEntrypoint</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a number is prime&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">number</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">number</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">number</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">docs_input_example</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return example input values for this model&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="mi">7907</span><span class="p">}</span>
+</code></pre></div></p>
+<p>If needed, we might want to specify additional Python packages in <strong>requirements.txt</strong>,
+but we skipped that step as we don't need any third-party libraries this time.</p>
+<h3 id="general-job-guidelines">General Job Guidelines<a class="headerlink" href="#general-job-guidelines" title="Permanent link">&para;</a></h3>
+<p>This document uses the terms may, must, should, should not, and must not in
+accord with <a href="https://datatracker.ietf.org/doc/html/rfc2119">RFC 2119</a>.</p>
+<h4 id="must">Must<a class="headerlink" href="#must" title="Permanent link">&para;</a></h4>
+<ol>
+<li>You must use one of the pre-defined (currently installed) job types.</li>
+</ol>
+<h4 id="should">Should<a class="headerlink" href="#should" title="Permanent link">&para;</a></h4>
+<ol>
+<li>The call path should be kept shallow. We prefer a bit bigger Job over
+   small that creates a deep call path.</li>
+<li>If part of the functionality of your Job becomes useful to a Service
+   Consumer <em>other</em> than the current set of Service Consumers, consider if this
+   part of its functionality should be split out into a separate Job. This is
+   usually only a good idea of this part of the functionality is expensive in
+   time or physical resources.</li>
+</ol>
+<h4 id="should-not">Should not<a class="headerlink" href="#should-not" title="Permanent link">&para;</a></h4>
+<ol>
+<li>You are discouraged from creating code boundaries by splitting a job up
+   into several, if they all serve the same request. While Racetrack supports
+   chaining Jobs, it prefers tight coupling in Jobs serving single business
+   purposes.</li>
+<li>The user should not use the <a href="https://github.com/TheRacetrack/plugin-docker-proxy-job-type">Dockerfile</a> job type.
+   It's preferable to use one
+   of the more specialised job types, or to coordinate with the RT developers to
+   implement new job types. The Dockerfile job type exists as a fallback of last
+   resort for tight deadlines and genuinely one-off runs which are demonstrably
+   not accomplishable with current specialised job types, or which don't lend
+   themselves via curation to improvements in specialised job types.</li>
+</ol>
+<h4 id="may">May<a class="headerlink" href="#may" title="Permanent link">&para;</a></h4>
+<ol>
+<li>If you have a need which isn't covered by the currently implemented job
+   types, you may raise the need with the Racetrack developers in the GitHub
+   issue tracker.</li>
+</ol>
+<h2 id="5-compose-a-job-manifest">5. Compose a Job Manifest<a class="headerlink" href="#5-compose-a-job-manifest" title="Permanent link">&para;</a></h2>
+<p>To deploy a Job, the Developer should provide a build recipe called a Manifest,
+describing how to build, run, and deploy.</p>
+<p>Here's our <code>sample/python-primer/job.yaml</code> Manifest file:
+<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">primer</span>
+<span class="nt">owner_email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sample@example.com</span>
+<span class="nt">jobtype</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python3:latest</span>
+<span class="nt">git</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">remote</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/TheRacetrack/racetrack</span>
+<span class="w">  </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sample/python-primer</span>
+<span class="nt">jobtype_extra</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">entrypoint_path</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;entrypoint.py&#39;</span>
+<span class="w">  </span><span class="nt">entrypoint_class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;JobEntrypoint&#39;</span>
+</code></pre></div></p>
+<p>which translates to:</p>
+<blockquote>
+<p>My job is called <code>primer</code>. It's been created by <code>sample@example.com</code>.
+It adheres to <code>python3</code> job type, in <code>latest</code> version.<br />
+The code of my job is stored in git at <code>https://github.com/TheRacetrack/racetrack</code>,
+in a <code>sample/python-primer/</code> directory.
+There's an <code>entrypoint.py</code> file, in which there's <code>JobEntrypoint</code> class.
+According to this job type, the main logic is in the <code>perform</code> method.</p>
+</blockquote>
+<p>See <a href="../../manifest-schema/">Job Manifest File Schema</a>.</p>
+<h2 id="6-push-it-to-git">6. Push it to git<a class="headerlink" href="#6-push-it-to-git" title="Permanent link">&para;</a></h2>
+<p>It's important to note that Racetrack builds the Job from the code found in git.
+That's why all the changes have to be pushed to git prior to deploying a Job.</p>
+<p>Push the job code to the same repository that is declared in <code>job.yaml</code> manifest file.</p>
+<p>If your repository is private, remember to also <a href="#jobs-in-private-git-repositories">configure read access to your repository</a>.</p>
+<h2 id="7-deploy-a-job">7. Deploy a Job<a class="headerlink" href="#7-deploy-a-job" title="Permanent link">&para;</a></h2>
+<p>Standing in the root directory of your Job code (<code>sample/python-primer/</code>),
+submit the Job using the Racetrack command line client:
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span>deploy
+</code></pre></div></p>
+<p>Wait briefly.</p>
+<p>Receive the message that it has been deployed.</p>
+<h2 id="8-call-the-job">8. Call the Job<a class="headerlink" href="#8-call-the-job" title="Permanent link">&para;</a></h2>
+<h3 id="through-browser">Through Browser<a class="headerlink" href="#through-browser" title="Permanent link">&para;</a></h3>
+<p>A link to the Job will be provided to you in the <code>racetrack deploy</code> output.
+Open it directly or find it in the Racetrack Dashboard and click <em>Open</em>.</p>
+<p><img alt="" src="../../assets/dashboard-example.png" /></p>
+<p>You'll see the Swagger UI page, on which you can make an HTTP request at the <code>/perform</code> endpoint.
+You'll find the example input value there as well.</p>
+<p><img alt="" src="../../assets/swaggerino.png" /></p>
+<h3 id="through-curl">Through Curl<a class="headerlink" href="#through-curl" title="Permanent link">&para;</a></h3>
+<p>Alternatively, call the job by <code>curl</code>:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://127.0.0.1:7105/pub/job/primer/latest/api/v1/perform&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;X-Racetrack-Auth: </span><span class="k">$(</span>racetrack<span class="w"> </span>get<span class="w"> </span>auth-token<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;number&quot;: 7907}&#39;</span>
+<span class="c1"># Expect: true</span>
+</code></pre></div>
+<h3 id="through-racetrack-client">Through Racetrack client<a class="headerlink" href="#through-racetrack-client" title="Permanent link">&para;</a></h3>
+<p>Or use <code>racetrack</code> CLI:
+<div class="highlight"><pre><span></span><code>racetrack<span class="w"> </span>call<span class="w"> </span>primer<span class="w"> </span>/api/v1/perform<span class="w"> </span><span class="s1">&#39;{&quot;number&quot;: 7907}&#39;</span>
+</code></pre></div></p>
+<h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h2>
+<h3 id="ive-submitted-a-job-where-can-i-see-if-its-ready">I've submitted a job, where can I see if it's ready?<a class="headerlink" href="#ive-submitted-a-job-where-can-i-see-if-its-ready" title="Permanent link">&para;</a></h3>
+<p>When you invoke <code>racetrack deploy . --remote https://racetrack.platform.example.com/lifecycle</code>, the client will
+block while the deployment operation is in progress. When the command terminates,
+unless you are given an error message, your job has been deployed into a Job.</p>
+<p>It will be added to the list of running Jobs in the Racetrack dashboard; you
+can see it there yourself, or if you don't have access, check with the local
+Racetrack admin.</p>
+<h3 id="ive-submitted-a-job-but-its-not-working-where-can-i-see-my-errors">I've submitted a job, but it's not working. Where can I see my errors?<a class="headerlink" href="#ive-submitted-a-job-but-its-not-working-where-can-i-see-my-errors" title="Permanent link">&para;</a></h3>
+<p>If the error relates to the deployment action, the racetrack CLI tool will
+display an error for you. You can also see it on Racetrack Dashboard.</p>
+<h3 id="my-job-produces-raw-output-i-need-it-in-another-format">My Job produces raw output, I need it in another format<a class="headerlink" href="#my-job-produces-raw-output-i-need-it-in-another-format" title="Permanent link">&para;</a></h3>
+<p>Racetrack supports chained Jobs; you can retain the original Job, and
+deploy a supplemental "handler" Job which calls the original and transforms
+its output to your desired format. Then you can simply call your handler.</p>
+<h3 id="my-job-takes-config-parameters-i-dont-want-to-pass-them-every-call">My Job takes config parameters, I don't want to pass them every call<a class="headerlink" href="#my-job-takes-config-parameters-i-dont-want-to-pass-them-every-call" title="Permanent link">&para;</a></h3>
+<p>You have several options.</p>
+<p>You could use the handler pattern, placing a Job in front with the parameters
+baked in. This means every time you need to change the parameters, you need to
+update and redeploy the handler. This option is good for very slowly changing
+parameters.</p>
+<p>Another option is to build a Job with a web UI for tweaking the configuration
+parameters, and then placing this one in front of your original Job. This
+way, you change parameters at runtime rather than build-time. This option is
+more work, but suits parameters which change a little more frequently.</p>
+<p>As a third option, consider if you could "bake in" the parameters in your
+original model. Time to deployment in Racetrack is very quick, and you might be
+fine just redeploying the same Job with different config parameters when they
+change.</p>
+<h3 id="i-need-to-combine-the-results-of-multiple-job">I need to combine the results of multiple Job<a class="headerlink" href="#i-need-to-combine-the-results-of-multiple-job" title="Permanent link">&para;</a></h3>
+<p>Develop a "handler" Job which calls the other Jobs whose results you want
+to combine.</p>
+<p>Racetrack supports chaining of Jobs for this purpose.</p>
+<h3 id="i-need-to-be-able-to-receive-my-answers-asynchronously">I need to be able to receive my answers asynchronously<a class="headerlink" href="#i-need-to-be-able-to-receive-my-answers-asynchronously" title="Permanent link">&para;</a></h3>
+<p>The way to implement this is to create your own handler that can give you your answers
+asynchronously. A simple way of archiving this would be to provide a callback URL in the ESC query. </p>
+<p>So you would send the request to the Job from your ESC; as soon as the Job
+receives the request, the request terminates successfully; it does <strong>not</strong> wait to 
+provide a response. Then your ESC listens on a defined webhook endpoint - the path
+which was for example provided in the request - and when the Job has finished 
+processing the request and is ready with a response, it POSTs this to the endpoint
+on the ESC. Obviously, asynchronous calls require you to do some work on the ESC side as well.</p>
+<h2 id="whats-next">What's next?<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../quickstart/">Quickstart</a> - quickly setup Racetrack on local Docker engine.</li>
+<li><a href="../../deployment/local-kubernetes-setup/">Local Kubernetes Setup</a> - run Racetrack on KinD - longer, but more comprehensive guide.</li>
+<li><a href="../available-plugins/">Available plugins</a></li>
+<li><a href="../../manifest-schema/">Job Manifest File Schema</a></li>
+<li><a href="../../deployment/standalone-host/">Installation to standalone host</a></li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../user-guide-1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: User Manual" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              User Manual
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../available-plugins/" class="md-footer__link md-footer__link--next" aria-label="Next: Available plugins" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Available plugins
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/TheRacetrack/racetrack" target="_blank" rel="noopener" title="Racetrack on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.expand"], "search": "../../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.078830c0.min.js"></script>
+      
+    
+  </body>
+</html>

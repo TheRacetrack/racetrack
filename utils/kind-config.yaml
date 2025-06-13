@@ -1,0 +1,40 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: ./utils/grafana/dashboards
+        containerPath: /src/utils/grafana/dashboards
+        readOnly: true
+    kubeadmConfigPatches:
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "ingress-ready=true"
+    extraPortMappings:
+      - hostPort: 7001 # Image-builder
+        containerPort: 30001
+        listenAddress: "127.0.0.1"
+      - hostPort: 7002 # Lifecycle
+        containerPort: 30002
+        listenAddress: "127.0.0.1"
+      - hostPort: 7003 # Dashboard
+        containerPort: 30003
+        listenAddress: "127.0.0.1"
+      - hostPort: 7005 # PUB
+        containerPort: 30005
+        listenAddress: "127.0.0.1"
+      - hostPort: 7006 # Lifecycle-supervisor
+        containerPort: 30006
+        listenAddress: "127.0.0.1"
+      - hostPort: 9092 # Prometheus
+        containerPort: 30990
+        listenAddress: "127.0.0.1"
+      - hostPort: 3000 # Grafana
+        containerPort: 30300
+        listenAddress: "127.0.0.1"
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."racetrack-registry:5000"]
+    endpoint = ["http://racetrack-registry:5000"]
