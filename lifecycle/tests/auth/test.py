@@ -1,10 +1,25 @@
-from lifecycle.auth.authenticate_password import authenticate
-from lifecycle.auth.hasher import get_hasher, make_password
+from lifecycle.auth.hasher import make_password
+from lifecycle.auth.authenticate_password import check_password
 
-def test_authenticate_password():
-    # assert False
-    password = make_password("admin")
-    # assert password == "pbkdf2_sha256$600000$A2mQCW1yCYUhNJP2Fu63s5$aLj15pX6orVYwN0A41/qY3vlH32xjr9Fqu9jO8W25vM="
 
-    hasher = get_hasher()
-    assert hasher.verify("admin", password)
+def test_password_verification():
+    test_password = "complex_password_123!"
+    hashed = make_password(test_password)
+    
+    assert check_password(test_password, hashed)
+    assert not check_password("wrong_password", hashed)
+
+def test_password_uniqueness():
+    password = "test_password"
+    hash1 = make_password(password)
+    hash2 = make_password(password)
+    
+    assert hash1 != hash2  # Different salts should produce different hashes
+    assert check_password(password, hash1)
+    assert check_password(password, hash2)
+
+def test_password_compatibility():
+    django_hash = "pbkdf2_sha256$600000$ToUqATye4PAvPsSe9rzUVY$eMWAQNMhb1L22JOXMI92AzSmvUtZKeTzZvbWyJMvakE="
+
+    assert check_password("admin", django_hash)
+    assert not check_password("wrong_password", django_hash)
