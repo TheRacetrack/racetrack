@@ -26,7 +26,6 @@ from racetrack_client.utils.datamodel import datamodel_to_yaml_str
 logger = get_logger(__name__)
 
 cli = typer.Typer(
-    no_args_is_help=True,
     name='racetrack',
     help='CLI client tool for managing workloads in Racetrack',
 )
@@ -52,6 +51,9 @@ def _startup(
     else:
         configure_logs(log_level='debug' if verbose else 'info')
 
+@cli.callback(invoke_without_command=True)
+def default(ctx: typer.Context):
+  typer.echo(ctx.get_help())
 
 @cli.command('deploy')
 def _deploy(
@@ -329,3 +331,6 @@ def _parse_key_value_pairs(extra_vars: Optional[List[str]]) -> Dict[str, str]:
         assert len(parts) == 2, f'cannot unpack key-value from "{var}"'
         key_values[parts[0]] = parts[1]
     return key_values
+
+if __name__ == '__main__':
+    main()
