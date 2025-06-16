@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 
 
 def authenticate_username_with_password(username: str, password: str) -> tuple[tables.User, tables.AuthSubject, tables.AuthToken]:
-    user: Optional[tables.User] = authenticate(username=username, password=password)
+    user: Optional[tables.User] = authenticate(username, password)
     if user is None:
         raise UnauthorizedError('incorrect username or password')
 
@@ -70,7 +70,7 @@ def register_user_account(username: str, password: str) -> tables.User:
 
 
 def change_user_password(username: str, old_password: str, new_password: str):
-    user: Optional[tables.User] = authenticate(username=username, password=old_password)
+    user: Optional[tables.User] = authenticate(username, old_password)
     if user is None:
         raise UnauthorizedError('Passed password is incorrect.')
 

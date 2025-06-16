@@ -6,13 +6,13 @@ See site-packages/django/contrib/auth/__init__.py
 from lifecycle.database.schema.tables import User
 from lifecycle.server.cache import LifecycleCache
 from racetrack_client.log.errors import EntityNotFound
-
+from typing import Optional
 from lifecycle.auth.hasher import get_hasher, get_random_string, make_password
 
 UNUSABLE_PASSWORD_SUFFIX_LENGTH = 40
 UNUSABLE_PASSWORD_PREFIX = "!"
 
-def authenticate(username=None, password=None):
+def authenticate(username: str, password: str) -> Optional[User]:
     """
     If the given credentials are valid, return a User object.
     """
@@ -23,14 +23,12 @@ def authenticate(username=None, password=None):
 
     return user
 
-def authenticate_user(username=None, password=None):
-        if username is None or password is None:
-            return
+def authenticate_user(username: str, password: str) -> Optional[User]:
         try:
             user: User = LifecycleCache.record_mapper().find_one(User, username=username)
         except EntityNotFound:
             # Run the default password hasher once to reduce the timing
-            # difference between an existing and a nonexistent user (#20760).
+            # difference between an existing and a nonexistent user
 
             make_password(password)
         else:
@@ -67,7 +65,7 @@ def check_password(password, encoded, setter=None):
     if fake_runtime:
         # Run the default password hasher once to reduce the timing difference
         # between an existing user with an unusable password and a nonexistent
-        # user or missing hasher (similar to #20760).
+        # user or missing hasher.
         make_password(get_random_string(UNUSABLE_PASSWORD_SUFFIX_LENGTH))
         return False
 
