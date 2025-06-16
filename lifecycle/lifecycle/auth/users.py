@@ -1,28 +1,26 @@
-from django.contrib import auth as django_auth
-from django.contrib.auth.models import AbstractUser, User
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
+from datetime import datetime
+from typing import Optional
 
+from lifecycle.auth.authenticate_password import authenticate
+from lifecycle.auth.hasher import make_password
 from lifecycle.auth.subject import create_auth_token, get_auth_token_by_subject, get_description_from_auth_subject
 from lifecycle.auth.subject import get_auth_subject_by_user
+from lifecycle.auth.validate import ValidationError, validate_password
 from lifecycle.database.schema import tables
 from lifecycle.database.table_model import new_uuid
-from lifecycle.django.registry.database import db_access
 from lifecycle.server.cache import LifecycleCache
 from racetrack_commons.auth.auth import UnauthorizedError
 from racetrack_client.log.logs import get_logger
 from racetrack_commons.auth.scope import AuthScope
+from racetrack_client.log.errors import EntityNotFound
 
 logger = get_logger(__name__)
 
 
-@db_access
-def authenticate_username_with_password(username: str, password: str) -> tuple[User, tables.AuthSubject, tables.AuthToken]:
-    user: User = django_auth.authenticate(username=username, password=password)
+def authenticate_username_with_password(username: str, password: str) -> tuple[tables.User, tables.AuthSubject, tables.AuthToken]:
+    user: Optional[tables.User] = authenticate(username, password)
     if user is None:
         raise UnauthorizedError('incorrect username or password')
-    if not user.is_active:
-        raise UnauthorizedError('user account is disabled')
 
     user_record = find_user_record_by_id(user.id)
     auth_subject = get_auth_subject_by_user(user_record)
@@ -30,21 +28,35 @@ def authenticate_username_with_password(username: str, password: str) -> tuple[U
     return user, auth_subject, auth_token
 
 
-@db_access
-def register_user_account(username: str, password: str) -> User:
+def register_user_account(username: str, password: str) -> tables.User:
     try:
         validate_password(password)
     except ValidationError as e:
-        raise RuntimeError('Invalid password: ' + ' '.join(e.messages))
+        raise RuntimeError('Invalid password: ' + str(e))
 
     try:
-        User.objects.get(username=username)
+        LifecycleCache.record_mapper().find_one(tables.User, username=username)
         raise RuntimeError(f'Username already exists: {username}')
-    except User.DoesNotExist:
+    except EntityNotFound:
         pass
 
-    user = User.objects.create_user(username, password=password, is_active=False)
-    user_record = find_user_record_by_id(user.id)
+    user = LifecycleCache.record_mapper().create_from_dict(
+        tables.User, 
+        {
+            "username": username,
+            "password": make_password(password),
+            "is_active": False,
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": False,
+            "is_superuser": False,
+            "date_joined": datetime.now(),
+            "last_login": None,
+        }
+    )
+
+    user_record = find_user_record_by_id(user['id'])
 
     auth_subject = create_auth_subject_for_user(user_record)
     # grant default user permisssions
@@ -57,19 +69,18 @@ def register_user_account(username: str, password: str) -> User:
     return user
 
 
-@db_access
 def change_user_password(username: str, old_password: str, new_password: str):
-    user: AbstractUser | None = django_auth.authenticate(username=username, password=old_password)
+    user: Optional[tables.User] = authenticate(username, old_password)
     if user is None:
         raise UnauthorizedError('Passed password is incorrect.')
 
     try:
         validate_password(new_password)
     except ValidationError as e:
-        raise RuntimeError('Invalid password: ' + ' '.join(e.messages))
+        raise RuntimeError('Invalid password: ' + str(e))
 
-    user.set_password(new_password)
-    user.save()
+    user.password = make_password(new_password)
+    LifecycleCache.record_mapper().update(user)
     logger.debug(f'User {username} changed password')
 
 
