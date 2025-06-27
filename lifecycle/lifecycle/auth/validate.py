@@ -14,6 +14,8 @@ def validate_numeric_password(password: str):
         raise ValidationError("This password is entirely numeric.")
     
 def validate_common_password(password: str):
+    # password list based on https://gist.github.com/roycewilliams/226886fd01572964e1431ac8afc999ce
+    # by Royce Williams
     passwords_path: str = Path(__file__).resolve().parent / "common-passwords.txt"
     
     with open(passwords_path, "rt", encoding="utf-8") as f:
