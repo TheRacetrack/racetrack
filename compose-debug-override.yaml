@@ -9,7 +9,7 @@ services:
       bash -c "
       /src/lifecycle/wait-for-postgres.sh && 
       /src/lifecycle/wait-for-migration.sh && 
-      python -u -m debugpy --listen 0.0.0.0:5678 -m lifecycle serve"
+      python -Xfrozen_modules=off -u -m debugpy --listen 0.0.0.0:5678 -m lifecycle serve"
 
   lifecycle-supervisor:
     build:
@@ -20,7 +20,7 @@ services:
       bash -c "
       /src/lifecycle/wait-for-postgres.sh && 
       /src/lifecycle/lifecycle/django/migrate.sh && 
-      python -u -m debugpy --listen 0.0.0.0:5678 -m lifecycle supervisor"
+      python -Xfrozen_modules=off -u -m debugpy --listen 0.0.0.0:5678 -m lifecycle supervisor"
 
   image-builder:
     build:

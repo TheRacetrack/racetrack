@@ -11,6 +11,7 @@ from lifecycle.database.table_model import TableModel, table_type_name, \
 from lifecycle.database.schema.tables import all_tables
 from lifecycle.database.type_parser import parse_typed_object
 
+
 logger = get_logger(__name__)
 
 T = TypeVar('T', bound=TableModel)
