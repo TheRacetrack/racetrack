@@ -78,15 +78,16 @@ install-racetrack-client:
 	( cd racetrack_client && pip install -e . )
 
 lint:
-	-python -m mypy --ignore-missing-imports --exclude 'racetrack_client/build' racetrack_client
-	-python -m mypy --ignore-missing-imports racetrack_commons
-	-python -m mypy --ignore-missing-imports --exclude 'lifecycle/lifecycle/django/registry/migrations' lifecycle
-	-python -m mypy --ignore-missing-imports image_builder
-	-python -m mypy --ignore-missing-imports dashboard
-	-python -m flake8 --ignore E501 --per-file-ignores="__init__.py:F401" \
-		lifecycle image_builder dashboard
-	-python -m pylint --disable=R,C,W \
-		lifecycle/lifecycle image_builder/image_builder dashboard/dashboard
+	python -m mypy --ignore-missing-imports --exclude 'racetrack_client/build' racetrack_client; e1=$$?;\
+	python -m mypy --ignore-missing-imports racetrack_commons; e2=$$?;\
+	python -m mypy --ignore-missing-imports --exclude 'lifecycle/lifecycle/django/registry/migrations' lifecycle; e3=$$?;\
+	python -m mypy --ignore-missing-imports image_builder; e4=$$?;\
+	python -m mypy --ignore-missing-imports dashboard; e5=$$?;\
+	python -m flake8 --ignore E501 --per-file-ignores="__init__.py:F401" \
+		lifecycle image_builder dashboard; e6=$$?;\
+	python -m pylint --disable=R,C,W \
+		lifecycle/lifecycle image_builder/image_builder dashboard/dashboard; e7=$$?;\
+	exit "$$(( e1 || e2 || e3 || e4 || e5 || e6 || e7 ))"
 
 format:
 	python -m black -S --diff --color -l 120 \

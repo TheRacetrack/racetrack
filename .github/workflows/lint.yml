@@ -3,7 +3,7 @@ on:
   push
 jobs:
 
-  test-unit:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
