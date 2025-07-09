@@ -74,6 +74,17 @@ setup-test-e2e:
 	( cd racetrack_commons && make setup )
 	@echo Activate your venv: . venv/bin/activate
 
+setup-lint:
+	uv venv venv &&\
+	. venv/bin/activate &&\
+	uv pip install -r requirements-test.txt -r requirements-dev.txt \
+		-r racetrack_client/requirements.txt -e racetrack_client@racetrack_client \
+		-r racetrack_commons/requirements.txt -e racetrack_commons@racetrack_commons \
+		-r lifecycle/requirements.txt -e lifecycle@lifecycle \
+		-r image_builder/requirements.txt -e image_builder@image_builder \
+		-r dashboard/requirements.txt -e dashboard@dashboard
+	@echo Activate your venv: . venv/bin/activate
+
 install-racetrack-client:
 	( cd racetrack_client && pip install -e . )
 
