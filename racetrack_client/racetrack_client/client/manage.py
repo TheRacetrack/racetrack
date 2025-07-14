@@ -130,7 +130,7 @@ def complete_job_name(incomplete: str) -> List[str]:
         headers=get_auth_request_headers(user_auth),
     )
     jobs: List[Dict] = parse_response_list(r, 'Lifecycle response error')
-    job_names = [job.get('name') for job in jobs]
+    job_names = [job.get('name', '') for job in jobs]
 
     for name in job_names:
         if name.startswith(incomplete):

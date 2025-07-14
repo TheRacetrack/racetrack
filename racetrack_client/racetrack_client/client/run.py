@@ -27,13 +27,13 @@ def run_job_locally(
     lifecycle_url: str,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
     port: Optional[int] = None,
-    extra_vars: Dict[str, str] = None,
+    extra_vars: Optional[Dict[str, str]] = None,
     build_flags: List[str] = [],
     cmd: Optional[str] = None,
 ):
     client_config = load_client_config()
     manifest: Manifest = load_validated_manifest(workdir, extra_vars)
-    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
+    manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars or {})
 
     lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)
     user_auth = get_user_auth(client_config, lifecycle_url)
