@@ -26,7 +26,7 @@ def show_runtime_logs(name: str, version: str, remote: Optional[str], tail: int,
         headers=get_auth_request_headers(user_auth),
     )
     response = parse_response_object(r, 'Lifecycle response error')
-    exact_version = response.get('version')
+    exact_version = response.get('version', '')
 
     logger.info(f'Retrieving runtime logs of job "{name}" {exact_version} from {lifecycle_url}...')
 

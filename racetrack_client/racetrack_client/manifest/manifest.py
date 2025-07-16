@@ -103,7 +103,7 @@ class Manifest(BaseModel):
             'wrapper_properties': 'jobtype_extra:'
         }
 
-    def get_jobtype(self) -> str:
+    def get_jobtype(self) -> Optional[str]:
         return self.jobtype if self.jobtype else self.lang
 
     def get_jobtype_extra(self) -> Dict[str, Any]:
