@@ -17,7 +17,7 @@ class JobMonitor(ABC):
     def check_job_condition(self,
                             job: JobDto,
                             deployment_timestamp: int = 0,
-                            on_job_alive: Callable = None,
+                            on_job_alive: Callable | None = None,
                             logs_on_error: bool = True,
                             ):
         """

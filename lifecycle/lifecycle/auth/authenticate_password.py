@@ -26,9 +26,13 @@ def authenticate_user(username: str, password: str) -> Optional[User]:
             # difference between an existing and a nonexistent user
 
             make_password(password)
-        else:
-            if check_password(password, user.password) and user.is_active:
-                return user
+
+            return None
+        
+        if check_password(password, user.password) and user.is_active:
+            return user
+
+        return None
 
 
 class PermissionDenied(Exception):

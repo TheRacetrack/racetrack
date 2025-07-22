@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Type, TypeVar
+from typing import Any, Type, TypeVar, cast
 
 from lifecycle.database.base_engine import DbEngine
 from lifecycle.database.condition_builder import QueryCondition
@@ -447,11 +447,11 @@ class RecordMapper:
         for column in row.keys():
             assert column in valid_fields, \
                 f'retrieved column "{column}" is not a valid field for the model {table_type_name(table_type)}'
-        record_model = parse_typed_object(row, table_type)
+        record_model = cast(TableModel, parse_typed_object(row, table_type))
 
         # remember original values to keep track of changed fields
         setattr(record_model, '_original_fields', record_to_dict(record_model))
-        return record_model
+        return cast(T, record_model)
 
     def _extract_record_data(self, record_model: TableModel) -> dict[str, Any]:
         metadata = self._tables_metadata[type(record_model)]

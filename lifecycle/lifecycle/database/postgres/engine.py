@@ -221,9 +221,9 @@ class PgConnection(Connection):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def connect(cls, *args, **kwargs) -> "Connection":
+    def connect(cls, *args, **kwargs) -> "PgConnection":
         try:
-            return Connection.connect(*args, **kwargs)
+            return super(PgConnection, cls).connect(*args, **kwargs)
         except BaseException as e:
             metric_database_connection_failed.inc()
             log_exception(ContextError('Connection to database failed', e))

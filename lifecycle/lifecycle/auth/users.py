@@ -66,7 +66,7 @@ def register_user_account(username: str, password: str) -> tables.User:
     grant_permission(auth_subject, AuthScope.DEPLOY_JOB.value)
 
     logger.info(f'User account created: {username}')
-    return user
+    return user_record
 
 
 def change_user_password(username: str, old_password: str, new_password: str):
