@@ -9,7 +9,7 @@ from racetrack_client.log.context_error import ContextError
 
 
 T = TypeVar("T")
-U = TypeVar("U")
+
 
 def parse_typed_object(obj: Any, clazz: Type[T]) -> T | None:
     """
@@ -19,11 +19,11 @@ def parse_typed_object(obj: Any, clazz: Type[T]) -> T | None:
     """
     if obj is None:
         return None
-    
+
     # automatic type conversion
     if type(obj) is str and clazz is datetime:
         return cast(T, dt_parser.parse(obj).replace(tzinfo=timezone.utc))
-    
+
     if dataclasses.is_dataclass(clazz):
         assert isinstance(obj, dict), f'expected dict type to parse into a dataclass, got {type(obj)}'
         field_types = {field.name: field.type for field in dataclasses.fields(clazz)}
@@ -36,7 +36,7 @@ def parse_typed_object(obj: Any, clazz: Type[T]) -> T | None:
 
             dataclass_kwargs[key] = parse_typed_object(value, field_type)
         return cast(T, clazz(**dataclass_kwargs))
-    
+
     elif get_origin(clazz) in {Union, types.UnionType}:  # Union or Optional type
         union_types = get_args(clazz)
         left_types = []
@@ -52,13 +52,13 @@ def parse_typed_object(obj: Any, clazz: Type[T]) -> T | None:
         if len(left_types) > 1:
             raise ValueError(f'too many ambiguous union types {left_types} ({clazz}) matching to a given value: {obj}')
         return parse_typed_object(obj, left_types[0])
-    
+
     elif get_origin(clazz) is None and isinstance(obj, clazz):
         return cast(T, obj)
-    
+
     else:
         try:
-            return clazz(obj) #type: ignore
+            return clazz(obj)  # type: ignore
         except BaseException as e:
             raise ValueError(f'failed to parse "{obj}" ({type(obj)}) to type {clazz}: {e}')
 

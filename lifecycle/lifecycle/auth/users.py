@@ -41,7 +41,7 @@ def register_user_account(username: str, password: str) -> tables.User:
         pass
 
     user = LifecycleCache.record_mapper().create_from_dict(
-        tables.User, 
+        tables.User,
         {
             "username": username,
             "password": make_password(password),
