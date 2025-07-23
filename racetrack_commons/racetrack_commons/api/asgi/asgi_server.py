@@ -156,9 +156,9 @@ class ColoredAccessFormatter(logging.Formatter):
 
 class NeedlessRequestsFilter(logging.Filter):
     def filter(self, record: logging.LogRecord):
-        method: str = record.args[1]
-        uri: str = record.args[2]
-        response_code: int = record.args[4]
+        method: str = record.args[1]  # type: ignore
+        uri: str = record.args[2]  # type: ignore
+        response_code: int = record.args[4]  # type: ignore
         log_line = f'{method} {uri} {response_code}'
         if log_line in HIDDEN_ACCESS_LOGS:
             return False

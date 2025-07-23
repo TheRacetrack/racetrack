@@ -249,4 +249,4 @@ class AsyncJobCall(models.Model):
     retriable_error = models.BooleanField()
 
     def __str__(self):
-        return self.id
+        return str(self.id)

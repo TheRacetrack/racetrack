@@ -35,7 +35,7 @@ def setup_docs_endpoints(app: FastAPI):
             'doc_pages': sorted(doc_pages, key=lambda x: x['title'].lower()),
             'plugin_pages': sorted(plugin_pages, key=lambda x: x['title'].lower()),
         }
-    
+
     @app.get('/api/docs/page/{doc_path:path}')
     def _get_docs_page(doc_path: str) -> dict:
         docs_path = _get_docs_root_dir()
@@ -51,7 +51,7 @@ def setup_docs_endpoints(app: FastAPI):
             'doc_name': doc_path,
             'html_content': html,
         }
-    
+
     @app.get('/api/docs/plugin/{plugin_name}')
     def _get_docs_plugin_page(plugin_name: str) -> dict:
         plugin_client = LifecyclePluginClient()

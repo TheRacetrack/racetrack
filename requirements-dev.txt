@@ -1,7 +1,10 @@
 # Developer tools
-mypy==0.991
-flake8==6.0.0
-pylint==2.15.8
+mypy==1.16.1
+flake8==7.3.0
+pylint==3.3.7
 black==24.3.0
 twine==6.1.0
 wheel==0.38.4
+types-PyYAML==6.0.12
+types-python-dateutil==2.9.0.20250708
+types-Markdown==3.3.18

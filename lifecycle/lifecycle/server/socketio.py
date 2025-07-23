@@ -67,6 +67,8 @@ class SocketIOServer:
             except BaseException as e:
                 log_exception(e)
 
+                return ""
+
         @self.sio.event
         def disconnect(client_id: str):
             if client_id in self.log_sessions_by_client:
@@ -79,12 +81,15 @@ class SocketIOServer:
         logger.info(f'Creating log session for client: {client_id}')
         job_name = resource_properties['job_name']
         job_version = resource_properties['job_version']
-        tail = resource_properties.get('tail')
+        tail = resource_properties.get('tail', '')
         job = self.job_retriever.get_job(job_name, job_version)
         job_version = job.version  # contains resolved (non-aliased) version
         session_id = f'{client_id}_{job_name}_{job_version}'
 
         infrastructure = get_infrastructure_target(job.infrastructure_target)
+
+        if infrastructure.logs_streamer is None:
+            raise ValueError("logs streamer is None")
 
         session = LogSessionDetails(
             client_id=client_id,

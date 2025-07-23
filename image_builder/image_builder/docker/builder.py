@@ -57,7 +57,7 @@ class DockerBuilder(ImageBuilder):
         built_images: list[str] = []
         images_num = job_type.images_num
         for image_index in range(images_num):
-            progress = f'({image_index+1}/{images_num})'
+            progress = f'({image_index + 1}/{images_num})'
 
             try:
                 _build_job_image(
@@ -97,7 +97,7 @@ def _build_job_image(
     built_images: list[str],
     build_flags: list[str],
 ):
-    progress = f'({image_index+1}/{images_num})'
+    progress = f'({image_index + 1}/{images_num})'
     image_def: JobTypeImageDef = job_type.images[image_index]
     with phase_context(f'building image {progress}', metric_labels, deployment_id, config, metric_phase='building image'):
 
@@ -161,7 +161,7 @@ def _build_container_image(
         'DOCKER_BUILDKIT=1 docker buildx build',
         f'-t {image_name}',
         f'-f {dockerfile_path}',
-        f'--network=host',
+        '--network=host',
         f'--build-context {JOBTYPE_BUILD_CONTEXT}="{jobtype_dir}"',
     ]
     cmd_parts.extend(build_flags)

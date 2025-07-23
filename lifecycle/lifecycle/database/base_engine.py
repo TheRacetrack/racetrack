@@ -31,7 +31,7 @@ class DbEngine(ABC):
     - SQLite implementation: file://./sqlite/engine.py
     """
     query_builder: BaseQueryBuilder
-    
+
     def check_connection(self) -> None:
         pass
 

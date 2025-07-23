@@ -223,7 +223,7 @@ def _get_remote(
 
 
 @cli_get.command('pub')
-def _get_remote(
+def _get_pub(
     quiet: bool = typer.Option(False, '--quiet', '-q', help='print only the URL address'),
 ):
     """Get current Racetrack's Pub address"""

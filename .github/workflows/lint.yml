@@ -1,0 +1,24 @@
+name: lint
+on:
+  push
+jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '>=1.22'
+      - name: Install dependencies
+        run: make setup-lint
+      - name: Run lint
+        run: . venv/bin/activate && make lint

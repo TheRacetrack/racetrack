@@ -2,7 +2,8 @@ from abc import ABC
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Type, Callable
+from types import UnionType
+from typing import Any, Optional, Type, Callable
 import uuid
 
 
@@ -53,7 +54,7 @@ def table_type_name(cls: Type[TableModel] | TableModel) -> str:
 def table_metadata(cls: Type[TableModel] | TableModel) -> TableModel.Metadata:
     if isinstance(cls, TableModel):
         cls = type(cls)
-    metadata: TableModel.Metadata = getattr(cls, 'Metadata', None)
+    metadata: Optional[TableModel.Metadata] = getattr(cls, 'Metadata', None)
     assert metadata is not None, f'Metadata class not specified in {cls}'
 
     field_annotations: dict[str, type] = cls.__annotations__
@@ -91,8 +92,8 @@ def record_to_dict(self: TableModel) -> dict[str, Any]:
     raise ValueError(f"'{self.__class__.__name__}' is not a dataclass!")
 
 
-def build_column_type(annotation: type) -> ColumnType:
-    type_dict: dict[type, ColumnType] = {
+def build_column_type(annotation: type | UnionType) -> ColumnType:
+    type_dict: dict[type | UnionType, ColumnType] = {
         str: ColumnType.STRING,
         datetime: ColumnType.DATETIME,
         int: ColumnType.INT,
