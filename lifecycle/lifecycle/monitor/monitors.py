@@ -32,7 +32,7 @@ def check_job_condition(job: JobDto, on_job_alive: Callable):
     infrastructure = get_infrastructure_target(job.infrastructure_target)
 
     if infrastructure.job_monitor is None:
-                raise ValueError("job monitor is None")
+        raise ValueError("job monitor is None")
 
     infrastructure.job_monitor.check_job_condition(job, job.update_time,
                                                    on_job_alive, logs_on_error=True)
@@ -44,7 +44,7 @@ def read_recent_logs(job: JobDto, tail: int) -> str:
         infrastructure = get_infrastructure_target(job.infrastructure_target)
 
         if infrastructure.job_monitor is None:
-                raise ValueError("job monitor is None")
+            raise ValueError("job monitor is None")
 
         return infrastructure.job_monitor.read_recent_logs(job, tail=tail)
 

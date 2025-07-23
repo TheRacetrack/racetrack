@@ -70,7 +70,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
             return JSONResponse(content={'error': msg}, status_code=401)
 
         return Response(content='', status_code=202)
-    
+
     class JobCallAuthData(BaseModel):
         job: JobDto
         caller: str | None = None
@@ -93,7 +93,7 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
 
         endpoint = _normalize_endpoint_path(endpoint)
         job_model = models_registry.resolve_job_model(job_name, job_version)
-        
+
         try:
             auth_subject = _authorize_job_caller(job_model, endpoint, request)
             caller: str | None = get_description_from_auth_subject(auth_subject) if auth_subject else None
@@ -155,19 +155,19 @@ def setup_auth_endpoints(api: APIRouter, config: Config):
         """Generate new tokens for all Users"""
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         regenerate_all_user_tokens()
-        
+
     @api.post('/auth/token/job_family/regenerate')
     def _generate_tokens_for_all_job_families(request: Request):
         """Generate new tokens for all Job Families"""
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         regenerate_all_job_family_tokens()
-        
+
     @api.post('/auth/token/esc/regenerate')
     def _generate_tokens_for_all_escs(request: Request):
         """Generate new tokens for all ESCs"""
         check_auth(request, scope=AuthScope.CALL_ADMIN_API)
         regenerate_all_esc_tokens()
-        
+
 
 def _normalize_endpoint_path(endpoint: str) -> str:
     if endpoint.endswith('/'):
@@ -191,7 +191,7 @@ def _authorize_job_caller(job_model: tables.Job, endpoint: str, request: Request
     for public_endpoint in public_endpoints:
         if endpoint.startswith(public_endpoint):
             return None
-    
+
     scope = AuthScope.CALL_JOB.value
     token_payload, auth_subject = authenticate_token(request)
 
