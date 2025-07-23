@@ -47,6 +47,8 @@ def verify_manifest_consistency(submitted_yaml: str, workspace: Path, repo_dir: 
         logger.warning(warning)
         return warning
 
+    return None
+
 def _find_workspace_manifest_file(workspace: Path, repo_dir: Path) -> Optional[Path]:
     paths_to_check = [
         workspace / JOB_MANIFEST_FILENAME,
