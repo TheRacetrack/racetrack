@@ -53,7 +53,8 @@ def _startup(
 
 @cli.callback(invoke_without_command=True)
 def default(ctx: typer.Context):
-  typer.echo(ctx.get_help())
+  if ctx.invoked_subcommand is None:
+    typer.echo(ctx.get_help())
 
 @cli.command('deploy')
 def _deploy(
@@ -331,6 +332,3 @@ def _parse_key_value_pairs(extra_vars: Optional[List[str]]) -> Dict[str, str]:
         assert len(parts) == 2, f'cannot unpack key-value from "{var}"'
         key_values[parts[0]] = parts[1]
     return key_values
-
-if __name__ == '__main__':
-    main()
