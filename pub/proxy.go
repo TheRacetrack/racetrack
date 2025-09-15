@@ -61,11 +61,6 @@ func handleProxyRequest(
 ) (int, error) {
 	cfg := services.config
 
-	if c.Request.Method != "POST" && c.Request.Method != "GET" {
-		c.Writer.Header().Set("Allow", "GET, POST")
-		return http.StatusMethodNotAllowed, errors.New("Method not allowed")
-	}
-
 	jobName := c.Param("job")
 	if jobName == "" {
 		return http.StatusBadRequest, errors.New("Couldn't extract job name")
@@ -74,11 +69,6 @@ func handleProxyRequest(
 	jobVersion := c.Param("version")
 	if jobVersion == "" {
 		return http.StatusBadRequest, errors.New("Couldn't extract job version")
-	}
-
-	if c.Request.Header.Get("Accept") == "" {
-		return http.StatusBadRequest, errors.New("Missing 'Accept' header. " +
-			"You might wanted to include 'Accept: application/json, */*' request header.")
 	}
 
 	jobCall, callerName, statusCode, err := getAuthorizedJobDetails(c, services, requestId, jobName, jobVersion, jobPath)
