@@ -34,7 +34,7 @@ class EventStreamServer:
         class WebSocketResource:
             async def on_websocket(self, _: Request, ws: WebSocket):
                 await ws.accept()
-                logger.debug(f'Client connected to Event Stream')
+                logger.debug('Client connected to Event Stream')
                 metric_event_stream_client_connected.inc()
                 server.clients.append(ws)
 
@@ -48,7 +48,7 @@ class EventStreamServer:
                         logger.debug(f'Received websocket message: {message}')
 
                 finally:
-                    logger.debug(f'Client disconnected from Event Stream')
+                    logger.debug('Client disconnected from Event Stream')
                     metric_event_stream_client_disconnected.inc()
                     server.clients.remove(ws)
 
@@ -72,7 +72,7 @@ class EventStreamServer:
                 jobs = list_job_registry(self.config)
                 current_jobs: dict[str, JobDto] = {job.id: job for job in jobs}
                 if last_jobs is not None and current_jobs != last_jobs:
-                    logger.debug(f'Detected change in job models')
+                    logger.debug('Detected change in job models')
                     self.notify_clients({
                         'event': 'job_models_changed',
                     })

@@ -9,7 +9,6 @@ from image_builder.build import build_job_image
 from image_builder.health import health_response
 from image_builder.scheduler import schedule_tasks_async
 from racetrack_client.client_config.io import load_credentials_from_dict
-from racetrack_client.log.exception import log_exception
 from racetrack_client.log.logs import configure_logs
 from racetrack_client.manifest.load import load_manifest_from_dict
 from racetrack_client.utils.config import load_config

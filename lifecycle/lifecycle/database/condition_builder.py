@@ -10,7 +10,7 @@ class QueryCondition:
     @staticmethod
     def empty() -> 'QueryCondition':
         return QueryCondition('', [])
-    
+
     def is_empty(self) -> bool:
         return self.expression == ''
 
@@ -39,7 +39,7 @@ class QueryCondition:
         if self.is_empty():
             return None
         return [self.expression]
-    
+
     @property
     def filter_params(self) -> list[Any] | None:
         return self.params if self.params else None

@@ -101,6 +101,6 @@ def create_fastapi_docs(
         fastapi_app.openapi_schema = openapi_schema
         return fastapi_app.openapi_schema
 
-    fastapi_app.openapi = custom_openapi
+    fastapi_app.openapi = custom_openapi  # type: ignore
 
     return fastapi_app

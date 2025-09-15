@@ -20,7 +20,7 @@ def stream_result_with_heartbeat(result_runner: Callable[[], Dict]):
     """
     Return result dict in SSE (Server-Sent Events) response, streaming heartbeat events to keep the connection alive
     """
-    result_channel = queue.Queue(maxsize=0)
+    result_channel: queue.Queue[str] = queue.Queue(maxsize=0)
 
     def _runner():
         try:

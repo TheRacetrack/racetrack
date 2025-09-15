@@ -40,7 +40,7 @@ class DummyLogsStreamer(LogsStreamer):
         on_next_line(session_id, f'hello {job_name}')
 
         def in_background():
-            on_next_line(session_id, f'more logs')
+            on_next_line(session_id, 'more logs')
 
         Thread(target=in_background, daemon=True).start()
 
