@@ -1,0 +1,53 @@
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1m
+
+scrape_configs:
+  - job_name: postgres-exporter
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "postgres-exporter:9187"
+
+  - job_name: lifecycle
+    scheme: http
+    metrics_path: /metrics
+    dns_sd_configs:
+      - names: 
+          - 'lifecycle.lifecycle.racetrack.svc.cluster.local'
+        type: A
+        port: 7002
+
+  - job_name: lifecycle-supervisor
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "lifecycle-supervisor:7006"
+
+  - job_name: image-builder
+    scheme: http
+    metrics_path: /metrics
+    dns_sd_configs:
+      - names: 
+          - 'image-builder.image-builder.racetrack.svc.cluster.local'
+        type: A
+        port: 7001
+
+  - job_name: pub
+    scheme: http
+    metrics_path: /metrics
+    dns_sd_configs:
+      - names: 
+          - 'pub.pub.racetrack.svc.cluster.local'
+        type: A
+        port: 7005
+
+  - job_name: racetrack-jobs
+    scheme: http
+    metrics_path: /metrics
+    file_sd_configs:
+      - files:
+        - '/mnt/plugins/metrics/sd_config_jobs.yaml'
+        refresh_interval: 1m
