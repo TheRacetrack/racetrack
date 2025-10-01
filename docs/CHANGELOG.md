@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.36.0] - 2025-09-26
+### Added
+- Websocket traffic is supported for Racetrack jobs.
+  ([#592](https://github.com/TheRacetrack/racetrack/pull/592))
+
 ## [2.35.1] - 2025-03-20
 ### Added
 - Names of the foreign objects in the Records table are displayed next to their IDs.
