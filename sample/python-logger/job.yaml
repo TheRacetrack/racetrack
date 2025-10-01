@@ -1,0 +1,15 @@
+name: python-logger
+version: 0.0.1
+owner_email: sample@example.com
+jobtype: python3:latest
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/python-logger
+
+python:
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'JobEntrypoint'
+
+runtime_env:
+  LOG_CALLER_NAME: 'true'

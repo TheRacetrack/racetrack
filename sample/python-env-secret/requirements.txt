@@ -1,0 +1,1 @@
+git+https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/TheRacetrack/job-runner-python-lib.git@master

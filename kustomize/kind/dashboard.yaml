@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: dashboard
+  labels:
+    app.kubernetes.io/name: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dashboard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dashboard
+    spec:
+      hostname: dashboard
+      subdomain: dashboard
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app.kubernetes.io/name"
+                      operator: In
+                      values:
+                        - dashboard
+                topologyKey: kubernetes.io/hostname
+      priorityClassName: high-priority
+      containers:
+        - name: dashboard
+          image: racetrack-registry:5000/racetrack/dashboard:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7003
+          tty: true
+          envFrom:
+            - configMapRef:
+                name: postgres-env
+            - configMapRef:
+                name: lifecycle-env
+          env:
+            - name: LIFECYCLE_URL
+              value: 'http://lifecycle:7002/lifecycle'
+            - name: EXTERNAL_LIFECYCLE_URL
+              value: 'http://127.0.0.1:7002/lifecycle'
+            - name: EXTERNAL_PUB_URL
+              value: 'http://127.0.0.1:7005/pub'
+            - name: EXTERNAL_GRAFANA_URL
+              value: 'http://127.0.0.1:3000'
+            - name: DJANGO_DEBUG
+              value: 'true'
+            - name: AUTH_REQUIRED
+              value: 'true'
+            - name: DASHBOARD_PORT
+              value: '7003'
+            - name: SITE_NAME
+              value: 'dev'
+            - name: PUBLIC_IP
+              value: ''
+              valueFrom: null
+            - name: CLUSTER_FQDN
+              value: ''
+              valueFrom: null
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 7003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 7003
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: dashboard
+  labels:
+    app.kubernetes.io/name: dashboard
+spec:
+  selector:
+    app.kubernetes.io/name: dashboard
+  type: NodePort
+  ports:
+    - name: dashboard
+      nodePort: 30003
+      port: 7003
+      targetPort: 7003
