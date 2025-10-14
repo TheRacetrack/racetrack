@@ -37,7 +37,6 @@ def read_secret_vars_from_file(workdir: str, secret_env_file: Optional[str], var
 def read_env_vars_from_file(path: Path) -> Dict[str, str]:
     with wrap_context('reading vars from env file'):
         config = ConfigParser()
-        config.optionxform = str
         config.read_string("[config]\n" + path.read_text())
         env_dict = dict()
         for k, v in config["config"].items():

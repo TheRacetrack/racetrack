@@ -78,6 +78,9 @@ def shell(
 
         if read_bytes:
             while True:
+                if process.stdout is None:
+                    raise CommandError(cmd, 'could not read stdout', process.returncode)
+
                 chunk: bytes = process.stdout.read(1)
                 if chunk == b'':
                     break
@@ -91,6 +94,9 @@ def shell(
                 captured_stream.write(chunk_str)
 
         else:
+            if process.stdout is None:
+                raise CommandError(cmd, 'could not read stdout', process.returncode)
+
             for line in iter(process.stdout.readline, b''):
                 line_str = line.decode()
 
@@ -118,7 +124,7 @@ class CommandOutputStream:
     def __init__(self,
                  cmd: str,
                  on_next_line: Callable[[str], None],
-                 on_error: Callable[['CommandError'], None] = None,
+                 on_error: Optional[Callable[['CommandError'], None]] = None,
                  workdir: Optional[Path] = None,
                  print_stdout: bool = False):
         """

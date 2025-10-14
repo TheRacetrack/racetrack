@@ -1,6 +1,6 @@
 from pathlib import Path
 import fnmatch
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 
 DEFAULT_IGNORE_PATTERNS = [
     '*.zip',
@@ -28,7 +28,7 @@ class FilenameMatcher:
         -whole_dir/but_this/without_that
     """
 
-    def __init__(self, file_patterns: List[str] = None, apply_defaults: bool = True) -> None:
+    def __init__(self, file_patterns: Optional[List[str]] = None, apply_defaults: bool = True) -> None:
         self.patterns: List[str] = []
 
         if file_patterns:

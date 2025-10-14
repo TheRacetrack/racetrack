@@ -65,7 +65,7 @@ def send_deploy_request(
     lifecycle_url: Optional[str] = None,
     force: bool = False,
     build_context_method: BuildContextMethod = BuildContextMethod.default,
-    extra_vars: Dict[str, str] = None,
+    extra_vars: Optional[Dict[str, str]] = None,
     build_flags: List[str] = [],
 ):
     """
@@ -90,7 +90,7 @@ def send_deploy_request(
         if client_config is None:
             client_config = load_client_config()
         manifest: Manifest = load_validated_manifest(workdir, extra_vars)
-        manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars)
+        manifest_dict: Dict = load_merged_manifest_dict(get_manifest_path(workdir), extra_vars or {})
         logger.debug(f'Manifest loaded: {manifest}')
 
         lifecycle_url = resolve_lifecycle_url(client_config, lifecycle_url)

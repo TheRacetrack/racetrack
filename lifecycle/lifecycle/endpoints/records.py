@@ -167,7 +167,7 @@ def list_table_records(mapper: RecordMapper, payload: FetchManyRecordsRequest, t
     filters = parse_dict_typed_values(payload.filters or {}, table_type)
     columns = payload.columns or metadata.fields
     records: list[dict] = mapper.filter_dicts(
-        table_type, columns=payload.columns,  filters=filters, order_by=payload.order_by,
+        table_type, columns=payload.columns, filters=filters, order_by=payload.order_by,
         offset=payload.offset, limit=payload.limit)
     record_payloads: list[RecordFieldsPayload] = [
         RecordFieldsPayload(fields=convert_to_json_serializable(record))

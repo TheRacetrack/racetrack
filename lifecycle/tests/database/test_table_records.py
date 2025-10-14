@@ -45,7 +45,7 @@ def test_record_operations():
 
     mapper.delete(JobFamily, id=record_id)
     assert mapper.count(JobFamily) == 0
-    
+
     try:
         mapper.delete(JobFamily, id=record_id)
         assert False, 'it should raise NoRowsAffected exception'

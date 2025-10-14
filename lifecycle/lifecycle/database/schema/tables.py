@@ -339,7 +339,7 @@ class AsyncJobCall(TableModel):
     attempts: int
     pub_instance_addr: str
     retriable_error: bool
-    
+
     def __str__(self):
         return self.id
 

@@ -16,7 +16,7 @@ def clean_up_async_job_calls(config: Config):
     mapper = LifecycleCache.record_mapper()
     condition = QueryCondition(f'started_at < {mapper.placeholder}', older_than)
     records = mapper.filter(tables.AsyncJobCall, condition=condition)
-    
+
     if records:
         for record in records:
             mapper.delete_record(record)
