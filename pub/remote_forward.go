@@ -94,6 +94,6 @@ func handleRemoteForwardRequest(
 		"targetUrl":       targetUrl.String(),
 	})
 
-	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName, startTime)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName, startTime, jobVersion == versionLatest)
 	return http.StatusOK, nil
 }

@@ -78,6 +78,7 @@ func handleMasterProxyRequest(
 	job *JobDetails,
 	callerName string,
 	startTime time.Time,
+	isCallingLatest bool,
 ) (int, error) {
 	gatewayUrlTxt := *jobCall.RemoteGatewayUrl
 	gatewayUrl, err := url.Parse(gatewayUrlTxt)
@@ -109,7 +110,7 @@ func handleMasterProxyRequest(
 		"jobInternalName":      job.InternalName,
 	})
 
-	ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName, startTime)
+	ServeReverseProxy(*targetUrl, c, job, cfg, logger, requestId, callerName, startTime, isCallingLatest)
 	return http.StatusOK, nil
 }
 
