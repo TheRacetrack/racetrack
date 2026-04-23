@@ -18,6 +18,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+const versionLatest string = "latest"
+
 var defaultJobProxyTransport http.RoundTripper = defaultHttpTransport()
 
 func proxyEndpoint(c *gin.Context, services *Services, jobPath string) {
@@ -94,13 +96,13 @@ func handleProxyRequest(
 	metricJobProxyRequests.WithLabelValues(job.Name, job.Version).Inc()
 
 	if !cfg.RemoteGatewayMode && jobCall.RemoteGatewayUrl != nil {
-		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName, startTime)
+		return handleMasterProxyRequest(c, cfg, logger, requestId, jobPath, jobCall, job, callerName, startTime, jobVersion == versionLatest)
 	}
 
 	urlPath := JoinURL("/pub/job/", job.Name, job.Version, jobPath)
 	targetUrl := TargetURL(cfg, job, urlPath)
 
-	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName, startTime)
+	ServeReverseProxy(targetUrl, c, job, cfg, logger, requestId, callerName, startTime, jobVersion == versionLatest)
 	return http.StatusOK, nil
 }
 
@@ -126,6 +128,7 @@ func ServeReverseProxy(
 	requestId string,
 	callerName string,
 	startTime time.Time,
+	isCallingLatest bool,
 ) {
 
 	director := func(req *http.Request) {
@@ -150,6 +153,13 @@ func ServeReverseProxy(
 			if err == nil {
 				redirectUrl.Host = ""
 				redirectUrl.Scheme = ""
+
+				if isCallingLatest {
+					redirectUrl.Path = strings.Replace(redirectUrl.Path, "/"+job.Version, "/"+versionLatest, 1)
+					// clear RawPath to make sure there is no mismatch after changing Path
+					redirectUrl.RawPath = ""
+				}
+				
 				res.Header.Set("Location", redirectUrl.String())
 			}
 		}
