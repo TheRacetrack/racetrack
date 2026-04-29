@@ -376,6 +376,19 @@ Or use `racetrack` CLI:
 racetrack call primer /api/v1/perform '{"number": 7907}'
 ```
 
+
+### Wildcards:
+Racetrack supports wildcards for the semantic version of a job. This is particularly handy for External Service Consumers to automatically stay up to date with updates and patches on a specific version, or stick with a lower version number to avoid breaking changes when a new major version is released. The wildcard is lower case x.
+
+- keyword "latest" will always get the latest version of the job as seen in url above. Beware of breaking changes.
+- Wildcards can be used in the specification of the job version, like so:
+`../pub/job/primer/3.1.x/api..`
+`../pub/job/primer/1.x.x/api..`
+`../pub/job/primer/1.x/api..`
+`../pub/job/primer/x/api..`
+
+
+
 ## FAQ
 
 ### I've submitted a job, where can I see if it's ready?
