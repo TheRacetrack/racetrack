@@ -2,13 +2,20 @@ import dataclasses
 import json
 from datetime import datetime, timezone
 from dateutil import parser as dt_parser
-from typing import Type, TypeVar, Union, Any, cast, get_origin, get_args, overload
+from typing import Type, TypeGuard, TypeVar, Union, Any, cast, get_origin, get_args, overload
 import types
 
 from racetrack_client.log.context_error import ContextError
 
 
 T = TypeVar("T")
+
+
+# there is a lie here - UnionType is not strictly a 'type', but in ways important to us it does behave like it
+def is_type_or_union(field_type: Any) -> TypeGuard[type]:
+    if isinstance(field_type, type):
+        return True
+    return get_origin(field_type) in {Union, types.UnionType}
 
 
 # overload definitions are strictly for typing only
@@ -45,8 +52,8 @@ def parse_typed_object(obj: Any, clazz: Type[T]) -> T | None:
                 raise KeyError(f'unexpected field "{key}" provided to type {clazz}')
 
             field_type = field_types[key]
-            if not isinstance(field_type, type):
-                raise KeyError(f'field types need to be actual instances of \'type\', but field type for {key} is {field_type!r} ({type(field_type).__name__}')
+            if not is_type_or_union(field_type):
+                raise KeyError(f'field types need to be actual instances of \'type\', but field type for {key} is {field_type!r} {type(field_type).__name__}')
 
             dataclass_kwargs[key] = parse_typed_object(value, field_type)
         # after type narrowing typing lost information that clazz is type[T]
@@ -96,8 +103,8 @@ def parse_dict_typed_values(data: dict[str, Any], clazz: Type[T]) -> dict[str, A
             raise KeyError(f'unexpected field "{key}" provided for type {clazz}')
 
         field_type = field_types[key]
-        if not isinstance(field_type, type):
-            raise KeyError(f'field types need to be actual instances of \'type\', but field type for {key} is {field_type!r} ({type(field_type).__name__}')
+        if not is_type_or_union(field_type):
+            raise KeyError(f'field types need to be actual instances of \'type\', but field type for {key} is {field_type!r} {type(field_type).__name__}')
 
         typed_data[key] = parse_typed_object(value, field_type)
     return typed_data
