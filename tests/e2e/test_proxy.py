@@ -46,21 +46,22 @@ def test_latest_version_redirect():
     esc_token = erc.get_esc_auth_token(esc.id)
 
     pub_url = os.environ['PUB_URL']
-    url = f'{pub_url}/job/adder/latest'
-
     opener = urllib_request.build_opener(_NoRedirectHandler())
-    req = urllib_request.Request(url, method='GET')
-    req.add_header(RT_AUTH_HEADER, esc_token)
 
-    try:
-        response = opener.open(req)
-        status = response.status
-        location = response.headers.get('Location')
-    except HTTPError as e:
-        status = e.code
-        location = e.headers.get('Location')
+    for version in ('latest', '0.0.x'):
+        url = f'{pub_url}/job/adder/{version}'
+        req = urllib_request.Request(url, method='GET')
+        req.add_header(RT_AUTH_HEADER, esc_token)
 
-    assert 300 <= status < 400, f'expected redirect response, got {status}'
-    assert location is not None, 'missing Location header'
-    assert '/pub/job/adder/latest' in location, f'unexpected location, got: {location!r}'
-    
+        try:
+            response = opener.open(req)
+            status = response.status
+            location = response.headers.get('Location')
+        except HTTPError as e:
+            status = e.code
+            location = e.headers.get('Location')
+
+        assert 300 <= status < 400, f'expected redirect response for {version}, got {status}'
+        assert location is not None, f'missing Location header for {version}'
+        assert f'/pub/job/adder/{version}' in location, f'unexpected location for {version}, got: {location!r}'
+

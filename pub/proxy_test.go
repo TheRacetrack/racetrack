@@ -21,7 +21,7 @@ func TestServeReverseProxy(t *testing.T) {
 		_, _ = io.WriteString(w, "hello from "+r.URL.Path)
 	})
 
-	mux.HandleFunc("/pub/job/adder/0.0.1/redirect-me", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/pub/job/adder/0.0.1", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "http://"+r.Host+"/pub/job/adder/0.0.1/api/v1/perform", http.StatusFound)
 	})
 
@@ -44,13 +44,20 @@ func TestServeReverseProxy(t *testing.T) {
 
 	router := gin.New()
 	router.Any("/pub/job/:job/:version/*path", func(c *gin.Context) {
-		isCallingLatest := c.Param("version") == "latest"
 		target := url.URL{
 			Scheme: jobURL.Scheme,
 			Host:   jobURL.Host,
 			Path:   "/pub/job/" + jobDetails.Name + "/" + jobDetails.Version + c.Param("path"),
 		}
-		ServeReverseProxy(target, c, jobDetails, cfg, log.New(), "trace-123", "bob", time.Now(), isCallingLatest)
+		ServeReverseProxy(target, c, jobDetails, cfg, log.New(), "trace-123", "bob", time.Now(), c.Param("version"))
+	})
+	router.Any("/pub/job/:job/:version", func(c *gin.Context) {
+		target := url.URL{
+			Scheme: jobURL.Scheme,
+			Host:   jobURL.Host,
+			Path:   "/pub/job/" + jobDetails.Name + "/" + jobDetails.Version,
+		}
+		ServeReverseProxy(target, c, jobDetails, cfg, log.New(), "trace-123", "bob", time.Now(), c.Param("version"))
 	})
 	server := httptest.NewServer(router)
 	defer server.Close()
@@ -72,11 +79,18 @@ func TestServeReverseProxy(t *testing.T) {
 			return http.ErrUseLastResponse
 		},
 	}
-	res, err = client.Get(server.URL + "/pub/job/adder/latest/redirect-me")
+	res, err = client.Get(server.URL + "/pub/job/adder/latest")
 	assert.NoError(t, err)
 	res.Body.Close()
 
 	assert.Equal(t, http.StatusFound, res.StatusCode)
 	assert.Equal(t, "/pub/job/adder/latest/api/v1/perform", res.Header.Get("Location"))
-	
+
+	res, err = client.Get(server.URL + "/pub/job/adder/0.0.x")
+	assert.NoError(t, err)
+	res.Body.Close()
+
+	assert.Equal(t, http.StatusFound, res.StatusCode)
+	assert.Equal(t, "/pub/job/adder/0.0.x/api/v1/perform", res.Header.Get("Location"))
+
 }
