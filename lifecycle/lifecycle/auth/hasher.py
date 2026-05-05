@@ -21,6 +21,7 @@ def make_password(password: str) -> str:
     return hasher.encode(password, salt)
 
 
+# defined purely for typing since there is no suitable type defined in hashlib
 class Hash(Protocol):
     def __call__(self, string: ReadableBuffer = b"", *, usedforsecurity: bool = True) -> hashlib._Hash:
         ...

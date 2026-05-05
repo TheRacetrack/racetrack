@@ -37,7 +37,7 @@ def create_default_superuser(apps, schema_editor):
     with DisableSignals():
         try:
             user = User.objects.get(username='admin')
-        except User.DoesNotExist:  # pylint: disable=E1101
+        except User.DoesNotExist:
             user = User()
             user.is_active = True
             user.is_superuser = True

@@ -29,6 +29,7 @@ metric_requests_done = Counter(
 def setup_metrics_endpoint(api: FastAPI):
 
     metrics_app = make_wsgi_app(REGISTRY)
+    # a2wsgi declares stricter signature, but it is still compatible
     api.mount('/metrics', WSGIMiddleware(metrics_app))  # type: ignore
     TrailingSlashForwarder.mount_path('/metrics')
 

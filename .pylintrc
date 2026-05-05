@@ -1,0 +1,6 @@
+[MASTER]
+load-plugins=pylint_django
+django-settings-module=lifecycle.django.app.settings
+
+[MESSAGES CONTROL]
+disable=imported-auth-user
