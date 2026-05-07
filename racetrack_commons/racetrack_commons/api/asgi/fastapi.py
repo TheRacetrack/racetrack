@@ -101,6 +101,7 @@ def create_fastapi_docs(
         fastapi_app.openapi_schema = openapi_schema
         return fastapi_app.openapi_schema
 
-    fastapi_app.openapi = custom_openapi
+    # it's a bit dirty to assign a function in place of an existing method
+    fastapi_app.openapi = custom_openapi  # type: ignore[method-assign]
 
     return fastapi_app

@@ -25,13 +25,19 @@ logger: logging.Logger = logging.getLogger('racetrack')
 
 def configure_logs(log_level: Optional[str] = None):
     """Configure root logger with a log level"""
-    log_level = log_level or os.environ.get('LOG_LEVEL', 'debug')
-    level = _parse_logging_level(log_level)
+    log_level_str: str
+    if log_level:
+        log_level_str = log_level
+    else:
+        log_level_str = os.environ.get('LOG_LEVEL', 'debug')
+    level: int = _parse_logging_level(log_level_str)
     # Set root level to INFO to avoid printing a ton of garbage DEBUG logs from imported libraries
     log_format = LOG_FORMAT_DEBUG if debug_format_enabled else LOG_FORMAT
     logging.basicConfig(stream=sys.stdout, format=log_format, level=logging.INFO, datefmt=LOG_DATE_FORMAT, force=True)
 
     original_formatter = logging.getLogger().handlers[0].formatter
+
+    formatter: logging.Formatter
     if structured_logs_on:
         formatter = StructuredFormatter()
     else:

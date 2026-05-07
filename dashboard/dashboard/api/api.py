@@ -1,7 +1,7 @@
 import os
 
 import httpx
-from fastapi import FastAPI, Request, Response, Body
+from fastapi import FastAPI, Request, Body
 from starlette.background import BackgroundTask
 from starlette.responses import StreamingResponse
 from starlette.datastructures import MutableHeaders
@@ -30,7 +30,7 @@ def setup_api_endpoints(app: FastAPI):
             'grafana_url': get_external_grafana_url(),
             'site_name': os.environ.get('SITE_NAME', ''),
         }
-    
+
     setup_docs_endpoints(app)
     setup_proxy_endpoints(app)
 
@@ -40,7 +40,7 @@ def setup_proxy_endpoints(app: FastAPI):
     lifecycle_api_url = trim_url(os.environ.get('LIFECYCLE_URL', 'http://127.0.0.1:7202'))
     logger.info(f'Forwarding API requests to "{lifecycle_api_url}"')
     client = httpx.AsyncClient(base_url=f"{lifecycle_api_url}/")
-    
+
     async def _proxy_api_call(request: Request, path: str, payload=Body(default={})):
         """Forward API call to Lifecycle service"""
         subpath = f'/api/v1/{request.path_params["path"]}'

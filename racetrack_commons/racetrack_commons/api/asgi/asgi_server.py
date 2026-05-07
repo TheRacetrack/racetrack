@@ -3,7 +3,7 @@ import signal
 import sys
 import threading
 import time
-from typing import Union, Callable, Optional
+from typing import Any, Union, Callable, Optional
 import logging
 
 import uvicorn
@@ -156,9 +156,10 @@ class ColoredAccessFormatter(logging.Formatter):
 
 class NeedlessRequestsFilter(logging.Filter):
     def filter(self, record: logging.LogRecord):
-        method: str = record.args[1]
-        uri: str = record.args[2]
-        response_code: int = record.args[4]
+        args: Any = record.args
+        method: Any = args[1]
+        uri: Any = args[2]
+        response_code: Any = args[4]
         log_line = f'{method} {uri} {response_code}'
         if log_line in HIDDEN_ACCESS_LOGS:
             return False

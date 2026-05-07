@@ -18,7 +18,6 @@ from image_builder.phase import phase_context
 from image_builder.progress import update_deployment_phase
 from image_builder.verify import verify_manifest_consistency
 from image_builder.warnings import update_deployment_warnings
-from racetrack_client.client.env import merge_env_vars
 from racetrack_client.client_config.client_config import Credentials
 from racetrack_client.log.context_error import wrap_context
 from racetrack_client.log.logs import get_logger

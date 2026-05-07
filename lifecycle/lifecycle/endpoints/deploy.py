@@ -128,7 +128,6 @@ def setup_deploy_endpoints(api: APIRouter, config: Config, plugin_engine: Plugin
         check_auth(request)
         save_deployment_phase(deploy_id, payload.phase)
 
-
     class DeploymentWarnings(BaseModel):
         warnings: str = Field(description='deployment warnings')
 

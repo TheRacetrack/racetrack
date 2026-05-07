@@ -21,4 +21,3 @@ def test_health_version_endpoint():
     obj = response.json()
     assert obj['git_version'] == '0.0.1-g32c4b29-dirty'
     assert obj['live'] is True
-

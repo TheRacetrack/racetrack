@@ -10,7 +10,7 @@ from lifecycle.server.cache import LifecycleCache
 def check_until_job_is_operational(
     base_url: str,
     deployment_timestamp: int = 0,
-    on_job_alive: Callable = None,
+    on_job_alive: Callable | None = None,
     headers: dict[str, str] | None = None,
 ):
     """

@@ -11,7 +11,7 @@ class DatabaseWrapper(base.DatabaseWrapper):
     """Subclass of django.db.backends.postgresql.base.DatabaseWrapper, measuring connection statistics"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
+
     def get_new_connection(self, conn_params):
         try:
             connection: Connection = super().get_new_connection(conn_params)

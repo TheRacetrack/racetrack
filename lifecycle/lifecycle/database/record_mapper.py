@@ -81,7 +81,7 @@ class RecordMapper:
             order_by=order_by,
         )
         return [self._convert_row_to_record_model(row, table_type) for row in rows]
-    
+
     def filter(
         self,
         table_type: Type[T],
@@ -226,7 +226,7 @@ class RecordMapper:
             filter_params=filter_params,
         )
         return row is not None
-    
+
     def exists_on_condition(
         self,
         table_type: Type[T],

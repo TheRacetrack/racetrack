@@ -41,7 +41,7 @@ class PostgresEngine(DbEngine):
             name='lifecycle',  # name to give to the pool, useful, for instance, to identify it in the logs
             timeout=5,  # The default maximum time in seconds that a client can wait to receive a connection from the pool
             max_waiting=0,  # Maximum number of requests that can be queued to the pool, after which new requests will fail, raising TooManyRequests. 0 means no queue limit.
-            max_lifetime=10*60,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
+            max_lifetime=10 * 60,  # The maximum lifetime of a connection in the pool, in seconds. Connections used for longer get closed and replaced by a new one.
             max_idle=60,  # Maximum time, in seconds, that a connection can stay unused in the pool before being closed, and the pool shrunk
             reconnect_timeout=5,  # Maximum time, in seconds, the pool will try to create a connection. If a connection attempt fails, the pool will try to reconnect a few times, using an exponential backoff and some random factor to avoid mass attempts. If repeated attempts fail, after reconnect_timeout second the connection attempt is aborted and the reconnect_failed() callback invoked
             reconnect_failed=self._on_reconnect_failed,  # Callback invoked if an attempt to create a new connection fails for more than reconnect_timeout seconds
@@ -77,7 +77,7 @@ class PostgresEngine(DbEngine):
 
     def _on_reset_connection(self, _: Connection) -> None:
         metric_database_connection_closed.inc()
-    
+
     def check_connection(self) -> None:
         try:
             conn_params = get_connection_params()
@@ -221,9 +221,9 @@ class PgConnection(Connection):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def connect(cls, *args, **kwargs) -> "Connection":
+    def connect(cls, *args, **kwargs) -> "PgConnection":
         try:
-            return Connection.connect(*args, **kwargs)
+            return super(PgConnection, cls).connect(*args, **kwargs)
         except BaseException as e:
             metric_database_connection_failed.inc()
             log_exception(ContextError('Connection to database failed', e))

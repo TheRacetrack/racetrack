@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing_extensions import Any
 
 import backoff
 
@@ -138,12 +139,12 @@ def _parse_job_type_definition(
     )
 
     if isinstance(job_type_value, dict):
-        images_dicts: list[dict] = job_type_value.get('images', [])
+        images_dicts: list[dict[str, Any]] = job_type_value.get('images', [])
         for images_dict in images_dicts:
             source: str = images_dict.get('source', 'jobtype')
             assert source in {'jobtype', 'job'}, "'source' can be either 'jobtype' or 'job'"
             source_enum = ImageSourceLocation(source)
-            dockerfile_path_str: str = images_dict.get('dockerfile_path')
+            dockerfile_path_str: str = images_dict.get('dockerfile_path', '')
             assert dockerfile_path_str, '"dockerfile_path" is not specified in job type data'
             dockerfile_path = Path(dockerfile_path_str)
             if source_enum == ImageSourceLocation.jobtype:

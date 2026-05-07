@@ -132,6 +132,7 @@ def _load_plugin_class(plugin_dir: Path, config_path: Path, plugin_manifest: Plu
         with wrap_context(f'loading plugin class'):
             module_name = f'racetrack_plugin_{random.randint(0, 999999)}'
             spec = importlib.util.spec_from_file_location(module_name, plugin_filename)
+            assert spec is not None, 'no module spec'
             ext_module = importlib.util.module_from_spec(spec)
             loader: Optional[Loader] = spec.loader
             assert loader is not None, 'no module loader'

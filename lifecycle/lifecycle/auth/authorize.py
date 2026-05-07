@@ -243,7 +243,7 @@ def list_permitted_jobs(
         family_to_job_ids[job.name].append(job.id)
 
     job_ids = set()
-    for permission in permissions: 
+    for permission in permissions:
         if permission.job_family_id is None and permission.job_id is None:
             return all_jobs
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from typing import Dict
+from typing import Dict, Optional
 
 from jsonschema import validate
 
@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 
 def load_validated_manifest(
     path: str,
-    extra_vars: Dict[str, str] = None,
+    extra_vars: Optional[Dict[str, str]] = None,
 ) -> Manifest:
     """
     Load and validate manifest from a path. Raise exception in case of a defect.
@@ -51,7 +51,7 @@ def validate_manifest(manifest: Manifest):
 
 def validate_and_show_manifest(
     path: str,
-    extra_vars: Dict[str, str] = None,
+    extra_vars: Optional[Dict[str, str]] = None,
 ):
     manifest = load_validated_manifest(path, extra_vars)
     logger.info(f'Manifest file "{path}" is valid')
