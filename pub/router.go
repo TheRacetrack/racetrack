@@ -19,7 +19,7 @@ func ListenAndServe(cfg *Config) error {
 	gin.SetMode(gin.ReleaseMode) // Hide Debug Routings
 	router := gin.New()
 	router.Use(gin.CustomRecovery(recoverPanic))
-
+	
 	services := InitServices(cfg)
 
 	// Serve endpoints at raw path (when accessed internally, eg "/metrics")

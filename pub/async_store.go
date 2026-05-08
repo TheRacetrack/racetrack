@@ -23,6 +23,7 @@ type AsyncTaskStore struct {
 	replicaDiscovery      *replicaDiscovery
 	cleanUpTimeout        time.Duration
 	taskStorage           TaskStorage
+	cleanUpQuitChannel    chan bool
 }
 
 type AsyncTask struct {
@@ -65,7 +66,7 @@ const (
 
 var ErrAsyncTaskNotFound = errors.New("Async task not found")
 
-func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStorage) *AsyncTaskStore {
+func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStorage, retentionPeriod time.Duration) *AsyncTaskStore {
 	store := &AsyncTaskStore{
 		localTasks: make(map[string]*AsyncTask),
 		jobHttpClient: &http.Client{
@@ -80,10 +81,11 @@ func NewAsyncTaskStore(replicaDiscovery *replicaDiscovery, taskStorage TaskStora
 			Timeout:   5 * time.Second,
 			Transport: defaultAsyncReplicaTransport,
 		},
-		longPollTimeout:  30 * time.Second,
-		cleanUpTimeout:   125 * time.Minute,
-		replicaDiscovery: replicaDiscovery,
-		taskStorage:      taskStorage,
+		longPollTimeout:    30 * time.Second,
+		cleanUpTimeout:     retentionPeriod,
+		replicaDiscovery:   replicaDiscovery,
+		taskStorage:        taskStorage,
+		cleanUpQuitChannel: make(chan bool, 1),
 	}
 	go store.cleanUpRoutine()
 	return store
@@ -142,29 +144,35 @@ func (s *AsyncTaskStore) DeleteLocalTask(taskId string) {
 }
 
 func (s *AsyncTaskStore) cleanUpRoutine() {
-	for {
-		time.Sleep(5 * time.Minute)
-		s.rwMutex.Lock()
-		for taskId, task := range s.localTasks {
-			if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
-				log.Info("Cleaning up obsolete async call task", log.Ctx{
-					"taskId":     task.Id,
-					"started_at": task.startedAt,
-				})
-				delete(s.localTasks, taskId)
+	ticker := time.NewTicker(5 * time.Minute)
 
-				go func(task *AsyncTask) {
-					err := s.DeleteTask(task.Id)
-					if err != nil {
-						log.Error("Failed to delete obsolete async task", log.Ctx{
-							"taskId": task.Id,
-							"error":  err.Error(),
-						})
-					}
-				}(task)
+	for {
+		select {
+		case <-s.cleanUpQuitChannel:
+			return
+		case <-ticker.C:
+			s.rwMutex.Lock()
+			for taskId, task := range s.localTasks {
+				if task.startedAt.Add(s.cleanUpTimeout).Before(time.Now()) {
+					log.Info("Cleaning up obsolete async call task", log.Ctx{
+						"taskId":     task.Id,
+						"started_at": task.startedAt,
+					})
+					delete(s.localTasks, taskId)
+
+					go func(task *AsyncTask) {
+						err := s.DeleteTask(task.Id)
+						if err != nil {
+							log.Error("Failed to delete obsolete async task", log.Ctx{
+								"taskId": task.Id,
+								"error":  err.Error(),
+							})
+						}
+					}(task)
+				}
 			}
+			s.rwMutex.Unlock()
 		}
-		s.rwMutex.Unlock()
 	}
 }
 
@@ -179,6 +187,10 @@ func (s *AsyncTaskStore) CancelOngoingRequests() {
 		default:
 		}
 	}
+}
+
+func (s *AsyncTaskStore) CancelCleanUp() {
+	s.cleanUpQuitChannel <- true
 }
 
 // Persistent storage keeping all async tasks in one place
