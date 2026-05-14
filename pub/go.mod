@@ -1,8 +1,6 @@
 module github.com/TheRacetrack/racetrack/pub
 
-go 1.22
-
-toolchain go1.22.2
+go 1.25.10
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible

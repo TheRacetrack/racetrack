@@ -9,7 +9,7 @@ type Services struct {
 func InitServices(cfg *Config) *Services {
 	replicaDiscovery := NewReplicaDiscovery(cfg)
 	taskStorage := NewLifecycleTaskStorage(cfg.LifecycleUrl, cfg.LifecycleToken)
-	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery, taskStorage)
+	asyncTaskStore := NewAsyncTaskStore(replicaDiscovery, taskStorage, cfg.AsyncTaskRetentionPeriod)
 
 	lifecycleCache := NewLifecycleCache(cfg)
 
@@ -22,4 +22,5 @@ func InitServices(cfg *Config) *Services {
 
 func (s *Services) Shutdown() {
 	s.asyncTaskStore.CancelOngoingRequests()
+	s.asyncTaskStore.CancelCleanUp()
 }

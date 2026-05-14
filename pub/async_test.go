@@ -11,11 +11,41 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
+	"testing/synctest"
 )
+
+func TestClean(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		taskStorage := NewMemoryTaskStorage()
+		replicaDiscovery := NewStaticReplicaDiscovery([]string{}, "")
+		store := NewAsyncTaskStore(replicaDiscovery, taskStorage, 125 * time.Minute)
+		synctest.Wait()
+
+		store.CreateTask(NewLocalTask(&AsyncTask{
+			Id: "sample",
+			JobName: "testJob",
+			StartedAtTimestamp: time.Now().Unix(),
+		}))
+
+		time.Sleep(65 * time.Minute)
+
+		_, ok := store.GetLocalTask("sample")
+		assert.True(t, ok, "job not found before scheduled cleanup")
+
+		time.Sleep(65 * time.Minute)
+		synctest.Wait()
+
+		_, ok = store.GetLocalTask("sample")
+		assert.False(t, ok, "job still present after scheduled cleanup")
+
+		store.CancelCleanUp()
+	})
+}
 
 func TestMultiReplicasAsyncStore(t *testing.T) {
 	replicaNum := 3
@@ -32,7 +62,7 @@ func TestMultiReplicasAsyncStore(t *testing.T) {
 
 	for i := 0; i < replicaNum; i++ {
 		replicaDiscovery := NewStaticReplicaDiscovery(addrs, addrs[i])
-		store := NewAsyncTaskStore(replicaDiscovery, taskStorage)
+		store := NewAsyncTaskStore(replicaDiscovery, taskStorage, 125 * time.Minute)
 		servers[i] = setupReplicaServer(addrs[i], cfg, store)
 	}
 
@@ -78,7 +108,7 @@ func TestRetryCrashedJobCall(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	taskStorage := NewMemoryTaskStorage()
 	replicaDiscovery := NewStaticReplicaDiscovery(addrs, addrs[0])
-	store := NewAsyncTaskStore(replicaDiscovery, taskStorage)
+	store := NewAsyncTaskStore(replicaDiscovery, taskStorage, 125 * time.Minute)
 	server := setupReplicaServer(addrs[0], cfg, store)
 	defer server.Close()
 
@@ -113,7 +143,7 @@ func TestResumeMissingTask(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	taskStorage := NewMemoryTaskStorage()
 	replicaDiscovery := NewStaticReplicaDiscovery(addrs, addrs[0])
-	store := NewAsyncTaskStore(replicaDiscovery, taskStorage)
+	store := NewAsyncTaskStore(replicaDiscovery, taskStorage, 125 * time.Minute)
 	server := setupReplicaServer(addrs[0], cfg, store)
 
 	response := postJsonRequest( // Start a task
@@ -124,7 +154,7 @@ func TestResumeMissingTask(t *testing.T) {
 
 	store.taskStorage = NewMemoryTaskStorage()
 	server.Close() // Restart server to clear local in-memory tasks
-	store = NewAsyncTaskStore(replicaDiscovery, taskStorage)
+	store = NewAsyncTaskStore(replicaDiscovery, taskStorage, 125 * time.Minute)
 	server = setupReplicaServer(addrs[0], cfg, store)
 	defer server.Close()
 	assert.EqualValues(t, len(store.localTasks), 0, "local tasks should be empty after server restart")
