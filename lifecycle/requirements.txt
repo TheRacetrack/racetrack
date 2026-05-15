@@ -3,8 +3,8 @@ kubernetes==26.1.0
 Django==4.2.30
 schedule==1.1.0
 psycopg[binary,pool]==3.2.3
-python-socketio==5.9.0
-python-socketio[client]==5.9.0
+python-socketio==5.14.0
+python-socketio[client]==5.14.0
 Jinja2==3.1.4
 werkzeug==3.0.6
 psutil==5.9.4
