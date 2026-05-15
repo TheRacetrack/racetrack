@@ -4,7 +4,7 @@ flake8==7.3.0
 pylint==3.3.7
 pylint-django==2.6.1
 Django==4.2.30
-black==24.3.0
+black==26.3.1
 twine==6.1.0
 wheel==0.38.4
 types-PyYAML==6.0.12
