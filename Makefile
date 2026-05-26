@@ -2,9 +2,11 @@
 
 # docker tag of images
 TAG ?= 2.36.0
-DOCKER_REGISTRY ?= ghcr.io
-DOCKER_REGISTRY_NAMESPACE ?= theracetrack/racetrack
-GHCR_PREFIX = ghcr.io/theracetrack/racetrack
+GHCR_REGISTRY ?= ghcr.io
+GHCR_NAMESPACE ?= theracetrack/racetrack
+GHCR_PREFIX = $(GHCR_REGISTRY)/$(GHCR_NAMESPACE)
+DOCKER_REGISTRY ?= $(GHCR_REGISTRY)
+DOCKER_REGISTRY_NAMESPACE ?= $(GHCR_NAMESPACE)
 DOCKER_GID=$(shell (getent group docker || echo 'docker:x:0') | cut -d: -f3 )
 
 docker-compose = COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 DOCKER_SCAN_SUGGEST=false DOCKER_GID=${DOCKER_GID} \
@@ -261,27 +263,37 @@ docker-build-debug:
 docker-build-stress:
 	$(docker-compose) -f tests/stress/docker-compose.stress.yaml build
 
-docker-push-private: docker-build
-	docker login ${DOCKER_REGISTRY}
-	docker buildx build -t ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:${TAG} -f lifecycle/private.Dockerfile lifecycle
-	docker push ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/lifecycle:${TAG}
-	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/image-builder:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/dashboard:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pub:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/pgbouncer:${TAG})
+# this configuration is for publishing builds only
+# local deployment via docker compose or kind will use machine architecture
+# platforms by default is set only to linux/amd64
+PLATFORMS ?= linux/amd64
+BUILDX_BUILDER ?= racetrack-multiarch
+GIT_VERSION = $(shell git describe --long --tags --dirty --always)
 
-docker-push-public: docker-build
-	docker login ghcr.io
-	docker push ${GHCR_PREFIX}/lifecycle:latest
-	docker push ${GHCR_PREFIX}/image-builder:latest
-	docker push ${GHCR_PREFIX}/dashboard:latest
-	docker push ${GHCR_PREFIX}/pub:latest
-	docker push ${GHCR_PREFIX}/pgbouncer:latest
-	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,${GHCR_PREFIX}/lifecycle:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/image-builder:latest,${GHCR_PREFIX}/image-builder:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/dashboard:latest,${GHCR_PREFIX}/dashboard:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pub:latest,${GHCR_PREFIX}/pub:${TAG})
-	$(call docker_tag_and_push,${GHCR_PREFIX}/pgbouncer:latest,${GHCR_PREFIX}/pgbouncer:${TAG})
+buildx-setup:
+	docker buildx inspect $(BUILDX_BUILDER) >/dev/null 2>&1 || \
+		docker buildx create --name $(BUILDX_BUILDER) --driver docker-container
+	docker buildx inspect --builder $(BUILDX_BUILDER) --bootstrap
+
+# do not invoke manually, use docker-push-private or docker-push-public instead
+# EXTRA_TAGS is a comma-separated list of additional tags (e.g. "latest")
+# LIFECYCLE_TARGET=private for private build of lifecycle containing certificates
+docker-push: buildx-setup
+	docker login $(PUSH_REGISTRY)
+	PUSH_REGISTRY=$(PUSH_REGISTRY) PUSH_NAMESPACE=$(PUSH_NAMESPACE) \
+	TAG=$(TAG) PLATFORMS=$(PLATFORMS) GIT_VERSION=$(GIT_VERSION) \
+	EXTRA_TAGS=$(EXTRA_TAGS) LIFECYCLE_TARGET=$(LIFECYCLE_TARGET) \
+		docker buildx bake -f docker-bake.hcl --builder $(BUILDX_BUILDER) --push
+
+docker-push-private: PUSH_REGISTRY = $(DOCKER_REGISTRY)
+docker-push-private: PUSH_NAMESPACE = $(DOCKER_REGISTRY_NAMESPACE)
+docker-push-private: LIFECYCLE_TARGET = private
+docker-push-private: docker-push
+
+docker-push-public: PUSH_REGISTRY = $(GHCR_REGISTRY)
+docker-push-public: PUSH_NAMESPACE = $(GHCR_NAMESPACE)
+docker-push-public: EXTRA_TAGS = latest
+docker-push-public: docker-push
 
 local-registry-push: docker-build
 	$(call docker_tag_and_push,${GHCR_PREFIX}/lifecycle:latest,127.0.0.1:5000/racetrack/lifecycle:latest)

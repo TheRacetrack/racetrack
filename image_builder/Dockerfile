@@ -1,4 +1,20 @@
+FROM python:3.11-slim-bullseye AS builder
+
+RUN apt-get update -y && apt-get install -y gcc python3-dev &&\
+    rm -rf /var/lib/apt/lists/*
+
+COPY racetrack_client/setup.py racetrack_client/requirements.txt racetrack_client/README.md /src/racetrack_client/
+COPY racetrack_commons/setup.py racetrack_commons/requirements.txt /src/racetrack_commons/
+COPY image_builder/setup.py image_builder/requirements.txt /src/image_builder/
+RUN pip wheel --wheel-dir /wheels \
+  -r /src/racetrack_client/requirements.txt \
+  -r /src/racetrack_commons/requirements.txt \
+  -r /src/image_builder/requirements.txt
+
+
 FROM python:3.11-slim-bullseye AS base
+
+ARG TARGETARCH
 
 # install Docker CLI
 RUN apt-get update -y && apt-get install -y \
@@ -12,7 +28,7 @@ RUN apt-get update -y && apt-get install -y \
     vim
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
     echo \
-  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  "deb [arch=${TARGETARCH} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
     apt-get update -y && apt-get install -y docker-ce-cli &&\
     rm -rf /var/lib/apt/lists/*
@@ -31,9 +47,12 @@ COPY .dockerignore /src/
 COPY racetrack_client/setup.py racetrack_client/requirements.txt racetrack_client/README.md /src/racetrack_client/
 COPY racetrack_commons/setup.py racetrack_commons/requirements.txt /src/racetrack_commons/
 COPY image_builder/setup.py image_builder/requirements.txt /src/image_builder/
-RUN pip install -r /src/racetrack_client/requirements.txt \
+COPY --from=builder /wheels /wheels
+RUN pip install --no-index --find-links=/wheels \
+  -r /src/racetrack_client/requirements.txt \
   -r /src/racetrack_commons/requirements.txt \
-  -r /src/image_builder/requirements.txt
+  -r /src/image_builder/requirements.txt &&\
+  rm -rf /wheels
 
 COPY racetrack_client/racetrack_client/. /src/racetrack_client/racetrack_client/
 COPY racetrack_commons/racetrack_commons/. /src/racetrack_commons/racetrack_commons/
