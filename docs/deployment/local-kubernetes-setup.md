@@ -214,42 +214,5 @@ If it doesn't work, diagnostic commands:
 ## FAQ
 ### I want to build on an ARM system (such as M1 Mac)
 
-Disclaimer: we don't officially support or test for those architectures, but after
-little tweaking you should be still able to run on them. 
-
-To build on an ARM system, you need to add the docker arm64 repositories to the 
-image_builder and lifecycle Dockerfiles so apt-get can find the docker tools for amd64. 
-You can do so by applying the following diff (save it in repo root and `git apply arm64_enable.diff`):
-<details>
-  <summary>File `arm64_enable.diff`</summary>
-    
-    ```diff
-    diff --git a/image_builder/Dockerfile b/image_builder/Dockerfile
-    index 4dddd57..110564e 100644
-    --- a/image_builder/Dockerfile
-    +++ b/image_builder/Dockerfile
-    @@ -11,6 +11,9 @@ RUN apt-get update -y && apt-get install -y \
-     RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
-         echo \
-       "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    +  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-    +    echo \
-    +  "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-         apt-get update -y && apt-get install -y docker-ce-cli
-
-    diff --git a/lifecycle/Dockerfile b/lifecycle/Dockerfile
-    index 2063911..a2e196d 100644
-    --- a/lifecycle/Dockerfile
-    +++ b/lifecycle/Dockerfile
-    @@ -11,6 +11,9 @@ RUN apt-get update -y && apt-get install -y \
-     RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg &&\
-         echo \
-       "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    +  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-    +    echo \
-    +  "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null &&\
-         apt-get update -y && apt-get install -y docker-ce-cli
-    ```
-</details>
+Local deployment, both Docker and Kind based will build images matching your machine architecture.
+Note however, that by default public images and those created by version-release-private are linux/arm64 only.

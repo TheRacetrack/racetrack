@@ -68,3 +68,8 @@ will bump the dev part if MR is set in file, otherwise it bumps just the semver 
    ```sh
    make version-release-private version-release-public
    ```
+
+## Multi-platform builds
+
+By default version-release-private and version-release-public are linux/amd64 only.
+That can be controlled by PLATFORMS variable that can be set to another platform or a list of platforms.
