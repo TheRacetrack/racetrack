@@ -1,0 +1,13 @@
+name: multiplier
+owner_email: sample@example.com
+jobtype: python3:latest
+version: 0.0.1
+infrastructure_target: kubernetes-git-kustomize
+
+git:
+  remote: https://github.com/theracetrack/racetrack
+  directory: sample/python-class3
+
+jobtype_extra:
+  entrypoint_path: 'multiplier.py'
+  entrypoint_class: 'MultiplierModel'
