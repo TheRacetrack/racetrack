@@ -6,7 +6,7 @@ infrastructure_target: kubernetes
 
 git:
   remote: https://github.com/theracetrack/racetrack
-  directory: sample/python-class
+  directory: sample/python-class2
 
 jobtype_extra:
   entrypoint_path: 'subtractor.py'
