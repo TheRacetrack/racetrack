@@ -1,0 +1,13 @@
+name: subtractall
+owner_email: sample@example.com
+jobtype: python3:latest
+version: 0.0.1
+infrastructure_target: kubernetes
+
+git:
+  remote: https://github.com/theracetrack/racetrack
+  directory: sample/python-class21
+
+jobtype_extra:
+  entrypoint_path: 'subtractall.py'
+  entrypoint_class: 'SubtractAllModel'
