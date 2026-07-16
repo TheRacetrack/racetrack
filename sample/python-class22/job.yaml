@@ -1,0 +1,13 @@
+name: subtractfromlast
+owner_email: sample@example.com
+jobtype: python3:latest
+version: 0.0.1
+infrastructure_target: kubernetes-git-kustomize
+
+git:
+  remote: https://github.com/theracetrack/racetrack
+  directory: sample/python-class22
+
+jobtype_extra:
+  entrypoint_path: 'subtractfromlast.py'
+  entrypoint_class: 'SubtractFromLastModel'
