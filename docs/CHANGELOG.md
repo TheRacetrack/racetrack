@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.36.1] - 2026-07-20
+### Fix
+- Fixed the "create auth token" scenario. Create a family if it does not exist.
+  ([#616](https://github.com/TheRacetrack/racetrack/issues/616))
+
+
 ## [2.36.0] - 2025-09-26
 ### Added
 - Websocket traffic is supported for Racetrack jobs.

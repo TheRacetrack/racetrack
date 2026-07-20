@@ -1,7 +1,7 @@
 .PHONY: setup test clean registry venv
 
 # docker tag of images
-TAG ?= 2.36.0
+TAG ?= 2.36.1
 GHCR_REGISTRY ?= ghcr.io
 GHCR_NAMESPACE ?= theracetrack/racetrack
 GHCR_PREFIX = $(GHCR_REGISTRY)/$(GHCR_NAMESPACE)
