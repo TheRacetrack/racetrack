@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1m
+
+scrape_configs:
+  - job_name: postgres-exporter
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "postgres-exporter:9187"
+
+  - job_name: lifecycle
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "lifecycle:7102"
+
+  - job_name: lifecycle-supervisor
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "lifecycle-supervisor:7102"
+
+  - job_name: image-builder
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "image-builder:7101"
+
+  - job_name: pub
+    scheme: http
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "pub:7105"
+
+  - job_name: racetrack-jobs
+    scheme: http
+    metrics_path: /metrics
+    file_sd_configs:
+      - files:
+        - '/mnt/plugins/metrics/sd_config_jobs.yaml'
+        refresh_interval: 1m

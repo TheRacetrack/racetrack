@@ -1,0 +1,16 @@
+name: overlays-base
+owner_email: sample@example.com
+jobtype: python3:latest
+version: 0.0.2
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/overlays
+
+jobtype_extra:
+  entrypoint_path: 'entrypoint.py'
+  entrypoint_class: 'JobEntrypoint'
+
+resources:
+  cpu_min: 10m
+  cpu_max: 1000m

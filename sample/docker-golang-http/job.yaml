@@ -1,0 +1,11 @@
+name: docker-golang-http
+owner_email: sample@example.com
+jobtype: docker-proxy:latest
+version: 0.0.2
+
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+  directory: sample/docker-golang-http
+
+jobtype_extra:
+  dockerfile_path: Dockerfile

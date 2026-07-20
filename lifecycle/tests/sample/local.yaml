@@ -1,0 +1,3 @@
+log_level: debug
+auth_debug: true
+auth_required: false

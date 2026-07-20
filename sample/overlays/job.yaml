@@ -1,0 +1,8 @@
+extends: job-base.yaml
+
+name: overlays-dev
+
+replicas: 2
+resources:
+  cpu_min: 100m
+  memory_min: 500M

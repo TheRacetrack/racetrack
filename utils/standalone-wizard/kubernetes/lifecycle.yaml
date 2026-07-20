@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: racetrack
+  name: lifecycle
+  labels:
+    app.kubernetes.io/name: lifecycle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lifecycle
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lifecycle
+    spec:
+      securityContext:
+        fsGroup: 200000
+        runAsUser: 100000
+        runAsGroup: 100000
+      hostname: lifecycle
+      subdomain: lifecycle
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app.kubernetes.io/name"
+                      operator: In
+                      values:
+                        - lifecycle
+                topologyKey: kubernetes.io/hostname
+      serviceAccountName: null
+      priorityClassName: high-priority
+      initContainers:
+        - name: init-django-db
+          image: ghcr.io/theracetrack/racetrack/lifecycle:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: postgres-env
+            - configMapRef:
+                name: lifecycle-env
+          command:
+            - bash
+            - -c
+            - |
+              /src/lifecycle/wait-for-postgres.sh && 
+              /src/lifecycle/wait-for-migration.sh
+      containers:
+        - name: lifecycle
+          image: ghcr.io/theracetrack/racetrack/lifecycle:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7002
+          tty: true
+          volumeMounts:
+            - name: lifecycle-config
+              mountPath: /etc/racetrack/lifecycle/
+            - name: racetrack-plugins
+              mountPath: /mnt/plugins
+          envFrom:
+            - configMapRef:
+                name: postgres-env
+            - configMapRef:
+                name: lifecycle-env
+          env:
+            - name: PUBLIC_IP
+              value: '${public_ip}'
+            - name: CLUSTER_FQDN
+              value: ''
+            - name: DEBUG
+              value: 'true'
+            - name: DJANGO_DEBUG
+              value: 'true'
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 7002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 7002
+            initialDelaySeconds: 3
+            periodSeconds: 10
+      volumes:
+        - name: lifecycle-config
+          configMap:
+            name: lifecycle-config
+        - name: racetrack-plugins
+          persistentVolumeClaim:
+            claimName: racetrack-plugins-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: racetrack
+  name: lifecycle
+  labels:
+    app.kubernetes.io/name: lifecycle
+spec:
+  selector:
+    app.kubernetes.io/name: lifecycle
+  type: ClusterIP
+  ports:
+    - name: lifecycle
+      port: 7002
+      targetPort: 7002
