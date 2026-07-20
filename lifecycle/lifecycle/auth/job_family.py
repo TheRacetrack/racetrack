@@ -1,4 +1,4 @@
-from lifecycle.job.models_registry import read_job_family_model, create_job_family_if_not_exist
+from lifecycle.job.models_registry import create_job_family_if_not_exist
 from lifecycle.auth.subject import get_auth_subject_by_job_family, get_auth_token_by_subject
 
 
