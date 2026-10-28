@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fix
+- Manifest validation now enforces the documented Job name rules: lowercase letters,
+  digits and dashes only. Previously any string passed validation and the Job failed later,
+  when its name was used as a Kubernetes resource name.
+  ([#620](https://github.com/TheRacetrack/racetrack/issues/620))
 
 ## [2.36.1] - 2026-07-20
 ### Fix
