@@ -25,7 +25,9 @@
     "additionalProperties": false,
     "properties": {
         "name": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+            "$comment": "The name ends up in a Kubernetes Service name (RFC 1035 label), so only lowercase letters, digits and dashes (not at the start or end) are allowed"
         },
         "jobtype": {
             "type": "string",

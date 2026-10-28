@@ -133,7 +133,7 @@ it should be formed.
 A typical `job.yaml` will look like this:
 
 ```yaml
-name: my_fantabulous_skynet_AI
+name: my-fantabulous-skynet-ai
 owner_email: nobody@example.com
 jobtype: python3:latest  # this would be your Job Type
 

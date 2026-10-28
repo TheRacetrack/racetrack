@@ -9,7 +9,8 @@ default value if not provided. The YAML manifest file can have the following
 fields:
 
 - `name`, *string* (**required**) - name of the current service to be deployed by means of
-  this mainfest file. It cannot contain underscores (but can contain dashes).
+  this mainfest file. It can contain only lowercase letters, digits and dashes,
+  and it can't start or end with a dash (e.g. `my-service-2`).
 - `jobtype`, *string* (**required**) - Jobtype wrapper used to embed model. This should be one
   of the supported wrapper names combined with the wrapper version:
   `python3:2.4.0`, `python3:latest`, `golang:latest` or `docker-http:latest`, etc.

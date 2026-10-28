@@ -138,6 +138,31 @@ git:
     assert "Failed validating 'pattern' in schema['properties']['git']['properties']['remote']" in str(excinfo.value)
 
 
+@pytest.mark.parametrize('name', ['skynet', 'skynet-2', '2fast', 'a', 'sky--net'])
+def test_valid_job_names(name: str):
+    manifest = validate_tmp_manifest(f"""
+name: {name}
+owner_email: nobody@example.com
+jobtype: python3:latest
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+""")
+    assert manifest.name == name
+
+
+@pytest.mark.parametrize('name', ['my_skynet', 'Skynet', 'skynet-', '-skynet', 'sky net', 'sky.net'])
+def test_invalid_job_names(name: str):
+    with pytest.raises(RuntimeError) as excinfo:
+        validate_tmp_manifest(f"""
+name: "{name}"
+owner_email: nobody@example.com
+jobtype: python3:latest
+git:
+  remote: https://github.com/TheRacetrack/racetrack
+""")
+    assert "Failed validating 'pattern' in schema['properties']['name']" in str(excinfo.value)
+
+
 def validate_tmp_manifest(content: str) -> Manifest:
     fd, path = tempfile.mkstemp(prefix='job', suffix='.yaml')
     try:
